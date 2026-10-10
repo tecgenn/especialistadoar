@@ -13,6 +13,8 @@ Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all op
 
 Infer the repo from `git remote -v` — `gh` does this automatically when run inside a clone.
 
+**Keep the remote on the real `github.com` host** (e.g. `git@github.com:...` or `https://github.com/...`). Do not switch it to an SSH alias like `github.tecgenn` — `gh` can't resolve custom hosts and every issue operation breaks. This repo forces the tecgenn SSH key via the local `core.sshCommand` config, so the plain host reaches the right account.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_
