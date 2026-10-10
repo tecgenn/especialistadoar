@@ -13,7 +13,7 @@ Issues and PRDs for this repo live as GitHub issues. Use the `gh` CLI for all op
 
 Infer the repo from `git remote -v` — `gh` does this automatically when run inside a clone.
 
-**Keep the remote on the real `github.com` host** (e.g. `git@github.com:...` or `https://github.com/...`). Do not switch it to an SSH alias like `github.tecgenn` — `gh` can't resolve custom hosts and every issue operation breaks. This repo forces the tecgenn SSH key via the local `core.sshCommand` config, so the plain host reaches the right account.
+**Keep the remote on the real `github.com` host** — this repo uses `https://github.com/...` and authenticates via the `gh` CLI token (repo-local credential helper: `!gh auth git-credential`), so pushes follow the active `gh` account. Do not switch it to an SSH alias like `github.tecgenn` — `gh` can't resolve custom hosts and every issue operation breaks.
 
 ## Pull requests as a triage surface
 
