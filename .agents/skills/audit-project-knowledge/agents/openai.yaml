@@ -1,0 +1,5 @@
+interface:
+  display_name: "Audit Project Knowledge"
+  short_description: "Periodic audit of the project's knowledge base"
+policy:
+  allow_implicit_invocation: false

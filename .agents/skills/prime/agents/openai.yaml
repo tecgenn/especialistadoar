@@ -1,0 +1,5 @@
+interface:
+  display_name: "Prime"
+  short_description: "Load project context and surface the next ticket"
+policy:
+  allow_implicit_invocation: false
