@@ -1,0 +1,69 @@
+# Especialista do Ar
+
+Base estruturada de aparelhos de ar-condicionado construída a partir da exportação oficial de produtos do INMETRO. É consumida por agentes de IA e por um site, e existe para que ninguém precise interpretar a exportação bruta.
+
+## Language
+
+**Agente (consumidor)**:
+Um leitor externo da base — uma ferramenta de IA, um programa ou uma pessoa — que consulta os Aparelhos e Registros. Não é parte do site nem do Worker: é quem consome. O Worker apenas serve rotas determinísticas (busca, comparação, Valor calculado) e não contém modelo de IA.
+_Avoid_: Bot, robô (sugere que roda dentro do produto)
+
+**Linha da tabela**:
+Uma linha da exportação oficial do INMETRO (o CSV), preservada exatamente como foi publicada, junto com a Versão da tabela de onde veio.
+_Avoid_: Registro, entrada, produto
+
+**Registro INMETRO**:
+A inscrição oficial identificada pelo Número do Registro, com status próprio (Ativo, Cancelado ou Inativo), que abrange uma ou mais Linhas da tabela.
+_Avoid_: Processo, inscrição
+
+**Aparelho**:
+Um kit de ar-condicionado identificado por marca, modelo da unidade interna e modelo da unidade externa — usando o campo Modelo quando as unidades não vêm separadas. Aponta para uma ou mais Linhas da tabela e Registros INMETRO. Cada marca é um Aparelho distinto, mesmo quando várias marcas compartilham o mesmo Registro. Tensão não faz parte da identidade: um Aparelho bivolt é um só, com mais de uma tensão.
+_Avoid_: Produto, modelo (ambíguo: pode designar só a unidade interna)
+
+**Aparelho sem dados declarados**:
+Um Aparelho presente na tabela que não traz Dados declarados. É um estado, não um tipo distinto de Aparelho: a base servida só descarta o que não tem Dados declarados, mas o Aparelho continua existindo para o histórico.
+_Avoid_: Produto incompleto, registro vazio
+
+**Oferta**:
+Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos.
+_Avoid_: Link de compra, anúncio
+
+**Anomalia**:
+Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto. O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
+_Avoid_: Erro, defeito (não temos como saber se o dado está de fato errado)
+
+**Exceção manual**:
+Correção de conteúdo feita à mão sobre um dado de uma Linha da tabela, sempre com motivo e fonte registrados. É a única forma de alterar conteúdo; diferenças apenas de formato são padronizadas por regra, não por exceção.
+_Avoid_: Ajuste, correção
+
+**Ausente**:
+Estado de um Aparelho que constava em uma versão anterior da tabela e não aparece em nenhuma Linha da versão atual. Não cobre o caso de um Aparelho que continua na tabela mas perdeu os Dados declarados — esse segue sendo um Aparelho sem dados declarados, e o histórico registra que ele já teve dados. A causa da ausência não é presumida: a tabela não diz se o modelo foi descontinuado, cancelado ou omitido por engano.
+_Avoid_: Removido, cancelado, descontinuado
+
+**Versão da tabela**:
+Uma exportação da lista oficial de produtos do INMETRO (o CSV), identificada pelo seu próprio conteúdo e pela data em que foi obtida. O carimbo de data escrito no cabeçalho é apenas um rótulo, não a identidade. Cada exportação nova é uma Versão da tabela.
+_Avoid_: Edição, atualização
+
+**Vínculo sugerido**:
+Indicação de que um Aparelho novo pode ser, na verdade, um Aparelho Ausente com o texto do modelo corrigido (mesma marca, registro, capacidade, IDRS, consumo e tensão). Nunca é aplicado automaticamente: precisa de confirmação de uma pessoa.
+_Avoid_: Fusão, correspondência automática
+
+**Vínculo confirmado**:
+Um Vínculo sugerido que uma pessoa aprovou. Passa a valer como identidade do Aparelho, guardando o par sugerido e quem confirmou.
+_Avoid_: Fusão aplicada, merge
+
+**Valor oficial**:
+Dado que veio da tabela do INMETRO, depois apenas das regras de padronização de formato. É o que se pode citar como dado do INMETRO.
+_Avoid_: Valor original (o original é o que o Registro INMETRO guarda, sem padronização)
+
+**Valor calculado**:
+Dado derivado por conta determinística a partir de Valores oficiais e de entradas informadas por quem consulta, como o custo anual estimado com uma tarifa dada na consulta. Sempre acompanha a fórmula e as entradas usadas, para nunca ser confundido com um Valor oficial.
+_Avoid_: Estimativa, recomendação
+
+**Dados declarados**:
+Valores de capacidade e consumo informados para quatro condições (carga total e parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais detalhada de cada Linha da tabela.
+_Avoid_: Dados de ensaio, dados medidos (a própria tabela os chama de declarados)
+
+**Relatório de revisão**:
+Resumo gerado a cada nova Versão da tabela, antes de qualquer publicação: Aparelhos novos, alterados e Ausentes, Anomalias novas e Vínculos sugeridos. A nova versão só vai ao ar depois que uma pessoa o revisa e aprova.
+_Avoid_: Log de importação, diff
