@@ -58,7 +58,7 @@ Completion criterion: Done when Frontier rewritten and Completed entry appended.
 In the configured tracker:
 
 - **Local files** (`.scratch/` or `tickets/`): update the ticket's `Status:` field to `done` and mark all checkboxes as `[x]`
-- **GitHub/GitLab**: close the issue following `docs/agents/issue-tracker.md`'s convention, e.g. `gh issue close <n> --comment "Done — see project-state.md entry NN"`. Don't use a `done` label — it isn't part of the triage vocabulary, and native blockers only clear when the blocking issue is closed.
+- **GitHub/GitLab**: tick the acceptance-criteria checkboxes the work satisfied before closing — rewrite the issue body via `gh issue edit <n> --body-file -`, flipping `- [ ]` to `- [x]` (the `gh` CLI has no per-checkbox command). Leave any genuinely unmet or unverifiable criterion unchecked and say why in the closing comment. Then close the issue following `docs/agents/issue-tracker.md`'s convention, e.g. `gh issue close <n> --comment "Done — see project-state.md entry NN"`. Don't use a `done` label — it isn't part of the triage vocabulary, and native blockers only clear when the blocking issue is closed.
 
 Completion criterion: Done when ticket is marked done in the tracker.
 

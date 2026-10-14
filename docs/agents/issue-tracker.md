@@ -15,6 +15,10 @@ Infer the repo from `git remote -v` — `gh` does this automatically when run in
 
 **Keep the remote on the real `github.com` host** — this repo uses `https://github.com/...` and authenticates via the `gh` CLI token (repo-local credential helper: `!gh auth git-credential`), so pushes follow the active `gh` account. Do not switch it to an SSH alias like `github.tecgenn` — `gh` can't resolve custom hosts and every issue operation breaks.
 
+## Closing an issue
+
+When an issue is done, tick the acceptance-criteria checkboxes the work satisfied **before** closing it: rewrite the body with `gh issue edit <n> --body-file -`, flipping `- [ ]` to `- [x]`. The `gh` CLI has no per-checkbox command — the boxes are literal markdown task-list items in the body. Leave any genuinely unmet or unverifiable criterion unchecked and say why in the closing comment. Closing the issue marks it done; the ticked boxes are the visible record.
+
 ## Pull requests as a triage surface
 
 **PRs as a request surface: no.** _(Set to `yes` if this repo treats external PRs as feature requests; `/triage` reads this flag.)_

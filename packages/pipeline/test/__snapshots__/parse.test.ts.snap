@@ -1,0 +1,40 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`parseLinhas — Linhas da tabela > bate com o snapshot golden da amostra 1`] = `
+{
+  "cabecalho": [
+    "Marca",
+    "Modelo",
+    "Se outro fluido refrigerante, especificar",
+    "Capacidade de Refrigeração Nominal (Btu/h)",
+    "Capacidade a 29 ºC e Carga Total (W)",
+    "Status do Registro",
+  ],
+  "linhas": [
+    {
+      "Capacidade a 29 ºC e Carga Total (W)": "2637",
+      "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
+      "Marca": "Samsung",
+      "Modelo": "AR09MV",
+      "Se outro fluido refrigerante, especificar": "",
+      "Status do Registro": "Ativo",
+    },
+    {
+      "Capacidade a 29 ºC e Carga Total (W)": "",
+      "Capacidade de Refrigeração Nominal (Btu/h)": "",
+      "Marca": "LG",
+      "Modelo": "S4-Q09JA3QA",
+      "Se outro fluido refrigerante, especificar": "",
+      "Status do Registro": "Inativo",
+    },
+    {
+      "Capacidade a 29 ºC e Carga Total (W)": "2637",
+      "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
+      "Marca": "Midea",
+      "Modelo": "MSG-09HR",
+      "Se outro fluido refrigerante, especificar": " R-32, mistura ",
+      "Status do Registro": "Cancelado",
+    },
+  ],
+}
+`;

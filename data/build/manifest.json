@@ -1,0 +1,12 @@
+{
+  "versaoAtual": "ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407",
+  "versoes": [
+    {
+      "hash": "ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407",
+      "arquivo": "raw/inmetro-export-2026-10-12.csv",
+      "obtidoEm": "2026-10-12",
+      "origem": "INMETRO — exportação de produtos",
+      "contagemLinhas": 7474
+    }
+  ]
+}
