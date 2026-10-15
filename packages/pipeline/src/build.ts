@@ -9,8 +9,16 @@ import { join } from "node:path";
 import { type Anomalia, detectarAnomalias } from "./anomalias.ts";
 import { type Aparelho, SCHEMA_APARELHO } from "./aparelho.ts";
 import {
+  ARQUIVO_EXCECOES,
+  aplicarExcecoes,
+  type ExcecaoManual,
+  lerExcecoes,
+  validarExcecoes,
+} from "./excecoes.ts";
+import {
   agruparAparelhos,
   aparelhoTemDadosDeclarados,
+  chaveDaLinha,
   type LinhaDaTabela,
 } from "./group.ts";
 import {
@@ -21,9 +29,18 @@ import {
   registrarVersao,
   type VersaoDaTabela,
 } from "./ingest.ts";
+import { escreverJsonl } from "./jsonl.ts";
 import { normalizarValores } from "./normalize.ts";
 import { parseLinhas } from "./parse.ts";
 import { validarBaseServida } from "./validate.ts";
+import {
+  ARQUIVO_VINCULOS,
+  lerVinculosConfirmados,
+  montarIdentidadeCanonica,
+  type VinculoConfirmado,
+  validarVinculosAplicaveis,
+  validarVinculosConfirmados,
+} from "./vinculos.ts";
 
 export interface BuildOptions {
   dataDir: string;
@@ -38,13 +55,8 @@ export interface BuildResult {
   registros: LinhaDaTabela[];
   anomalias: Anomalia[];
   aparelhos: Aparelho[];
-}
-
-function escreverJsonl(caminho: string, registros: unknown[]): void {
-  const jsonl = registros
-    .map((registro) => JSON.stringify(registro))
-    .join("\n");
-  writeFileSync(caminho, `${jsonl}\n`);
+  excecoes: ExcecaoManual[];
+  vinculos: VinculoConfirmado[];
 }
 
 function escreverJson(caminho: string, valor: unknown): void {
@@ -109,21 +121,52 @@ export function runBuild(options: BuildOptions): BuildResult {
     }
   }
 
+  const excecoes = lerExcecoes(dataDir);
+  validarExcecoes(excecoes);
+  const vinculos = lerVinculosConfirmados(dataDir);
+  validarVinculosConfirmados(vinculos);
+
+  const excecoesDaVersao = excecoes.filter(
+    (excecao) => excecao.versao === versao.hash,
+  );
+
   const { linhas } = parseLinhas(readFileSync(join(dataDir, versao.arquivo)));
   versao.contagemLinhas = linhas.length;
 
   const registros: LinhaDaTabela[] = [];
   const anomalias: Anomalia[] = [];
+  const excecoesAplicadas = new Set<ExcecaoManual>();
   linhas.forEach((linhaCrua, indice) => {
     const linha = indice + 1;
-    const { valores, oficial } = normalizarValores(linhaCrua);
+    const excecoesDaLinha = excecoesDaVersao.filter(
+      (excecao) => excecao.linha === linha,
+    );
+    excecoesDaLinha.forEach((excecao) => {
+      excecoesAplicadas.add(excecao);
+    });
+    const valoresCorrigidos = aplicarExcecoes(linhaCrua, excecoesDaLinha);
+    const { valores, oficial } = normalizarValores(valoresCorrigidos);
     registros.push({ linha, versao: versao.hash, valores, oficial });
     anomalias.push(
       ...detectarAnomalias(valores, { linha, versao: versao.hash }),
     );
   });
 
-  const aparelhos = agruparAparelhos(registros).filter(
+  for (const excecao of excecoesDaVersao) {
+    if (!excecoesAplicadas.has(excecao)) {
+      throw new Error(
+        `Exceção manual não corresponde a nenhuma Linha da Versão ${versao.hash.slice(0, 12)}: Linha ${excecao.linha}, campo ${excecao.campo}.`,
+      );
+    }
+  }
+
+  validarVinculosAplicaveis(
+    vinculos,
+    new Set(registros.map((registro) => chaveDaLinha(registro.oficial))),
+  );
+  const identidadeCanonica = montarIdentidadeCanonica(vinculos);
+
+  const aparelhos = agruparAparelhos(registros, { identidadeCanonica }).filter(
     aparelhoTemDadosDeclarados,
   );
   validarBaseServida(aparelhos);
@@ -135,8 +178,18 @@ export function runBuild(options: BuildOptions): BuildResult {
   escreverJsonl(join(buildDir, "aparelhos.jsonl"), aparelhos);
   escreverJson(join(buildDir, "aparelhos.json"), aparelhos);
   escreverJson(join(buildDir, "schema.json"), SCHEMA_APARELHO);
+  escreverJsonl(join(buildDir, ARQUIVO_EXCECOES), excecoes);
+  escreverJsonl(join(buildDir, ARQUIVO_VINCULOS), vinculos);
 
   escreverManifest(dataDir, manifest);
 
-  return { versao, manifest, registros, anomalias, aparelhos };
+  return {
+    versao,
+    manifest,
+    registros,
+    anomalias,
+    aparelhos,
+    excecoes,
+    vinculos,
+  };
 }

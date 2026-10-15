@@ -83,8 +83,18 @@ export function chaveIdentidade(
   return `M:${marcaCanonica}|${modelo}`;
 }
 
-function idDeChave(chave: string): string {
+export function idDeChave(chave: string): string {
   return `ap-${createHash("sha256").update(chave).digest("hex").slice(0, 12)}`;
+}
+
+/** Chave de identidade de uma Linha da tabela, a partir dos Valores oficiais. */
+export function chaveDaLinha(oficial: ValoresOficiais): string {
+  return chaveIdentidade(
+    comoTexto(oficial[COLUNA_MARCA]) ?? "",
+    comoTexto(oficial[COLUNA_UNIDADE_INTERNA]),
+    comoTexto(oficial[COLUNA_UNIDADE_EXTERNA]),
+    comoTexto(oficial[COLUNA_MODELO]) ?? "",
+  );
 }
 
 function extrairDados(oficial: ValoresOficiais): DadosDeclarados {
@@ -179,8 +189,20 @@ function finalizar(emConstrucao: AparelhoEmConstrucao): Aparelho {
   };
 }
 
+export interface OpcoesAgrupamento {
+  /**
+   * Remapeia a identidade de uma Linha antes de agrupar — usado para aplicar os
+   * Vínculos confirmados (o Aparelho novo passa a valer como o histórico). O
+   * padrão é a identidade sem remapeamento.
+   */
+  identidadeCanonica?: (chave: string) => string;
+}
+
 /** Agrupa Linhas da tabela em Aparelhos. Identidade exclui a tensão. */
-export function agruparAparelhos(linhas: LinhaDaTabela[]): Aparelho[] {
+export function agruparAparelhos(
+  linhas: LinhaDaTabela[],
+  { identidadeCanonica }: OpcoesAgrupamento = {},
+): Aparelho[] {
   const porChave = new Map<string, AparelhoEmConstrucao>();
 
   for (const { linha, oficial } of linhas) {
@@ -188,12 +210,13 @@ export function agruparAparelhos(linhas: LinhaDaTabela[]): Aparelho[] {
     const modelo = comoTexto(oficial[COLUNA_MODELO]) ?? "";
     const unidadeInterna = comoTexto(oficial[COLUNA_UNIDADE_INTERNA]);
     const unidadeExterna = comoTexto(oficial[COLUNA_UNIDADE_EXTERNA]);
-    const chave = chaveIdentidade(
+    const identidade = chaveIdentidade(
       marca,
       unidadeInterna,
       unidadeExterna,
       modelo,
     );
+    const chave = identidadeCanonica?.(identidade) ?? identidade;
 
     let aparelho = porChave.get(chave);
     if (aparelho === undefined) {

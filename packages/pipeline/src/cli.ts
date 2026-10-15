@@ -31,6 +31,8 @@ console.log(
   `Versão da tabela ${resultado.versao.hash.slice(0, 12)} — ${resultado.versao.contagemLinhas} Linhas da tabela`,
 );
 console.log(`${resultado.anomalias.length} Anomalias`);
+console.log(`${resultado.excecoes.length} Exceções manuais`);
+console.log(`${resultado.vinculos.length} Vínculos confirmados`);
 console.log(`${resultado.aparelhos.length} Aparelhos na base servida`);
 console.log(
   `Artefatos em ${resolve(argumento("--data-dir") ?? "data", "build")}`,

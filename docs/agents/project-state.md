@@ -8,7 +8,6 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 04 | Exceção manual e Vínculo confirmado | ready-for-agent | — |
 | 05 | Diff entre versões e Relatório de revisão | ready-for-agent | — |
 | 07 | API estática (arquivos JSON) | ready-for-agent | — |
 
@@ -28,8 +27,14 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **Checks:** Vitest 50/50, tsc --noEmit OK, biome check OK.
 
 ### 03 — Contrato, agrupamento em Aparelho e base servida (2026-10-14)
-
 - **Changed:** `packages/pipeline/src/{aparelho,group,validate,build,cli}.ts` (new `aparelho.ts` TypeBox contract, `group.ts` agrupamento, `validate.ts` invariantes; `build.ts` emite a base servida); `packages/pipeline/package.json` (+`@sinclair/typebox`, +`ajv`); root `package.json` build script fixed; tests `packages/pipeline/test/{aparelhos,group,validate}.test.ts` + `test/support.ts` (helper `dadosVazios`) + golden snapshots; fixture `test/fixtures/amostra-aparelhos.csv` (nova, com o cabeçalho real entre aspas e o mapeamento de `fluidoEspecificado` exercitado); `amostra{,-anomalias}.csv` (+`Número do Registro`); artefatos `data/build/{aparelhos.jsonl,aparelhos.json,schema.json}`; glossário `Variante` (`CONTEXT.md`) e ADR-0005.
 - **What works:** `pnpm build` agrupa as Linhas em Aparelhos (identidade = marca + unid. interna + unid. externa, ou Modelo quando as unidades não vêm separadas; tensão fora da identidade, bivolt = um só) e emite a base servida `aparelhos.jsonl` (canônico), `aparelhos.json` (espelho) e `schema.json` (derivado dos tipos TypeBox via `@sinclair/typebox`). Só entram Aparelhos com Dados declarados (2881 Linhas → **2460 Aparelhos**; o restante permanece em `registros.jsonl`). Dados declarados são carregados por variante (`variantes`, indexadas por tensão; capacidades divergentes viram variantes distintas, sem perda). Marcas distintas compartilhando um Registro INMETRO geram Aparelhos distintos. `validarBaseServida` (Ajv + invariantes: contrato, só com Dados declarados, proveniência presente — `linhas` e `registros` não-vazios —, identidade única) falha o build em violação. `pnpm build`, no root, agora resolve o `data/` do repo (script apontava para o cwd do package).
 - **Ticket:** #03 (local tracker: `03-contrato-agrupamento-aparelho-base-servida`)
 - **Checks:** Vitest 73/73, tsc --noEmit OK, biome check OK.
+
+### 04 — Exceção manual e Vínculo confirmado (2026-10-15)
+
+- **Changed:** `packages/pipeline/src/{excecoes,vinculos,jsonl,build,group,cli}.ts` (new `excecoes.ts` and `vinculos.ts`; `jsonl.ts` extrai `escreverJsonl`, antes duplicado em `build.ts`; `group.ts` expõe `idDeChave`/`chaveDaLinha` e ganha `OpcoesAgrupamento.identidadeCanonica`; `build.ts` lê e aplica a curadoria e publica cópias; `cli.ts` reporta contagens); testes `packages/pipeline/test/{excecoes,vinculos,alteracoes}.test.ts` + fixture `test/fixtures/amostra-alteracoes.csv` + golden snapshot; artefatos curados `data/{excecoes-manuais,vinculos-confirmados}.jsonl` (vazios) e cópias publicadas em `data/build/`.
+- **What works:** As duas formas sancionadas de alterar conteúdo além das regras de formato, como insumos curados aplicados no build. **Exceção manual** (`data/excecoes-manuais.jsonl`): correção de um campo de uma Linha com `motivo` + `fonte`, aplicada antes da normalização. O build recusa correção puramente de formato (mesmo valor após normalização), campo inexistente na Linha e exceção da Versão atual que não casa com nenhuma Linha; exceções de outra Versão são ignoradas (não quebram o build). **Vínculo confirmado** (`data/vinculos-confirmados.jsonl`): par sugerido (Aparelho novo ↔ identidade histórica) que só vale com `confirmadoPor`; um Vínculo sugerido nunca é aplicado sozinho. A identidade histórica (`anterior`) é a **canônica** — o Aparelho novo é absorvido mantendo o texto de modelo atual. O build recusa Vínculo cujo `anterior` ainda está presente nesta Versão (o Aparelho histórico ainda não é Ausente) ou cujo `novo` não existe; a remontagem de identidade é guardada contra ciclos. Ambas as fontes curadas são validadas e republicadas byte-a-byte em `data/build/`. `pnpm build` inalterado para os dados reais (0 Exceções, 0 Vínculos; sem regressão nos demais artefatos).
+- **Ticket:** #04 (local tracker: `04-excecao-manual-vinculo-confirmado`)
+- **Checks:** Vitest 102/102, tsc --noEmit OK, biome check OK.

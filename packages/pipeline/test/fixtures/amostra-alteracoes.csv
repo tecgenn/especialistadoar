@@ -1,0 +1,3 @@
+Marca,Modelo,Modelo Unidade Interna,Modelo Unidade Externa,Tipo,Tensão (V),Função,Rotação,Fluido Refrigerante,"Se outro fluido refrigerante, especificar",Carga do Fluido Refrigerante (g),Capacidade de Refrigeração Nominal (Btu/h),Capacidade a 35 °C e em Carga Total (W),Potência Consumida a 35 °C e em Carga Total (W),IDRS (Wh/Wh),Consumo Anual de Energia (kWh),Status do Registro,Número do Registro
+GREE,GREE-09X,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,3.50,818.0,Ativo,002/2021
+SAMSUNG,S-09,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,abc,818.0,Ativo,005/2021

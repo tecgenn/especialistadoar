@@ -8,13 +8,13 @@
 
 **Blocked by:** 03 — Contrato, agrupamento em Aparelho e base servida.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Toda Exceção manual registra motivo e fonte, e o build a aplica sobre a Linha da tabela.
-- [ ] Um Vínculo sugerido nunca é aplicado sem confirmação de uma pessoa.
-- [ ] Um Vínculo confirmado guarda o par sugerido e quem confirmou, e passa a valer como identidade.
-- [ ] Diferença apenas de formato é resolvida por regra, não por exceção.
-- [ ] Vitest cobre os dois artefatos, com snapshot golden.
+- [x] Toda Exceção manual registra motivo e fonte, e o build a aplica sobre a Linha da tabela.
+- [x] Um Vínculo sugerido nunca é aplicado sem confirmação de uma pessoa.
+- [x] Um Vínculo confirmado guarda o par sugerido e quem confirmou, e passa a valer como identidade.
+- [x] Diferença apenas de formato é resolvida por regra, não por exceção.
+- [x] Vitest cobre os dois artefatos, com snapshot golden.
 
 ## Origin
 
