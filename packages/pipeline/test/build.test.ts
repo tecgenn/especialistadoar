@@ -17,6 +17,9 @@ const fixturePath = fileURLToPath(
   new URL("./fixtures/amostra.csv", import.meta.url),
 );
 const fixtureBytes = readFileSync(fixturePath);
+const anomaliasFixturePath = fileURLToPath(
+  new URL("./fixtures/amostra-anomalias.csv", import.meta.url),
+);
 const exportVersadaPath = fileURLToPath(
   new URL("../../../data/raw/inmetro-export-2026-10-12.csv", import.meta.url),
 );
@@ -31,13 +34,29 @@ afterEach(() => {
   rmSync(dataDir, { recursive: true, force: true });
 });
 
-function build(): ReturnType<typeof runBuild> {
+function buildCom(source: string): ReturnType<typeof runBuild> {
   return runBuild({
     dataDir,
-    source: fixturePath,
+    source,
     origem: "teste",
     obtidoEm: "2026-10-12",
   });
+}
+
+function build(): ReturnType<typeof runBuild> {
+  return buildCom(fixturePath);
+}
+
+function lerRegistros(): Array<{
+  linha: number;
+  versao: string;
+  valores: Record<string, string>;
+  oficial: Record<string, unknown>;
+}> {
+  return readFileSync(join(dataDir, "build/registros.jsonl"), "utf8")
+    .trimEnd()
+    .split("\n")
+    .map((linha) => JSON.parse(linha));
 }
 
 function lerManifest(): Manifest {
@@ -144,5 +163,97 @@ describe("runBuild — exportação versionada real", () => {
     expect(linhas).toHaveLength(7474);
     expect(linhas[0].valores.Marca).toBe("Samsung");
     expect(linhas[7473]).toBeDefined();
+  });
+});
+
+describe("runBuild — normalização de formato", () => {
+  it("preserva o Valor original e grava o Valor oficial por Linha", () => {
+    build();
+    const linhas = lerRegistros();
+    expect(
+      linhas[0]?.valores["Capacidade de Refrigeração Nominal (Btu/h)"],
+    ).toBe("9000");
+    expect(
+      linhas[0]?.oficial["Capacidade de Refrigeração Nominal (Btu/h)"],
+    ).toBe(9000);
+    expect(
+      linhas[2]?.oficial["Se outro fluido refrigerante, especificar"],
+    ).toBe("R-32, mistura");
+    expect(linhas[1]?.oficial.Marca).toBe("LG");
+  });
+
+  it("devolve null para campo numérico sem dado", () => {
+    build();
+    const linhas = lerRegistros();
+    expect(
+      linhas[1]?.oficial["Capacidade de Refrigeração Nominal (Btu/h)"],
+    ).toBeNull();
+  });
+
+  it("parseia a Tensão bivolt como uma só, com duas voltagens", () => {
+    buildCom(anomaliasFixturePath);
+    const linhas = lerRegistros();
+    expect(linhas[0]?.valores["Tensão (V)"]).toBe(
+      "127-220 (monofásico/bifásico)",
+    );
+    expect(linhas[0]?.oficial["Tensão (V)"]).toEqual({
+      voltagens: [127, 220],
+      fases: ["monofásico", "bifásico"],
+    });
+  });
+});
+
+describe("runBuild — Anomalias", () => {
+  it("sinaliza Anomalias sem abortar o build", () => {
+    const { anomalias } = buildCom(anomaliasFixturePath);
+    expect(anomalias).toHaveLength(2);
+    expect(anomalias.map((anomalia) => anomalia.tipo)).toEqual([
+      "valor_multiplo",
+      "texto_em_campo_numerico",
+    ]);
+    expect(anomalias[0]).toMatchObject({
+      campo: "Carga do Fluido Refrigerante (g)",
+      valor: "640g / 600g / 690g",
+    });
+    expect(anomalias[1]).toMatchObject({
+      campo: "IDRS (Wh/Wh)",
+      valor: "abc",
+    });
+  });
+
+  it("não sinaliza unidade no texto nem campo vazio", () => {
+    const { anomalias } = buildCom(anomaliasFixturePath);
+    expect(anomalias.some((anomalia) => anomalia.valor === "290G")).toBe(false);
+  });
+});
+
+describe("runBuild — Anomalias na exportação versionada real", () => {
+  it("encontra as 15 Anomalias sem abortar o build", () => {
+    const { registros, anomalias } = runBuild({
+      dataDir,
+      source: exportVersadaPath,
+      origem: "teste",
+      obtidoEm: "2026-10-12",
+    });
+    expect(registros).toHaveLength(7474);
+    expect(anomalias).toHaveLength(15);
+    expect(
+      anomalias.every((anomalia) => anomalia.tipo === "valor_multiplo"),
+    ).toBe(true);
+    expect(
+      anomalias.some((anomalia) => anomalia.valor === "640g / 600g / 690g"),
+    ).toBe(true);
+  });
+
+  it("bate com o snapshot golden de anomalias.jsonl", () => {
+    runBuild({
+      dataDir,
+      source: exportVersadaPath,
+      origem: "teste",
+      obtidoEm: "2026-10-12",
+    });
+    expect(
+      readFileSync(join(dataDir, "build/anomalias.jsonl"), "utf8"),
+    ).toMatchSnapshot();
   });
 });

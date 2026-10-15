@@ -8,13 +8,13 @@
 
 **Blocked by:** 01 — Fundação e primeira fatia do pipeline (ingest + parse).
 
-**Status:** ready-for-agent
+**Status:** completed
 
-- [ ] O Valor original é preservado ponta a ponta; o Valor oficial só difere dele por regra de formato.
-- [ ] `º` e `°` padronizados por regra, não por exceção.
-- [ ] Tensão no formato `127-220` é parseada sem virar dois Aparelhos.
-- [ ] Campo numérico que vem com texto gera uma Anomalia em `anomalias.jsonl`, sem abortar o build.
-- [ ] Vitest cobre cada regra, com snapshot golden de `anomalias.jsonl`.
+- [x] O Valor original é preservado ponta a ponta; o Valor oficial só difere dele por regra de formato.
+- [x] `º` e `°` padronizados por regra, não por exceção.
+- [x] Tensão no formato `127-220` é parseada sem virar dois Aparelhos.
+- [x] Campo numérico que vem com texto gera uma Anomalia em `anomalias.jsonl`, sem abortar o build.
+- [x] Vitest cobre cada regra, com snapshot golden de `anomalias.jsonl`.
 
 ## Origin
 

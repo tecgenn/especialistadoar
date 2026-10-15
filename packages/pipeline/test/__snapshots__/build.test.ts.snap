@@ -1,9 +1,28 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`runBuild — Anomalias na exportação versionada real > bate com o snapshot golden de anomalias.jsonl 1`] = `
+"{"linha":892,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"640g / 600g / 690g","tipo":"valor_multiplo"}
+{"linha":893,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"1020g / 1000g","tipo":"valor_multiplo"}
+{"linha":956,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"500/480","tipo":"valor_multiplo"}
+{"linha":973,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"540g/580g/540g","tipo":"valor_multiplo"}
+{"linha":977,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"550g/440g","tipo":"valor_multiplo"}
+{"linha":978,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"460g/420g","tipo":"valor_multiplo"}
+{"linha":979,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"440g/400g","tipo":"valor_multiplo"}
+{"linha":980,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"440g/400g","tipo":"valor_multiplo"}
+{"linha":992,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"350/470","tipo":"valor_multiplo"}
+{"linha":2399,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"440g/400g","tipo":"valor_multiplo"}
+{"linha":2721,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"340 / 370","tipo":"valor_multiplo"}
+{"linha":5231,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"580g/750g","tipo":"valor_multiplo"}
+{"linha":5363,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"340 / 380","tipo":"valor_multiplo"}
+{"linha":7183,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"340 / 370","tipo":"valor_multiplo"}
+{"linha":7184,"versao":"ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407","campo":"Carga do Fluido Refrigerante (g)","valor":"620 / 590","tipo":"valor_multiplo"}
+"
+`;
+
 exports[`runBuild — registros.jsonl > bate com os snapshots golden de registros.jsonl e manifest.json 1`] = `
-"{"linha":1,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"Samsung","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 ºC e Carga Total (W)":"2637","Status do Registro":"Ativo"}}
-{"linha":2,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"","Capacidade a 29 ºC e Carga Total (W)":"","Status do Registro":"Inativo"}}
-{"linha":3,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"Midea","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":" R-32, mistura ","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 ºC e Carga Total (W)":"2637","Status do Registro":"Cancelado"}}
+"{"linha":1,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"Samsung","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 °C e Carga Total (W)":"2637","Status do Registro":"Ativo"},"oficial":{"Marca":"SAMSUNG","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":9000,"Capacidade a 29 °C e Carga Total (W)":2637,"Status do Registro":"Ativo"}}
+{"linha":2,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"","Capacidade a 29 °C e Carga Total (W)":"","Status do Registro":"Inativo"},"oficial":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":null,"Capacidade a 29 °C e Carga Total (W)":null,"Status do Registro":"Inativo"}}
+{"linha":3,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"Midea","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":" R-32, mistura ","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 °C e Carga Total (W)":"2637","Status do Registro":"Cancelado"},"oficial":{"Marca":"MIDEA","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":"R-32, mistura","Capacidade de Refrigeração Nominal (Btu/h)":9000,"Capacidade a 29 °C e Carga Total (W)":2637,"Status do Registro":"Cancelado"}}
 "
 `;
 

@@ -30,6 +30,7 @@ const resultado = runBuild({
 console.log(
   `Versão da tabela ${resultado.versao.hash.slice(0, 12)} — ${resultado.versao.contagemLinhas} Linhas da tabela`,
 );
+console.log(`${resultado.anomalias.length} Anomalias`);
 console.log(
   `Artefatos em ${resolve(argumento("--data-dir") ?? "data", "build")}`,
 );
