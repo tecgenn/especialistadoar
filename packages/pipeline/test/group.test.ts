@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { chaveIdentidade, temDadosDeclarados } from "../src/group.ts";
+import { dadosVazios } from "./support.ts";
 
 describe("chaveIdentidade", () => {
   it("usa marca + unid. interna + unid. externa quando as unidades vêm separadas", () => {
@@ -32,42 +33,12 @@ describe("chaveIdentidade", () => {
 
 describe("temDadosDeclarados", () => {
   it("é falso quando todos os campos são nulos", () => {
-    expect(
-      temDadosDeclarados({
-        capacidadeNominalBtu: null,
-        capacidadeNominalW: null,
-        potenciaEsperaW: null,
-        capacidade35TotalW: null,
-        potencia35TotalW: null,
-        capacidade35ParcialW: null,
-        potencia35ParcialW: null,
-        capacidade29ParcialW: null,
-        potencia29ParcialW: null,
-        capacidade29TotalW: null,
-        potencia29TotalW: null,
-        idrs: null,
-        consumoAnualKwh: null,
-      }),
-    ).toBe(false);
+    expect(temDadosDeclarados(dadosVazios())).toBe(false);
   });
 
   it("é verdadeiro quando algum campo tem valor", () => {
     expect(
-      temDadosDeclarados({
-        capacidadeNominalBtu: 9000,
-        capacidadeNominalW: null,
-        potenciaEsperaW: null,
-        capacidade35TotalW: null,
-        potencia35TotalW: null,
-        capacidade35ParcialW: null,
-        potencia35ParcialW: null,
-        capacidade29ParcialW: null,
-        potencia29ParcialW: null,
-        capacidade29TotalW: null,
-        potencia29TotalW: null,
-        idrs: null,
-        consumoAnualKwh: null,
-      }),
+      temDadosDeclarados(dadosVazios({ capacidadeNominalBtu: 9000 })),
     ).toBe(true);
   });
 });

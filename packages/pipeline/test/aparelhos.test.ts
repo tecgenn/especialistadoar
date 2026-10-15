@@ -97,6 +97,15 @@ describe("runBuild — base servida (aparelhos.jsonl)", () => {
     expect(kennedy?.unidadeExterna).toBe("K-09EXT");
   });
 
+  it("lê a coluna entre aspas com vírgula (fluido refrigerante especificado)", () => {
+    build(fixtureAparelhos);
+    const lg = lerAparelhosJsonl().find(
+      (aparelho) => aparelho.modelo === "LG-09",
+    );
+    expect(lg?.fluidoRefrigerante).toBe("Outro");
+    expect(lg?.fluidoEspecificado).toBe("R22");
+  });
+
   it("deixa o Aparelho sem Dados declarados como Linha do histórico", () => {
     build(fixtureAparelhos);
     const registros = readFileSync(

@@ -1,27 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Aparelho, DadosDeclarados } from "../src/aparelho.ts";
+import type { Aparelho } from "../src/aparelho.ts";
 import { validarBaseServida } from "../src/validate.ts";
-
-function dadosVazios(
-  overrides: Partial<DadosDeclarados> = {},
-): DadosDeclarados {
-  return {
-    capacidadeNominalBtu: null,
-    capacidadeNominalW: null,
-    potenciaEsperaW: null,
-    capacidade35TotalW: null,
-    potencia35TotalW: null,
-    capacidade35ParcialW: null,
-    potencia35ParcialW: null,
-    capacidade29ParcialW: null,
-    potencia29ParcialW: null,
-    capacidade29TotalW: null,
-    potencia29TotalW: null,
-    idrs: null,
-    consumoAnualKwh: null,
-    ...overrides,
-  };
-}
+import { dadosVazios } from "./support.ts";
 
 function aparelhoValido(overrides: Partial<Aparelho> = {}): Aparelho {
   return {
