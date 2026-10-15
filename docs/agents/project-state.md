@@ -8,7 +8,9 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 02 | Normalização de formato e Anomalias | completed | — |
+| 04 | Exceção manual e Vínculo confirmado | ready-for-agent | — |
+| 05 | Diff entre versões e Relatório de revisão | ready-for-agent | — |
+| 07 | API estática (arquivos JSON) | ready-for-agent | — |
 
 ## Completed
 
@@ -24,3 +26,10 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** Normalização preserva valores originais; padroniza `º→°`, casing, espaços, converte números (aceitando `,.`, removendo unidades), parseia tensão `127-220 (...)` como `{voltagens:[127,220], fases:[...]}` (não duplica Aparelho). Detecção de Anomalias: em campos numéricos com múltiplos números (ex. `640g / 600g / 690g`) gera `valor_multiplo`; texto sem número gera `texto_em_campo_numerico`. `runBuild` grava `anomalias.jsonl` junto com `registros.jsonl` e não aborta build.
 - **Ticket:** #02 (local tracker: `02-normalizacao-formato-anomalias`)
 - **Checks:** Vitest 50/50, tsc --noEmit OK, biome check OK.
+
+### 03 — Contrato, agrupamento em Aparelho e base servida (2026-10-14)
+
+- **Changed:** `packages/pipeline/src/{aparelho,group,validate,build,cli}.ts` (new `aparelho.ts` TypeBox contract, `group.ts` agrupamento, `validate.ts` invariantes; `build.ts` emite a base servida); `packages/pipeline/package.json` (+`@sinclair/typebox`, +`ajv`); root `package.json` build script fixed; tests `packages/pipeline/test/{aparelhos,group,validate}.test.ts` + golden snapshots; fixtures `test/fixtures/amostra-aparelhos.csv` (nova) and `amostra{,-anomalias}.csv` (+`Número do Registro`); artefatos `data/build/{aparelhos.jsonl,aparelhos.json,schema.json}`.
+- **What works:** `pnpm build` agrupa as Linhas em Aparelhos (identidade = marca + unid. interna + unid. externa, ou Modelo quando as unidades não vêm separadas; tensão fora da identidade, bivolt = um só) e emite a base servida `aparelhos.jsonl` (canônico), `aparelhos.json` (espelho) e `schema.json` (derivado dos tipos TypeBox via `@sinclair/typebox`). Só entram Aparelhos com Dados declarados (2881 Linhas → **2460 Aparelhos**; o restante permanece em `registros.jsonl`). Dados declarados são carregados por variante (`variantes`, indexadas por tensão; capacidades divergentes viram variantes distintas, sem perda). Marcas distintas compartilhando um Registro INMETRO geram Aparelhos distintos. `validarBaseServida` (Ajv + invariantes: contrato, só com Dados declarados, proveniência presente — `linhas` e `registros` não-vazios —, identidade única) falha o build em violação. `pnpm build`, no root, agora resolve o `data/` do repo (script apontava para o cwd do package).
+- **Ticket:** #03 (local tracker: `03-contrato-agrupamento-aparelho-base-servida`)
+- **Checks:** Vitest 72/72, tsc --noEmit OK, biome check OK.

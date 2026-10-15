@@ -1,0 +1,322 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://especialista-do-ar/schema/aparelho.json",
+  "type": "object",
+  "required": [
+    "id",
+    "marca",
+    "modelo",
+    "unidadeInterna",
+    "unidadeExterna",
+    "tipo",
+    "funcao",
+    "rotacao",
+    "fluidoRefrigerante",
+    "fluidoEspecificado",
+    "linhas",
+    "registros",
+    "variantes"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "marca": {
+      "type": "string"
+    },
+    "modelo": {
+      "type": "string"
+    },
+    "unidadeInterna": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unidadeExterna": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tipo": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "funcao": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rotacao": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fluidoRefrigerante": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "fluidoEspecificado": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "linhas": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
+    "registros": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "numero",
+          "status"
+        ],
+        "properties": {
+          "numero": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "variantes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "tensao",
+          "dados",
+          "linhas"
+        ],
+        "properties": {
+          "tensao": {
+            "anyOf": [
+              {
+                "type": "object",
+                "required": [
+                  "voltagens",
+                  "fases"
+                ],
+                "properties": {
+                  "voltagens": {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    }
+                  },
+                  "fases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dados": {
+            "type": "object",
+            "required": [
+              "capacidadeNominalBtu",
+              "capacidadeNominalW",
+              "potenciaEsperaW",
+              "capacidade35TotalW",
+              "potencia35TotalW",
+              "capacidade35ParcialW",
+              "potencia35ParcialW",
+              "capacidade29ParcialW",
+              "potencia29ParcialW",
+              "capacidade29TotalW",
+              "potencia29TotalW",
+              "idrs",
+              "consumoAnualKwh"
+            ],
+            "properties": {
+              "capacidadeNominalBtu": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "capacidadeNominalW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "potenciaEsperaW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "capacidade35TotalW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "potencia35TotalW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "capacidade35ParcialW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "potencia35ParcialW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "capacidade29ParcialW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "potencia29ParcialW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "capacidade29TotalW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "potencia29TotalW": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "idrs": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "consumoAnualKwh": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "linhas": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    }
+  }
+}

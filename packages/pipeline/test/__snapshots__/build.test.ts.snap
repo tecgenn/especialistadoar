@@ -20,18 +20,18 @@ exports[`runBuild — Anomalias na exportação versionada real > bate com o sna
 `;
 
 exports[`runBuild — registros.jsonl > bate com os snapshots golden de registros.jsonl e manifest.json 1`] = `
-"{"linha":1,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"Samsung","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 °C e Carga Total (W)":"2637","Status do Registro":"Ativo"},"oficial":{"Marca":"SAMSUNG","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":9000,"Capacidade a 29 °C e Carga Total (W)":2637,"Status do Registro":"Ativo"}}
-{"linha":2,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"","Capacidade a 29 °C e Carga Total (W)":"","Status do Registro":"Inativo"},"oficial":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":null,"Capacidade a 29 °C e Carga Total (W)":null,"Status do Registro":"Inativo"}}
-{"linha":3,"versao":"e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152","valores":{"Marca":"Midea","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":" R-32, mistura ","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 °C e Carga Total (W)":"2637","Status do Registro":"Cancelado"},"oficial":{"Marca":"MIDEA","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":"R-32, mistura","Capacidade de Refrigeração Nominal (Btu/h)":9000,"Capacidade a 29 °C e Carga Total (W)":2637,"Status do Registro":"Cancelado"}}
+"{"linha":1,"versao":"3177d28c6a3958f470ed88b60866cc53e7e6ea80ccb7d071805a0fd24c903b55","valores":{"Marca":"Samsung","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 °C e Carga Total (W)":"2637","Status do Registro":"Ativo","Número do Registro":"001/2020"},"oficial":{"Marca":"SAMSUNG","Modelo":"AR09MV","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":9000,"Capacidade a 29 °C e Carga Total (W)":2637,"Status do Registro":"Ativo","Número do Registro":"001/2020"}}
+{"linha":2,"versao":"3177d28c6a3958f470ed88b60866cc53e7e6ea80ccb7d071805a0fd24c903b55","valores":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":"","Capacidade a 29 °C e Carga Total (W)":"","Status do Registro":"Inativo","Número do Registro":"002/2021"},"oficial":{"Marca":"LG","Modelo":"S4-Q09JA3QA","Se outro fluido refrigerante, especificar":"","Capacidade de Refrigeração Nominal (Btu/h)":null,"Capacidade a 29 °C e Carga Total (W)":null,"Status do Registro":"Inativo","Número do Registro":"002/2021"}}
+{"linha":3,"versao":"3177d28c6a3958f470ed88b60866cc53e7e6ea80ccb7d071805a0fd24c903b55","valores":{"Marca":"Midea","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":" R-32, mistura ","Capacidade de Refrigeração Nominal (Btu/h)":"9000","Capacidade a 29 °C e Carga Total (W)":"2637","Status do Registro":"Cancelado","Número do Registro":"003/2022"},"oficial":{"Marca":"MIDEA","Modelo":"MSG-09HR","Se outro fluido refrigerante, especificar":"R-32, mistura","Capacidade de Refrigeração Nominal (Btu/h)":9000,"Capacidade a 29 °C e Carga Total (W)":2637,"Status do Registro":"Cancelado","Número do Registro":"003/2022"}}
 "
 `;
 
 exports[`runBuild — registros.jsonl > bate com os snapshots golden de registros.jsonl e manifest.json 2`] = `
 "{
-  "versaoAtual": "e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152",
+  "versaoAtual": "3177d28c6a3958f470ed88b60866cc53e7e6ea80ccb7d071805a0fd24c903b55",
   "versoes": [
     {
-      "hash": "e9d23233b9ad0cf519afe2ec1d0f6e0820398dae284073a15447d280d3f77152",
+      "hash": "3177d28c6a3958f470ed88b60866cc53e7e6ea80ccb7d071805a0fd24c903b55",
       "arquivo": "raw/inmetro-export-2026-10-12.csv",
       "obtidoEm": "2026-10-12",
       "origem": "teste",

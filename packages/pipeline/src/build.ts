@@ -7,6 +7,12 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { type Anomalia, detectarAnomalias } from "./anomalias.ts";
+import { type Aparelho, SCHEMA_APARELHO } from "./aparelho.ts";
+import {
+  agruparAparelhos,
+  aparelhoTemDadosDeclarados,
+  type LinhaDaTabela,
+} from "./group.ts";
 import {
   escreverManifest,
   lerManifest,
@@ -15,15 +21,9 @@ import {
   registrarVersao,
   type VersaoDaTabela,
 } from "./ingest.ts";
-import { normalizarValores, type ValoresOficiais } from "./normalize.ts";
-import { parseLinhas, type ValoresDaLinha } from "./parse.ts";
-
-export interface LinhaDaTabela {
-  linha: number;
-  versao: string;
-  valores: ValoresDaLinha;
-  oficial: ValoresOficiais;
-}
+import { normalizarValores } from "./normalize.ts";
+import { parseLinhas } from "./parse.ts";
+import { validarBaseServida } from "./validate.ts";
 
 export interface BuildOptions {
   dataDir: string;
@@ -37,6 +37,7 @@ export interface BuildResult {
   manifest: Manifest;
   registros: LinhaDaTabela[];
   anomalias: Anomalia[];
+  aparelhos: Aparelho[];
 }
 
 function escreverJsonl(caminho: string, registros: unknown[]): void {
@@ -44,6 +45,10 @@ function escreverJsonl(caminho: string, registros: unknown[]): void {
     .map((registro) => JSON.stringify(registro))
     .join("\n");
   writeFileSync(caminho, `${jsonl}\n`);
+}
+
+function escreverJson(caminho: string, valor: unknown): void {
+  writeFileSync(caminho, `${JSON.stringify(valor, null, 2)}\n`);
 }
 
 export const ORIGEM_PADRAO = "INMETRO — exportação de produtos";
@@ -118,12 +123,20 @@ export function runBuild(options: BuildOptions): BuildResult {
     );
   });
 
+  const aparelhos = agruparAparelhos(registros).filter(
+    aparelhoTemDadosDeclarados,
+  );
+  validarBaseServida(aparelhos);
+
   const buildDir = join(dataDir, "build");
   mkdirSync(buildDir, { recursive: true });
   escreverJsonl(join(buildDir, "registros.jsonl"), registros);
   escreverJsonl(join(buildDir, "anomalias.jsonl"), anomalias);
+  escreverJsonl(join(buildDir, "aparelhos.jsonl"), aparelhos);
+  escreverJson(join(buildDir, "aparelhos.json"), aparelhos);
+  escreverJson(join(buildDir, "schema.json"), SCHEMA_APARELHO);
 
   escreverManifest(dataDir, manifest);
 
-  return { versao, manifest, registros, anomalias };
+  return { versao, manifest, registros, anomalias, aparelhos };
 }

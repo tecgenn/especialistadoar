@@ -10,16 +10,16 @@
 
 **Blocked by:** 02 — Normalização de formato e Anomalias.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `schema.json` é derivado dos tipos TypeBox, não mantido à mão.
-- [ ] Cada Aparelho aponta para as Linhas da tabela e Registros INMETRO de origem (proveniência presente).
-- [ ] Marcas compartilhando um Registro INMETRO geram Aparelhos distintos.
-- [ ] Um Aparelho bivolt é um só.
-- [ ] Aparelho sem Dados declarados existe em `registros.jsonl`, mas não na base servida.
-- [ ] `aparelhos.json` é espelho fiel de `aparelhos.jsonl`.
-- [ ] Violação de invariante falha o build.
-- [ ] Vitest cobre o agrupamento e a validação, com snapshot golden dos dois artefatos.
+- [x] `schema.json` é derivado dos tipos TypeBox, não mantido à mão.
+- [x] Cada Aparelho aponta para as Linhas da tabela e Registros INMETRO de origem (proveniência presente).
+- [x] Marcas compartilhando um Registro INMETRO geram Aparelhos distintos.
+- [x] Um Aparelho bivolt é um só.
+- [x] Aparelho sem Dados declarados existe em `registros.jsonl`, mas não na base servida.
+- [x] `aparelhos.json` é espelho fiel de `aparelhos.jsonl`.
+- [x] Violação de invariante falha o build.
+- [x] Vitest cobre o agrupamento e a validação, com snapshot golden dos dois artefatos.
 
 ## Origin
 

@@ -10,6 +10,8 @@
     "build": "node src/cli.ts build"
   },
   "dependencies": {
+    "@sinclair/typebox": "^0.34.52",
+    "ajv": "^8.20.0",
     "csv-parse": "^6.1.0"
   }
 }

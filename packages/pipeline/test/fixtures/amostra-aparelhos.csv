@@ -1,0 +1,7 @@
+Marca,Modelo,Modelo Unidade Interna,Modelo Unidade Externa,Tipo,Tensão (V),Função,Rotação,Fluido Refrigerante,Se outro fluido refrigerante especificar,Carga do Fluido Refrigerante (g),Capacidade de Refrigeração Nominal (Btu/h),Capacidade a 35 °C e em Carga Total (W),Potência Consumida a 35 °C e em Carga Total (W),IDRS (Wh/Wh),Consumo Anual de Energia (kWh),Status do Registro,Número do Registro
+gree,GREE-09,,,Split Hi-Wall,127 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,3.50,818.0,Ativo,002/2021
+GREE,GREE-09,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,3.50,818.0,Ativo,002/2021
+KENNEDY,K-09INT - K-09EXT,K-09INT,K-09EXT,Janela,220 (monofásico),Frio,Velocidade Fixa,R410a,,500,9000,2637,700,3.50,818.0,Ativo,002/2021
+LG,LG-EMPTY,,,Split Hi-Wall,,,,,,,,,,,,Inativo,003/2022
+LG,LG-09,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,3.50,818.0,Ativo,003/2022
+GREE,GREE-09,,,Split Hi-Wall,127 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,3.50,818.0,Ativo,004/2021

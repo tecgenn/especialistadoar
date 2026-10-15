@@ -9,6 +9,7 @@ exports[`parseLinhas — Linhas da tabela > bate com o snapshot golden da amostr
     "Capacidade de Refrigeração Nominal (Btu/h)",
     "Capacidade a 29 ºC e Carga Total (W)",
     "Status do Registro",
+    "Número do Registro",
   ],
   "linhas": [
     {
@@ -16,6 +17,7 @@ exports[`parseLinhas — Linhas da tabela > bate com o snapshot golden da amostr
       "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
       "Marca": "Samsung",
       "Modelo": "AR09MV",
+      "Número do Registro": "001/2020",
       "Se outro fluido refrigerante, especificar": "",
       "Status do Registro": "Ativo",
     },
@@ -24,6 +26,7 @@ exports[`parseLinhas — Linhas da tabela > bate com o snapshot golden da amostr
       "Capacidade de Refrigeração Nominal (Btu/h)": "",
       "Marca": "LG",
       "Modelo": "S4-Q09JA3QA",
+      "Número do Registro": "002/2021",
       "Se outro fluido refrigerante, especificar": "",
       "Status do Registro": "Inativo",
     },
@@ -32,6 +35,7 @@ exports[`parseLinhas — Linhas da tabela > bate com o snapshot golden da amostr
       "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
       "Marca": "Midea",
       "Modelo": "MSG-09HR",
+      "Número do Registro": "003/2022",
       "Se outro fluido refrigerante, especificar": " R-32, mistura ",
       "Status do Registro": "Cancelado",
     },

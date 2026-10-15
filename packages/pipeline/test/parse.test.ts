@@ -54,6 +54,7 @@ describe("parseLinhas — Linhas da tabela", () => {
       "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
       "Capacidade a 29 ºC e Carga Total (W)": "2637",
       "Status do Registro": "Ativo",
+      "Número do Registro": "001/2020",
     });
   });
 

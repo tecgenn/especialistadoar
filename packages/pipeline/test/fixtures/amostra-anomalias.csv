@@ -1,4 +1,4 @@
-Marca,Modelo,Tensão (V),Carga do Fluido Refrigerante (g),IDRS (Wh/Wh),Consumo Anual de Energia (kWh),Status do Registro
-Samsung,AR09MV,127-220 (monofásico/bifásico),290G,3.50,818.0,Ativo
-samsung,AR09MV,220 (monofásico),640g / 600g / 690g,2.90,2240.0,Ativo
-LG,S4-Q09JA3QA,220 (trifásico),500,abc,262.6,Cancelado
+Marca,Modelo,Tensão (V),Carga do Fluido Refrigerante (g),IDRS (Wh/Wh),Consumo Anual de Energia (kWh),Status do Registro,Número do Registro
+Samsung,AR09MV,127-220 (monofásico/bifásico),290G,3.50,818.0,Ativo,001/2020
+samsung,AR09MV,220 (monofásico),640g / 600g / 690g,2.90,2240.0,Ativo,001/2020
+LG,S4-Q09JA3QA,220 (trifásico),500,abc,262.6,Cancelado,002/2021

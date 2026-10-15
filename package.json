@@ -7,7 +7,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "pnpm --filter @especialista-do-ar/pipeline build",
+    "build": "node packages/pipeline/src/cli.ts build --data-dir data",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
