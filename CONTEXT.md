@@ -20,6 +20,10 @@ _Avoid_: Processo, inscrição
 Um kit de ar-condicionado identificado por marca, modelo da unidade interna e modelo da unidade externa — usando o campo Modelo quando as unidades não vêm separadas. Aponta para uma ou mais Linhas da tabela e Registros INMETRO. Cada marca é um Aparelho distinto, mesmo quando várias marcas compartilham o mesmo Registro. Tensão não faz parte da identidade: um Aparelho bivolt é um só, com mais de uma tensão.
 _Avoid_: Produto, modelo (ambíguo: pode designar só a unidade interna)
 
+**Variante**:
+Uma combinação de tensão e Dados declarados de um Aparelho, com as Linhas da tabela que a produziram. Como a tensão não faz parte da identidade, um Aparelho bivolt tem mais de uma Variante. Capacidades divergentes sob a mesma tensão viram Variantes distintas — nada é descartado em silêncio.
+_Avoid_: Versão (colide com Versão da tabela), configuração
+
 **Aparelho sem dados declarados**:
 Um Aparelho presente na tabela que não traz Dados declarados. É um estado, não um tipo distinto de Aparelho: a base servida só descarta o que não tem Dados declarados, mas o Aparelho continua existindo para o histórico.
 _Avoid_: Produto incompleto, registro vazio
