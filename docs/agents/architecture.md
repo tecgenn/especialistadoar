@@ -45,6 +45,10 @@ Caveats medidos do CSV (tratados pelo parser, não à mão):
 ## Camadas
 
 ```
+.github/                               # CI (build+testes) e publicação (Cloudflare Pages)
+  workflows/{ci,publish}.yml
+  actions/setup/action.yml             # composite: pnpm + Node 24 + install
+  branch-protection.json               # regra de branch de main (reaplicável)
 data/
   raw/inmetro-export-YYYY-MM-DD.csv   # imutável, versionado + sha256 no manifest
   excecoes-manuais.jsonl              # CAMADA CURADA: correções à mão (motivo + fonte)
@@ -150,6 +154,9 @@ Ver ADR-0003.
 
 - O **dataset embarcado** é canônico: os artefatos JSONL/JSON são a fonte de verdade
   e o site consome uma cópia em build-time.
+- **Publicação (fase 1):** o merge em `main` publica `data/build/` como arquivos
+  estáticos no **Cloudflare Pages** (é a parte estática da API, sem Worker nem
+  cota). Setup manual em `docs/agents/ci-cd-setup.md`; ver ADR-0004.
 - **D1 (SQLite)** é só plano B, derivado do JSONL — nunca fonte de verdade.
 - **R2** guarda blobs grandes se os assets estáticos passarem do bundle do site.
 - **Caveats do free tier:** o plano gratuito do Workers tem tetos de requisição/CPU e
@@ -167,10 +174,15 @@ Ver ADR-0003.
 - **Lint/format:** Biome.
 - **Site:** Astro + uma ilha React; Pagefind/MiniSearch atrás de um módulo de
   consulta compartilhado.
-- **CI/CD:** GitHub Actions, matriz Windows + Linux (Windows não-bloqueante em repos
-  privados — minutos de runner custam 2×). Publicação via PR.
-
-Ver ADR-0002 e ADR-0004.
+- **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
+  Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
+  repositório é público, então minutos de runner não são cobrados (a regra foi
+  mantida por decisão do ticket #06). O CI roda lint, typecheck, build
+  (validação Ajv + invariantes) e Vitest, e inclui um gate de reprodutibilidade
+  que falha se `data/build`/`reports` divergirem de um `pnpm build` novo. A
+  publicação é via PR (merge = deploy de `data/build` no Cloudflare Pages). O que
+  precisa existir **fora do git** (secrets/variables, proteção de branch, projeto
+  Pages) está em `docs/agents/ci-cd-setup.md`. Ver ADR-0002 e ADR-0004.
 
 ## Fora de escopo (MVP)
 

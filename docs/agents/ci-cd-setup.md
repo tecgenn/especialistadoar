@@ -1,0 +1,202 @@
+# CI/CD e publicação — setup manual (GitHub + Cloudflare)
+
+Este é o runbook das ações que **não vivem dentro do repositório**: são
+configurações feitas à mão no GitHub e na Cloudflare. O código que automatiza o
+CI/CD está versionado em `.github/`; esta página descreve tudo o que precisa
+existir **fora do git** para que ele funcione de ponta a ponta.
+
+## Para agentes
+
+- **O que este arquivo representa:** a lista autoritativa e re-executável de todo
+  passo **manual** exigido pelo pipeline de CI e pela publicação. Se uma ação não
+  acontece sozinha ao rodar o `ci.yml`/`publish.yml`, ela pertence aqui.
+- **Quando ler:** ao trabalhar em CI/CD, publicação, credenciais/segredos, deploy,
+  proteção de branch, ou ao integrar um serviço externo novo (Cloudflare, DNS,
+  domínio, etc.).
+- **Quando atualizar:** no **mesmo PR/commit** que introduzir ou alterar qualquer
+  item manual — novo segredo, nova variable, mudança de permissão de token, novo
+  serviço de deploy, mudança na proteção de branch — atualize os comandos/passos e
+  acrescente uma linha em "Registro de mudanças".
+- **Regras de escrita:** nunca escreva o **valor** de um segredo aqui (só o nome);
+  todo passo deve trazer o comando exato ou o caminho exato na UI; configurações
+  do repositório (proteção de branch) ficam em `.github/branch-protection.json`,
+  versionadas.
+- **Definição de pronto:** uma pessoa com acesso admin ao repositório e à conta
+  Cloudflare consegue ir do zero a um deploy verde seguindo só esta página, sem
+  abrir o código-fonte.
+
+## O que roda sozinho (contexto)
+
+| Workflow | Dispara em | O que faz |
+|---|---|---|
+| `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
+| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda e publica `data/build` no Cloudflare Pages; pula com aviso se as credenciais não existirem. |
+| `.github/actions/setup/action.yml` | (composite usado pelos dois) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
+
+O **merge em `main` é a publicação** (ADR-0004). Nenhum caminho publica sem PR.
+
+## Pré-requisitos
+
+- `gh` autenticado com os escopos `repo` e `workflow`:
+  `gh auth login` e depois `gh auth status`.
+- Node 24 e pnpm instalados localmente (`node -v`, `pnpm -v`) — usado só para o
+  `wrangler`.
+- Acesso **admin** ao repositório `tecgenn/especialistadoar`.
+- Conta na Cloudflare com acesso ao dashboard.
+
+---
+
+## Parte 1 — GitHub
+
+### 1.1 Segredos e variáveis do repositório
+
+Nomes consumidos pelo `publish.yml`:
+
+| Nome | Tipo | Obrigatório | Uso |
+|---|---|---|---|
+| `CLOUDFLARE_API_TOKEN` | secret | sim (para publicar) | autentica o `wrangler` |
+| `CLOUDFLARE_ACCOUNT_ID` | secret | sim (para publicar) | identifica a conta Cloudflare |
+| `CLOUDFLARE_PAGES_PROJECT` | variable | não (default `especialista-do-ar`) | nome do projeto Pages |
+
+Grave cada um (o comando abre um prompt; cole o valor e confirme — nunca passe o
+valor na linha de comando, ele iria para o histórico do shell):
+
+```bash
+gh secret set CLOUDFLARE_API_TOKEN
+gh secret set CLOUDFLARE_ACCOUNT_ID
+gh variable set CLOUDFLARE_PAGES_PROJECT --body especialista-do-ar
+```
+
+Confira os **nomes** (nunca os valores):
+
+```bash
+gh secret list
+gh variable list
+```
+
+> Sem os segredos o **CI continua verde**; só o **deploy** é pulado com aviso. Isso
+> é intencional, para não travar merges antes de a Cloudflare existir.
+
+Pela UI o equivalente é **Settings → Secrets and variables → Actions**.
+
+### 1.2 Proteção de branch em `main`
+
+A regra que garante "nenhum caminho publica sem PR" é uma configuração do
+repositório, não um arquivo de workflow. Ela está versionada em
+`.github/branch-protection.json` para poder ser reaplicada e auditada. Para
+aplicar:
+
+```bash
+gh api -X PUT repos/tecgenn/especialistadoar/branches/main/protection \
+  --input .github/branch-protection.json
+```
+
+Para ler o estado atual:
+
+```bash
+gh api repos/tecgenn/especialistadoar/branches/main/protection
+```
+
+O que o `branch-protection.json` exige:
+
+- **Pull Request** antes do merge (0 aprovações obrigatórias — trabalhando sozinho,
+  o PR não trava por falta de revisor).
+- O check **`ci (ubuntu-latest)`** verde. O nome de um check é
+  `<nome do job> (<valor da matrix>)`; se você renomear o job `ci` no `ci.yml`,
+  **atualize este JSON no mesmo PR**.
+- Sem force-push e sem deleção da branch.
+- `enforce_admins: false` — o dono consegue contornar em emergência. Para impedir
+  até o admin de pular, mude para `true`.
+
+Pela UI: **Settings → Branches → Branch protection rules → `main`**.
+
+---
+
+## Parte 2 — Cloudflare (Pages)
+
+### 2.1 Conta e login
+
+Crie/entre em <https://dash.cloudflare.com> e, localmente:
+
+```bash
+npx wrangler login     # abre o navegador (OAuth)
+npx wrangler whoami    # mostra o Account ID e o e-mail da conta
+```
+
+### 2.2 Account ID
+
+Copie o `Account ID` mostrado pelo `whoami` (ou, no dashboard, na barra lateral da
+conta / em **Workers & Pages → Overview**). É o valor de `CLOUDFLARE_ACCOUNT_ID`.
+
+### 2.3 Criar o projeto Pages
+
+O `wrangler pages deploy` **não cria** o projeto automaticamente — crie-o uma vez:
+
+```bash
+npx wrangler pages project create especialista-do-ar --production-branch=main
+```
+
+O nome `especialista-do-ar` deve ser idêntico ao `CLOUDFLARE_PAGES_PROJECT`
+(variable) e ao `--project-name` usado no `publish.yml`. Pela UI:
+**Workers & Pages → Create → Pages → Direct Upload**.
+
+### 2.4 Criar o API token
+
+Dashboard → **My Profile → API Tokens → Create Token → Create Custom Token**:
+
+- **Permissions:** `Account` · `Cloudflare Pages` · `Edit`
+- **Account Resources:** inclua a conta usada acima
+- (Opcional) **Permissions:** `Account` · `Account Settings` · `Read` — só se você
+  usar `wrangler whoami` no CI.
+- Crie e **copie o token** (ele aparece uma única vez). É o valor de
+  `CLOUDFLARE_API_TOKEN`.
+
+Depois, volte à seção 1.1 e grave o token + o Account ID como segredos.
+
+> Se os termos de uso comercial do plano gratuito da Cloudflare forem confirmados
+> (pergunta aberta em `docs/prd.md`), registre a decisão aqui.
+
+### 2.5 (Opcional) Domínio próprio
+
+**Pages → projeto → Custom domains → Set up a custom domain** e siga as
+instruções de DNS. Registre aqui o domínio escolhido quando houver.
+
+---
+
+## Parte 3 — Primeiro deploy e verificação
+
+1. Abra um PR (qualquer mudança) e confirme que o CI fica verde e que o Relatório
+   de revisão aparece como comentário no PR.
+2. Faça o merge. O workflow **Publish** roda: build → gate de reprodutibilidade →
+   `pages deploy`.
+3. Confirme a publicação:
+
+   ```bash
+   gh run list --workflow=Publish --limit 5
+   gh run watch
+   ```
+
+   E abra a URL do projeto (ex.: `https://especialista-do-ar.pages.dev`).
+4. Deve existir `https://especialista-do-ar.pages.dev/aparelhos.json` — o artefato
+   publicado é o diretório `data/build/`.
+
+---
+
+## Troubleshooting
+
+| Sintoma | Causa provável | Ação |
+|---|---|---|
+| Publish verde mas "deploy ignorado" | segredos ausentes | gravar `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` (§1.1) |
+| `Project not found` no deploy | projeto Pages ainda não existe | rodar §2.3 |
+| `Authentication error` no deploy | token sem `Cloudflare Pages: Edit` ou conta errada | recriar o token (§2.4) |
+| PR bloqueado por um check que não existe | o nome do job `ci` mudou | ajustar `.github/branch-protection.json` (§1.2) |
+| Gate "Published artifacts match a fresh build" vermelho | `data/build`/`reports` desatualizados | rodar `pnpm build` e commitar |
+| Deploy publica conteúdo antigo | merge não passou pelo PR / branch errada | revisar a proteção de branch (§1.2) |
+
+---
+
+## Registro de mudanças
+
+| Data | Mudança | Quem |
+|---|---|---|
+| 2026-10-15 | Criação. GitHub Actions (`ci.yml` + `publish.yml`), proteção de branch, Cloudflare Pages. | ticket #06 |

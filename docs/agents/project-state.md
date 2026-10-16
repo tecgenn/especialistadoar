@@ -8,7 +8,6 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 06 | CI e publicação via PR | ready-for-agent | — |
 | 07 | API estática (arquivos JSON) | ready-for-agent | — |
 
 ## Completed
@@ -45,3 +44,10 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** O build compara a Versão da tabela atual com a **Versão anterior** (a entrada imediatamente anterior no `manifest.json`) e classifica Aparelhos novos, alterados, Ausentes, sem dados declarados, Anomalias novas e Vínculos sugeridos, gravando `reports/revisao-<data>.md`. A correlação entre Versões usa a identidade canônica (`aparelho.id`), então um Vínculo confirmado não faz o par aparecer como novo + Ausente. Aparelhos e Anomalias da Versão anterior são re-derivados do snapshot raw imutável, tornando o Relatório puramente derivado e re-executável. Ausência nunca presume causa; perder Dados declarados vira "Aparelho sem dados declarados" (não Ausente) com o histórico; a primeira Versão rende um relatório coerente ("Primeira Versão da tabela"). `pnpm build` nos dados reais gera `reports/revisao-2026-10-12.md` sem alterar `data/build`.
 - **Ticket:** #05 (local tracker: `05-diff-versoes-relatorio-revisao`)
 - **Checks:** Vitest 110/110, tsc --noEmit OK, biome check OK.
+
+### 06 — CI e publicação via PR (2026-10-15)
+
+- **Changed:** `.github/workflows/ci.yml`, `.github/workflows/publish.yml`, `.github/actions/setup/action.yml` (novo composite `Setup`: pnpm lê a versão de `packageManager`, Node 24, `pnpm install --frozen-lockfile`), `.github/branch-protection.json` (regra de branch versionada); `docs/agents/ci-cd-setup.md` (novo runbook do setup manual); `AGENTS.md` (nova seção CI/CD e publicação + doc no session start); `docs/agents/architecture.md` (CI/CD e distribuição atualizados); nota datada em `docs/adr/0002-*`; proteção de branch em `main` (settings do repo, não versionada).
+- **What works:** O portão de publicação. **CI** roda em `pull_request` e `push` para `main`, em matrix Linux + Windows (Linux é a referência; Windows não-bloqueante) executando lint, typecheck, `build` (que inclui a validação Ajv + invariantes) e Vitest. Um passo `Published artifacts match a fresh build` falha se `data/build` ou `reports` divergirem de um build recém-rodado (detecta arquivos modificados *e* não rastreados via `git status --porcelain`), então a base publicada é sempre reproduzível a partir do raw + curadoria. O Relatório de revisão é anexado automaticamente ao PR como comentário (job `report`, via `actions/github-script`, comentário atualizado no lugar graças a um marcador; pulado em PRs de fork). **Publish** roda no merge em `main` e faz `cloudflare/wrangler-action@v4 pages deploy data/build`; sem `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` o deploy é ignorado com aviso (não quebra o merge), e o nome do projeto vem da var `CLOUDFLARE_PAGES_PROJECT` (default `especialista-do-ar`). Nenhum caminho de publicação dispensa o PR: `workflow_dispatch` foi removido do publish e a proteção de branch em `main` exige Pull Request + o check `ci (ubuntu-latest)`. Ações fixadas nos majors atuais (checkout v7, setup-node v7, upload v7, download v8, github-script v9, pnpm/action-setup v6, wrangler-action v4).
+- **Ticket:** #06 (local tracker: `06-ci-publicacao-via-pr`)
+- **Checks:** YAML válido (js-yaml); `pnpm lint`, `pnpm typecheck`, `pnpm test` (110/110) OK; `pnpm build` reproduz `data/build`+`reports` byte a byte (`git status` limpo).
