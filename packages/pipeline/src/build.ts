@@ -29,6 +29,7 @@ import {
   PADRAO_NOME_RAW,
   registrarVersao,
   type VersaoDaTabela,
+  versaoAtualDo,
 } from "./ingest.ts";
 import { escreverJsonl } from "./jsonl.ts";
 import { normalizarValores } from "./normalize.ts";
@@ -167,7 +168,7 @@ export function runBuild(options: BuildOptions): BuildResult {
     manifest = registro.manifest;
     versao = registro.versao;
   } else {
-    const atual = manifest.versoes.find((v) => v.hash === manifest.versaoAtual);
+    const atual = versaoAtualDo(manifest);
     if (atual !== undefined) {
       versao = atual;
     } else {
