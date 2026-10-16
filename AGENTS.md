@@ -34,5 +34,7 @@ Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/ag
 - **Repo convention:** `data/build` and `reports` are *committed* artifacts and must
   match a fresh `pnpm build` — CI fails otherwise, so a change to the raw snapshot or
   the curated layer must be committed together with the regenerated artifacts.
+- **Before pushing:** run `pnpm build && pnpm lint && pnpm typecheck && pnpm test`
+  and commit the regenerated artifacts. See the README.
 - **Publication only via PR:** the merge into `main` is the deploy (ADR-0004). No
   workflow may publish without passing the PR gate.
