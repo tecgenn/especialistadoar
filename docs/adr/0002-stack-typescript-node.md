@@ -25,3 +25,10 @@ testamos numa matrix de CI.
 - Minutos de runner Windows custam 2× em repo privado: o Windows roda em PR e é
   não-bloqueante no push; o Linux é a referência.
 - Node 24 executa TS diretamente para o CLI; `tsc` fica para typecheck.
+
+## Notas
+
+- **2026-10-15:** o repositório é **público**, então minutos de runner no GitHub
+  Actions não são cobrados — a premissa de custo 2× do Windows (acima) deixou de
+  valer. A regra de Windows não-bloqueante foi mantida por decisão do ticket #06.
+  O setup manual de CI/publicação está em `docs/agents/ci-cd-setup.md`.
