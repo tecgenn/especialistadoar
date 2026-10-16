@@ -49,7 +49,7 @@ Uma exportação da lista oficial de produtos do INMETRO (o CSV), identificada p
 _Avoid_: Edição, atualização
 
 **Vínculo sugerido**:
-Indicação de que um Aparelho novo pode ser, na verdade, um Aparelho Ausente com o texto do modelo corrigido (mesma marca, registro, capacidade, IDRS, consumo e tensão). Nunca é aplicado automaticamente: precisa de confirmação de uma pessoa.
+Indicação de que um Aparelho novo pode ser, na verdade, um Aparelho Ausente com o texto do modelo corrigido — mesma marca, mesmo Registro INMETRO e os mesmos Dados declarados e tensão. Nunca é aplicado automaticamente: precisa de confirmação de uma pessoa.
 _Avoid_: Fusão, correspondência automática
 
 **Vínculo confirmado**:

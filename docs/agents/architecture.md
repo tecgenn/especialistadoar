@@ -123,7 +123,8 @@ nova exportação CSV
   alterados e Ausentes, além de Aparelhos sem dados declarados (regressão),
   Anomalias novas e Vínculos sugeridos; renderiza o Relatório de revisão em
   Markdown (`reports/revisao-<data>.md`). A Versão anterior é reconstruída a
-  partir do seu snapshot raw, então o diff é derivado e não guarda estado.
+  partir do seu snapshot raw, então o diff é derivado e não guarda estado. Ver
+  ADR-0007.
 
 ## Interfaces
 
