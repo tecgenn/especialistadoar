@@ -138,7 +138,33 @@ npx wrangler pages project create especialista-do-ar --production-branch=main
 
 O nome `especialista-do-ar` deve ser idêntico ao `CLOUDFLARE_PAGES_PROJECT`
 (variable) e ao `--project-name` usado no `publish.yml`. Pela UI:
-**Workers & Pages → Create → Pages → Direct Upload**.
+**Workers & Pages → Create → Pages → Direct Upload** — mas veja o aviso abaixo.
+
+Um projeto **Direct Upload** (sem integração Git) **não tem UI** para configurar a
+production branch: `Settings → Builds & deployments → Configure Production
+deployments` só existe em projetos git-connected. Criado pelo dashboard, o projeto
+assume `main` como production branch por padrão.
+
+Se a production branch não for `main`, todo deploy do `publish.yml` cai como
+**preview** (`https://<hash>.<projeto>.pages.dev`) em vez de produção. Verifique e,
+se preciso, corrija pela API (o token precisa de `Cloudflare Pages: Edit`):
+
+```bash
+# ler a production branch atual
+curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/especialista-do-ar" \
+  | jq '.result.production_branch'
+
+# corrigir para main
+curl -X PATCH "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/especialista-do-ar" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data '{"production_branch":"main"}'
+```
+
+O `publish.yml` fixa `--branch=main` no deploy, então a branch **do deploy** é
+sempre `main`; o que decide produção × preview é a production branch **do
+projeto**, acima.
 
 ### 2.4 Criar o API token
 
@@ -192,6 +218,7 @@ instruções de DNS. Registre aqui o domínio escolhido quando houver.
 | PR bloqueado por um check que não existe | o nome do job `ci` mudou | ajustar `.github/branch-protection.json` (§1.2) |
 | Gate "Published artifacts match a fresh build" vermelho | `data/build`/`reports` desatualizados | rodar `pnpm build` e commitar |
 | Deploy publica conteúdo antigo | merge não passou pelo PR / branch errada | revisar a proteção de branch (§1.2) |
+| Deploy cai em **preview** em vez de produção | production branch do projeto ≠ `main` (projeto Direct Upload não tem UI) | corrigir pela API (§2.3) |
 
 ---
 
@@ -200,3 +227,4 @@ instruções de DNS. Registre aqui o domínio escolhido quando houver.
 | Data | Mudança | Quem |
 |---|---|---|
 | 2026-10-15 | Criação. GitHub Actions (`ci.yml` + `publish.yml`), proteção de branch, Cloudflare Pages. | ticket #06 |
+| 2026-10-16 | `publish.yml` fixa `--branch=main`; §2.3 documenta a production branch de projetos Direct Upload e a correção pela API. | ticket #06 |
