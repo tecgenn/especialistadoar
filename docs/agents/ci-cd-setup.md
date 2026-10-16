@@ -150,10 +150,10 @@ Se a production branch não for `main`, todo deploy do `publish.yml` cai como
 se preciso, corrija pela API (o token precisa de `Cloudflare Pages: Edit`):
 
 ```bash
-# ler a production branch atual
+# ler a production branch atual (sem depender de jq)
 curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
   "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/especialista-do-ar" \
-  | jq '.result.production_branch'
+  | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).result.production_branch))"
 
 # corrigir para main
 curl -X PATCH "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/especialista-do-ar" \
@@ -227,4 +227,4 @@ instruções de DNS. Registre aqui o domínio escolhido quando houver.
 | Data | Mudança | Quem |
 |---|---|---|
 | 2026-10-15 | Criação. GitHub Actions (`ci.yml` + `publish.yml`), proteção de branch, Cloudflare Pages. | ticket #06 |
-| 2026-10-16 | `publish.yml` fixa `--branch=main`; §2.3 documenta a production branch de projetos Direct Upload e a correção pela API. | ticket #06 |
+| 2026-10-16 | `publish.yml` fixa `--branch=main`; §2.3 documenta a production branch de projetos Direct Upload e a leitura/correção pela API (sem `jq`, usando Node). | ticket #06 |
