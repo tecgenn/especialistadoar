@@ -97,6 +97,19 @@ export function chaveDaLinha(oficial: ValoresOficiais): string {
   );
 }
 
+/**
+ * Chave de identidade de um Aparelho já agrupado. Serve para correlacionar
+ * Aparelhos entre Versões da tabela (diff e sugestão de Vínculos).
+ */
+export function chaveDoAparelho(aparelho: Aparelho): string {
+  return chaveIdentidade(
+    aparelho.marca,
+    aparelho.unidadeInterna,
+    aparelho.unidadeExterna,
+    aparelho.modelo,
+  );
+}
+
 function extrairDados(oficial: ValoresOficiais): DadosDeclarados {
   const dados = {} as DadosDeclarados;
   for (const [coluna, campo] of COLUNAS_DADOS) {

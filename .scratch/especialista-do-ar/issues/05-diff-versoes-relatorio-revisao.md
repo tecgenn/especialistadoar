@@ -7,15 +7,15 @@
 
 **Blocked by:** 03 — Contrato, agrupamento em Aparelho e base servida.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O Relatório de revisão é nomeado pela data da Versão da tabela (`reports/revisao-<data>.md`).
-- [ ] Classifica corretamente novos, alterados e Ausentes.
-- [ ] Aparelho que perdeu Dados declarados não é marcado como Ausente, e o histórico mostra que já teve.
-- [ ] A causa de uma Ausência não é presumida no texto.
-- [ ] Lista Anomalias novas e Vínculos sugeridos.
-- [ ] A primeira versão (sem anterior) gera um relatório coerente.
-- [ ] Vitest cobre a classificação, com snapshot golden do relatório.
+- [x] O Relatório de revisão é nomeado pela data da Versão da tabela (`reports/revisao-<data>.md`).
+- [x] Classifica corretamente novos, alterados e Ausentes.
+- [x] Aparelho que perdeu Dados declarados não é marcado como Ausente, e o histórico mostra que já teve.
+- [x] A causa de uma Ausência não é presumida no texto.
+- [x] Lista Anomalias novas e Vínculos sugeridos.
+- [x] A primeira versão (sem anterior) gera um relatório coerente.
+- [x] Vitest cobre a classificação, com snapshot golden do relatório.
 
 ## Origin
 

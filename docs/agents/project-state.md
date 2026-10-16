@@ -8,7 +8,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 05 | Diff entre versões e Relatório de revisão | ready-for-agent | — |
+| 06 | CI e publicação via PR | ready-for-agent | — |
 | 07 | API estática (arquivos JSON) | ready-for-agent | — |
 
 ## Completed
@@ -38,3 +38,10 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** As duas formas sancionadas de alterar conteúdo além das regras de formato, como insumos curados aplicados no build. **Exceção manual** (`data/excecoes-manuais.jsonl`): correção de um campo de uma Linha com `motivo` + `fonte`, aplicada antes da normalização. O build recusa correção puramente de formato (mesmo valor após normalização), campo inexistente na Linha e exceção da Versão atual que não casa com nenhuma Linha; exceções de outra Versão são ignoradas (não quebram o build). **Vínculo confirmado** (`data/vinculos-confirmados.jsonl`): par sugerido (Aparelho novo ↔ identidade histórica) que só vale com `confirmadoPor`; um Vínculo sugerido nunca é aplicado sozinho. A identidade histórica (`anterior`) é a **canônica** — o Aparelho novo é absorvido mantendo o texto de modelo atual. O build recusa Vínculo cujo `anterior` ainda está presente nesta Versão (o Aparelho histórico ainda não é Ausente) ou cujo `novo` não existe; a remontagem de identidade é guardada contra ciclos. Ambas as fontes curadas são validadas e republicadas a cada build em `data/build/` (cópias derivadas, resserializadas — nunca editar à mão). `pnpm build` inalterado para os dados reais (0 Exceções, 0 Vínculos; sem regressão nos demais artefatos).
 - **Ticket:** #04 (local tracker: `04-excecao-manual-vinculo-confirmado`)
 - **Checks:** Vitest 102/102, tsc --noEmit OK, biome check OK.
+
+### 05 — Diff entre versões e Relatório de revisão (2026-10-15)
+
+- **Changed:** `packages/pipeline/src/{diff,report,build,group,cli}.ts` (novo `diff.ts` de classificação e `report.ts` renderizador Markdown; `group.ts` ganha `chaveDoAparelho`; `build.ts` reconstrói a Versão anterior a partir do snapshot raw e grava o relatório; `cli.ts` aceita `--reports-dir`); testes `packages/pipeline/test/revisao.test.ts` + fixtures `test/fixtures/versoes/{v1,v2}.csv` + golden snapshot; relatório `reports/revisao-2026-10-12.md`.
+- **What works:** O build compara a Versão da tabela atual com a **Versão anterior** (a entrada imediatamente anterior no `manifest.json`) e classifica Aparelhos novos, alterados, Ausentes, sem dados declarados, Anomalias novas e Vínculos sugeridos, gravando `reports/revisao-<data>.md`. A correlação entre Versões usa a identidade canônica (`aparelho.id`), então um Vínculo confirmado não faz o par aparecer como novo + Ausente. Aparelhos e Anomalias da Versão anterior são re-derivados do snapshot raw imutável, tornando o Relatório puramente derivado e re-executável. Ausência nunca presume causa; perder Dados declarados vira "Aparelho sem dados declarados" (não Ausente) com o histórico; a primeira Versão rende um relatório coerente ("Primeira Versão da tabela"). `pnpm build` nos dados reais gera `reports/revisao-2026-10-12.md` sem alterar `data/build`.
+- **Ticket:** #05 (local tracker: `05-diff-versoes-relatorio-revisao`)
+- **Checks:** Vitest 110/110, tsc --noEmit OK, biome check OK.

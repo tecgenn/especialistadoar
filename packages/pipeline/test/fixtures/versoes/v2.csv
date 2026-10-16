@@ -1,0 +1,6 @@
+Marca,Modelo,Tipo,Tensão (V),Função,Rotação,Fluido Refrigerante,Capacidade de Refrigeração Nominal (Btu/h),Potência Consumida a 35 °C e em Carga Total (W),IDRS (Wh/Wh),Consumo Anual de Energia (kWh),Status do Registro,Número do Registro
+ALPHA,AA-09,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,9000,700,3.50,818.0,Ativo,010/2020
+ALPHA,AB-09,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,9000,700,3.60,818.0,Ativo,011/2020
+GAMA,CC-09,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,,,,Ativo,013/2020
+DELTA,DD-09X,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,12000,900,3.20,900.0,Ativo,014/2020
+EPSILON,EE-09,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,9000,700,abc,818.0,Ativo,015/2020

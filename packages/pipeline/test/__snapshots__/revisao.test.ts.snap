@@ -1,0 +1,109 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runBuild — Relatório de revisão entre duas Versões da tabela > gera um relatório coerente para a primeira Versão da tabela 1`] = `
+"# Relatório de revisão — Versão da tabela 2026-10-12
+
+- **Versão da tabela:** \`9f5e88f76492\` (obtida em 2026-10-12)
+- **Versão anterior:** —
+- **Linhas da tabela:** 5
+- **Aparelhos com Dados declarados:** 5
+
+_Primeira Versão da tabela: não há Versão anterior para comparar._
+
+## Resumo
+
+| Classe | Quantidade |
+| --- | --- |
+| Aparelhos novos | 0 |
+| Aparelhos alterados | 0 |
+| Aparelhos Ausentes | 0 |
+| Aparelhos sem dados declarados | 0 |
+| Anomalias novas | 0 |
+| Vínculos sugeridos | 0 |
+
+## Aparelhos novos
+
+_Nenhum._
+
+## Aparelhos alterados
+
+_Nenhum._
+
+## Aparelhos Ausentes
+
+> A causa da ausência não é presumida: a tabela não diz se o modelo foi descontinuado, cancelado ou omitido por engano.
+
+_Nenhum._
+
+## Aparelhos sem dados declarados
+
+> Estes Aparelhos tinham Dados declarados na Versão anterior e continuam na tabela, mas perderam os Dados declarados nesta Versão. Não são Ausentes; o histórico registra que já tiveram dados.
+
+_Nenhum._
+
+## Anomalias novas
+
+_Nenhuma._
+
+## Vínculos sugeridos
+
+> Nunca são aplicados automaticamente: um Vínculo sugerido só passa a valer como identidade depois que uma pessoa o confirma.
+
+_Nenhum._
+"
+`;
+
+exports[`runBuild — Relatório de revisão entre duas Versões da tabela > nomeia o relatório pela data da Versão da tabela e grava o golden 1`] = `
+"# Relatório de revisão — Versão da tabela 2026-10-13
+
+- **Versão da tabela:** \`c4e7c7c5695a\` (obtida em 2026-10-13)
+- **Versão anterior:** \`9f5e88f76492\` (obtida em 2026-10-12)
+- **Linhas da tabela:** 5
+- **Aparelhos com Dados declarados:** 4
+
+## Resumo
+
+| Classe | Quantidade |
+| --- | --- |
+| Aparelhos novos | 2 |
+| Aparelhos alterados | 1 |
+| Aparelhos Ausentes | 2 |
+| Aparelhos sem dados declarados | 1 |
+| Anomalias novas | 1 |
+| Vínculos sugeridos | 1 |
+
+## Aparelhos novos
+
+- **DELTA** DD-09X — \`ap-e79e7e714076\`
+- **EPSILON** EE-09 — \`ap-8d2b8c148926\`
+
+## Aparelhos alterados
+
+### ALPHA AB-09 — \`ap-201d16bce7fb\`
+
+- campos: \`variantes\`
+
+## Aparelhos Ausentes
+
+> A causa da ausência não é presumida: a tabela não diz se o modelo foi descontinuado, cancelado ou omitido por engano.
+
+- **BETA** BB-09 — \`ap-2c720691769e\`
+- **DELTA** DD-09 — \`ap-114ae2281c88\`
+
+## Aparelhos sem dados declarados
+
+> Estes Aparelhos tinham Dados declarados na Versão anterior e continuam na tabela, mas perderam os Dados declarados nesta Versão. Não são Ausentes; o histórico registra que já tiveram dados.
+
+- **GAMA** CC-09 — \`ap-564a88513c1a\`
+
+## Anomalias novas
+
+- Linha 5 — \`IDRS (Wh/Wh)\`: \`abc\` (texto_em_campo_numerico)
+
+## Vínculos sugeridos
+
+> Nunca são aplicados automaticamente: um Vínculo sugerido só passa a valer como identidade depois que uma pessoa o confirma.
+
+- **DELTA** DD-09X (novo) ↔ **DELTA** DD-09 (Ausente)
+"
+`;

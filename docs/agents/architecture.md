@@ -119,9 +119,11 @@ nova exportação CSV
 - **build** — orquestra o pipeline: resolução da versão, leitura da curadoria,
   parse/normalização/anomalias/agrupamento, validação, escrita dos artefatos e das
   cópias publicadas.
-- **diff / report** — compara com a versão anterior; classifica novos, alterados,
-  Ausentes, Anomalias novas e Vínculos sugeridos. **(Fase 1, ticket #05 — ainda não
-  implementado.)**
+- **diff / report** — compara com a Versão anterior; classifica Aparelhos novos,
+  alterados e Ausentes, além de Aparelhos sem dados declarados (regressão),
+  Anomalias novas e Vínculos sugeridos; renderiza o Relatório de revisão em
+  Markdown (`reports/revisao-<data>.md`). A Versão anterior é reconstruída a
+  partir do seu snapshot raw, então o diff é derivado e não guarda estado.
 
 ## Interfaces
 

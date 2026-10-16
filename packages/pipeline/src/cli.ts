@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { ORIGEM_PADRAO, runBuild } from "./build.ts";
 
 const USO =
-  "Uso: especialista build [--source <csv>] [--obtido-em <YYYY-MM-DD>] [--origem <texto>] [--data-dir <dir>]";
+  "Uso: especialista build [--source <csv>] [--obtido-em <YYYY-MM-DD>] [--origem <texto>] [--data-dir <dir>] [--reports-dir <dir>]";
 
 function argumento(nome: string): string | undefined {
   const indice = process.argv.indexOf(nome);
@@ -20,11 +20,13 @@ if (comando !== "build") {
 }
 
 const source = argumento("--source");
+const reportsDir = argumento("--reports-dir");
 const resultado = runBuild({
   dataDir: resolve(argumento("--data-dir") ?? "data"),
   source: source === undefined ? undefined : resolve(source),
   origem: argumento("--origem") ?? ORIGEM_PADRAO,
   obtidoEm: argumento("--obtido-em"),
+  reportsDir: reportsDir === undefined ? undefined : resolve(reportsDir),
 });
 
 console.log(
@@ -37,3 +39,4 @@ console.log(`${resultado.aparelhos.length} Aparelhos na base servida`);
 console.log(
   `Artefatos em ${resolve(argumento("--data-dir") ?? "data", "build")}`,
 );
+console.log(`Relatório de revisão em ${resultado.relatorio}`);

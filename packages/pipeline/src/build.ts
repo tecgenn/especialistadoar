@@ -5,9 +5,10 @@ import {
   readFileSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { type Anomalia, detectarAnomalias } from "./anomalias.ts";
 import { type Aparelho, SCHEMA_APARELHO } from "./aparelho.ts";
+import { type ClassificacaoRevisao, classificarRevisao } from "./diff.ts";
 import {
   ARQUIVO_EXCECOES,
   aplicarExcecoes,
@@ -32,6 +33,7 @@ import {
 import { escreverJsonl } from "./jsonl.ts";
 import { normalizarValores } from "./normalize.ts";
 import { parseLinhas } from "./parse.ts";
+import { renderizarRelatorio } from "./report.ts";
 import { validarBaseServida } from "./validate.ts";
 import {
   ARQUIVO_VINCULOS,
@@ -47,6 +49,7 @@ export interface BuildOptions {
   source?: string;
   origem?: string;
   obtidoEm?: string;
+  reportsDir?: string;
 }
 
 export interface BuildResult {
@@ -57,6 +60,8 @@ export interface BuildResult {
   aparelhos: Aparelho[];
   excecoes: ExcecaoManual[];
   vinculos: VinculoConfirmado[];
+  revisao: ClassificacaoRevisao;
+  relatorio: string;
 }
 
 function escreverJson(caminho: string, valor: unknown): void {
@@ -67,6 +72,62 @@ export const ORIGEM_PADRAO = "INMETRO — exportação de produtos";
 
 export function dataDeHoje(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+export function diretorioRelatorios(dataDir: string): string {
+  return resolve(dataDir, "..", "reports");
+}
+
+interface Processamento {
+  registros: LinhaDaTabela[];
+  anomalias: Anomalia[];
+  excecoesAplicadas: Set<ExcecaoManual>;
+}
+
+/**
+ * Parseia uma Versão da tabela aplicando as Exceções manuais daquela Versão e
+ * produz as Linhas normalizadas e as Anomalias. Reutilizado tanto para a Versão
+ * atual quanto para a anterior (que é reconstruída a partir do snapshot raw para
+ * o diff).
+ */
+function processarLinhas(
+  dataDir: string,
+  versao: VersaoDaTabela,
+  excecoesDaVersao: ExcecaoManual[],
+): Processamento {
+  const { linhas } = parseLinhas(readFileSync(join(dataDir, versao.arquivo)));
+  const registros: LinhaDaTabela[] = [];
+  const anomalias: Anomalia[] = [];
+  const excecoesAplicadas = new Set<ExcecaoManual>();
+
+  linhas.forEach((linhaCrua, indice) => {
+    const linha = indice + 1;
+    const excecoesDaLinha = excecoesDaVersao.filter(
+      (excecao) => excecao.linha === linha,
+    );
+    excecoesDaLinha.forEach((excecao) => {
+      excecoesAplicadas.add(excecao);
+    });
+    const valoresCorrigidos = aplicarExcecoes(linhaCrua, excecoesDaLinha);
+    const { valores, oficial } = normalizarValores(valoresCorrigidos);
+    registros.push({ linha, versao: versao.hash, valores, oficial });
+    anomalias.push(
+      ...detectarAnomalias(valores, { linha, versao: versao.hash }),
+    );
+  });
+
+  return { registros, anomalias, excecoesAplicadas };
+}
+
+/** A Versão da tabela imediatamente anterior à informada, na ordem de ingestão. */
+function versaoPrecedente(
+  manifest: Manifest,
+  versao: VersaoDaTabela,
+): VersaoDaTabela | undefined {
+  const indice = manifest.versoes.findIndex(
+    (item) => item.hash === versao.hash,
+  );
+  return indice > 0 ? manifest.versoes[indice - 1] : undefined;
 }
 
 function descobrirSnapshotRaw(dataDir: string): {
@@ -130,27 +191,12 @@ export function runBuild(options: BuildOptions): BuildResult {
     (excecao) => excecao.versao === versao.hash,
   );
 
-  const { linhas } = parseLinhas(readFileSync(join(dataDir, versao.arquivo)));
-  versao.contagemLinhas = linhas.length;
-
-  const registros: LinhaDaTabela[] = [];
-  const anomalias: Anomalia[] = [];
-  const excecoesAplicadas = new Set<ExcecaoManual>();
-  linhas.forEach((linhaCrua, indice) => {
-    const linha = indice + 1;
-    const excecoesDaLinha = excecoesDaVersao.filter(
-      (excecao) => excecao.linha === linha,
-    );
-    excecoesDaLinha.forEach((excecao) => {
-      excecoesAplicadas.add(excecao);
-    });
-    const valoresCorrigidos = aplicarExcecoes(linhaCrua, excecoesDaLinha);
-    const { valores, oficial } = normalizarValores(valoresCorrigidos);
-    registros.push({ linha, versao: versao.hash, valores, oficial });
-    anomalias.push(
-      ...detectarAnomalias(valores, { linha, versao: versao.hash }),
-    );
-  });
+  const { registros, anomalias, excecoesAplicadas } = processarLinhas(
+    dataDir,
+    versao,
+    excecoesDaVersao,
+  );
+  versao.contagemLinhas = registros.length;
 
   for (const excecao of excecoesDaVersao) {
     if (!excecoesAplicadas.has(excecao)) {
@@ -166,10 +212,34 @@ export function runBuild(options: BuildOptions): BuildResult {
   );
   const identidadeCanonica = montarIdentidadeCanonica(vinculos);
 
-  const aparelhos = agruparAparelhos(registros, { identidadeCanonica }).filter(
-    aparelhoTemDadosDeclarados,
-  );
+  const todosAparelhos = agruparAparelhos(registros, { identidadeCanonica });
+  const aparelhos = todosAparelhos.filter(aparelhoTemDadosDeclarados);
   validarBaseServida(aparelhos);
+
+  const anterior = versaoPrecedente(manifest, versao);
+  let aparelhosAnteriores: Aparelho[] | null = null;
+  let anomaliasAnteriores: Anomalia[] = [];
+  if (anterior !== undefined) {
+    const processamentoAnterior = processarLinhas(
+      dataDir,
+      anterior,
+      excecoes.filter((excecao) => excecao.versao === anterior.hash),
+    );
+    aparelhosAnteriores = agruparAparelhos(processamentoAnterior.registros, {
+      identidadeCanonica,
+    });
+    anomaliasAnteriores = processamentoAnterior.anomalias;
+  }
+
+  const revisao = classificarRevisao({
+    atuais: todosAparelhos,
+    anteriores: aparelhosAnteriores,
+    anomaliasAtuais: anomalias,
+    anomaliasAnteriores,
+  });
+
+  const reportsDir = options.reportsDir ?? diretorioRelatorios(dataDir);
+  const relatorio = join(reportsDir, `revisao-${versao.obtidoEm}.md`);
 
   const buildDir = join(dataDir, "build");
   mkdirSync(buildDir, { recursive: true });
@@ -183,6 +253,18 @@ export function runBuild(options: BuildOptions): BuildResult {
 
   escreverManifest(dataDir, manifest);
 
+  mkdirSync(reportsDir, { recursive: true });
+  writeFileSync(
+    relatorio,
+    renderizarRelatorio({
+      versao,
+      versaoAnterior: anterior,
+      totalLinhas: registros.length,
+      totalAparelhos: aparelhos.length,
+      classificacao: revisao,
+    }),
+  );
+
   return {
     versao,
     manifest,
@@ -191,5 +273,7 @@ export function runBuild(options: BuildOptions): BuildResult {
     aparelhos,
     excecoes,
     vinculos,
+    revisao,
+    relatorio,
   };
 }

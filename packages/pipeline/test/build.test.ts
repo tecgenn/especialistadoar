@@ -40,6 +40,7 @@ function buildCom(source: string): ReturnType<typeof runBuild> {
     source,
     origem: "teste",
     obtidoEm: "2026-10-12",
+    reportsDir: join(dataDir, "reports"),
   });
 }
 
@@ -129,7 +130,10 @@ describe("runBuild — descoberta do snapshot raw versionado", () => {
       fixturePath,
       join(dataDir, "raw/inmetro-export-2026-10-12.csv"),
     );
-    const { versao } = runBuild({ dataDir });
+    const { versao } = runBuild({
+      dataDir,
+      reportsDir: join(dataDir, "reports"),
+    });
     expect(versao.hash).toBe(sha256Hex(fixtureBytes));
     expect(versao.obtidoEm).toBe("2026-10-12");
     expect(versao.contagemLinhas).toBe(3);
@@ -138,7 +142,10 @@ describe("runBuild — descoberta do snapshot raw versionado", () => {
 
   it("reconstrói a partir da Versão da tabela atual do manifesto", () => {
     build();
-    const { versao } = runBuild({ dataDir });
+    const { versao } = runBuild({
+      dataDir,
+      reportsDir: join(dataDir, "reports"),
+    });
     expect(versao.hash).toBe(sha256Hex(fixtureBytes));
     expect(versao.contagemLinhas).toBe(3);
   });
@@ -152,6 +159,7 @@ describe("runBuild — exportação versionada real", () => {
       source: exportVersadaPath,
       origem: "teste",
       obtidoEm: "2026-10-12",
+      reportsDir: join(dataDir, "reports"),
     });
     expect(versao.hash).toBe(sha256Hex(bytes));
     expect(versao.contagemLinhas).toBe(7474);
@@ -234,6 +242,7 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
       source: exportVersadaPath,
       origem: "teste",
       obtidoEm: "2026-10-12",
+      reportsDir: join(dataDir, "reports"),
     });
     expect(registros).toHaveLength(7474);
     expect(anomalias).toHaveLength(15);
@@ -251,6 +260,7 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
       source: exportVersadaPath,
       origem: "teste",
       obtidoEm: "2026-10-12",
+      reportsDir: join(dataDir, "reports"),
     });
     expect(
       readFileSync(join(dataDir, "build/anomalias.jsonl"), "utf8"),

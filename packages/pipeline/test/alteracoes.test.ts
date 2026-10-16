@@ -59,6 +59,7 @@ function build(): ReturnType<typeof runBuild> {
     source: fixturePath,
     origem: "teste",
     obtidoEm: "2026-10-12",
+    reportsDir: join(dataDir, "reports"),
   });
 }
 

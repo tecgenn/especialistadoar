@@ -29,6 +29,7 @@ function build(source: string): ReturnType<typeof runBuild> {
     source,
     origem: "teste",
     obtidoEm: "2026-10-12",
+    reportsDir: join(dataDir, "reports"),
   });
 }
 
