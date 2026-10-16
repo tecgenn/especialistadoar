@@ -28,3 +28,9 @@ frente da parte dinâmica, sem mudar as respostas.
   decide se o site vale o investimento.
 - Os termos de uso comercial do plano gratuito da Cloudflare precisam ser
   confirmados antes de cobrar pelo acesso.
+
+## Notas
+
+- **2026-10-16:** o **site não consome o Worker**. Sua consulta (filtros e busca)
+  roda no cliente sobre o artefato derivado `data/build/consulta.json`, então o
+  Worker `/api/v1` passa a servir **só Agentes**. Ver ADR-0008.

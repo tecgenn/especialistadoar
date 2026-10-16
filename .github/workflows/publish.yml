@@ -52,4 +52,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy data/build --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'especialista-do-ar' }}
+          command: pages deploy data/build --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'especialista-do-ar' }} --branch=main

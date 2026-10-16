@@ -56,6 +56,7 @@ data/
   build/
     aparelhos.jsonl                   # base servida (Aparelhos com Dados declarados)
     aparelhos.json                    # espelho em array do acima
+    consulta.json                     # dataset enxuto de consulta (~350 KB) p/ site + Worker
     registros.jsonl                   # Linhas normalizadas (proveniência)
     schema.json                       # contrato JSON Schema
     manifest.json                     # metadados de versão (hash, data, contagens)
@@ -64,7 +65,7 @@ data/
     vinculos-confirmados.jsonl        # cópia publicada da Camada curada
 reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão (fase 1)
 packages/pipeline/                    # o pipeline de build (CLI)
-packages/api/                         # a API: acesso estático à base servida (fase 2)
+packages/api/                         # a API: leitura estática (Node) + módulo de consulta isomórfico
 apps/site/                            # catálogo Astro (fase 3)
 ```
 
@@ -93,6 +94,7 @@ nova exportação CSV
     -> agrupamento em Aparelho                        (marca + unid. interna + unid. externa)
     -> validação: schema.json + invariantes           (falha dura)
     -> data/build/aparelhos.jsonl (+ .json)           (só Aparelhos com Dados declarados)
+    -> data/build/consulta.json                       (dataset enxuto p/ a ilha de consulta)
     -> data/build/{excecoes-manuais,vinculos-confirmados}.jsonl   (cópias publicadas)
     -> reports/revisao-<data>.md                      (novos / alterados / Ausentes / Anomalias / Vínculos)
     -> revisão humana (PR) antes de publicar
@@ -135,12 +137,18 @@ nova exportação CSV
   base servida; o módulo de consulta com filtros (fase 2) e o Worker dinâmico o
   reutilizam. O pipeline expõe seu contrato pelo entry point
   (`packages/pipeline/src/index.ts`) — o `api` nunca importa os internos.
+- **consulta** — mesmo pacote `packages/api`, mas num *entry point* **isomórfico**
+  (lógica pura, **sem** dependências de Node): filtros por campo e busca textual
+  sobre o `data/build/consulta.json`. É importado pela **ilha do site** (navegador)
+  e pelo **Worker** (Agente), uma só definição nos dois ambientes. A leitura de
+  arquivo fica de fora desse entry (separar por entry point é o que impede `fs`
+  de entrar no bundle). Ver ADR-0008.
 
 ## Interfaces
 
 - **Entrada:** um caminho para uma exportação CSV nova do INMETRO.
-- **Saída:** `aparelhos.jsonl`, `aparelhos.json`, `schema.json`, `registros.jsonl`,
-  `manifest.json`, `anomalias.jsonl`, `excecoes-manuais.jsonl` e
+- **Saída:** `aparelhos.jsonl`, `aparelhos.json`, `consulta.json`, `schema.json`,
+  `registros.jsonl`, `manifest.json`, `anomalias.jsonl`, `excecoes-manuais.jsonl` e
   `vinculos-confirmados.jsonl` (estes dois últimos como cópias publicadas) e um
   Relatório de revisão (Markdown).
 
@@ -149,6 +157,9 @@ nova exportação CSV
 - **JSON estático** (sem Worker, sem quota): busca por ID, endpoints de listagem e a
   versão da tabela — servidos como arquivos puros.
 - **Worker dinâmico** (`/api/v1/...`): só busca textual, comparação e Valor calculado.
+- **Consumidor do Worker:** somente o **Agente (consumidor)**. O **site não chama
+  estas rotas** — a consulta dele roda no cliente (ADR-0008), então a cota gratuita
+  fica reservada aos Agentes.
 - **Acesso:** aberto no MVP, com regra de rate por IP na Cloudflare. Plano B se a
   quota gratuita apertar: Workers Paid.
 - **Cobrança:** adiada; um gate de pagamento ficaria na frente da parte dinâmica sem
@@ -159,7 +170,8 @@ Ver ADR-0003.
 ## Distribuição
 
 - O **dataset embarcado** é canônico: os artefatos JSONL/JSON são a fonte de verdade
-  e o site consome uma cópia em build-time.
+  e o site consome uma cópia em build-time — `aparelhos.json` para as páginas de
+  detalhe e `consulta.json` para a ilha de consulta.
 - **Publicação (fase 1):** o merge em `main` publica `data/build/` como arquivos
   estáticos no **Cloudflare Pages** (é a parte estática da API, sem Worker nem
   cota). Setup manual em `docs/agents/ci-cd-setup.md`; ver ADR-0004.
@@ -178,8 +190,11 @@ Ver ADR-0003.
 - **CSV:** `csv-parse` (`bom: true`), nunca `split(",")`.
 - **Testes:** Vitest, incluindo snapshots golden dos JSONL e do relatório.
 - **Lint/format:** Biome.
-- **Site:** Astro + uma ilha React; Pagefind/MiniSearch atrás de um módulo de
-  consulta compartilhado.
+- **Site:** Astro, **build estático**: páginas de detalhe pré-renderizadas para
+  cada Aparelho + **uma ilha React** de consulta (filtros combináveis e busca
+  textual rodam no cliente, com o estado na URL). O Pagefind indexa o conteúdo; o
+  MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. O site **não**
+  chama o Worker (ADR-0008).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
   repositório é público, então minutos de runner não são cobrados (a regra foi

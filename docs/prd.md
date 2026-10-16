@@ -56,9 +56,12 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 
 - **Parte estática (sem Worker/cota):** consulta por ID, listas e a Versão da
   tabela, como arquivos JSON.
-- **Parte dinâmica (Worker, `/api/v1/...`):** busca, comparação e Valor calculado.
-- **Módulo de consulta compartilhado:** filtros por campo (BTU, tensão); MiniSearch
-  só para busca textual (Pagefind fica para o conteúdo do site).
+- **Parte dinâmica (Worker, `/api/v1/...`):** busca, comparação e Valor calculado
+  — consumida **só por Agentes**; o site não chama estas rotas (ADR-0008).
+- **Módulo de consulta compartilhado:** isomórfico — um *entry point* puro em
+  `packages/api`, **sem** dependências de Node, importado pela ilha do site e pelo
+  Worker, sobre `data/build/consulta.json`. Filtros por campo (BTU, tensão);
+  MiniSearch só para busca textual (Pagefind fica para o conteúdo do site).
 - **Documentação para agentes:** como consumir a base.
 - **Teste de aceitação com um agente (portão):** ver abaixo.
 
@@ -75,7 +78,10 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 
 ### Fase 3 — Site, Ofertas e verificação de links
 
-- **Catálogo em Astro** (estático + islands para interatividade).
+- **Catálogo em Astro** (build estático): páginas de detalhe pré-renderizadas por
+  Aparelho + **uma** ilha de consulta — filtros combináveis e busca textual no
+  **cliente**, sobre `data/build/consulta.json`, com o estado na URL. O site não
+  chama o Worker (ADR-0008).
 - **Ofertas** (links de afiliado) exibidas **apenas no site**, nunca misturadas ao
   dataset técnico.
 - **Job de verificação de links.**
