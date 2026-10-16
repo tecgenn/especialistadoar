@@ -8,13 +8,13 @@
 
 **Blocked by:** 05 — Diff entre versões e Relatório de revisão.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O CI roda build, validação (Ajv + invariantes) e Vitest; uma falha bloqueia o merge.
-- [ ] O Relatório de revisão é anexado automaticamente ao Pull Request.
-- [ ] O Windows é não-bloqueante e o Linux é a referência.
-- [ ] O merge em `main` dispara o deploy dos artefatos publicados.
-- [ ] Não existe caminho de publicação que pule o portão do PR.
+- [x] O CI roda build, validação (Ajv + invariantes) e Vitest; uma falha bloqueia o merge.
+- [x] O Relatório de revisão é anexado automaticamente ao Pull Request.
+- [x] O Windows é não-bloqueante e o Linux é a referência.
+- [x] O merge em `main` dispara o deploy dos artefatos publicados.
+- [x] Não existe caminho de publicação que pule o portão do PR.
 
 ## Origin
 

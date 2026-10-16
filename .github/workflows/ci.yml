@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: ci
+    runs-on: ${{ matrix.os }}
+    continue-on-error: ${{ matrix.os == 'windows-latest' }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./.github/actions/setup
+
+      - name: Lint and format
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
+
+      - name: Published artifacts match a fresh build
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain -- data/build reports)" ]; then
+            git status --porcelain -- data/build reports
+            echo "::error::data/build ou reports divergem do build — commite os artefatos publicados."
+            exit 1
+          fi
+
+      - name: Upload review report
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: review-report
+          path: reports/revisao-*.md
+
+  report:
+    name: attach review report
+    needs: ci
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          name: review-report
+          path: reviews
+
+      - name: Attach the Relatório de revisão to the Pull Request
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const marker = '<!-- review-report -->';
+            const dir = 'reviews';
+            if (!fs.existsSync(dir)) {
+              core.warning('Relatório de revisão indisponível — build do Linux não produziu artefato.');
+              return;
+            }
+            const file = fs.readdirSync(dir).find((f) => /^revisao-.*\.md$/.test(f));
+            if (!file) {
+              core.warning('Nenhum Relatório de revisão encontrado.');
+              return;
+            }
+
+            const report = fs.readFileSync(path.join(dir, file), 'utf8');
+            const body = `${marker}\n## Relatório de revisão\n\n${report}`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
