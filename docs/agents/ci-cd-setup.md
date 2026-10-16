@@ -162,6 +162,10 @@ curl -X PATCH "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT
   --data '{"production_branch":"main"}'
 ```
 
+> Em projeto Direct Upload a leitura pode vir `null`: a API não preenche
+> `production_branch` até você defini-lo. O `PATCH` acima é idempotente, então
+> aplicar direto para `main` já resolve — a leitura serve só para conferir depois.
+
 O `publish.yml` fixa `--branch=main` no deploy, então a branch **do deploy** é
 sempre `main`; o que decide produção × preview é a production branch **do
 projeto**, acima.
