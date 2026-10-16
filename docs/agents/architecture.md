@@ -64,8 +64,8 @@ data/
     vinculos-confirmados.jsonl        # cópia publicada da Camada curada
 reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão (fase 1)
 packages/pipeline/                    # o pipeline de build (CLI)
+packages/api/                         # a API: acesso estático à base servida (fase 2)
 apps/site/                            # catálogo Astro (fase 3)
-apps/api/                             # API dinâmica no Worker (fase 2)
 ```
 
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
@@ -129,6 +129,12 @@ nova exportação CSV
   Markdown (`reports/revisao-<data>.md`). A Versão anterior é reconstruída a
   partir do seu snapshot raw, então o diff é derivado e não guarda estado. Ver
   ADR-0007.
+- **api (estática)** — em `packages/api`, `abrirApiEstatica(buildDir)` lê
+  `manifest.json` e `aparelhos.json` da base publicada e expõe consulta por ID,
+  listas de Aparelhos e a Versão da tabela, sem Worker. É o consumo estático da
+  base servida; o módulo de consulta com filtros (fase 2) e o Worker dinâmico o
+  reutilizam. O pipeline expõe seu contrato pelo entry point
+  (`packages/pipeline/src/index.ts`) — o `api` nunca importa os internos.
 
 ## Interfaces
 

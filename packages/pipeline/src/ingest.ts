@@ -53,6 +53,13 @@ export function lerManifest(dataDir: string): Manifest {
   return JSON.parse(readFileSync(caminho, "utf8")) as Manifest;
 }
 
+/** A Versão da tabela atual do manifesto, se o manifesto tiver uma. */
+export function versaoAtualDo(manifest: Manifest): VersaoDaTabela | undefined {
+  return manifest.versoes.find(
+    (versao) => versao.hash === manifest.versaoAtual,
+  );
+}
+
 export function escreverManifest(dataDir: string, manifest: Manifest): void {
   mkdirSync(join(dataDir, "build"), { recursive: true });
   writeFileSync(

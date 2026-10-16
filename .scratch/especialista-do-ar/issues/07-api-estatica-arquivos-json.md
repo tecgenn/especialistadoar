@@ -8,14 +8,14 @@
 
 **Blocked by:** 03 — Contrato, agrupamento em Aparelho e base servida.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Os artefatos da base são servidos como arquivos estáticos.
-- [ ] Consulta por ID resolve um Aparelho.
-- [ ] Listas de Aparelhos estão disponíveis.
-- [ ] A Versão da tabela é exposta.
-- [ ] Nenhuma rota dinâmica (Worker) é necessária para esses acessos.
-- [ ] Testes cobrem o acesso estático.
+- [x] Os artefatos da base são servidos como arquivos estáticos.
+- [x] Consulta por ID resolve um Aparelho.
+- [x] Listas de Aparelhos estão disponíveis.
+- [x] A Versão da tabela é exposta.
+- [x] Nenhuma rota dinâmica (Worker) é necessária para esses acessos.
+- [x] Testes cobrem o acesso estático.
 
 ## Origin
 

@@ -8,7 +8,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 07 | API estática (arquivos JSON) | ready-for-agent | — |
+| 08 | Módulo de consulta compartilhado com filtros e busca | ready-for-agent | — |
 
 ## Completed
 
@@ -51,3 +51,10 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** O portão de publicação. **CI** roda em `pull_request` e `push` para `main`, em matrix Linux + Windows (Linux é a referência; Windows não-bloqueante) executando lint, typecheck, `build` (que inclui a validação Ajv + invariantes) e Vitest. Um passo `Published artifacts match a fresh build` falha se `data/build` ou `reports` divergirem de um build recém-rodado (detecta arquivos modificados *e* não rastreados via `git status --porcelain`), então a base publicada é sempre reproduzível a partir do raw + curadoria. O Relatório de revisão é anexado automaticamente ao PR como comentário (job `report`, via `actions/github-script`, comentário atualizado no lugar graças a um marcador; pulado em PRs de fork). **Publish** roda no merge em `main` e faz `cloudflare/wrangler-action@v4 pages deploy data/build`; sem `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` o deploy é ignorado com aviso (não quebra o merge), e o nome do projeto vem da var `CLOUDFLARE_PAGES_PROJECT` (default `especialista-do-ar`). Nenhum caminho de publicação dispensa o PR: `workflow_dispatch` foi removido do publish e a proteção de branch em `main` exige Pull Request + o check `ci (ubuntu-latest)`. Ações fixadas nos majors atuais (checkout v7, setup-node v7, upload v7, download v8, github-script v9, pnpm/action-setup v6, wrangler-action v4).
 - **Ticket:** #06 (local tracker: `06-ci-publicacao-via-pr`)
 - **Checks:** YAML válido (js-yaml); `pnpm lint`, `pnpm typecheck`, `pnpm test` (110/110) OK; `pnpm build` reproduz `data/build`+`reports` byte a byte (`git status` limpo).
+
+### 07 — API estática (arquivos JSON) (2026-10-16)
+
+- **Changed:** novo pacote `packages/api` (`package.json` com `exports`, `tsconfig.json`, `src/estatica.ts` = `abrirApiEstatica`, entry `src/index.ts`, `test/estatica.test.ts`); `packages/pipeline/src/index.ts` (entry point público novo) + mapa `exports` em `packages/pipeline/package.json` + `versaoAtualDo` em `ingest.ts` (regra da Versão da tabela atual extraída e reutilizada por `build.ts`); `docs/agents/architecture.md` (mapa de camadas + bullet de módulo).
+- **What works:** A parte estática da API, sem Worker nem cota (ADR-0003): `abrirApiEstatica(buildDir)` lê `manifest.json` e `aparelhos.json` da base publicada e expõe **consulta por ID** (`porId`, `undefined` para ID inexistente), **listas** (`listar`) e a **Versão da tabela** (`versaoDaTabela`). Artefato ausente ou manifesto sem Versão atual falham com erro claro (nada de stack de ENOENT). O pacote é importável como `@especialista-do-ar/api` e o pipeline agora expõe seu contrato por `packages/pipeline/src/index.ts` — o `api` importa o entry, nunca os internos. Nenhuma rota dinâmica: é leitura pura de arquivos; o módulo de consulta (08) e o Worker (09) reutilizam essa base. `pnpm build` inalterado nos dados reais (sem regressão nos artefatos).
+- **Ticket:** #07 (local tracker: `07-api-estatica-arquivos-json`)
+- **Checks:** Vitest 116/116 (6 novos em `packages/api/test/estatica.test.ts`), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte (`git status` limpo nos artefatos).
