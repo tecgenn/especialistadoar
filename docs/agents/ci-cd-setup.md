@@ -110,6 +110,28 @@ O que o `branch-protection.json` exige:
 
 Pela UI: **Settings → Branches → Branch protection rules → `main`**.
 
+### 1.3 Limpeza da branch do PR após o merge
+
+O repositório está com **"Automatically delete head branches"** ligado
+(`delete_branch_on_merge: true`): ao mergear um PR, o GitHub apaga a branch de
+origem — evita o acúmulo de branches já mergeadas. É uma configuração do repo,
+não versionada em arquivo. Para ligar/desligar:
+
+```bash
+# ligar
+gh api -X PATCH repos/tecgenn/especialistadoar -f delete_branch_on_merge=true
+# conferir
+gh api repos/tecgenn/especialistadoar -q .delete_branch_on_merge
+```
+
+Pela UI: **Settings → General → Pull Requests → Automatically delete head
+branches**.
+
+Vale só para merges feitos pelo GitHub (PR): um merge local (`git merge` +
+`git push`) não apaga nada. E a ref local `origin/<branch>` **não some sozinha** —
+o Git a mantém como cache; limpe com `git fetch --prune` (ou configure
+`fetch.prune=true`).
+
 ---
 
 ## Parte 2 — Cloudflare (Pages)
@@ -272,3 +294,4 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | 2026-10-16 | `publish.yml` fixa `--branch=main`; §2.3 documenta a production branch de projetos Direct Upload e a leitura/correção pela API (sem `jq`, usando Node). | ticket #06 |
 | 2026-10-16 | Deploy do Worker dinâmico (`especialista-do-ar-api`) no `publish.yml`; token passa a exigir `Workers Scripts: Edit` (§2.4); nova §2.6 (Worker + regra de limite por IP). | ticket #09 |
 | 2026-10-17 | §2.6: limite por IP passa a ser um *Rate Limiting binding* do Workers (`env.LIMITE_POR_IP` no `wrangler.jsonc`), já em `workers.dev`; regra de WAF vira alternativa com domínio próprio. | ticket #09 |
+| 2026-10-17 | §1.3 (nova): "Automatically delete head branches" ligado (`delete_branch_on_merge: true`) e como podar a ref local. | ticket #10 |
