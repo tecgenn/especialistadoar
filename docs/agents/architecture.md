@@ -177,6 +177,11 @@ nova exportação CSV
   gratuita apertar: Workers Paid.
 - **Cobrança:** adiada; um gate de pagamento ficaria na frente da parte dinâmica sem
   mudar as respostas.
+- **Portão da Fase 2 (2026-10-17):** aprovado **10/10** (critério ≥ 8/10). Nove das
+  dez perguntas foram respondidas **só com o estático**; apenas o **Valor
+  calculado** usou o Worker. A fase 3 (site) segue, e o Worker fica rebaixado a
+  *calculadora determinística + fallback* — `/search` e `/comparar` sem evidência
+  de necessidade. Ver ADR-0009 e `docs/aceitacao/portao-fase-2.md`.
 
 Ver ADR-0003.
 
