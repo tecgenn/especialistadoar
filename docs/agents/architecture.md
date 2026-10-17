@@ -150,8 +150,9 @@ nova exportação CSV
   determinística a partir de Valores oficiais + entradas da consulta, sempre com
   fórmula e entradas, nunca como Valor oficial). O dataset é **embutido** no
   bundle (importa `aparelhos.json` e `consulta.json`), sem D1. A lógica das rotas
-  (`src/rotas.ts`) é pura e testável na fronteira HTTP; o entry só liga o `fetch`.
-  Acesso aberto com limite por IP na Cloudflare. Ver ADR-0003.
+  (`src/rotas.ts`) é pura e testável na fronteira HTTP; o entry só liga o `fetch`
+  e o *Rate Limiting binding* (`env.LIMITE_POR_IP`, ver `ratelimits` no
+  `wrangler.jsonc`). Acesso aberto com **limite por IP** na Cloudflare. Ver ADR-0003.
 
 ## Interfaces
 
@@ -169,8 +170,11 @@ nova exportação CSV
 - **Consumidor do Worker:** somente o **Agente (consumidor)**. O **site não chama
   estas rotas** — a consulta dele roda no cliente (ADR-0008), então a cota gratuita
   fica reservada aos Agentes.
-- **Acesso:** aberto no MVP, com regra de rate por IP na Cloudflare. Plano B se a
-  quota gratuita apertar: Workers Paid.
+- **Acesso:** aberto no MVP, com **limite por IP** — hoje um *Rate Limiting
+  binding* do Workers (`env.LIMITE_POR_IP`, 60 req/60 s por `CF-Connecting-IP`),
+  best-effort e por localidade da Cloudflare; a regra de WAF (limite firme por
+  zona) é a alternativa quando houver domínio próprio. Plano B se a quota
+  gratuita apertar: Workers Paid.
 - **Cobrança:** adiada; um gate de pagamento ficaria na frente da parte dinâmica sem
   mudar as respostas.
 
