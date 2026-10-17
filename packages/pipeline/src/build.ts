@@ -8,6 +8,7 @@ import {
 import { join, resolve } from "node:path";
 import { type Anomalia, detectarAnomalias } from "./anomalias.ts";
 import { type Aparelho, SCHEMA_APARELHO } from "./aparelho.ts";
+import { type ItemConsulta, projetarConsulta } from "./consulta.ts";
 import { type ClassificacaoRevisao, classificarRevisao } from "./diff.ts";
 import {
   ARQUIVO_EXCECOES,
@@ -59,14 +60,16 @@ export interface BuildResult {
   registros: LinhaDaTabela[];
   anomalias: Anomalia[];
   aparelhos: Aparelho[];
+  consulta: ItemConsulta[];
   excecoes: ExcecaoManual[];
   vinculos: VinculoConfirmado[];
   revisao: ClassificacaoRevisao;
   relatorio: string;
 }
 
-function escreverJson(caminho: string, valor: unknown): void {
-  writeFileSync(caminho, `${JSON.stringify(valor, null, 2)}\n`);
+function escreverJson(caminho: string, valor: unknown, indentar = true): void {
+  const espaco = indentar ? 2 : undefined;
+  writeFileSync(caminho, `${JSON.stringify(valor, null, espaco)}\n`);
 }
 
 export const ORIGEM_PADRAO = "INMETRO — exportação de produtos";
@@ -217,6 +220,8 @@ export function runBuild(options: BuildOptions): BuildResult {
   const aparelhos = todosAparelhos.filter(aparelhoTemDadosDeclarados);
   validarBaseServida(aparelhos);
 
+  const consulta = projetarConsulta(aparelhos);
+
   const anterior = versaoPrecedente(manifest, versao);
   let aparelhosAnteriores: Aparelho[] | null = null;
   let anomaliasAnteriores: Anomalia[] = [];
@@ -248,6 +253,9 @@ export function runBuild(options: BuildOptions): BuildResult {
   escreverJsonl(join(buildDir, "anomalias.jsonl"), anomalias);
   escreverJsonl(join(buildDir, "aparelhos.jsonl"), aparelhos);
   escreverJson(join(buildDir, "aparelhos.json"), aparelhos);
+  // O dataset de consulta é o único artefato sem indentação: ele existe para o
+  // navegador baixar, e o formato enxuto o mantém perto dos ~350 KB (ADR-0008).
+  escreverJson(join(buildDir, "consulta.json"), consulta, false);
   escreverJson(join(buildDir, "schema.json"), SCHEMA_APARELHO);
   escreverJsonl(join(buildDir, ARQUIVO_EXCECOES), excecoes);
   escreverJsonl(join(buildDir, ARQUIVO_VINCULOS), vinculos);
@@ -272,6 +280,7 @@ export function runBuild(options: BuildOptions): BuildResult {
     registros,
     anomalias,
     aparelhos,
+    consulta,
     excecoes,
     vinculos,
     revisao,

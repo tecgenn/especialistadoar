@@ -8,7 +8,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 08 | Módulo de consulta compartilhado com filtros e busca | ready-for-agent | — |
+| 09 | Worker dinâmico /api/v1 | ready-for-agent | — |
 
 ## Completed
 
@@ -58,3 +58,11 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** A parte estática da API, sem Worker nem cota (ADR-0003): `abrirApiEstatica(buildDir)` lê `manifest.json` e `aparelhos.json` da base publicada e expõe **consulta por ID** (`porId`, `undefined` para ID inexistente), **listas** (`listar`) e a **Versão da tabela** (`versaoDaTabela`). Artefato ausente ou manifesto sem Versão atual falham com erro claro (nada de stack de ENOENT). O pacote é importável como `@especialista-do-ar/api` e o pipeline agora expõe seu contrato por `packages/pipeline/src/index.ts` — o `api` importa o entry, nunca os internos. Nenhuma rota dinâmica: é leitura pura de arquivos; o módulo de consulta (08) e o Worker (09) reutilizam essa base. `pnpm build` inalterado nos dados reais (sem regressão nos artefatos).
 - **Ticket:** #07 (local tracker: `07-api-estatica-arquivos-json`)
 - **Checks:** Vitest 116/116 (6 novos em `packages/api/test/estatica.test.ts`), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte (`git status` limpo nos artefatos).
+
+### 08 — Módulo de consulta compartilhado com filtros e busca (2026-10-16)
+
+- **Changed:** novo `packages/pipeline/src/consulta.ts` (contrato `ItemConsulta` + `projetarConsulta`; `build.ts` emite `data/build/consulta.json` — o único artefato JSON sem indentação, via `escreverJson(..., false)` — e devolve `consulta` no `BuildResult`; `index.ts` exporta o tipo); novo `packages/api/src/consulta.ts` (entry isomórfico: `criarConsulta(dataset)` com `filtrar`), `packages/api/package.json` (`exports["./consulta"]` + dependência `minisearch@^7`); testes `packages/pipeline/test/consulta.test.ts` (+ golden snapshot) e `packages/api/test/consulta.test.ts`; artefato publicado `data/build/consulta.json`.
+- **What works:** O `pnpm build` projeta a base servida num **dataset enxuto de consulta** (`consulta.json`): por Aparelho, a identidade (id, marca, modelo, tipo) e os valores agrupados de todas as Variantes com dedupe e ordenação — `capacidadesBtu` (BTU/h) e `tensoes` (V). O módulo de consulta isomórfico `@especialista-do-ar/api/consulta` (`criarConsulta(dataset)` → `filtrar(filtros)`) aplica **filtros por campo** (marca, tipo, BTU, tensão — valor textual em branco equivale a ausência de filtro) e **busca textual via MiniSearch** sobre marca/modelo/tipo, devolvendo a interseção ordenada por relevância. É **lógica pura, sem Node nem `fs`** (guarda de teste sobre o texto-fonte): a leitura de arquivo permanece em `estatica.ts` (Node-only), separada por entry point como exige o ADR-0008, para a ilha do site e o Worker reusarem uma só definição. O artefato entra no gate de reprodutibilidade do CI (`data/build`). Sem regressão nos demais artefatos.
+- **Ticket:** #08 (local tracker: `08-modulo-consulta-filtros-busca`)
+- **Checks:** Vitest 129/129 (13 novos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build` byte a byte.
+
