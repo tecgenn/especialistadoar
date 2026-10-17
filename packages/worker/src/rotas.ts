@@ -21,6 +21,19 @@ export interface DependenciasServidor {
   consulta: ItemConsulta[];
 }
 
+/**
+ * Limita requisições por uma chave (ex.: o IP do cliente). Resolve `true` quando
+ * a requisição é permitida. O entry liga isto ao *Rate Limiting binding* do
+ * Workers (`env.LIMITE_POR_IP`, ver `wrangler.jsonc`); os testes passam um stub.
+ */
+export type Limitador = (chave: string) => Promise<boolean>;
+
+/** Cabeçalho que a Cloudflare injeta com o IP do cliente. */
+const CABECALHO_IP = "CF-Connecting-IP";
+
+/** Janela do limite, em segundos — deve casar com o `period` em `wrangler.jsonc`. */
+const JANELA_SEGUNDOS = 60;
+
 /** Um Valor calculado de uma Variante: sempre com a fórmula e as entradas usadas. */
 export interface ValorCalculado {
   tensao: Tensao | null;
@@ -44,15 +57,26 @@ class ErroHttp extends Error {
   }
 }
 
-function json(corpo: unknown, status = 200): Response {
+function json(
+  corpo: unknown,
+  status = 200,
+  cabecalhos: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(corpo), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      ...cabecalhos,
+    },
   });
 }
 
-function erro(mensagem: string, status: number): Response {
-  return json({ erro: mensagem }, status);
+function erro(
+  mensagem: string,
+  status: number,
+  cabecalhos?: Record<string, string>,
+): Response {
+  return json({ erro: mensagem }, status, cabecalhos);
 }
 
 /** Lê um parâmetro textual; valor em branco é ausência. */
@@ -205,5 +229,37 @@ export function criarServidor(
       }
       throw causa;
     }
+  };
+}
+
+/** O IP do cliente visto pela Cloudflare; `undefined` quando não há (fora dela). */
+function ipDoCliente(request: Request): string | undefined {
+  const ip = request.headers.get(CABECALHO_IP)?.trim();
+  return ip === undefined || ip === "" ? undefined : ip;
+}
+
+/**
+ * Envolve um servidor de rotas com um limite **por IP** (ADR-0003: acesso aberto
+ * no MVP, com regra de limite por IP na Cloudflare). A chave é o IP do cliente
+ * visto pela Cloudflare (`CF-Connecting-IP`); estourado o limite, responde `429`
+ * com `Retry-After`, sem chegar às rotas. O limite de fato fica no binding do
+ * Workers — aqui só o ponto de decisão, testável sem `workerd`.
+ *
+ * Quando não há IP atribuível (fora da Cloudflare, ex.: testes), o limite é
+ * dispensado: um balde compartilhado para todos os chamadores sem IP seria pior
+ * do que não atribuir, e em produção o cabeçalho sempre vem.
+ */
+export function comLimitePorIp(
+  servidor: (request: Request) => Response,
+  limitar: Limitador,
+): (request: Request) => Promise<Response> {
+  return async (request) => {
+    const ip = ipDoCliente(request);
+    if (ip !== undefined && !(await limitar(ip))) {
+      return erro("Muitas requisições — tente novamente mais tarde.", 429, {
+        "retry-after": String(JANELA_SEGUNDOS),
+      });
+    }
+    return servidor(request);
   };
 }

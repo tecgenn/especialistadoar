@@ -201,26 +201,27 @@ O Worker dinâmico (busca, comparação e Valor calculado) vive em
 merge — o `publish.yml` roda `wrangler deploy` com as mesmas credenciais do Pages
 (exige o token com `Workers Scripts: Edit`, ver §2.4).
 
-O acesso é **aberto no MVP**, com **limite por IP na Cloudflare** (ADR-0003) — é
-uma configuração de plataforma, não código. Uma *Rate limiting rule* do WAF se
-aplica a uma **zona**; se o Worker estiver só em `workers.dev`, primeiro dê-lhe um
-domínio próprio (Workers → `especialista-do-ar-api` → Settings → Domains & Routes
-→ Add Custom Domain) ou use a alternativa com binding abaixo.
+O acesso é **aberto no MVP**, com **limite por IP** (ADR-0003). O limite é
+implementado como *Rate Limiting binding* do Workers (`env.LIMITE_POR_IP`,
+declarado em `ratelimits` no `packages/worker/wrangler.jsonc`, 60 requisições por
+60 s chaveadas por `CF-Connecting-IP`): funciona **já em `workers.dev`**, sem
+domínio próprio, e sobe junto com o código — sem passo de dashboard. O
+`publish.yml` faz `wrangler deploy`, que provisiona o binding; não há nada a
+configurar à mão.
 
-Dashboard: **Security → WAF → Rate limiting rules → Create rule**:
+> **Natureza do binding:** é *best-effort* e contado **por localidade** da
+> Cloudflare (não global) — protege contra abuso trivial, mas não é um teto firme;
+> um cliente que atinja várias localidades pode passar de 60/60 s. É uma rede de
+> proteção, não uma garantia.
 
-- **Name:** `api-v1-por-ip`
-- **If incoming requests match:** `URI Path` *starts with* `/api/v1`
-- **Then:** Rate limit — ex. 60 requisições por 1 minuto, contando por IP
-  (`ip.src`).
-- **Action:** Block por 10 minutos (ou Managed Challenge).
-
-Confirme os limites do plano gratuito antes de contar com a regra; se a cota
-apertar, o plano B é Workers Paid (ADR-0003).
-
-> **Alternativa sem zona (`workers.dev`):** a *Rate Limiting binding* do Workers,
-> chaveada por `CF-Connecting-IP`, configurada no `wrangler.jsonc`. Fica como
-> caminho B; a regra de WAF acima é a escolhida quando há domínio próprio.
+> **Alternativa (regra de WAF por IP):** quando o Worker tiver **domínio próprio**
+> numa zona, dá para trocar o binding por uma *Rate limiting rule* do WAF (não
+> exige código, mas exige zona e é um limite global firme): **Security → WAF →
+> Rate limiting rules → Create rule**; *Name* `api-v1-por-ip`; *If* `URI Path`
+> *starts with* `/api/v1`; 60 requisições por 1 minuto contando `ip.src`; *Action*
+> Block por 10 minutos (ou Managed Challenge). Confirme os limites do plano
+> gratuito antes de contar com a regra; se a cota apertar, o plano B é Workers
+> Paid (ADR-0003).
 
 Verificação (troque pelo host do Worker):
 
@@ -270,3 +271,4 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | 2026-10-15 | Criação. GitHub Actions (`ci.yml` + `publish.yml`), proteção de branch, Cloudflare Pages. | ticket #06 |
 | 2026-10-16 | `publish.yml` fixa `--branch=main`; §2.3 documenta a production branch de projetos Direct Upload e a leitura/correção pela API (sem `jq`, usando Node). | ticket #06 |
 | 2026-10-16 | Deploy do Worker dinâmico (`especialista-do-ar-api`) no `publish.yml`; token passa a exigir `Workers Scripts: Edit` (§2.4); nova §2.6 (Worker + regra de limite por IP). | ticket #09 |
+| 2026-10-17 | §2.6: limite por IP passa a ser um *Rate Limiting binding* do Workers (`env.LIMITE_POR_IP` no `wrangler.jsonc`), já em `workers.dev`; regra de WAF vira alternativa com domínio próprio. | ticket #09 |

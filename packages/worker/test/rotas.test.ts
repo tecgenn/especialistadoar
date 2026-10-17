@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { Aparelho, ItemConsulta } from "@especialista-do-ar/pipeline";
 import { runBuild } from "@especialista-do-ar/pipeline";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { criarServidor } from "../src/rotas.ts";
+import { comLimitePorIp, criarServidor } from "../src/rotas.ts";
 
 const fixtureAparelhos = fileURLToPath(
   new URL(
@@ -220,6 +220,58 @@ describe("Worker /api/v1 — roteamento", () => {
       new Request("https://api.test/api/v1/search", { method: "POST" }),
     );
     expect(resposta.status).toBe(405);
+  });
+});
+
+describe("Worker /api/v1 — limite por IP", () => {
+  it("deixa passar a requisição quando o limite permite", async () => {
+    const atendido = comLimitePorIp(atender, async () => true);
+    const resposta = await atendido(
+      new Request("https://api.test/api/v1/search", {
+        headers: { "CF-Connecting-IP": "203.0.113.7" },
+      }),
+    );
+    expect(resposta.status).toBe(200);
+  });
+
+  it("responde 429 (com Retry-After) quando estoura, sem tocar nas rotas", async () => {
+    const atendido = comLimitePorIp(atender, async () => false);
+    const resposta = await atendido(
+      new Request("https://api.test/api/v1/search", {
+        headers: { "CF-Connecting-IP": "203.0.113.9" },
+      }),
+    );
+    expect(resposta.status).toBe(429);
+    expect(resposta.headers.get("retry-after")).toBe("60");
+    const corpo = (await resposta.json()) as CorpoErro;
+    expect(corpo.erro).toMatch(/requisições/i);
+  });
+
+  it("não limita quando não há IP atribuível (fora da Cloudflare)", async () => {
+    let consultou = false;
+    const atendido = comLimitePorIp(atender, async () => {
+      consultou = true;
+      return false;
+    });
+    const resposta = await atendido(
+      new Request("https://api.test/api/v1/search"),
+    );
+    expect(resposta.status).toBe(200);
+    expect(consultou).toBe(false);
+  });
+
+  it("usa o IP do cliente (CF-Connecting-IP) como chave", async () => {
+    const chaves: string[] = [];
+    const atendido = comLimitePorIp(atender, async (chave) => {
+      chaves.push(chave);
+      return true;
+    });
+    await atendido(
+      new Request("https://api.test/api/v1/search", {
+        headers: { "CF-Connecting-IP": "198.51.100.42" },
+      }),
+    );
+    expect(chaves).toEqual(["198.51.100.42"]);
   });
 });
 
