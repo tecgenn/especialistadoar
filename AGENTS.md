@@ -17,6 +17,10 @@ by `/grill-with-docs`.
 
 Issues and PRDs live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
 
+Ticket references in commits follow the **tracker mode**: `Ticket: 10` on the last
+line for the local markdown tracker; `(#123)` when the tracker is GitHub. See
+`docs/agents/issue-tracker.md`.
+
 ### Triage labels
 
 Five canonical roles mapped 1:1: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
