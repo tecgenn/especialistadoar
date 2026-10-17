@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./consulta": "./src/consulta.ts"
   },
   "dependencies": {
-    "@especialista-do-ar/pipeline": "workspace:*"
+    "@especialista-do-ar/pipeline": "workspace:*",
+    "minisearch": "^7.2.0"
   }
 }

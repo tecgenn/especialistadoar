@@ -16,15 +16,15 @@ BTU, tensão) e busca textual. É importado pela **ilha do site** (navegador) e 
 
 **Blocked by:** 07 — API estática (arquivos JSON).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O build emite `data/build/consulta.json` e o gate de reprodutibilidade o cobre.
-- [ ] Um único módulo de consulta (entry isomórfico) é usado pela ilha e pelo Worker.
-- [ ] O entry de consulta não importa Node nem `fs`.
-- [ ] Filtro por capacidade (BTU) retorna o conjunto correto.
-- [ ] Filtro por tensão retorna o conjunto correto.
-- [ ] Busca textual (MiniSearch) encontra Aparelhos por texto.
-- [ ] Testes cobrem o módulo nos dois ambientes de consumo.
+- [x] O build emite `data/build/consulta.json` e o gate de reprodutibilidade o cobre.
+- [x] Um único módulo de consulta (entry isomórfico) é usado pela ilha e pelo Worker.
+- [x] O entry de consulta não importa Node nem `fs`.
+- [x] Filtro por capacidade (BTU) retorna o conjunto correto.
+- [x] Filtro por tensão retorna o conjunto correto.
+- [x] Busca textual (MiniSearch) encontra Aparelhos por texto.
+- [x] Testes cobrem o módulo nos dois ambientes de consumo.
 
 ## Origin
 

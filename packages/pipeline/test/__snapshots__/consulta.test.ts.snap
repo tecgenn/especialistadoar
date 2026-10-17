@@ -1,0 +1,6 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runBuild — artefato consulta.json > bate com o snapshot golden de consulta.json 1`] = `
+"[{"id":"ap-4e985f48c99e","marca":"GREE","modelo":"GREE-09","tipo":"Split Hi-Wall","capacidadesBtu":[9000],"tensoes":[127,220]},{"id":"ap-3db0d78621d7","marca":"KENNEDY","modelo":"K-09INT - K-09EXT","tipo":"Janela","capacidadesBtu":[9000],"tensoes":[220]},{"id":"ap-97ddaad7049d","marca":"LG","modelo":"LG-09","tipo":"Split Hi-Wall","capacidadesBtu":[9000],"tensoes":[220]}]
+"
+`;
