@@ -30,7 +30,7 @@ existir **fora do git** para que ele funcione de ponta a ponta.
 | Workflow | Dispara em | O que faz |
 |---|---|---|
 | `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
-| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda e publica `data/build` no Cloudflare Pages; pula com aviso se as credenciais não existirem. |
+| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda e publica `data/build` no Cloudflare Pages **e** faz `wrangler deploy` do Worker dinâmico (`packages/worker`); pula com aviso se as credenciais não existirem. |
 | `.github/actions/setup/action.yml` | (composite usado pelos dois) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
 
 O **merge em `main` é a publicação** (ADR-0004). Nenhum caminho publica sem PR.
@@ -175,6 +175,7 @@ projeto**, acima.
 Dashboard → **My Profile → API Tokens → Create Token → Create Custom Token**:
 
 - **Permissions:** `Account` · `Cloudflare Pages` · `Edit`
+- **Permissions:** `Account` · `Workers Scripts` · `Edit` — necessária para o deploy do Worker dinâmico
 - **Account Resources:** inclua a conta usada acima
 - (Opcional) **Permissions:** `Account` · `Account Settings` · `Read` — só se você
   usar `wrangler whoami` no CI.
@@ -190,6 +191,42 @@ Depois, volte à seção 1.1 e grave o token + o Account ID como segredos.
 
 **Pages → projeto → Custom domains → Set up a custom domain** e siga as
 instruções de DNS. Registre aqui o domínio escolhido quando houver.
+
+### 2.6 Worker dinâmico (`/api/v1`) e limite por IP
+
+O Worker dinâmico (busca, comparação e Valor calculado) vive em
+`packages/worker` e se chama **`especialista-do-ar-api`** (o `name` do
+`wrangler.jsonc`). Diferente do Pages, **não há projeto a criar à mão**: o
+`wrangler deploy` cria o Worker na primeira execução. O deploy é automático no
+merge — o `publish.yml` roda `wrangler deploy` com as mesmas credenciais do Pages
+(exige o token com `Workers Scripts: Edit`, ver §2.4).
+
+O acesso é **aberto no MVP**, com **limite por IP na Cloudflare** (ADR-0003) — é
+uma configuração de plataforma, não código. Uma *Rate limiting rule* do WAF se
+aplica a uma **zona**; se o Worker estiver só em `workers.dev`, primeiro dê-lhe um
+domínio próprio (Workers → `especialista-do-ar-api` → Settings → Domains & Routes
+→ Add Custom Domain) ou use a alternativa com binding abaixo.
+
+Dashboard: **Security → WAF → Rate limiting rules → Create rule**:
+
+- **Name:** `api-v1-por-ip`
+- **If incoming requests match:** `URI Path` *starts with* `/api/v1`
+- **Then:** Rate limit — ex. 60 requisições por 1 minuto, contando por IP
+  (`ip.src`).
+- **Action:** Block por 10 minutos (ou Managed Challenge).
+
+Confirme os limites do plano gratuito antes de contar com a regra; se a cota
+apertar, o plano B é Workers Paid (ADR-0003).
+
+> **Alternativa sem zona (`workers.dev`):** a *Rate Limiting binding* do Workers,
+> chaveada por `CF-Connecting-IP`, configurada no `wrangler.jsonc`. Fica como
+> caminho B; a regra de WAF acima é a escolhida quando há domínio próprio.
+
+Verificação (troque pelo host do Worker):
+
+```bash
+curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gree"
+```
 
 ---
 
@@ -232,3 +269,4 @@ instruções de DNS. Registre aqui o domínio escolhido quando houver.
 |---|---|---|
 | 2026-10-15 | Criação. GitHub Actions (`ci.yml` + `publish.yml`), proteção de branch, Cloudflare Pages. | ticket #06 |
 | 2026-10-16 | `publish.yml` fixa `--branch=main`; §2.3 documenta a production branch de projetos Direct Upload e a leitura/correção pela API (sem `jq`, usando Node). | ticket #06 |
+| 2026-10-16 | Deploy do Worker dinâmico (`especialista-do-ar-api`) no `publish.yml`; token passa a exigir `Workers Scripts: Edit` (§2.4); nova §2.6 (Worker + regra de limite por IP). | ticket #09 |

@@ -10,15 +10,15 @@
 
 **Blocked by:** 08 — Módulo de consulta compartilhado com filtros e busca.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `/api/v1/...` serve busca, comparação e Valor calculado.
-- [ ] O Worker importa o módulo de consulta do 08, sem lógica de filtro/busca duplicada.
-- [ ] Todo Valor calculado acompanha a fórmula e as entradas usadas.
-- [ ] O Valor calculado nunca é apresentado como um Valor oficial.
-- [ ] O Worker consome o dataset embutido, sem D1 como fonte da verdade.
-- [ ] Existe regra de limite por IP.
-- [ ] Testes cobrem cada rota dinâmica.
+- [x] `/api/v1/...` serve busca, comparação e Valor calculado.
+- [x] O Worker importa o módulo de consulta do 08, sem lógica de filtro/busca duplicada.
+- [x] Todo Valor calculado acompanha a fórmula e as entradas usadas.
+- [x] O Valor calculado nunca é apresentado como um Valor oficial.
+- [x] O Worker consome o dataset embutido, sem D1 como fonte da verdade.
+- [x] Existe regra de limite por IP.
+- [x] Testes cobrem cada rota dinâmica.
 
 ## Origin
 

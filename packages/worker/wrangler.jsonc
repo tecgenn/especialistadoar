@@ -1,0 +1,5 @@
+{
+  "name": "especialista-do-ar-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-16"
+}

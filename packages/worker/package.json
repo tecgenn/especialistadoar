@@ -1,0 +1,10 @@
+{
+  "name": "@especialista-do-ar/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@especialista-do-ar/api": "workspace:*",
+    "@especialista-do-ar/pipeline": "workspace:*"
+  }
+}

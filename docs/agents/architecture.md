@@ -65,7 +65,8 @@ data/
     vinculos-confirmados.jsonl        # cópia publicada da Camada curada
 reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão (fase 1)
 packages/pipeline/                    # o pipeline de build (CLI)
-packages/api/                         # a API: leitura estática (Node) + módulo de consulta isomórfico
+packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
+packages/worker/                      # o Worker dinâmico /api/v1 (busca, comparação, Valor calculado)
 apps/site/                            # catálogo Astro (fase 3)
 ```
 
@@ -143,6 +144,14 @@ nova exportação CSV
   e pelo **Worker** (Agente), uma só definição nos dois ambientes. A leitura de
   arquivo fica de fora desse entry (separar por entry point é o que impede `fs`
   de entrar no bundle). Ver ADR-0008.
+- **worker** — em `packages/worker`, o Worker dinâmico de `.github/workflows/publish.yml`
+  que serve `/api/v1/...` **só para o Agente**: `search` (delega ao módulo de
+  consulta), `comparar` (Aparelhos lado a lado) e `valor-calculado` (conta
+  determinística a partir de Valores oficiais + entradas da consulta, sempre com
+  fórmula e entradas, nunca como Valor oficial). O dataset é **embutido** no
+  bundle (importa `aparelhos.json` e `consulta.json`), sem D1. A lógica das rotas
+  (`src/rotas.ts`) é pura e testável na fronteira HTTP; o entry só liga o `fetch`.
+  Acesso aberto com limite por IP na Cloudflare. Ver ADR-0003.
 
 ## Interfaces
 
@@ -174,7 +183,9 @@ Ver ADR-0003.
   detalhe e `consulta.json` para a ilha de consulta.
 - **Publicação (fase 1):** o merge em `main` publica `data/build/` como arquivos
   estáticos no **Cloudflare Pages** (é a parte estática da API, sem Worker nem
-  cota). Setup manual em `docs/agents/ci-cd-setup.md`; ver ADR-0004.
+  cota). O merge também faz `wrangler deploy` do Worker dinâmico
+  (`packages/worker`). Setup manual em `docs/agents/ci-cd-setup.md`; ver
+  ADR-0004.
 - **D1 (SQLite)** é só plano B, derivado do JSONL — nunca fonte de verdade.
 - **R2** guarda blobs grandes se os assets estáticos passarem do bundle do site.
 - **Caveats do free tier:** o plano gratuito do Workers tem tetos de requisição/CPU e
