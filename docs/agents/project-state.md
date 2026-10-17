@@ -8,7 +8,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 | # | Ticket | Status | Blocked by |
 |---|--------|--------|------------|
-| 09 | Worker dinâmico /api/v1 | ready-for-agent | — |
+| 10 | Documentação para agentes e teste de aceitação (portão) | ready-for-agent | — |
 
 ## Completed
 
@@ -65,4 +65,11 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** O `pnpm build` projeta a base servida num **dataset enxuto de consulta** (`consulta.json`): por Aparelho, a identidade (id, marca, modelo, tipo) e os valores agrupados de todas as Variantes com dedupe e ordenação — `capacidadesBtu` (BTU/h) e `tensoes` (V). O módulo de consulta isomórfico `@especialista-do-ar/api/consulta` (`criarConsulta(dataset)` → `filtrar(filtros)`) aplica **filtros por campo** (marca, tipo, BTU, tensão — valor textual em branco equivale a ausência de filtro) e **busca textual via MiniSearch** sobre marca/modelo/tipo, devolvendo a interseção ordenada por relevância. É **lógica pura, sem Node nem `fs`** (guarda de teste sobre o texto-fonte): a leitura de arquivo permanece em `estatica.ts` (Node-only), separada por entry point como exige o ADR-0008, para a ilha do site e o Worker reusarem uma só definição. O artefato entra no gate de reprodutibilidade do CI (`data/build`). Sem regressão nos demais artefatos.
 - **Ticket:** #08 (local tracker: `08-modulo-consulta-filtros-busca`)
 - **Checks:** Vitest 129/129 (13 novos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build` byte a byte.
+
+### 09 — Worker dinâmico /api/v1 (2026-10-16)
+
+- **Changed:** novo pacote `packages/worker` (`package.json` `@especialista-do-ar/worker` com os workspace deps `api`+`pipeline`, `tsconfig.json`, `wrangler.jsonc` — `name: especialista-do-ar-api`, `main: src/index.ts`, `compatibility_date: 2026-10-16`; `src/rotas.ts` = `criarServidor`/`DependenciasServidor`/`ValorCalculado`, entry `src/index.ts`, `test/rotas.test.ts`); `.github/workflows/publish.yml` (+ passo `Deploy the dynamic API Worker`, `cloudflare/wrangler-action@v4`, `workingDirectory: packages/worker`, `command: deploy`, no mesmo gate de credenciais dos Pages); `docs/agents/ci-cd-setup.md` (§2.6 — Worker + regra WAF Rate limiting por IP, permissão `Workers Scripts: Edit` no token, linha do publish e Registro de mudanças); `docs/agents/architecture.md` (camadas + bullet do módulo `worker` + publicação); `.gitignore` (+`.wrangler/`).
+- **What works:** A parte dinâmica da API (ADR-0003), consumida **só por Agentes** — o site não a chama. `GET /api/v1/search` (busca/filtros sobre `consulta.json`), `GET /api/v1/comparar` (comparação de Aparelhos por id) e `GET /api/v1/valor-calculado` (custo por conta determinística). A lógica de rotas é **pura** (`rotas.ts` sem Node nem `fs`, guarda de teste) e delega filtro/busca ao módulo isomórfico do 08 (`criarConsulta`), sem lógica duplicada; o entry embute o dataset (`aparelhos.json` + `consulta.json`) via `import … with { type: "json" }`, sem D1 como fonte da verdade. Todo Valor calculado acompanha a fórmula (`consumoAnualKwh × tarifa`) e as **entradas** usadas, com aviso de que **não é um Valor oficial**; `tensao` filtra as Variantes e, quando nada casa, devolve `404` com mensagem (em vez de `200` vazio). O Worker vai ao ar pela mesma esteira: o `publish.yml` faz `wrangler deploy` no merge em `main`, sob o mesmo gate de PR; o limite por IP é configuração de plataforma (runbook em `ci-cd-setup.md`). `pnpm build` inalterado nos dados reais.
+- **Ticket:** #09 (local tracker: `09-worker-dinamico-api-v1`)
+- **Checks:** Vitest 147/147 (18 novos), tsc --noEmit OK, biome check OK; `wrangler deploy --dry-run` empacota (Total Upload 3407.06 KiB / gzip 279.91 KiB, limite 64 MiB); `pnpm build` reproduz `data/build`+`reports` byte a byte.
 
