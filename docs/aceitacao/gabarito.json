@@ -1,0 +1,208 @@
+{
+  "$comment": "Gabarito do portão da Fase 2 (ticket #10). NÃO entregar ao Agente: as perguntas ficam em perguntas.md, sem as respostas. Cada verificação é reconferida contra data/build/ por packages/api/test/portao-fase-2.test.ts.",
+  "perguntas": [
+    {
+      "id": 1,
+      "resposta": "Versão da tabela obtida em 2026-10-12 (arquivo raw/inmetro-export-2026-10-12.csv, origem \"INMETRO — exportação de produtos\"), com 7474 Linhas. É a versão identificada pelo sha256 ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407.",
+      "verificacoes": [
+        { "tipo": "manifest", "campo": "obtidoEm", "esperado": "2026-10-12" },
+        { "tipo": "manifest", "campo": "contagemLinhas", "esperado": 7474 },
+        {
+          "tipo": "manifest",
+          "campo": "arquivo",
+          "esperado": "raw/inmetro-export-2026-10-12.csv"
+        },
+        {
+          "tipo": "manifest",
+          "campo": "origem",
+          "esperado": "INMETRO — exportação de produtos"
+        },
+        {
+          "tipo": "manifest",
+          "campo": "hash",
+          "esperado": "ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "resposta": "A base servida tem 2460 Aparelhos (só os com Dados declarados) e 15 Anomalias sinalizadas.",
+      "verificacoes": [
+        { "tipo": "contagem-aparelhos", "esperado": 2460 },
+        { "tipo": "contagem-anomalias", "esperado": 15 }
+      ]
+    },
+    {
+      "id": 3,
+      "resposta": "ap-4693b862644d é o Aparelho da marca KENNEDY, modelo \"KEN01F12INT - KEN01F12EXT\", tipo Split Hi-Wall. Seu Registro INMETRO é 003694/2023, com status Ativo. Proveniência: Linha 445 da Versão da tabela.",
+      "verificacoes": [
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "marca",
+          "esperado": "KENNEDY"
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "modelo",
+          "esperado": "KEN01F12INT - KEN01F12EXT"
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "tipo",
+          "esperado": "Split Hi-Wall"
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "registros.0.numero",
+          "esperado": "003694/2023"
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "registros.0.status",
+          "esperado": "Ativo"
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "linhas",
+          "esperado": [445]
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "resposta": "Há 316 Aparelhos do tipo Split Cassete na base servida.",
+      "verificacoes": [
+        {
+          "tipo": "contagem-consulta",
+          "filtros": { "tipo": "Split Cassete" },
+          "esperado": 316
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "resposta": "124 Aparelhos atendem 127 V e 20 são bivolt (aceitam mais de uma tensão, tipicamente 127 e 220 V).",
+      "verificacoes": [
+        {
+          "tipo": "contagem-consulta",
+          "filtros": { "tensao": 127 },
+          "esperado": 124
+        },
+        {
+          "tipo": "contagem-consulta",
+          "filtros": { "variasTensoes": true },
+          "esperado": 20
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "resposta": "Há 31 Aparelhos da marca ELGIN do tipo Split Piso-teto.",
+      "verificacoes": [
+        {
+          "tipo": "contagem-consulta",
+          "filtros": { "marca": "ELGIN", "tipo": "Split Piso-teto" },
+          "esperado": 31
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "resposta": "É um só Aparelho: a tensão não faz parte da identidade. O GREE \"GJC07BK-A3NRND2A\" (ap-06e4068d6f8f, tipo Janela) tem 3 Variantes — uma sem tensão declarada, uma a 220 V e uma a 127 V — logo atende 127 e 220 V sem virar dois Aparelhos.",
+      "verificacoes": [
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-06e4068d6f8f",
+          "caminho": "variantes.length",
+          "esperado": 3
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-06e4068d6f8f",
+          "caminho": "variantes.0.tensao",
+          "esperado": null
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-06e4068d6f8f",
+          "caminho": "variantes.1.tensao.voltagens",
+          "esperado": [220]
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-06e4068d6f8f",
+          "caminho": "variantes.2.tensao.voltagens",
+          "esperado": [127]
+        },
+        {
+          "tipo": "campo-consulta",
+          "id": "ap-06e4068d6f8f",
+          "caminho": "tensoes",
+          "esperado": [127, 220]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "resposta": "Consumo anual declarado: KENNEDY ap-4693b862644d (KEN01F12INT - KEN01F12EXT) = 818 kWh/ano, IDRS 3,5; DAIKIN ap-b0e771cbc5a3 (FTHP12S5VL / RHP12S5VL) = 350 kWh/ano, IDRS 8,3. O DAIKIN consome menos por ano.",
+      "verificacoes": [
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "variantes.0.dados.consumoAnualKwh",
+          "esperado": 818
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-4693b862644d",
+          "caminho": "variantes.0.dados.idrs",
+          "esperado": 3.5
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-b0e771cbc5a3",
+          "caminho": "variantes.0.dados.consumoAnualKwh",
+          "esperado": 350
+        },
+        {
+          "tipo": "campo-aparelho",
+          "id": "ap-b0e771cbc5a3",
+          "caminho": "variantes.0.dados.idrs",
+          "esperado": 8.3
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "resposta": "Custo anual estimado do KENNEDY ap-4693b862644d com tarifa R$ 0,95/kWh = R$ 777,10/ano. Fórmula: consumoAnualKwh × tarifa; entradas: tarifa 0,95 R$/kWh e consumoAnualKwh 818. É um Valor calculado a partir de Valores oficiais e das entradas da consulta — não é um Valor oficial do INMETRO.",
+      "verificacoes": [
+        {
+          "tipo": "valor-calculado",
+          "id": "ap-4693b862644d",
+          "tarifa": 0.95,
+          "esperadoConsumoKwh": 818,
+          "esperadoFormula": "consumoAnualKwh × tarifa"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "resposta": "Na Linha 892, o campo \"Carga do Fluido Refrigerante (g)\" veio com o valor \"640g / 600g / 690g\" — uma Anomalia do tipo valor_multiplo (múltiplos números onde se esperava um só). O valor original é preservado.",
+      "verificacoes": [
+        {
+          "tipo": "anomalia",
+          "linha": 892,
+          "campo": "Carga do Fluido Refrigerante (g)",
+          "valor": "640g / 600g / 690g",
+          "tipoAnomalia": "valor_multiplo"
+        }
+      ]
+    }
+  ]
+}

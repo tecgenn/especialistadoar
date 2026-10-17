@@ -9,13 +9,13 @@
 
 **Blocked by:** 09 — Worker dinâmico `/api/v1`.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A documentação explica como um Agente consome a base, começando pelo estático.
-- [ ] Existe um conjunto de ~10 perguntas reais com gabarito.
-- [ ] Um Agente acerta ≥ 8/10 sem intervenção humana.
-- [ ] O caminho usado em cada resposta é logado.
-- [ ] O resultado está registrado como decisão explícita (seguir para o site ou reavaliar a API).
+- [x] A documentação explica como um Agente consome a base, começando pelo estático.
+- [x] Existe um conjunto de ~10 perguntas reais com gabarito.
+- [x] Um Agente acerta ≥ 8/10 sem intervenção humana (10/10 — ver `docs/aceitacao/portao-fase-2.md`).
+- [x] O caminho usado em cada resposta é logado (na tabela e no anexo do relatório).
+- [x] O resultado está registrado como decisão explícita (seguir para o site — ADR-0009).
 
 ## Origin
 
