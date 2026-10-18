@@ -14,14 +14,14 @@ detalhe pré-renderizadas para cada Aparelho, mais **uma única ilha** de consul
 
 **Blocked by:** 10 — Documentação para agentes e teste de aceitação (portão). O portão precisa passar antes de investir no site.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O catálogo Astro publica os Aparelhos com Dados declarados (detalhe pré-renderizado).
-- [ ] Busca e filtro interativos funcionam na única ilha, usando o módulo de consulta (08).
-- [ ] O estado da consulta é refletido na URL e restaurado ao abrir o link.
-- [ ] O site não realiza chamadas ao Worker.
-- [ ] O conteúdo do site é indexável.
-- [ ] O site é publicado como build estático.
+- [x] O catálogo Astro publica os Aparelhos com Dados declarados (detalhe pré-renderizado).
+- [x] Busca e filtro interativos funcionam na única ilha, usando o módulo de consulta (08).
+- [x] O estado da consulta é refletido na URL e restaurado ao abrir o link.
+- [x] O site não realiza chamadas ao Worker.
+- [x] O conteúdo do site é indexável.
+- [x] O site é publicado como build estático.
 
 ## Origin
 

@@ -67,7 +67,7 @@ reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão 
 packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
 packages/worker/                      # o Worker dinâmico /api/v1 (busca, comparação, Valor calculado)
-apps/site/                            # catálogo Astro (fase 3)
+apps/site/                            # catálogo Astro estático (fase 3)
 ```
 
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
@@ -153,6 +153,14 @@ nova exportação CSV
   (`src/rotas.ts`) é pura e testável na fronteira HTTP; o entry só liga o `fetch`
   e o *Rate Limiting binding* (`env.LIMITE_POR_IP`, ver `ratelimits` no
   `wrangler.jsonc`). Acesso aberto com **limite por IP** na Cloudflare. Ver ADR-0003.
+- **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
+  detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
+  **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
+  filtra/busca **no cliente** pelo módulo isomórfico (08), com o estado na URL
+  (`?marca=&tipo=&btu=&tensao=&q=`). O site **não** chama o Worker (ADR-0008); uma
+  integração copia `data/build/*` para `dist/`, então a API estática continua
+  servida nas mesmas URLs (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind
+  indexa o conteúdo do site.
 
 ## Interfaces
 
@@ -190,11 +198,12 @@ Ver ADR-0003.
 - O **dataset embarcado** é canônico: os artefatos JSONL/JSON são a fonte de verdade
   e o site consome uma cópia em build-time — `aparelhos.json` para as páginas de
   detalhe e `consulta.json` para a ilha de consulta.
-- **Publicação (fase 1):** o merge em `main` publica `data/build/` como arquivos
-  estáticos no **Cloudflare Pages** (é a parte estática da API, sem Worker nem
-  cota). O merge também faz `wrangler deploy` do Worker dinâmico
-  (`packages/worker`). Setup manual em `docs/agents/ci-cd-setup.md`; ver
-  ADR-0004.
+- **Publicação (fase 1):** o merge em `main` publica o **build do site**
+  (`apps/site/dist`) no **Cloudflare Pages** — o `pnpm build:site` roda sobre
+  `data/build` e copia a base servida para a raiz do site, então a parte estática
+  da API (sem Worker nem cota) continua servida ao lado das páginas. O merge também
+  faz `wrangler deploy` do Worker dinâmico (`packages/worker`). Setup manual em
+  `docs/agents/ci-cd-setup.md`; ver ADR-0004.
 - **D1 (SQLite)** é só plano B, derivado do JSONL — nunca fonte de verdade.
 - **R2** guarda blobs grandes se os assets estáticos passarem do bundle do site.
 - **Caveats do free tier:** o plano gratuito do Workers tem tetos de requisição/CPU e
@@ -221,7 +230,8 @@ Ver ADR-0003.
   mantida por decisão do ticket #06). O CI roda lint, typecheck, build
   (validação Ajv + invariantes) e Vitest, e inclui um gate de reprodutibilidade
   que falha se `data/build`/`reports` divergirem de um `pnpm build` novo. A
-  publicação é via PR (merge = deploy de `data/build` no Cloudflare Pages). O que
+  publicação é via PR (merge = deploy do **site** — `apps/site/dist`, que embute a
+  base servida — no Cloudflare Pages). O que
   precisa existir **fora do git** (secrets/variables, proteção de branch, projeto
   Pages) está em `docs/agents/ci-cd-setup.md`. Ver ADR-0002 e ADR-0004.
 

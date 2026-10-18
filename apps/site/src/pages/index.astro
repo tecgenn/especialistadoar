@@ -1,0 +1,23 @@
+---
+import consultaJson from "@dados/consulta.json";
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import Consulta from "../components/Consulta.tsx";
+import Base from "../layouts/Base.astro";
+import { opcoesDe } from "../lib/opcoes.ts";
+
+const dataset = consultaJson as ItemConsulta[];
+const opcoes = opcoesDe(dataset);
+---
+
+<Base
+  titulo="Catálogo de aparelhos de ar-condicionado — Especialista do Ar"
+  descricao="Catálogo de aparelhos de ar-condicionado com Dados declarados do INMETRO: busque e filtre por marca, tipo, capacidade (BTU) e tensão."
+>
+  <h1>Catálogo de aparelhos de ar-condicionado</h1>
+  <p class="intro">
+    {dataset.length} Aparelhos com Dados declarados, a partir da exportação
+    oficial de produtos do INMETRO. Filtre por marca, tipo, capacidade e tensão,
+    ou busque por marca, modelo e tipo.
+  </p>
+  <Consulta client:load opcoes={opcoes} />
+</Base>

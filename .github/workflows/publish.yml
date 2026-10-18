@@ -33,6 +33,9 @@ jobs:
             exit 1
           fi
 
+      - name: Build site
+        run: pnpm build:site
+
       - name: Check Cloudflare credentials
         id: cloudflare
         env:
@@ -52,7 +55,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy data/build --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'especialista-do-ar' }} --branch=main
+          command: pages deploy apps/site/dist --project-name=${{ vars.CLOUDFLARE_PAGES_PROJECT || 'especialista-do-ar' }} --branch=main
 
       - name: Deploy the dynamic API Worker
         if: steps.cloudflare.outputs.enabled == 'true'

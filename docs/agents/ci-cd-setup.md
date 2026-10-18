@@ -29,8 +29,8 @@ existir **fora do git** para que ele funcione de ponta a ponta.
 
 | Workflow | Dispara em | O que faz |
 |---|---|---|
-| `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
-| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda e publica `data/build` no Cloudflare Pages **e** faz `wrangler deploy` do Worker dinâmico (`packages/worker`); pula com aviso se as credenciais não existirem. |
+| `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes), `build:site` (build do site Astro) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
+| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda, publica o **site** (`apps/site/dist`, que já embute a base servida — `aparelhos.json`, `consulta.json`, …) no Cloudflare Pages **e** faz `wrangler deploy` do Worker dinâmico (`packages/worker`); pula com aviso se as credenciais não existirem. |
 | `.github/actions/setup/action.yml` | (composite usado pelos dois) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
 
 O **merge em `main` é a publicação** (ADR-0004). Nenhum caminho publica sem PR.
@@ -267,8 +267,10 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
    ```
 
    E abra a URL do projeto (ex.: `https://especialista-do-ar.pages.dev`).
-4. Deve existir `https://especialista-do-ar.pages.dev/aparelhos.json` — o artefato
-   publicado é o diretório `data/build/`.
+4. O que é publicado é o **build do site** (`apps/site/dist`), que copia a base
+   servida para a raiz junto das páginas. Abra a home (o catálogo) e confirme que
+   `https://especialista-do-ar.pages.dev/aparelhos.json` (a API estática) continua
+   servido na mesma URL de antes.
 
 ---
 
@@ -295,3 +297,4 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | 2026-10-16 | Deploy do Worker dinâmico (`especialista-do-ar-api`) no `publish.yml`; token passa a exigir `Workers Scripts: Edit` (§2.4); nova §2.6 (Worker + regra de limite por IP). | ticket #09 |
 | 2026-10-17 | §2.6: limite por IP passa a ser um *Rate Limiting binding* do Workers (`env.LIMITE_POR_IP` no `wrangler.jsonc`), já em `workers.dev`; regra de WAF vira alternativa com domínio próprio. | ticket #09 |
 | 2026-10-17 | §1.3 (nova): "Automatically delete head branches" ligado (`delete_branch_on_merge: true`) e como podar a ref local. | ticket #10 |
+| 2026-10-17 | Publicação passa a fazer o build do site (`pnpm build:site`) e a publicar `apps/site/dist` (que embute a base servida) em vez de `data/build`; CI ganha o passo `build:site`. Sem mudança de secrets/variables. | ticket #11 |

@@ -1,0 +1,53 @@
+---
+import manifestJson from "@dados/manifest.json";
+import type { Manifest } from "@especialista-do-ar/pipeline";
+import { versaoAtualDo } from "@especialista-do-ar/pipeline";
+import "../styles/global.css";
+
+interface Props {
+  titulo: string;
+  descricao?: string;
+}
+
+const { titulo, descricao } = Astro.props;
+const versao = versaoAtualDo(manifestJson as Manifest);
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titulo}</title>
+    {descricao ? <meta name="description" content={descricao} /> : null}
+    <link rel="canonical" href={Astro.url.href} />
+  </head>
+  <body>
+    <header>
+      <a class="marca" href="/">Especialista do Ar</a>
+      <nav>
+        <a href="/">Catálogo</a>
+        <a href="/busca/">Buscar no site</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>
+        Base construída a partir da exportação oficial de produtos do INMETRO.
+        {
+          versao ? (
+            <>
+              Versão da tabela: {versao.obtidoEm}
+              {versao.contagemLinhas === null
+                ? ""
+                : ` (${versao.contagemLinhas} Linhas da tabela)`}
+              .
+            </>
+          ) : null
+        }
+      </p>
+    </footer>
+  </body>
+</html>
