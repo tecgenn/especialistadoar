@@ -285,6 +285,7 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | Gate "Published artifacts match a fresh build" vermelho | `data/build`/`reports` desatualizados | rodar `pnpm build` e commitar |
 | Deploy publica conteúdo antigo | merge não passou pelo PR / branch errada | revisar a proteção de branch (§1.2) |
 | Deploy cai em **preview** em vez de produção | production branch do projeto ≠ `main` (projeto Direct Upload não tem UI) | corrigir pela API (§2.3) |
+| Deploy falha com `ERR_PNPM_ADDING_TO_ROOT` ou `Command "wrangler" not found` | `wrangler` não está nas devDependencies da raiz e o `wrangler-action` não consegue instalá-lo num workspace pnpm | manter `wrangler` nas devDependencies da raiz (`pnpm add -D -w wrangler@4`); o action então usa o local |
 
 ---
 
@@ -298,3 +299,4 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | 2026-10-17 | §2.6: limite por IP passa a ser um *Rate Limiting binding* do Workers (`env.LIMITE_POR_IP` no `wrangler.jsonc`), já em `workers.dev`; regra de WAF vira alternativa com domínio próprio. | ticket #09 |
 | 2026-10-17 | §1.3 (nova): "Automatically delete head branches" ligado (`delete_branch_on_merge: true`) e como podar a ref local. | ticket #10 |
 | 2026-10-17 | Publicação passa a fazer o build do site (`pnpm build:site`) e a publicar `apps/site/dist` (que embute a base servida) em vez de `data/build`; CI ganha o passo `build:site`. Sem mudança de secrets/variables. | ticket #11 |
+| 2026-10-17 | `wrangler` adicionado às devDependencies da raiz: o `wrangler-action` não consegue instalá-lo num workspace pnpm (`ERR_PNPM_ADDING_TO_ROOT`) e passa a usar o wrangler local (§ Troubleshooting). | ticket #11 |
