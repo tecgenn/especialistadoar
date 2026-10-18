@@ -6,9 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-| # | Ticket | Status | Blocked by |
-|---|--------|--------|------------|
-| 12 | Ofertas e verificação de links | ready-for-agent | — |
+_No ticket ready._ Todos os tickets `01`–`12` estão concluídos; não há issue aberta, desbloqueada e sem responsável no tracker local.
 
 ## Completed
 
@@ -86,4 +84,11 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** `pnpm build:site` gera **2462 páginas estáticas** (2460 de detalhe por Aparelho via `getStaticPaths` sobre `aparelhos.json` + `/` + `/busca/`), `sitemap-index.xml` e um índice Pagefind (2462 páginas indexadas). A ilha de consulta (ADR-0008) baixa `consulta.json`, monta o motor pelo módulo isomórfico `@especialista-do-ar/api/consulta` (`criarConsulta`) e aplica filtros combináveis (marca, tipo, BTU, tensão) + busca textual (MiniSearch) **no cliente**, refletindo o estado na URL (`?marca=&tipo=&btu=&tensao=&q=`) e restaurando-o ao abrir o link; o botão "Limpar filtros" só aparece com filtro ativo. O site **não** chama o Worker (`/api/v1` ausente do `src` e do `dist`, guardado por teste). A publicação passa a ser o build do site, que embute `data/build/*` — então `/aparelhos.json`, `/consulta.json`, etc. seguem servidos nas mesmas URLs. `pnpm build` inalterado nos dados reais (`data/build`+`reports` byte a byte).
 - **Ticket:** #11 (local tracker: `11-site-catalogo-astro`)
 - **Checks:** Vitest 172/172 (novos: 9 da ilha em jsdom + estado/opcoes/sem-worker no site), tsc --noEmit OK, biome check OK; `pnpm build:site` gera 2462 páginas + sitemap + Pagefind; `grep -r "api/v1" apps/site/dist` vazio; `pnpm build` reproduz `data/build`+`reports` byte a byte.
+
+### 12 — Ofertas e verificação de links (2026-10-18)
+
+- **Changed:** novo insumo curado do site `apps/site/ofertas.json` (vazio em produção); `apps/site/src/lib/ofertas.ts` (contrato `Oferta` + `validarOfertas`/`indexarOfertas`, puro); `apps/site/src/lib/verificacao-links.ts` (`verificarOfertas` com a busca injetada, puro); `apps/site/scripts/verificar-links.ts` (job CLI com `fetch` real); `apps/site/src/pages/aparelhos/[id].astro` (valida as Ofertas no `getStaticPaths` e renderiza uma seção "Ofertas" por Aparelho via props); `apps/site/src/styles/global.css` (`.ofertas`); testes `apps/site/test/{ofertas,verificacao-links}.test.ts`; workflow agendado `.github/workflows/verificar-links.yml`; script raiz `pnpm verificar-links`; `tsconfig.json` (+`apps/site/scripts/**`); ADR-0010; `docs/agents/architecture.md` e `ci-cd-setup.md` atualizados; `README.md` (+ comando).
+- **What works:** As **Ofertas** (links comerciais de afiliado) vivem **só no site** — insumo curado `apps/site/ofertas.json`, fora do pipeline e de `data/build/`, validado no build do site (campo em branco, URL não-http(s), Oferta órfã de Aparelho inexistente e duplicata **falham o build**). Cada página de Aparelho ganha uma seção "Ofertas" separada dos dados técnicos (com aviso de que são comerciais e não são dados do INMETRO), renderizada via props do `getStaticPaths`. Nenhum campo de Oferta entra na base servida (`aparelhos.jsonl`/`.json`) — guardado por teste que confere os dois artefatos publicados. Um job (`pnpm verificar-links`) faz `fetch` de cada URL e **reporta as quebradas** (status ≥ 400 ou falha de rede), saindo com código 1; roda **agendado** (diário, 06:00 UTC) e por `workflow_dispatch` no `verificar-links.yml`, sem segredos. `ofertas.json` está vazio em produção (não há links de afiliado reais ainda), então nenhuma Oferta é exibida por ora — a mecânica é coberta por testes com fixtures. `pnpm build` inalterado nos dados reais (`data/build`+`reports` byte a byte).
+- **Ticket:** #12 (local tracker: `12-ofertas-verificacao-links`)
+- **Checks:** Vitest 187/187 (novos: 15 em `ofertas`/`verificacao-links`), tsc --noEmit OK, biome check OK; `pnpm build:site` gera 2462 páginas (e `apps/site/dist/ofertas.json` **não** existe — Oferta não é servida); `grep -r "api/v1" apps/site/dist` vazio; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm verificar-links` roda e reporta 0/0.
 

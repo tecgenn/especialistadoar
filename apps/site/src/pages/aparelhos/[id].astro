@@ -5,20 +5,33 @@ import type {
   DadosDeclarados,
   Tensao,
 } from "@especialista-do-ar/pipeline";
+import ofertasJson from "../../../ofertas.json";
 import Base from "../../layouts/Base.astro";
+import {
+  indexarOfertas,
+  type Oferta,
+  validarOfertas,
+} from "../../lib/ofertas.ts";
 
 export function getStaticPaths() {
-  return (aparelhosJson as Aparelho[]).map((aparelho) => ({
+  const aparelhos = aparelhosJson as Aparelho[];
+  const ofertas = ofertasJson as Oferta[];
+  // Guarda de build: uma Oferta órfã (Aparelho inexistente) falha o build do
+  // site, em vez de sumir em silêncio. Ver `ofertas.json` e ADR-0010.
+  validarOfertas(ofertas, new Set(aparelhos.map((aparelho) => aparelho.id)));
+  const porAparelho = indexarOfertas(ofertas);
+  return aparelhos.map((aparelho) => ({
     params: { id: aparelho.id },
-    props: { aparelho },
+    props: { aparelho, ofertas: porAparelho.get(aparelho.id) ?? [] },
   }));
 }
 
 interface Props {
   aparelho: Aparelho;
+  ofertas: Oferta[];
 }
 
-const { aparelho } = Astro.props;
+const { aparelho, ofertas } = Astro.props;
 
 function texto(valor: number | null, sufixo = ""): string {
   return valor === null ? "—" : `${valor.toLocaleString("pt-BR")}${sufixo}`;
@@ -121,6 +134,29 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       Linhas da tabela: {aparelho.linhas.join(", ")}. Os valores acima são
       Valores oficiais, padronizados apenas quanto ao formato.
     </p>
+
+    {
+      ofertas.length > 0 ? (
+        <section class="ofertas">
+          <h2>Ofertas</h2>
+          <p class="intro">
+            Links comerciais (de afiliado), exibidos apenas aqui no site. Não
+            fazem parte dos dados técnicos do INMETRO e não alteram as
+            informações acima.
+          </p>
+          <ul>
+            {ofertas.map((oferta) => (
+              <li>
+                <a href={oferta.url} rel="sponsored nofollow noopener" target="_blank">
+                  {oferta.titulo} — {oferta.loja}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null
+    }
+
     <p>
       <a href={`/?marca=${encodeURIComponent(aparelho.marca)}`}>
         Ver outros aparelhos da marca {aparelho.marca}
