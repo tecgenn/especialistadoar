@@ -21,6 +21,9 @@ Ticket references in commits follow the **tracker mode**: `Ticket: 10` on the la
 line for the local markdown tracker; `(#123)` when the tracker is GitHub. See
 `docs/agents/issue-tracker.md`.
 
+Commit messages are written in **English** — subject, body and the ticket
+reference line — regardless of the language used in code comments and docs.
+
 ### Triage labels
 
 Five canonical roles mapped 1:1: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
