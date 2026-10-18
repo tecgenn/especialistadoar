@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-_No ticket ready._ Todos os tickets `01`–`12` estão concluídos; não há issue aberta, desbloqueada e sem responsável no tracker local.
+**13 — Aposentar o Worker dinâmico** (`.scratch/especialista-do-ar/issues/13-aposentar-worker-dinamico.md`). A Fase 4 começou — **observabilidade + limpeza**, não uma UI de admin (ver `spec-fase-4.md` e ADRs 0011–0013). Também prontos e independentes: **14** (Relatório de revisão só em nova Versão da tabela) e **15** (Web Analytics + `reports/links-quebrados.md`).
 
 ## Completed
 

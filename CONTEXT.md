@@ -5,7 +5,7 @@ Base estruturada de aparelhos de ar-condicionado construída a partir da exporta
 ## Language
 
 **Agente (consumidor)**:
-Um leitor externo da base — uma ferramenta de IA, um programa ou uma pessoa — que consulta os Aparelhos e Registros. Não é parte do site nem do Worker: é quem consome. O Worker apenas serve rotas determinísticas (busca, comparação, Valor calculado) e não contém modelo de IA.
+Um leitor externo da base — uma ferramenta de IA, um programa ou uma pessoa — que consulta os Aparelhos e Registros. Não é parte do site: é quem consome a base, hoje os arquivos JSON estáticos publicados.
 _Avoid_: Bot, robô (sugere que roda dentro do produto)
 
 **Linha da tabela**:
@@ -71,3 +71,7 @@ _Avoid_: Dados de ensaio, dados medidos (a própria tabela os chama de declarado
 **Relatório de revisão**:
 Resumo gerado a cada nova Versão da tabela, antes de qualquer publicação: Aparelhos novos, alterados e Ausentes, Anomalias novas e Vínculos sugeridos. A nova versão só vai ao ar depois que uma pessoa o revisa e aprova.
 _Avoid_: Log de importação, diff
+
+**Relatório de links quebrados**:
+A lista, publicada em `reports/links-quebrados.md`, das Ofertas cujo link deixou de responder. É onde se vê qual link quebrou; não dispara aviso por e-mail.
+_Avoid_: Alerta de link, monitor de links

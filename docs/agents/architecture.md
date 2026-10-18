@@ -21,7 +21,14 @@ Entregue em fases — ver `docs/prd.md` para o detalhamento completo. **MVP = Fa
 2. **API, docs, teste com agente** — JSON estático + Worker dinâmico; o teste de
    aceitação com um agente é o **portão de decisão** antes de construir o site.
 3. **Site (Astro), Ofertas, job de verificação de links.**
-4. **Admin** (pós-MVP).
+4. **Admin** (pós-MVP) — na prática, **observabilidade** (Fase 4).
+
+> **Fase 4 (em implementação, 2026-10-18).** O "admin" colapsa em observabilidade
+> (o conteúdo continua no git, editado por PR comum). Decisões: **aposentar o
+> Worker dinâmico** (ADR-0011), **trilha dupla de CI/CD** com o Relatório de
+> revisão só em nova Versão da tabela (ADR-0012) e **observabilidade por
+> dashboards** (ADR-0013). Enquanto o ticket 13 não entra, este documento ainda
+> descreve o Worker como existente; a reescrita completa vem com a remoção.
 
 ## Fonte de verdade
 
