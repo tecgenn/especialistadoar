@@ -86,9 +86,18 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
   dataset técnico.
 - **Job de verificação de links.**
 
-### Fase 4 — Admin (pós-MVP)
+### Fase 4 — Observabilidade e limpeza (pós-MVP)
 
-- Interface administrativa para revisão/publicação.
+Sem UI de admin: com o conteúdo no git (Ofertas e futuros artigos editados por PR
+comum), o "admin" colapsa em **observabilidade e alertas**.
+
+- **Aposentar o Worker dinâmico** (`/api/v1`): a API estática é a única superfície
+  pública de dados; a fórmula do Valor calculado vira documentação. Ver ADR-0011.
+- **Trilha dupla de CI/CD**: o Relatório de revisão só roda em PR que traz uma nova
+  Versão da tabela (`data/raw/`); PRs de código/site ficam silenciosos. Ver ADR-0012.
+- **Observabilidade**: Cloudflare Web Analytics para o tráfego humano; links
+  quebrados em `reports/links-quebrados.md` (o job deixa de falhar → sem e-mail);
+  acesso do Agente adiado até haver domínio próprio. Ver ADR-0013.
 
 ## Decisões registradas
 
@@ -96,8 +105,14 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 - ADR-0002 — Stack (TypeScript, Node, pnpm, Vitest, csv-parse, TypeBox+Ajv, Biome).
 - ADR-0003 — API híbrida (JSON estático + Worker) sobre dataset embutido.
 - ADR-0004 — Publicação via PR.
+- **Fase 4** — ADR-0011 (aposentadoria do Worker dinâmico), ADR-0012 (trilha dupla
+  de CI/CD), ADR-0013 (observabilidade por dashboards, sem UI de admin).
 
 ## Perguntas abertas
 
 - **Termos de uso comercial** do plano gratuito da Cloudflare: confirmar antes de
   qualquer monetização.
+- **Domínio próprio**: necessário para medir o acesso do Agente (analytics de zona
+  por caminho) e para eventuais regras firmes de limite; adiado (ADR-0013).
+- **Cobrança do acesso do Agente**: hipótese não confirmada; só se justifica se a
+  API virar um portão fechado (revê o ADR-0003).
