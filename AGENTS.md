@@ -21,6 +21,9 @@ Ticket references in commits follow the **tracker mode**: `Ticket: 10` on the la
 line for the local markdown tracker; `(#123)` when the tracker is GitHub. See
 `docs/agents/issue-tracker.md`.
 
+Commit messages are written in **English** — subject, body and the ticket
+reference line — regardless of the language used in code comments and docs.
+
 ### Triage labels
 
 Five canonical roles mapped 1:1: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
@@ -38,7 +41,8 @@ Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/ag
 - **Repo convention:** `data/build` and `reports` are *committed* artifacts and must
   match a fresh `pnpm build` — CI fails otherwise, so a change to the raw snapshot or
   the curated layer must be committed together with the regenerated artifacts.
-- **Before pushing:** run `pnpm build && pnpm lint && pnpm typecheck && pnpm test`
+- **Before pushing:** run
+  `pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test`
   and commit the regenerated artifacts. See the README.
 - **Publication only via PR:** the merge into `main` is the deploy (ADR-0004). No
   workflow may publish without passing the PR gate.

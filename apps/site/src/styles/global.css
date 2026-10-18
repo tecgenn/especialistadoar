@@ -1,0 +1,163 @@
+:root {
+  --texto: #0f172a;
+  --texto-suave: #475569;
+  --borda: #e2e8f0;
+  --fundo: #f8fafc;
+  --superficie: #ffffff;
+  --primaria: #0369a1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--primaria);
+}
+
+header,
+main,
+footer {
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+header .marca {
+  font-weight: 700;
+  font-size: 1.15rem;
+  text-decoration: none;
+}
+
+header nav {
+  display: flex;
+  gap: 1rem;
+}
+
+main {
+  padding-block: 1.5rem 3rem;
+}
+
+footer {
+  padding-block: 1.5rem;
+  border-top: 1px solid var(--borda);
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.intro {
+  color: var(--texto-suave);
+}
+
+.consulta .filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.75rem 1rem;
+  align-items: end;
+  margin-block: 1rem;
+}
+
+.consulta label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.consulta select,
+.consulta input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  color: inherit;
+}
+
+.consulta button {
+  align-self: end;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  cursor: pointer;
+}
+
+.resultados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--borda);
+}
+
+.resultados li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.resultados .tipo {
+  color: var(--texto-suave);
+}
+
+.aparelho dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.aparelho dt {
+  color: var(--texto-suave);
+}
+
+.aparelho dd {
+  margin: 0;
+}
+
+.variante {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.variante h3 {
+  margin-top: 0;
+}
+
+.variante table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.variante th,
+.variante td {
+  padding: 0.3rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--borda);
+}

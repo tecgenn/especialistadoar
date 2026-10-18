@@ -1,0 +1,130 @@
+---
+import aparelhosJson from "@dados/aparelhos.json";
+import type {
+  Aparelho,
+  DadosDeclarados,
+  Tensao,
+} from "@especialista-do-ar/pipeline";
+import Base from "../../layouts/Base.astro";
+
+export function getStaticPaths() {
+  return (aparelhosJson as Aparelho[]).map((aparelho) => ({
+    params: { id: aparelho.id },
+    props: { aparelho },
+  }));
+}
+
+interface Props {
+  aparelho: Aparelho;
+}
+
+const { aparelho } = Astro.props;
+
+function texto(valor: number | null, sufixo = ""): string {
+  return valor === null ? "—" : `${valor.toLocaleString("pt-BR")}${sufixo}`;
+}
+
+function tensaoTexto(tensao: Tensao | null): string {
+  if (tensao === null || tensao.voltagens.length === 0) {
+    return "—";
+  }
+  const voltagens = `${tensao.voltagens.join(" / ")} V`;
+  return tensao.fases.length === 0
+    ? voltagens
+    : `${voltagens} · ${tensao.fases.join(", ")}`;
+}
+
+function linhasDados(dados: DadosDeclarados): Array<[string, string]> {
+  return [
+    ["Capacidade nominal", texto(dados.capacidadeNominalBtu, " BTU/h")],
+    ["Capacidade nominal", texto(dados.capacidadeNominalW, " W")],
+    ["Potência esperada", texto(dados.potenciaEsperaW, " W")],
+    ["IDRS", texto(dados.idrs)],
+    ["Consumo anual", texto(dados.consumoAnualKwh, " kWh/ano")],
+    ["Capacidade — 35 °C total", texto(dados.capacidade35TotalW, " W")],
+    ["Potência — 35 °C total", texto(dados.potencia35TotalW, " W")],
+    ["Capacidade — 35 °C parcial", texto(dados.capacidade35ParcialW, " W")],
+    ["Potência — 35 °C parcial", texto(dados.potencia35ParcialW, " W")],
+    ["Capacidade — 29 °C total", texto(dados.capacidade29TotalW, " W")],
+    ["Potência — 29 °C total", texto(dados.potencia29TotalW, " W")],
+    ["Capacidade — 29 °C parcial", texto(dados.capacidade29ParcialW, " W")],
+    ["Potência — 29 °C parcial", texto(dados.potencia29ParcialW, " W")],
+  ];
+}
+
+const identificacao: Array<[string, string | null]> = [
+  ["Tipo", aparelho.tipo],
+  ["Função", aparelho.funcao],
+  ["Rotação", aparelho.rotacao],
+  ["Unidade interna", aparelho.unidadeInterna],
+  ["Unidade externa", aparelho.unidadeExterna],
+  ["Fluido refrigerante", aparelho.fluidoRefrigerante],
+  ["Fluido especificado", aparelho.fluidoEspecificado],
+];
+
+const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, IDRS e tensão conforme os Dados declarados do INMETRO.`;
+---
+
+<Base titulo={`${aparelho.marca} ${aparelho.modelo} — Especialista do Ar`} descricao={descricao}>
+  <article class="aparelho">
+    <p><a href="/">← Voltar ao catálogo</a></p>
+    <h1>{aparelho.marca} — {aparelho.modelo}</h1>
+
+    <dl>
+      {
+        identificacao
+          .filter(([, valor]) => valor !== null && valor !== "")
+          .map(([rotulo, valor]) => (
+            <>
+              <dt>{rotulo}</dt>
+              <dd>{valor}</dd>
+            </>
+          ))
+      }
+    </dl>
+
+    <h2>Registros INMETRO</h2>
+    <ul>
+      {
+        aparelho.registros.map((registro) => (
+          <li>
+            {registro.numero} · {registro.status}
+          </li>
+        ))
+      }
+    </ul>
+
+    <h2>Dados declarados por Variante</h2>
+    {
+      aparelho.variantes.map((variante) => (
+        <section class="variante">
+          <h3>Tensão: {tensaoTexto(variante.tensao)}</h3>
+          <table>
+            <tbody>
+              {linhasDados(variante.dados).map(([rotulo, valor]) => (
+                <tr>
+                  <th scope="row">{rotulo}</th>
+                  <td>{valor}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p class="intro">
+            Linhas da tabela: {variante.linhas.join(", ")}.
+          </p>
+        </section>
+      ))
+    }
+
+    <h2>Proveniência</h2>
+    <p class="intro">
+      Linhas da tabela: {aparelho.linhas.join(", ")}. Os valores acima são
+      Valores oficiais, padronizados apenas quanto ao formato.
+    </p>
+    <p>
+      <a href={`/?marca=${encodeURIComponent(aparelho.marca)}`}>
+        Ver outros aparelhos da marca {aparelho.marca}
+      </a>
+    </p>
+  </article>
+</Base>

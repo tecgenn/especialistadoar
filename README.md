@@ -22,6 +22,9 @@ IA e por um site. O objetivo é que ninguém precise interpretar a exportação 
 pnpm install
 
 pnpm build       # CSV bruto + curadoria -> data/build/ + reports/
+pnpm build:site  # site Astro (apps/site/dist), sobre data/build/ — rode pnpm build antes
+pnpm dev:site    # Astro em modo dev (site)
+pnpm preview:site # pré-visualiza o build do site
 pnpm test        # suíte Vitest (uma passada)
 pnpm test:watch  # Vitest em watch
 pnpm typecheck   # tsc --noEmit
@@ -35,7 +38,7 @@ pnpm format      # Biome format
 Rode a suíte completa **e** o build antes de enviar qualquer mudança:
 
 ```bash
-pnpm build && pnpm lint && pnpm typecheck && pnpm test
+pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 ```
 
 E **commite os artefatos gerados junto com a mudança** sempre que ela tocar o CSV
