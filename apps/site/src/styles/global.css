@@ -161,3 +161,20 @@ footer {
   text-align: left;
   border-bottom: 1px solid var(--borda);
 }
+
+.ofertas {
+  margin-block: 1.5rem 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.ofertas h2 {
+  margin-top: 0;
+}
+
+.ofertas ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}

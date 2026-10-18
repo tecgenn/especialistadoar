@@ -31,7 +31,8 @@ existir **fora do git** para que ele funcione de ponta a ponta.
 |---|---|---|
 | `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes), `build:site` (build do site Astro) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
 | `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda, publica o **site** (`apps/site/dist`, que já embute a base servida — `aparelhos.json`, `consulta.json`, …) no Cloudflare Pages **e** faz `wrangler deploy` do Worker dinâmico (`packages/worker`); pula com aviso se as credenciais não existirem. |
-| `.github/actions/setup/action.yml` | (composite usado pelos dois) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
+| `.github/workflows/verificar-links.yml` | `schedule` (diário, 06:00 UTC) e `workflow_dispatch` | Verifica os links das Ofertas (`pnpm verificar-links`) e **reporta os quebrados** (falha o job se houver algum). Não bloqueia PRs e não exige segredos. |
+| `.github/actions/setup/action.yml` | (composite usado pelos três) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
 
 O **merge em `main` é a publicação** (ADR-0004). Nenhum caminho publica sem PR.
 
@@ -300,3 +301,4 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | 2026-10-17 | §1.3 (nova): "Automatically delete head branches" ligado (`delete_branch_on_merge: true`) e como podar a ref local. | ticket #10 |
 | 2026-10-17 | Publicação passa a fazer o build do site (`pnpm build:site`) e a publicar `apps/site/dist` (que embute a base servida) em vez de `data/build`; CI ganha o passo `build:site`. Sem mudança de secrets/variables. | ticket #11 |
 | 2026-10-17 | `wrangler` adicionado às devDependencies da raiz: o `wrangler-action` não consegue instalá-lo num workspace pnpm (`ERR_PNPM_ADDING_TO_ROOT`) e passa a usar o wrangler local (§ Troubleshooting). | ticket #11 |
+| 2026-10-18 | Workflow agendado `verificar-links.yml` (diário + `workflow_dispatch`): roda `pnpm verificar-links` e reporta Ofertas com link quebrado. Sem segredos nem projeto novo. | ticket #12 |

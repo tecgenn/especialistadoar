@@ -47,6 +47,7 @@ Caveats medidos do CSV (tratados pelo parser, não à mão):
 ```
 .github/                               # CI (build+testes) e publicação (Cloudflare Pages)
   workflows/{ci,publish}.yml
+  workflows/verificar-links.yml        # job agendado: verifica os links das Ofertas
   actions/setup/action.yml             # composite: pnpm + Node 24 + install
   branch-protection.json               # regra de branch de main (reaplicável)
 data/
@@ -68,6 +69,8 @@ packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
 packages/worker/                      # o Worker dinâmico /api/v1 (busca, comparação, Valor calculado)
 apps/site/                            # catálogo Astro estático (fase 3)
+  ofertas.json                        # CAMADA CURADA do site: Ofertas (links de afiliado), só no site
+  scripts/verificar-links.ts          # job: verifica os links das Ofertas
 ```
 
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
@@ -160,7 +163,12 @@ nova exportação CSV
   (`?marca=&tipo=&btu=&tensao=&q=`). O site **não** chama o Worker (ADR-0008); uma
   integração copia `data/build/*` para `dist/`, então a API estática continua
   servida nas mesmas URLs (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind
-  indexa o conteúdo do site.
+  indexa o conteúdo do site. As **Ofertas** (links comerciais de afiliado) vivem
+  só aqui, em `apps/site/ofertas.json` (insumo curado do site, nunca na base
+  servida), são validadas no build do site e renderizadas numa seção própria da
+  página do Aparelho — separadas dos dados técnicos. Um job agendado
+  (`verificar-links.yml`, via `pnpm verificar-links`) reporta links quebrados. Ver
+  ADR-0010.
 
 ## Interfaces
 
@@ -223,7 +231,9 @@ Ver ADR-0003.
   cada Aparelho + **uma ilha React** de consulta (filtros combináveis e busca
   textual rodam no cliente, com o estado na URL). O Pagefind indexa o conteúdo; o
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. O site **não**
-  chama o Worker (ADR-0008).
+  chama o Worker (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
+  site (`apps/site/ofertas.json`), validado no build e verificado por um job
+  agendado (ADR-0010).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
   repositório é público, então minutos de runner não são cobrados (a regra foi
@@ -234,6 +244,10 @@ Ver ADR-0003.
   base servida — no Cloudflare Pages). O que
   precisa existir **fora do git** (secrets/variables, proteção de branch, projeto
   Pages) está em `docs/agents/ci-cd-setup.md`. Ver ADR-0002 e ADR-0004.
+
+Um job separado, **agendado** (`.github/workflows/verificar-links.yml`), verifica
+os links das Ofertas e reporta os quebrados — não bloqueia PRs (a rede é instável).
+Ver ADR-0010.
 
 ## Fora de escopo (MVP)
 

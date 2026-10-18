@@ -7,12 +7,12 @@
 
 **Blocked by:** 11 — Site (catálogo Astro).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Ofertas aparecem apenas no site.
-- [ ] Nenhum campo de Oferta vaza para a base servida (`aparelhos.jsonl`/`.json`).
-- [ ] Existe um job de verificação de links que reporta os quebrados.
-- [ ] O job roda de forma agendada ou no CI.
+- [x] Ofertas aparecem apenas no site.
+- [x] Nenhum campo de Oferta vaza para a base servida (`aparelhos.jsonl`/`.json`).
+- [x] Existe um job de verificação de links que reporta os quebrados.
+- [x] O job roda de forma agendada ou no CI.
 
 ## Origin
 
