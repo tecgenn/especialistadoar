@@ -228,6 +228,10 @@ Pela UI: **Workers & Pages → `especialista-do-ar-api` → Settings → Delete*
 o token ainda tiver `Workers Scripts: Edit`, remova essa permissão (§2.4); ela
 não é mais necessária.
 
+> **Executado em 2026-10-19:** o Worker foi removido pelo dashboard e a permissão
+> `Workers Scripts: Edit` foi dispensada do token. Este passo só volta a valer se
+> o pacote for restaurado (ADR-0011) e publicado de novo.
+
 ---
 
 ## Parte 3 — Primeiro deploy e verificação
@@ -279,3 +283,4 @@ não é mais necessária.
 | 2026-10-17 | `wrangler` adicionado às devDependencies da raiz: o `wrangler-action` não consegue instalá-lo num workspace pnpm (`ERR_PNPM_ADDING_TO_ROOT`) e passa a usar o wrangler local (§ Troubleshooting). | ticket #11 |
 | 2026-10-18 | Workflow agendado `verificar-links.yml` (diário + `workflow_dispatch`): roda `pnpm verificar-links` e reporta Ofertas com link quebrado. Sem segredos nem projeto novo. | ticket #12 |
 | 2026-10-19 | Worker dinâmico aposentado (ADR-0011): sai o `wrangler deploy` do `publish.yml`, a permissão `Workers Scripts: Edit` do token (§2.4) e a antiga §2.6; a §2.6 passa a documentar a remoção única do Worker já publicado. O `wrangler` continua nas devDependencies da raiz porque o deploy do Pages usa `wrangler-action`. | ticket #13 |
+| 2026-10-19 | Removido o Worker `especialista-do-ar-api` no dashboard da Cloudflare e dispensada a permissão `Workers Scripts: Edit` do token (§2.6). | ticket #13 |
