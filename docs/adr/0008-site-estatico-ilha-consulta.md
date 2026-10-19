@@ -2,6 +2,10 @@
 
 **Status:** aceito
 
+> **Nota (2026-10-19):** com o ADR-0011 o Worker deixou de existir; a decisão do
+> site estático com a ilha isomórfica continua valendo — hoje o entry é importado
+> só pela ilha.
+
 O site é um **build estático** (Astro): páginas de detalhe pré-renderizadas para
 cada Aparelho e **uma única ilha** para a consulta. Os filtros combináveis e a
 busca textual rodam **no cliente**, sobre um dataset enxuto publicado em

@@ -16,13 +16,13 @@ publicação, e a fórmula do Valor calculado passa a ser documentação para Ag
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Nenhuma referência a `api/v1` no código ou nos workflows.
-- [ ] A publicação não faz deploy de Worker; o token não exige permissão de Workers.
-- [ ] A fórmula do Valor calculado está documentada para Agentes.
-- [ ] `pnpm lint`, `typecheck`, `test`, `build` e `build:site` verdes; `data/build`/`reports` inalterados.
-- [ ] ADR-0003/0009 anotados; ADR-0011 com o hash de restauração.
+- [x] Nenhuma referência a `api/v1` no código ou nos workflows.
+- [x] A publicação não faz deploy de Worker; o token não exige permissão de Workers.
+- [x] A fórmula do Valor calculado está documentada para Agentes.
+- [x] `pnpm lint`, `typecheck`, `test`, `build` e `build:site` verdes; `data/build`/`reports` inalterados.
+- [x] ADR-0003/0009 anotados; ADR-0011 com o hash de restauração.
 
 ## Origin
 

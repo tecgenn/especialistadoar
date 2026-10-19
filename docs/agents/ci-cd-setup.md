@@ -30,7 +30,7 @@ existir **fora do git** para que ele funcione de ponta a ponta.
 | Workflow | Dispara em | O que faz |
 |---|---|---|
 | `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes), `build:site` (build do site Astro) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
-| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda, publica o **site** (`apps/site/dist`, que já embute a base servida — `aparelhos.json`, `consulta.json`, …) no Cloudflare Pages **e** faz `wrangler deploy` do Worker dinâmico (`packages/worker`); pula com aviso se as credenciais não existirem. |
+| `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda, publica o **site** (`apps/site/dist`, que já embute a base servida — `aparelhos.json`, `consulta.json`, …) no Cloudflare Pages; pula com aviso se as credenciais não existirem. |
 | `.github/workflows/verificar-links.yml` | `schedule` (diário, 06:00 UTC) e `workflow_dispatch` | Verifica os links das Ofertas (`pnpm verificar-links`) e **reporta os quebrados** (falha o job se houver algum). Não bloqueia PRs e não exige segredos. |
 | `.github/actions/setup/action.yml` | (composite usado pelos três) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
 
@@ -198,7 +198,6 @@ projeto**, acima.
 Dashboard → **My Profile → API Tokens → Create Token → Create Custom Token**:
 
 - **Permissions:** `Account` · `Cloudflare Pages` · `Edit`
-- **Permissions:** `Account` · `Workers Scripts` · `Edit` — necessária para o deploy do Worker dinâmico
 - **Account Resources:** inclua a conta usada acima
 - (Opcional) **Permissions:** `Account` · `Account Settings` · `Read` — só se você
   usar `wrangler whoami` no CI.
@@ -215,42 +214,19 @@ Depois, volte à seção 1.1 e grave o token + o Account ID como segredos.
 **Pages → projeto → Custom domains → Set up a custom domain** e siga as
 instruções de DNS. Registre aqui o domínio escolhido quando houver.
 
-### 2.6 Worker dinâmico (`/api/v1`) e limite por IP
+### 2.6 Remover o Worker aposentado (uma vez)
 
-O Worker dinâmico (busca, comparação e Valor calculado) vive em
-`packages/worker` e se chama **`especialista-do-ar-api`** (o `name` do
-`wrangler.jsonc`). Diferente do Pages, **não há projeto a criar à mão**: o
-`wrangler deploy` cria o Worker na primeira execução. O deploy é automático no
-merge — o `publish.yml` roda `wrangler deploy` com as mesmas credenciais do Pages
-(exige o token com `Workers Scripts: Edit`, ver §2.4).
-
-O acesso é **aberto no MVP**, com **limite por IP** (ADR-0003). O limite é
-implementado como *Rate Limiting binding* do Workers (`env.LIMITE_POR_IP`,
-declarado em `ratelimits` no `packages/worker/wrangler.jsonc`, 60 requisições por
-60 s chaveadas por `CF-Connecting-IP`): funciona **já em `workers.dev`**, sem
-domínio próprio, e sobe junto com o código — sem passo de dashboard. O
-`publish.yml` faz `wrangler deploy`, que provisiona o binding; não há nada a
-configurar à mão.
-
-> **Natureza do binding:** é *best-effort* e contado **por localidade** da
-> Cloudflare (não global) — protege contra abuso trivial, mas não é um teto firme;
-> um cliente que atinja várias localidades pode passar de 60/60 s. É uma rede de
-> proteção, não uma garantia.
-
-> **Alternativa (regra de WAF por IP):** quando o Worker tiver **domínio próprio**
-> numa zona, dá para trocar o binding por uma *Rate limiting rule* do WAF (não
-> exige código, mas exige zona e é um limite global firme): **Security → WAF →
-> Rate limiting rules → Create rule**; *Name* `api-v1-por-ip`; *If* `URI Path`
-> *starts with* `/api/v1`; 60 requisições por 1 minuto contando `ip.src`; *Action*
-> Block por 10 minutos (ou Managed Challenge). Confirme os limites do plano
-> gratuito antes de contar com a regra; se a cota apertar, o plano B é Workers
-> Paid (ADR-0003).
-
-Verificação (troque pelo host do Worker):
+O Worker dinâmico **`especialista-do-ar-api`** foi **aposentado** (ADR-0011): o
+`publish.yml` não o publica mais. O Worker já publicado em `workers.dev`,
+porém, continua no ar até ser removido à mão — uma única vez:
 
 ```bash
-curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gree"
+npx wrangler delete especialista-do-ar-api
 ```
+
+Pela UI: **Workers & Pages → `especialista-do-ar-api` → Settings → Delete**. Se
+o token ainda tiver `Workers Scripts: Edit`, remova essa permissão (§2.4); ela
+não é mais necessária.
 
 ---
 
@@ -302,3 +278,4 @@ curl "https://especialista-do-ar-api.<subdominio>.workers.dev/api/v1/search?q=gr
 | 2026-10-17 | Publicação passa a fazer o build do site (`pnpm build:site`) e a publicar `apps/site/dist` (que embute a base servida) em vez de `data/build`; CI ganha o passo `build:site`. Sem mudança de secrets/variables. | ticket #11 |
 | 2026-10-17 | `wrangler` adicionado às devDependencies da raiz: o `wrangler-action` não consegue instalá-lo num workspace pnpm (`ERR_PNPM_ADDING_TO_ROOT`) e passa a usar o wrangler local (§ Troubleshooting). | ticket #11 |
 | 2026-10-18 | Workflow agendado `verificar-links.yml` (diário + `workflow_dispatch`): roda `pnpm verificar-links` e reporta Ofertas com link quebrado. Sem segredos nem projeto novo. | ticket #12 |
+| 2026-10-19 | Worker dinâmico aposentado (ADR-0011): sai o `wrangler deploy` do `publish.yml`, a permissão `Workers Scripts: Edit` do token (§2.4) e a antiga §2.6; a §2.6 passa a documentar a remoção única do Worker já publicado. O `wrangler` continua nas devDependencies da raiz porque o deploy do Pages usa `wrangler-action`. | ticket #13 |

@@ -2,6 +2,11 @@
 
 **Status:** aceito
 
+> **Nota (2026-10-19):** a parte **dinâmica** desta decisão foi revertida pelo
+> **ADR-0011** — o Worker foi removido e a API estática é a única superfície
+> pública de dados. A parte estática continua valendo: os artefatos JSONL/JSON
+> seguem sendo a fonte de verdade.
+
 A base é consumida por agentes de IA e pelo site, então dividimos o acesso em
 duas partes. A **estática** é servida como arquivos JSON — consulta por ID,
 listas e a Versão da tabela — e não gasta Worker nem cota. A **dinâmica** é um

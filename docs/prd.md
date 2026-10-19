@@ -54,34 +54,37 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 
 ### Fase 2 — API, docs e teste com agente  (PORTÃO)
 
-- **Parte estática (sem Worker/cota):** consulta por ID, listas e a Versão da
+- **Parte estática (sem servidor/cota):** consulta por ID, listas e a Versão da
   tabela, como arquivos JSON.
-- **Parte dinâmica (Worker, `/api/v1/...`):** busca, comparação e Valor calculado
-  — consumida **só por Agentes**; o site não chama estas rotas (ADR-0008).
+- **Parte dinâmica (Worker, `/api/v1/...`)** — existiu na Fase 2 e foi **aposentada
+  na Fase 4** (ADR-0011): busca e comparação são cobertas pelo estático, e o Valor
+  calculado virou fórmula documentada. O site nunca chamou estas rotas (ADR-0008).
 - **Módulo de consulta compartilhado:** isomórfico — um *entry point* puro em
-  `packages/api`, **sem** dependências de Node, importado pela ilha do site e pelo
-  Worker, sobre `data/build/consulta.json`. Filtros por campo (BTU, tensão);
-  MiniSearch só para busca textual (Pagefind fica para o conteúdo do site).
-- **Documentação para agentes:** como consumir a base.
+  `packages/api`, **sem** dependências de Node, importado pela ilha do site sobre
+  `data/build/consulta.json`. Filtros por campo (BTU, tensão); MiniSearch só para
+  busca textual (Pagefind fica para o conteúdo do site).
+- **Documentação para agentes:** como consumir a base, incluindo a fórmula do
+  Valor calculado.
 - **Teste de aceitação com um agente (portão):** ver abaixo.
 
 #### Teste de aceitação com agente (portão da Fase 2)
 
 - **O que prova:** um agente responde sozinho, sem humano no meio, usando só a
   base.
-- **Acesso:** começa pelos arquivos **estáticos**; libera `/search` só como
-  fallback. O caminho usado é logado — é o que revela se o Worker se justifica.
+- **Acesso:** os arquivos **estáticos** (na época, `/search` existia como
+  fallback; o caminho usado foi logado).
 - **Critério de aprovação:** conjunto de ~10 perguntas reais com gabarito; acerto
   **≥ 8/10**, sem intervenção humana.
 - **Decisão:** se passar, segue para o site; se não, reavalia a API antes de
-  investir no site (e o Worker encolhe se o estático sozinho bastar).
+  investir no site. O portão aprovou 10/10 e a Fase 4 removeu o Worker
+  (ADR-0011).
 
 ### Fase 3 — Site, Ofertas e verificação de links
 
 - **Catálogo em Astro** (build estático): páginas de detalhe pré-renderizadas por
   Aparelho + **uma** ilha de consulta — filtros combináveis e busca textual no
-  **cliente**, sobre `data/build/consulta.json`, com o estado na URL. O site não
-  chama o Worker (ADR-0008).
+  **cliente**, sobre `data/build/consulta.json`, com o estado na URL. A consulta é
+  100% estática (ADR-0008).
 - **Ofertas** (links de afiliado) exibidas **apenas no site**, nunca misturadas ao
   dataset técnico.
 - **Job de verificação de links.**
@@ -91,8 +94,9 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 Sem UI de admin: com o conteúdo no git (Ofertas e futuros artigos editados por PR
 comum), o "admin" colapsa em **observabilidade e alertas**.
 
-- **Aposentar o Worker dinâmico** (`/api/v1`): a API estática é a única superfície
-  pública de dados; a fórmula do Valor calculado vira documentação. Ver ADR-0011.
+- **Worker dinâmico aposentado** (`/api/v1`, ticket 13): a API estática é a única
+  superfície pública de dados; a fórmula do Valor calculado virou documentação.
+  Ver ADR-0011.
 - **Trilha dupla de CI/CD**: o Relatório de revisão só roda em PR que traz uma nova
   Versão da tabela (`data/raw/`); PRs de código/site ficam silenciosos. Ver ADR-0012.
 - **Observabilidade**: Cloudflare Web Analytics para o tráfego humano; links
@@ -103,7 +107,8 @@ comum), o "admin" colapsa em **observabilidade e alertas**.
 
 - ADR-0001 — CSV como fonte canônica (não o PDF).
 - ADR-0002 — Stack (TypeScript, Node, pnpm, Vitest, csv-parse, TypeBox+Ajv, Biome).
-- ADR-0003 — API híbrida (JSON estático + Worker) sobre dataset embutido.
+- ADR-0003 — API híbrida (JSON estático + Worker); a parte dinâmica foi removida
+  pelo ADR-0011.
 - ADR-0004 — Publicação via PR.
 - **Fase 4** — ADR-0011 (aposentadoria do Worker dinâmico), ADR-0012 (trilha dupla
   de CI/CD), ADR-0013 (observabilidade por dashboards, sem UI de admin).

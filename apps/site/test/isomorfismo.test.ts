@@ -4,10 +4,9 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Guarda arquitetural (ADR-0008): o site é puramente estático e **não chama o
- * Worker**; a consulta roda no cliente sobre `consulta.json`, pelo módulo
- * isomórfico. Isso não se observa na saída — por isso a guarda sobre o
- * texto-fonte.
+ * Guarda arquitetural (ADR-0008): a ilha do site importa o módulo de consulta
+ * pelo entry isomórfico, nunca pelo entry Node. É o que mantém `fs` fora do
+ * bundle do site; o dataset é baixado como arquivo estático.
  */
 const srcDir = fileURLToPath(new URL("../src", import.meta.url));
 
@@ -23,15 +22,15 @@ const fontes = arquivosFonte(srcDir).map((caminho) => ({
   texto: readFileSync(caminho, "utf8"),
 }));
 
-describe("o site não chama o Worker", () => {
-  it("nenhum arquivo-fonte referencia a rota dinâmica /api/v1", () => {
-    const infratores = fontes
-      .filter(({ texto }) => texto.includes("/api/v1"))
-      .map(({ caminho }) => caminho);
-    expect(infratores).toEqual([]);
+describe("a ilha do site usa o entry isomórfico", () => {
+  it("importa o módulo de consulta pelo entry isomórfico", () => {
+    const entryIsomorfico = '"@especialista-do-ar/api/consulta"';
+    expect(fontes.some(({ texto }) => texto.includes(entryIsomorfico))).toBe(
+      true,
+    );
   });
 
-  it("importa o módulo de consulta pelo entry isomórfico, nunca o entry Node", () => {
+  it("não importa o entry Node do pacote de API", () => {
     const raizNode = '"@especialista-do-ar/api"';
     const infratores = fontes
       .filter(({ texto }) => texto.includes(raizNode))

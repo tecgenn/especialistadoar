@@ -18,17 +18,18 @@ Entregue em fases — ver `docs/prd.md` para o detalhamento completo. **MVP = Fa
 
 1. **Pipeline, dataset, relatório, testes** — bruto → base servida → relatório de
    revisão.
-2. **API, docs, teste com agente** — JSON estático + Worker dinâmico; o teste de
-   aceitação com um agente é o **portão de decisão** antes de construir o site.
+2. **API, docs, teste com agente** — JSON estático (o Worker dinâmico da fase 2
+   foi aposentado na fase 4, ADR-0011); o teste de aceitação com um agente é o
+   **portão de decisão** antes de construir o site.
 3. **Site (Astro), Ofertas, job de verificação de links.**
 4. **Admin** (pós-MVP) — na prática, **observabilidade** (Fase 4).
 
-> **Fase 4 (em implementação, 2026-10-18).** O "admin" colapsa em observabilidade
+> **Fase 4 (em implementação, 2026-10-19).** O "admin" colapsa em observabilidade
 > (o conteúdo continua no git, editado por PR comum). Decisões: **aposentar o
 > Worker dinâmico** (ADR-0011), **trilha dupla de CI/CD** com o Relatório de
 > revisão só em nova Versão da tabela (ADR-0012) e **observabilidade por
-> dashboards** (ADR-0013). Enquanto o ticket 13 não entra, este documento ainda
-> descreve o Worker como existente; a reescrita completa vem com a remoção.
+> dashboards** (ADR-0013). Este documento já reflete a remoção do Worker
+> (ticket 13); o Valor calculado virou fórmula documentada em `docs/agentes.md`.
 
 ## Fonte de verdade
 
@@ -64,7 +65,7 @@ data/
   build/
     aparelhos.jsonl                   # base servida (Aparelhos com Dados declarados)
     aparelhos.json                    # espelho em array do acima
-    consulta.json                     # dataset enxuto de consulta (~350 KB) p/ site + Worker
+    consulta.json                     # dataset enxuto de consulta (~350 KB) p/ a ilha do site
     registros.jsonl                   # Linhas normalizadas (proveniência)
     schema.json                       # contrato JSON Schema
     manifest.json                     # metadados de versão (hash, data, contagens)
@@ -74,7 +75,6 @@ data/
 reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão (fase 1)
 packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
-packages/worker/                      # o Worker dinâmico /api/v1 (busca, comparação, Valor calculado)
 apps/site/                            # catálogo Astro estático (fase 3)
   ofertas.json                        # CAMADA CURADA do site: Ofertas (links de afiliado), só no site
   scripts/verificar-links.ts          # job: verifica os links das Ofertas
@@ -144,36 +144,27 @@ nova exportação CSV
   ADR-0007.
 - **api (estática)** — em `packages/api`, `abrirApiEstatica(buildDir)` lê
   `manifest.json` e `aparelhos.json` da base publicada e expõe consulta por ID,
-  listas de Aparelhos e a Versão da tabela, sem Worker. É o consumo estático da
-  base servida; o módulo de consulta com filtros (fase 2) e o Worker dinâmico o
-  reutilizam. O pipeline expõe seu contrato pelo entry point
-  (`packages/pipeline/src/index.ts`) — o `api` nunca importa os internos.
+  listas de Aparelhos e a Versão da tabela, sem servidor. É o consumo estático da
+  base servida; a ilha do site reutiliza seu módulo de consulta. O pipeline expõe
+  seu contrato pelo entry point (`packages/pipeline/src/index.ts`) — o `api`
+  nunca importa os internos.
 - **consulta** — mesmo pacote `packages/api`, mas num *entry point* **isomórfico**
   (lógica pura, **sem** dependências de Node): filtros por campo e busca textual
   sobre o `data/build/consulta.json`. É importado pela **ilha do site** (navegador)
-  e pelo **Worker** (Agente), uma só definição nos dois ambientes. A leitura de
-  arquivo fica de fora desse entry (separar por entry point é o que impede `fs`
-  de entrar no bundle). Ver ADR-0008.
-- **worker** — em `packages/worker`, o Worker dinâmico de `.github/workflows/publish.yml`
-  que serve `/api/v1/...` **só para o Agente**: `search` (delega ao módulo de
-  consulta), `comparar` (Aparelhos lado a lado) e `valor-calculado` (conta
-  determinística a partir de Valores oficiais + entradas da consulta, sempre com
-  fórmula e entradas, nunca como Valor oficial). O dataset é **embutido** no
-  bundle (importa `aparelhos.json` e `consulta.json`), sem D1. A lógica das rotas
-  (`src/rotas.ts`) é pura e testável na fronteira HTTP; o entry só liga o `fetch`
-  e o *Rate Limiting binding* (`env.LIMITE_POR_IP`, ver `ratelimits` no
-  `wrangler.jsonc`). Acesso aberto com **limite por IP** na Cloudflare. Ver ADR-0003.
+  e por qualquer consumidor que queira a mesma semântica. A leitura de arquivo
+  fica de fora desse entry (separar por entry point é o que impede `fs` de entrar
+  no bundle). Ver ADR-0008.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
   **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
   filtra/busca **no cliente** pelo módulo isomórfico (08), com o estado na URL
-  (`?marca=&tipo=&btu=&tensao=&q=`). O site **não** chama o Worker (ADR-0008); uma
-  integração copia `data/build/*` para `dist/`, então a API estática continua
-  servida nas mesmas URLs (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind
-  indexa o conteúdo do site. As **Ofertas** (links comerciais de afiliado) vivem
-  só aqui, em `apps/site/ofertas.json` (insumo curado do site, nunca na base
-  servida), são validadas no build do site e renderizadas numa seção própria da
-  página do Aparelho — separadas dos dados técnicos. Um job agendado
+  (`?marca=&tipo=&btu=&tensao=&q=`). Uma integração copia `data/build/*` para
+  `dist/`, então a API estática continua servida nas mesmas URLs
+  (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind indexa o conteúdo do
+  site. As **Ofertas** (links comerciais de afiliado) vivem só aqui, em
+  `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
+  validadas no build do site e renderizadas numa seção própria da página do
+  Aparelho — separadas dos dados técnicos. Um job agendado
   (`verificar-links.yml`, via `pnpm verificar-links`) reporta links quebrados. Ver
   ADR-0010.
 
@@ -185,28 +176,26 @@ nova exportação CSV
   `vinculos-confirmados.jsonl` (estes dois últimos como cópias publicadas) e um
   Relatório de revisão (Markdown).
 
-## Serviço (fase 2) — API híbrida
+## Serviço (fase 2) — API estática
 
-- **JSON estático** (sem Worker, sem quota): busca por ID, endpoints de listagem e a
-  versão da tabela — servidos como arquivos puros.
-- **Worker dinâmico** (`/api/v1/...`): só busca textual, comparação e Valor calculado.
-- **Consumidor do Worker:** somente o **Agente (consumidor)**. O **site não chama
-  estas rotas** — a consulta dele roda no cliente (ADR-0008), então a cota gratuita
-  fica reservada aos Agentes.
-- **Acesso:** aberto no MVP, com **limite por IP** — hoje um *Rate Limiting
-  binding* do Workers (`env.LIMITE_POR_IP`, 60 req/60 s por `CF-Connecting-IP`),
-  best-effort e por localidade da Cloudflare; a regra de WAF (limite firme por
-  zona) é a alternativa quando houver domínio próprio. Plano B se a quota
-  gratuita apertar: Workers Paid.
-- **Cobrança:** adiada; um gate de pagamento ficaria na frente da parte dinâmica sem
-  mudar as respostas.
-- **Portão da Fase 2 (2026-10-17):** aprovado **10/10** (critério ≥ 8/10). Nove das
-  dez perguntas foram respondidas **só com o estático**; apenas o **Valor
-  calculado** usou o Worker. A fase 3 (site) segue, e o Worker fica rebaixado a
-  *calculadora determinística + fallback* — `/search` e `/comparar` sem evidência
-  de necessidade. Ver ADR-0009 e `docs/aceitacao/portao-fase-2.md`.
+- **JSON estático** (sem servidor, sem quota): consulta por ID, listas e a Versão
+  da tabela — servidos como arquivos puros ao lado do site. É a única superfície
+  pública de dados.
+- **Consulta:** filtros combináveis e busca textual rodam **no cliente** sobre
+  `consulta.json` (ADR-0008); o módulo isomórfico de `packages/api` é a definição
+  única da semântica.
+- **Valor calculado:** não há endpoint. A fórmula (`consumoAnualKwh × tarifa`) e
+  as entradas são **documentadas** em `docs/agentes.md`; o Agente calcula a partir
+  de Valores oficiais e sempre apresenta a fórmula, as entradas e o aviso de que
+  **não** é um Valor oficial.
+- **Acesso:** aberto e ilimitado — são arquivos estáticos no Cloudflare Pages.
+- **Histórico:** o Worker dinâmico (`/api/v1`: busca, comparação e Valor
+  calculado) existiu até o ticket 13 e foi **removido** (ADR-0011), revertendo a
+  parte dinâmica do ADR-0003 e superando o ADR-0009. O portão da Fase 2
+  (2026-10-17) aprovou 10/10, com 9 respostas só pelo estático — o que motivou a
+  remoção. Ver `docs/aceitacao/portao-fase-2.md`.
 
-Ver ADR-0003.
+Ver ADR-0003 e ADR-0011.
 
 ## Distribuição
 
@@ -215,14 +204,13 @@ Ver ADR-0003.
   detalhe e `consulta.json` para a ilha de consulta.
 - **Publicação (fase 1):** o merge em `main` publica o **build do site**
   (`apps/site/dist`) no **Cloudflare Pages** — o `pnpm build:site` roda sobre
-  `data/build` e copia a base servida para a raiz do site, então a parte estática
-  da API (sem Worker nem cota) continua servida ao lado das páginas. O merge também
-  faz `wrangler deploy` do Worker dinâmico (`packages/worker`). Setup manual em
+  `data/build` e copia a base servida para a raiz do site, então a API estática
+  (sem servidor nem cota) continua servida ao lado das páginas. Setup manual em
   `docs/agents/ci-cd-setup.md`; ver ADR-0004.
 - **D1 (SQLite)** é só plano B, derivado do JSONL — nunca fonte de verdade.
 - **R2** guarda blobs grandes se os assets estáticos passarem do bundle do site.
-- **Caveats do free tier:** o plano gratuito do Workers tem tetos de requisição/CPU e
-  termos de uso comercial a confirmar antes de monetizar.
+- **Caveats do free tier:** o plano gratuito do Cloudflare Pages tem limites de
+  build/banda e termos de uso comercial a confirmar antes de monetizar.
 
 ## Stack
 
@@ -237,8 +225,8 @@ Ver ADR-0003.
 - **Site:** Astro, **build estático**: páginas de detalhe pré-renderizadas para
   cada Aparelho + **uma ilha React** de consulta (filtros combináveis e busca
   textual rodam no cliente, com o estado na URL). O Pagefind indexa o conteúdo; o
-  MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. O site **não**
-  chama o Worker (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
+  MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
+  100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado por um job
   agendado (ADR-0010).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix

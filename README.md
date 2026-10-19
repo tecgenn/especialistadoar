@@ -5,7 +5,7 @@ da exportação oficial de produtos do INMETRO (um CSV) e consumida por agentes 
 IA e por um site. O objetivo é que ninguém precise interpretar a exportação bruta.
 
 - **Vocabulário e conceitos do domínio:** `CONTEXT.md`
-- **Como um Agente consome a base (estático e `/api/v1`):** `docs/agentes.md`
+- **Como um Agente consome a base (arquivos JSON estáticos):** `docs/agentes.md`
 - **Como o código está estruturado:** `docs/agents/architecture.md`
 - **O que já está pronto e o que vem a seguir:** `docs/agents/project-state.md`
 - **Decisões e porquês:** `docs/adr/`

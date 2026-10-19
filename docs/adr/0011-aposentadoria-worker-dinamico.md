@@ -43,3 +43,7 @@ publicados pelo site). O site já não usava o Worker (ADR-0008).
   último commit que o *modificou* foi `78a2a0273bda3d9d828b59e48a5c47c8f9c7960b`,
   2026-10-16). Para recuperá-lo:
   `git checkout 9e68732 -- packages/worker`.
+- **Remoção (2026-10-19, ticket 13):** o comando acima foi conferido antes da
+  remoção (`git ls-tree -r 9e68732 -- packages/worker` lista os seis arquivos do
+  pacote). O `wrangler` continua nas devDependencies da raiz porque o deploy do
+  **Pages** usa `wrangler-action`.
