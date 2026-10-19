@@ -9,9 +9,9 @@ import {
 
 /**
  * A API estática: a base servida consumida como arquivos JSON puros, sem
- * Worker nem cota (ADR-0003). Os artefatos são servidos tais quais pelo
- * publish; este módulo é o acesso do lado do consumidor — consulta por ID,
- * listas e a Versão da tabela.
+ * servidor nem cota (ADR-0003; o Worker dinâmico foi aposentado no ADR-0011).
+ * Os artefatos são servidos tais quais pelo publish; este módulo é o acesso do
+ * lado do consumidor — consulta por ID, listas e a Versão da tabela.
  */
 export interface ApiEstatica {
   /** Consulta por ID: resolve um Aparelho da base servida, ou `undefined`. */

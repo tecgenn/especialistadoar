@@ -7,17 +7,14 @@ bruta do INMETRO. O vocabulário do domínio (Aparelho, Variante, Linha da tabel
 Registro INMETRO, Anomalia, Valor oficial, Valor calculado…) está em `CONTEXT.md`
 — use esses termos nas respostas.
 
-## Regra de acesso: estático primeiro
+## Acesso: só arquivos estáticos
 
-**Comece pelos arquivos estáticos.** Eles são baratos, cacheáveis e não têm cota.
-As rotas dinâmicas `/api/v1` existem como **fallback** (busca textual, comparação,
-Valor calculado) e estão sujeitas a limite por IP.
+A base é **puramente estática**: não há API dinâmica nem limite de requisições.
+Todos os dados vêm dos arquivos JSON publicados, que são baratos e cacheáveis. A
+única capacidade que exigia cálculo — o **Valor calculado** — virou uma **fórmula
+documentada** abaixo.
 
-Registre **o caminho usado em cada resposta** (estático ou dinâmico): é isso que
-revela se o Worker se justifica (ver o portão da Fase 2 em
-`docs/aceitacao/portao-fase-2.md`).
-
-## Parte estática — arquivos JSON
+## Arquivos JSON publicados
 
 Base publicada no Cloudflare Pages: **`https://especialista-do-ar.pages.dev/`**.
 
@@ -48,7 +45,7 @@ curl -s https://especialista-do-ar.pages.dev/manifest.json
 curl -s https://especialista-do-ar.pages.dev/aparelhos.json \
   | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const a=JSON.parse(d).find(x=>x.id==='ap-4693b862644d');console.log(JSON.stringify(a,null,2))})"
 
-# Filtrar/buscar localmente sobre o dataset enxuto (sem Worker, sem cota)
+# Filtrar/buscar localmente sobre o dataset enxuto (sem servidor, sem cota)
 curl -s https://especialista-do-ar.pages.dev/consulta.json \
   | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const itens=JSON.parse(d);console.log(itens.filter(i=>i.marca==='ELGIN'&&i.tipo==='Split Piso-teto').length)})"
 ```
@@ -59,26 +56,36 @@ maiúsculas), `btu` (a capacidade nominal casa com qualquer Variante do Aparelho
 `tensao` (a voltagem casa com qualquer Variante) e `q` (busca textual sobre marca,
 modelo e tipo). Um filtro em branco equivale a não filtrar.
 
-## Parte dinâmica — `/api/v1` (fallback)
+## Valor calculado — fórmula documentada
 
-Worker: **`https://especialista-do-ar-api.tecgenn.workers.dev/api/v1`**.
-Consumida só por Agentes — o site não chama estas rotas.
+Não há endpoint de cálculo: o Valor calculado é feito por você, a partir dos
+**Valores oficiais** em `aparelhos.json`. A fórmula e as entradas são fixas:
 
-| Rota | Parâmetros | Devolve |
-|---|---|---|
-| `GET /search` | `q`, `marca`, `tipo`, `btu`, `tensao` | `{ resultados: ItemConsulta[], total }` |
-| `GET /comparar` | `ids=<id>,<id>` (ao menos dois) | `{ aparelhos: Aparelho[] }` — `404` se algum id não existir |
-| `GET /valor-calculado` | `id`, `tarifa` (R$/kWh, > 0) e, opcional, `tensao` | `{ id, marca, modelo, resultados, aviso }` |
+- **Fórmula:** `valor = consumoAnualKwh × tarifa`
+- **Entradas:** o `consumoAnualKwh` de uma **Variante** do Aparelho (kWh/ano) e a
+  `tarifa` informada na consulta (R$/kWh, > 0) — a fórmula é fixa, as entradas
+  variam por consulta e por Variante.
+- **Saída:** o custo anual estimado em R$/ano, por Variante.
 
-**Limite por IP:** 60 requisições por 60 s. Ao estourar, a resposta é `429` com
-`Retry-After: 60` — espere e repita; não insista. Prefira a parte estática a o
-tempo todo.
+Regras:
+
+- O cálculo é por **Variante**, não por Aparelho: um Aparelho bivolt pode ter mais
+  de um consumo declarado. Apresente também a **tensão** da Variante usada.
+- Se a consulta fixa uma tensão, use só as Variantes cujo `tensao.voltagens`
+  contenha esse valor. Uma Variante **sem tensão** não casa com uma tensão pedida.
+- `consumoAnualKwh` pode ser `null`: nessa Variante não há cálculo. Se nenhuma
+  Variante casar, diga que não há Valor calculado para os parâmetros informados.
+- Sempre apresente a **fórmula** e as **entradas** junto do resultado, e deixe
+  claro que é um **Valor calculado**, não um Valor oficial do INMETRO.
+
+Exemplo — KENNEDY `ap-4693b862644d`, tarifa R$ 0,95/kWh:
 
 ```bash
-curl -s "https://especialista-do-ar-api.tecgenn.workers.dev/api/v1/search?marca=ELGIN&tipo=Split%20Piso-teto"
-curl -s "https://especialista-do-ar-api.tecgenn.workers.dev/api/v1/comparar?ids=ap-4693b862644d,ap-b0e771cbc5a3"
-curl -s "https://especialista-do-ar-api.tecgenn.workers.dev/api/v1/valor-calculado?id=ap-4693b862644d&tarifa=0.95"
+curl -s https://especialista-do-ar.pages.dev/aparelhos.json \
+  | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const a=JSON.parse(d).find(x=>x.id==='ap-4693b862644d');for(const v of a.variantes){const k=v.dados.consumoAnualKwh;if(k!=null)console.log(v.tensao?.voltagens??'sem tensão',k,'kWh/ano → R$',(k*0.95).toFixed(2))}})"
 ```
+
+Resultado: 818 kWh/ano × 0,95 = **R$ 777,10/ano**.
 
 ## Regras de citabilidade
 
@@ -86,8 +93,7 @@ curl -s "https://especialista-do-ar-api.tecgenn.workers.dev/api/v1/valor-calcula
   de padronização de formato. Cite-o como dado do INMETRO.
 - **Valor calculado** é derivado (ex.: custo anual = `consumoAnualKwh × tarifa`).
   Sempre apresente junto a **fórmula** e as **entradas** usadas, e deixe claro que
-  **não** é um Valor oficial. A rota `valor-calculado` já devolve `formula`,
-  `entradas` e `aviso` — não os descarte.
+  **não** é um Valor oficial — ver "Valor calculado — fórmula documentada".
 - **Anomalia** é um sinal, não um erro: um campo que deveria ser numérico e veio
   com texto, ou com múltiplos números. O valor original é preservado; quem
   consulta decide como tratar.
@@ -100,4 +106,4 @@ curl -s "https://especialista-do-ar-api.tecgenn.workers.dev/api/v1/valor-calcula
 
 - Terminologia e conceitos: `CONTEXT.md`
 - O que está publicado e por quê: `docs/agents/architecture.md` e `docs/adr/`
-- O portão de decisão da Fase 2 (teste de aceitação): `docs/aceitacao/portao-fase-2.md`
+- O portão de decisão da Fase 2 (registro histórico): `docs/aceitacao/portao-fase-2.md`

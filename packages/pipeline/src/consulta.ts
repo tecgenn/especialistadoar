@@ -5,7 +5,7 @@ import type { Aparelho } from "./aparelho.ts";
  * Aparelho com o que a consulta usa — identidade para exibir e linkar, e os
  * valores sobre os quais filtrar (capacidade em BTU e tensão). A base servida
  * completa (`aparelhos.json`, ~3,2 MB) fica para as páginas de detalhe; este é o
- * artefato que a ilha do site baixa (~350 KB) e o Worker embute. Ver ADR-0008.
+ * artefato que a ilha do site baixa (~350 KB). Ver ADR-0008.
  */
 export interface ItemConsulta {
   id: string;

@@ -39,7 +39,7 @@ export default defineConfig({
   vite: {
     resolve: {
       // Os artefatos publicados são importados como JSON no build do site
-      // (`aparelhos.json`, `consulta.json`, `manifest.json`), como faz o Worker.
+      // (`aparelhos.json`, `consulta.json`, `manifest.json`).
       alias: { "@dados": buildDir },
     },
   },

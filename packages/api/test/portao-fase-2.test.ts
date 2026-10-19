@@ -191,13 +191,11 @@ describe("Portão da Fase 2 — gabarito do teste de aceitação", () => {
             break;
           }
           case "valor-calculado": {
-            // A rota dinâmica (/api/v1/valor-calculado) não é chamada aqui: a
-            // suíte é offline. O que este teste garante é que o **dado de
-            // entrada** do cálculo (o consumo anual oficial) e a fórmula citada
-            // no gabarito estão corretos; o comportamento da rota (fórmula,
-            // entradas e aviso devolvidos) é coberto por
-            // `packages/worker/test/rotas.test.ts` e exercitado na rodada real
-            // do portão (ver `docs/aceitacao/portao-fase-2.md`).
+            // A fórmula do Valor calculado é documentada em `docs/agentes.md`
+            // (o Worker dinâmico foi aposentado no ADR-0011). A suíte é
+            // offline: este teste garante que o **dado de entrada** do cálculo
+            // (o consumo anual oficial) e a fórmula citada no gabarito estão
+            // corretos, e que a resposta traz o valor e a fórmula.
             const aparelho = aparelhoPorId(verificacao.id);
             expect(aparelho, rotulo).toBeDefined();
             const consumos = aparelho?.variantes

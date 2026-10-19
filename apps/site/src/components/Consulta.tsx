@@ -11,8 +11,8 @@ import type { OpcoesConsulta } from "../lib/opcoes";
 /**
  * A **única ilha** do site (ADR-0008): a consulta com filtros combináveis e
  * busca textual roda **no cliente**, sobre o `consulta.json` publicado, pelo
- * módulo isomórfico do ticket 08 (`criarConsulta`). O estado vive na URL. O site
- * não chama o Worker — o dataset é baixado como arquivo estático.
+ * módulo isomórfico do ticket 08 (`criarConsulta`). O estado vive na URL. A
+ * consulta é 100% estática: o dataset é baixado como arquivo.
  */
 export interface PropsConsulta {
   /** Opções dos filtros, derivadas do dataset no build do site. */

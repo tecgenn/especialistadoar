@@ -5,10 +5,11 @@ export type { ItemConsulta };
 
 /**
  * O módulo de consulta isomórfico: lógica pura sobre o dataset enxuto
- * (`consulta.json`), **sem** dependências de Node — é importado tanto pela ilha
- * do site (navegador) quanto pelo Worker (Agente), com uma só definição. A
- * leitura de arquivo fica em `estatica.ts`, que é Node-only; separar por entry
- * point é o que impede `fs` de entrar no bundle do site. Ver ADR-0008.
+ * (`consulta.json`), **sem** dependências de Node — é importado pela ilha do
+ * site (navegador) e pode ser reusado por qualquer consumidor, com uma só
+ * definição. A leitura de arquivo fica em `estatica.ts`, que é Node-only;
+ * separar por entry point é o que impede `fs` de entrar no bundle do site. Ver
+ * ADR-0008.
  */
 export interface FiltrosConsulta {
   /** Marca do Aparelho (comparação sem diferenciar maiúsculas/minúsculas). */
@@ -63,9 +64,9 @@ function combinaCampos(item: ItemConsulta, filtros: FiltrosConsulta): boolean {
 
 /**
  * Abre o módulo de consulta sobre o dataset enxuto já parseado. Recebe os dados
- * (não um caminho de arquivo) para servir os dois ambientes de consumo — a ilha
- * faz `fetch` + `JSON.parse` do `consulta.json`; o Worker lê o mesmo artefato
- * embutido.
+ * (não um caminho de arquivo) para ser usado no navegador — a ilha faz `fetch` +
+ * `JSON.parse` do `consulta.json` — ou por qualquer consumidor que já tenha o
+ * array em mãos.
  */
 export function criarConsulta(dataset: ItemConsulta[]): Consulta {
   const indice = new MiniSearch<ItemConsulta>({

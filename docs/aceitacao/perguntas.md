@@ -1,12 +1,11 @@
 # Portão da Fase 2 — perguntas do teste de aceitação
 
 Dez perguntas reais para um Agente responder **sozinho**, usando só a base
-publicada (comece pelos arquivos estáticos; as rotas `/api/v1` são fallback). O
-gabarito fica em `gabarito.json` e **não** deve ser consultado pelo Agente. Onde
-cada resposta foi buscada (estático ou dinâmico) precisa ficar registrado.
+publicada (os arquivos JSON estáticos). O gabarito fica em `gabarito.json` e
+**não** deve ser consultado pelo Agente.
 
-Formato de cada resposta: a resposta, os dados que a sustentam (com a
-proveniência — Aparelho, Registro INMETRO e/ou Linha da tabela) e o caminho usado.
+Formato de cada resposta: a resposta e os dados que a sustentam (com a
+proveniência — Aparelho, Registro INMETRO e/ou Linha da tabela).
 
 1. Qual é a Versão da tabela que a base está servindo hoje: quando a exportação
    foi obtida, quantas Linhas ela tem e como ela é identificada?

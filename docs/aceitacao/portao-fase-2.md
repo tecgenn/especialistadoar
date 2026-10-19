@@ -1,5 +1,10 @@
 # Portão da Fase 2 — teste de aceitação com um Agente
 
+> **Nota (2026-10-19):** este é o **registro histórico** da rodada de 2026-10-17.
+> O Worker dinâmico citado abaixo foi **aposentado** (ADR-0011): hoje a base é só
+> estática e o Valor calculado é uma **fórmula documentada** em `docs/agentes.md`.
+> As referências à API dinâmica ficam como parte da evidência daquela rodada.
+
 Portão de decisão da Fase 2 (PRD, "Teste de aceitação com agente"): **um Agente
 responde sozinho, sem humano no meio, usando só a base**. O resultado decide se o
 projeto segue para o site (ticket #11) ou se a API é reavaliada antes.
@@ -10,11 +15,11 @@ projeto segue para o site (ticket #11) ou se a API é reavaliada antes.
 - **Versão da tabela servida:** `ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407`
   (exportação de 2026-10-12, 7474 Linhas).
 - **Agente:** uma sessão nova, **sem acesso ao gabarito** e sem o código-fonte do
-  pipeline/worker. Recebeu só `docs/agentes.md` (como consumir a base) e
+  pipeline. Recebeu só `docs/agentes.md` (como consumir a base) e
   `docs/aceitacao/perguntas.md` (as 10 perguntas).
-- **Acesso:** a base **publicada** — estático em `https://especialista-do-ar.pages.dev/`
-  e dinâmico em `https://especialista-do-ar-api.tecgenn.workers.dev/api/v1`.
-  Regra: começar pelo estático; `/api/v1` só como fallback.
+- **Acesso:** a base **publicada** em `https://especialista-do-ar.pages.dev/`. Na
+  época também existia a API dinâmica (removida no ADR-0011). Regra: começar pelo
+  estático; a API dinâmica só como fallback.
 - **Prova:** `perguntas.md` tem as perguntas; o gabarito (com as respostas
   conferidas contra `data/build/`) fica em `gabarito.json` e é verificado por
   `packages/api/test/portao-fase-2.test.ts`.
@@ -28,10 +33,10 @@ projeto segue para o site (ticket #11) ou se a API é reavaliada antes.
 | 3 | Aparelho por ID + Registro + Linha | estático (`aparelhos.json`) | ✅ |
 | 4 | Quantos Split Cassete | estático (`consulta.json`) | ✅ |
 | 5 | Quantos 127 V / bivolt | estático (`consulta.json`) | ✅ |
-| 6 | Quantos ELGIN Split Piso-teto | estático (`consulta.json`), confirmado no dinâmico (`/search`) | ✅ |
+| 6 | Quantos ELGIN Split Piso-teto | estático (`consulta.json`), confirmado na API dinâmica (removida) | ✅ |
 | 7 | Bivolt é um ou dois Aparelhos; Variantes | estático (`aparelhos.json` + `consulta.json`) | ✅ |
 | 8 | Comparar consumo anual/IDRS de dois Aparelhos | estático (`aparelhos.json`) | ✅ |
-| 9 | Custo anual estimado (tarifa R$ 0,95/kWh) | **dinâmico** (`/valor-calculado`) | ✅ |
+| 9 | Custo anual estimado (tarifa R$ 0,95/kWh) | **dinâmico** (rota removida; hoje fórmula documentada) | ✅ |
 | 10 | Anomalia da Linha 892 | estático (`anomalias.jsonl`) | ✅ |
 
 Sem intervenção humana. Todas as respostas vieram com proveniência (Aparelho,
@@ -42,10 +47,11 @@ conferidos contra a base e batem.
 ## O caminho usado, em números
 
 - **9 de 10** perguntas foram respondidas **só com o estático**.
-- **1** exigiu o **dinâmico**: o custo anual estimado, porque a rota
-  `/valor-calculado` é a que devolve **fórmula, entradas e o aviso** de que não é
-  Valor oficial (o cálculo `818 × 0,95` seria reproduzível à mão, mas a resposta
-  correta inclui esses metadados).
+- **1** exigiu o **dinâmico**: o custo anual estimado. Na época, a rota
+  `/valor-calculado` era a única que devolvia **fórmula, entradas e o aviso** de
+  que não é Valor oficial (o cálculo `818 × 0,95` seria reproduzível à mão, mas a
+  resposta correta inclui esses metadados). Hoje a mesma saída vem da fórmula
+  documentada em `docs/agentes.md`.
 - Houve **1 chamada dinâmica extra** apenas como *confirmação* (pergunta 6).
 - As rotas `/search` e `/comparar` **não foram necessárias** para nenhuma
   resposta: o `consulta.json` (estático) cobre filtros e busca.
@@ -62,11 +68,11 @@ Worker:
    um Agente, tão bom quanto o `/search` do Worker.
 2. O **Worker se justificou por pouco**: só o `valor-calculado` foi usado, e por
    causa dos metadados (fórmula + entradas + aviso), não do cálculo em si.
-3. Portanto: **manter o Worker**, mas tratá-lo como *calculadora determinística +
-   fallback*, não como o caminho principal. Se numa próxima rodada do portão o
-   `valor-calculado` também for dispensável, o Worker **encolhe** (o PRD prevê
-   isso). `/search` e `/comparar` seguem disponíveis para Agentes, mas sem
-   evidência de necessidade até aqui.
+3. Portanto, a decisão **à época** foi **manter o Worker**, mas tratá-lo como
+   *calculadora determinística + fallback*, não como o caminho principal. Se numa
+   próxima rodada do portão o `valor-calculado` também fosse dispensável, o Worker
+   **encolheria** (o PRD previa isso). O **ADR-0011** depois reverteu essa
+   decisão: o Worker foi removido e o Valor calculado virou fórmula documentada.
 
 Este é o resultado que destrava o ticket #11 (site em Astro). O portão pode ser
 re-executado quando a API mudar, atualizando o relatório.
@@ -86,9 +92,8 @@ dado, para o 10/10 ser auditável sem depender da palavra de quem conduziu.
 | 6 | **31** ELGIN Split Piso-teto | `estático` (`consulta.json`), conferido no `dinâmico` (`/search`) |
 | 7 | Um só Aparelho; atende **127 e 220 V**; **3 Variantes** (1 sem tensão, 220 V e 127 V) | `estático` — `aparelhos.json` + `consulta.json` |
 | 8 | KENNEDY **818 kWh/ano**, IDRS **3,5**; DAIKIN **350 kWh/ano**, IDRS **8,3** → **DAIKIN consome menos** | `estático` — `aparelhos.json` |
-| 9 | **R$ 777,10/ano** (`consumoAnualKwh × tarifa`; entradas: tarifa 0,95, consumo 818); não é Valor oficial | `dinâmico` — `curl …/api/v1/valor-calculado?id=ap-4693b862644d&tarifa=0.95` |
+| 9 | **R$ 777,10/ano** (`consumoAnualKwh × tarifa`; entradas: tarifa 0,95, consumo 818); não é Valor oficial | `dinâmico` — API dinâmica (removida); hoje a fórmula é aplicada sobre `aparelhos.json` |
 | 10 | Linha 892 — campo `Carga do Fluido Refrigerante (g)`, valor `640g / 600g / 690g`, tipo `valor_multiplo` | `estático` — `anomalias.jsonl` |
 
-O acesso dinâmico foi ao Worker publicado:
-`https://especialista-do-ar-api.tecgenn.workers.dev/api/v1` (2 chamadas no total,
-muito abaixo do limite de 60 req/60 s).
+O acesso dinâmico foi à API publicada na época (2 chamadas no total, muito abaixo
+do limite de 60 req/60 s). Ela foi removida no ADR-0011.

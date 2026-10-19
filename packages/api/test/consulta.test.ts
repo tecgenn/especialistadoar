@@ -34,8 +34,8 @@ beforeEach(() => {
     obtidoEm: "2026-10-12",
     reportsDir: join(dataDir, "reports"),
   });
-  // Os dois ambientes de consumo (ilha e Worker) carregam o mesmo artefato e
-  // entregam o array já parseado ao módulo — é o que fazemos aqui.
+  // O consumo no navegador (ilha do site) carrega o mesmo artefato e entrega o
+  // array já parseado ao módulo — é o que fazemos aqui.
   dataset = JSON.parse(
     readFileSync(join(buildDir, "consulta.json"), "utf8"),
   ) as ItemConsulta[];
@@ -105,7 +105,7 @@ describe("módulo de consulta — busca textual", () => {
   });
 });
 
-describe("módulo de consulta — consumo isomórfico (ilha + Worker)", () => {
+describe("módulo de consulta — consumo isomórfico (ilha do site)", () => {
   it("não importa Node nem `fs`: o entry é seguro para o bundle do site", () => {
     // A ausência de Node aqui é um invariante arquitetural (ADR-0008) que não se
     // observa na saída do módulo — por isso a guarda sobre o texto-fonte.
