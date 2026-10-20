@@ -36,3 +36,7 @@ URL e **reporta as quebradas**, para o site não exibir links mortos.
 - `data/build/` e `reports/` permanecem inalterados; o pipeline não conhece
   Ofertas. Uma guarda de teste confere que nenhum Aparelho publicado traz campo de
   Oferta.
+
+> **Revisão (2026-10-19, ticket 15):** não há mais job agendado; a verificação é
+> **manual** (`pnpm verificar-links`), imprime o resultado no terminal e não sai com
+> código 1 por link quebrado. Ver ADR-0014.

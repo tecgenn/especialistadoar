@@ -21,15 +21,16 @@ Entregue em fases — ver `docs/prd.md` para o detalhamento completo. **MVP = Fa
 2. **API, docs, teste com agente** — JSON estático (o Worker dinâmico da fase 2
    foi aposentado na fase 4, ADR-0011); o teste de aceitação com um agente é o
    **portão de decisão** antes de construir o site.
-3. **Site (Astro), Ofertas, job de verificação de links.**
+3. **Site (Astro), Ofertas, verificação de links sob demanda.**
 4. **Admin** (pós-MVP) — na prática, **observabilidade** (Fase 4).
 
-> **Fase 4 (em implementação, 2026-10-19).** O "admin" colapsa em observabilidade
+> **Fase 4 (concluída, 2026-10-19).** O "admin" colapsou em observabilidade
 > (o conteúdo continua no git, editado por PR comum). Decisões: **aposentar o
 > Worker dinâmico** (ADR-0011), **trilha dupla de CI/CD** com o Relatório de
 > revisão só em nova Versão da tabela (ADR-0012) e **observabilidade por
-> dashboards** (ADR-0013). Este documento já reflete a remoção do Worker
-> (ticket 13); o Valor calculado virou fórmula documentada em `docs/agentes.md`.
+> dashboards** (ADR-0013), com verificação de links manual (ADR-0014). Este
+> documento já reflete os tickets 13, 14 e 15; o Valor calculado virou fórmula
+> documentada em `docs/agentes.md`.
 
 ## Fonte de verdade
 
@@ -55,7 +56,6 @@ Caveats medidos do CSV (tratados pelo parser, não à mão):
 ```
 .github/                               # CI (build+testes) e publicação (Cloudflare Pages)
   workflows/{ci,publish}.yml
-  workflows/verificar-links.yml        # job agendado: verifica os links das Ofertas
   actions/setup/action.yml             # composite: pnpm + Node 24 + install
   branch-protection.json               # regra de branch de main (reaplicável)
 data/
@@ -77,7 +77,7 @@ packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
 apps/site/                            # catálogo Astro estático (fase 3)
   ofertas.json                        # CAMADA CURADA do site: Ofertas (links de afiliado), só no site
-  scripts/verificar-links.ts          # job: verifica os links das Ofertas
+  scripts/verificar-links.ts          # verificação manual: imprime o relatório de links
 ```
 
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
@@ -164,9 +164,9 @@ nova exportação CSV
   site. As **Ofertas** (links comerciais de afiliado) vivem só aqui, em
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site e renderizadas numa seção própria da página do
-  Aparelho — separadas dos dados técnicos. Um job agendado
-  (`verificar-links.yml`, via `pnpm verificar-links`) reporta links quebrados. Ver
-  ADR-0010.
+  Aparelho — separadas dos dados técnicos. `pnpm verificar-links` confere os links
+  sob demanda e imprime URL/loja/motivo dos quebrados, sem falhar. Ver ADR-0010 e
+  ADR-0014.
 
 ## Interfaces
 
@@ -227,8 +227,8 @@ Ver ADR-0003 e ADR-0011.
   textual rodam no cliente, com o estado na URL). O Pagefind indexa o conteúdo; o
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
-  site (`apps/site/ofertas.json`), validado no build e verificado por um job
-  agendado (ADR-0010).
+  site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
+  (ADR-0010 e ADR-0014).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
   repositório é público, então minutos de runner não são cobrados (a regra foi
@@ -242,9 +242,19 @@ Ver ADR-0003 e ADR-0011.
   precisa existir **fora do git** (secrets/variables, proteção de branch, projeto
   Pages) está em `docs/agents/ci-cd-setup.md`. Ver ADR-0002 e ADR-0004.
 
-Um job separado, **agendado** (`.github/workflows/verificar-links.yml`), verifica
-os links das Ofertas e reporta os quebrados — não bloqueia PRs (a rede é instável).
-Ver ADR-0010.
+A verificação de links das Ofertas é **manual** (`pnpm verificar-links`), fora do
+CI: imprime URL/loja/motivo dos quebrados e não falha por link quebrado (ADR-0014).
+
+## Observabilidade (Fase 4)
+
+- **Tráfego humano:** Cloudflare Web Analytics no projeto Pages (beacon sem cookies
+  nem banner, injetado pela Cloudflare). Habilitado no dashboard; ver
+  `docs/agents/ci-cd-setup.md` §2.7. Ver ADR-0013.
+- **Links quebrados:** verificação **manual e sob demanda** por
+  `pnpm verificar-links`; o relatório (URL/loja/motivo) sai no terminal (ADR-0014).
+  Corrigir uma Oferta é um PR comum em `apps/site/ofertas.json`.
+- **Acesso do Agente:** o fetch dos `.json` não é medido pelo beacon; exige
+  **domínio próprio** + analytics de zona por caminho — adiado (ADR-0013).
 
 ## Fora de escopo (MVP)
 

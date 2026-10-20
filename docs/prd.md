@@ -87,7 +87,7 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
   100% estática (ADR-0008).
 - **Ofertas** (links de afiliado) exibidas **apenas no site**, nunca misturadas ao
   dataset técnico.
-- **Job de verificação de links.**
+- **Verificação de links sob demanda** (`pnpm verificar-links`).
 
 ### Fase 4 — Observabilidade e limpeza (pós-MVP)
 
@@ -100,8 +100,9 @@ comum), o "admin" colapsa em **observabilidade e alertas**.
 - **Trilha dupla de CI/CD**: o Relatório de revisão só roda em PR que traz uma nova
   Versão da tabela (`data/raw/`); PRs de código/site ficam silenciosos. Ver ADR-0012.
 - **Observabilidade**: Cloudflare Web Analytics para o tráfego humano; links
-  quebrados em `reports/links-quebrados.md` (o job deixa de falhar → sem e-mail);
-  acesso do Agente adiado até haver domínio próprio. Ver ADR-0013.
+  quebrados verificados **manualmente** por `pnpm verificar-links` (sem job
+  agendado, e-mail, PR ou issue); acesso do Agente adiado até haver domínio
+  próprio. Ver ADR-0013 e ADR-0014.
 
 ## Decisões registradas
 

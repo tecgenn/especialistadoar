@@ -2,10 +2,11 @@ import type { Oferta } from "./ofertas.ts";
 
 /**
  * A verificação de links das Ofertas (ticket 12): a parte pura recebe a função de
- * busca por injeção, para não depender de rede no teste. O job
- * (`apps/site/scripts/verificar-links.ts`) liga o `fetch` real e roda agendado no
- * CI. Uma Oferta é "quebrada" quando a busca falha (rede/timeout) ou quando a
- * resposta tem status de erro (>= 400). Redirecionamentos são seguidos antes.
+ * busca por injeção, para não depender de rede no teste. O comando
+ * (`apps/site/scripts/verificar-links.ts`) liga o `fetch` real e roda sob demanda.
+ * Uma Oferta é "quebrada" quando a busca falha (rede/timeout) ou quando a resposta
+ * tem status de erro (>= 400). Redirecionamentos são seguidos antes. O resultado
+ * é impresso no terminal (ticket 15), não em arquivo nem issue.
  */
 
 export interface RespostaLink {
@@ -48,4 +49,37 @@ export async function verificarOfertas(
   }
 
   return { total: ofertas.length, quebradas };
+}
+
+function escaparCelula(valor: string): string {
+  return valor
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\r?\n/g, " ");
+}
+
+/** Renderiza o resultado em Markdown, para o terminal. */
+export function renderizarRelatorioLinks(relatorio: RelatorioLinks): string {
+  const { total, quebradas } = relatorio;
+  const resumo =
+    quebradas.length === 0
+      ? `${total} Oferta(s) verificada(s), nenhum link quebrado.`
+      : `${total} Oferta(s) verificada(s), ${quebradas.length} link(s) quebrado(s).`;
+
+  const tabela =
+    quebradas.length === 0
+      ? []
+      : [
+          "",
+          "| Loja | URL | Motivo |",
+          "| --- | --- | --- |",
+          ...quebradas.map(
+            ({ oferta, motivo }) =>
+              `| ${escaparCelula(oferta.loja)} | ${escaparCelula(oferta.url)} | ${escaparCelula(motivo)} |`,
+          ),
+        ];
+
+  return ["## Relatório de links quebrados", "", resumo, ...tabela, ""].join(
+    "\n",
+  );
 }

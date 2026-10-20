@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Oferta } from "../src/lib/ofertas.ts";
 import {
   type BuscadorLink,
+  renderizarRelatorioLinks,
   verificarOfertas,
 } from "../src/lib/verificacao-links.ts";
 
@@ -60,5 +61,58 @@ describe("verificarOfertas", () => {
     expect(total).toBe(0);
     expect(quebradas).toEqual([]);
     expect(buscar).not.toHaveBeenCalled();
+  });
+});
+
+describe("renderizarRelatorioLinks", () => {
+  it("registra de forma limpa quando não há quebrados", () => {
+    const texto = renderizarRelatorioLinks({ total: 2, quebradas: [] });
+
+    expect(texto).toContain("2 Oferta(s) verificada(s), nenhum link quebrado.");
+    expect(texto).not.toContain("| Loja |");
+  });
+
+  it("lista URL, loja e motivo dos quebrados", () => {
+    const quebrada = oferta("https://x/quebrada");
+
+    const texto = renderizarRelatorioLinks({
+      total: 3,
+      quebradas: [{ oferta: quebrada, motivo: "HTTP 404" }],
+    });
+
+    expect(texto).toContain(
+      "3 Oferta(s) verificada(s), 1 link(s) quebrado(s).",
+    );
+    expect(texto).toContain("| Loja | https://x/quebrada | HTTP 404 |");
+  });
+
+  it("escapa pipes e quebras de linha nas células", () => {
+    const texto = renderizarRelatorioLinks({
+      total: 1,
+      quebradas: [
+        {
+          oferta: { ...oferta("https://x/a|b"), loja: "Loja | Oficial" },
+          motivo: "falha\nde rede",
+        },
+      ],
+    });
+
+    expect(texto).toContain(
+      "| Loja \\| Oficial | https://x/a\\|b | falha de rede |",
+    );
+  });
+
+  it("preserva a ordem dos quebrados", () => {
+    const texto = renderizarRelatorioLinks({
+      total: 2,
+      quebradas: [
+        { oferta: oferta("https://x/primeira"), motivo: "HTTP 404" },
+        { oferta: oferta("https://x/segunda"), motivo: "HTTP 500" },
+      ],
+    });
+
+    expect(texto.indexOf("https://x/primeira")).toBeLessThan(
+      texto.indexOf("https://x/segunda"),
+    );
   });
 });
