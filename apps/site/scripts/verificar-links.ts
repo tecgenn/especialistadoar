@@ -1,4 +1,4 @@
-import { appendFileSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { type Oferta, validarOfertas } from "../src/lib/ofertas.ts";
 import {
@@ -8,11 +8,10 @@ import {
 } from "../src/lib/verificacao-links.ts";
 
 /**
- * Job de verificação de links das Ofertas (ticket 12). Lê `ofertas.json` (site-only),
- * faz uma requisição a cada URL e publica o resultado no resumo do run (ticket 15);
- * links quebrados não fazem o job falhar. Roda agendado (ver
- * `.github/workflows/verificar-links.yml`) ou à mão via `pnpm verificar-links`.
- * Node 24 executa o TypeScript direto.
+ * Verificação de links das Ofertas, sob demanda (ticket 15). Lê `ofertas.json`
+ * (site-only), faz uma requisição a cada URL e imprime o resultado (URL, loja e
+ * motivo dos quebrados) no terminal; links quebrados não fazem o comando falhar.
+ * Roda à mão via `pnpm verificar-links`. Node 24 executa o TypeScript direto.
  */
 
 const caminhoOfertas = fileURLToPath(
@@ -38,26 +37,4 @@ const ofertas = JSON.parse(readFileSync(caminhoOfertas, "utf8")) as Oferta[];
 validarOfertas(ofertas);
 
 const relatorio = await verificarOfertas(ofertas, buscar);
-const { total, quebradas } = relatorio;
-
-for (const { oferta, motivo } of quebradas) {
-  console.error(`✗ ${oferta.url} (${oferta.loja}): ${motivo}`);
-}
-console.log(
-  `${total} Oferta(s) verificada(s), ${quebradas.length} quebrada(s).`,
-);
-
-const resumoDoRun = process.env.GITHUB_STEP_SUMMARY;
-if (resumoDoRun) {
-  appendFileSync(
-    resumoDoRun,
-    `${renderizarRelatorioLinks(relatorio)}\n`,
-    "utf8",
-  );
-}
-
-if (quebradas.length > 0) {
-  console.log(
-    `::warning::${quebradas.length} link(s) quebrado(s) nas Ofertas — veja o resumo do run.`,
-  );
-}
+console.log(renderizarRelatorioLinks(relatorio));

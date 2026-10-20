@@ -73,5 +73,5 @@ Resumo gerado a cada nova Versão da tabela, antes de qualquer publicação: Apa
 _Avoid_: Log de importação, diff
 
 **Relatório de links quebrados**:
-O resultado da verificação diária das Ofertas, publicado no resumo do run do workflow, com URL, loja e motivo de cada link que deixou de responder. É onde se vê qual link quebrou; não dispara e-mail, PR nem issue.
+O resultado da verificação **manual** das Ofertas (`pnpm verificar-links`), impresso no terminal, com URL, loja e motivo de cada link que deixou de responder. É onde se vê qual link quebrou; não há job agendado, e-mail, PR nem issue.
 _Avoid_: Alerta de link, monitor de links

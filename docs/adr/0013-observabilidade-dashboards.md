@@ -39,6 +39,6 @@ prontas:
   trilha Tabela (ADR-0012).
 
 > **Revisão (2026-10-19, ticket 15):** a ideia de versionar
-> `reports/links-quebrados.md` foi descartada — com `main` protegida, exigiria um PR
-> automático (e um PAT) só para guardar o resultado. O relatório passa a viver no
-> **resumo do run**; ver ADR-0014.
+> `reports/links-quebrados.md` foi descartada (exigiria PR automático e PAT), e o
+> job agendado também: a verificação é **manual**, por `pnpm verificar-links`, com o
+> resultado impresso no terminal. Ver ADR-0014.

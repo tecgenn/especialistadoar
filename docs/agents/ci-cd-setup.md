@@ -31,8 +31,10 @@ existir **fora do git** para que ele funcione de ponta a ponta.
 |---|---|---|
 | `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes), `build:site` (build do site Astro) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo). Anexa o Relatório de revisão ao PR **só quando o PR adiciona uma nova Versão da tabela** (`data/raw/*.csv`) — ver §1.4. |
 | `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda, publica o **site** (`apps/site/dist`, que já embute a base servida — `aparelhos.json`, `consulta.json`, …) no Cloudflare Pages; pula com aviso se as credenciais não existirem. |
-| `.github/workflows/verificar-links.yml` | `schedule` (diário, 06:00 UTC) e `workflow_dispatch` | Verifica os links das Ofertas (`pnpm verificar-links`) e publica URL/loja/motivo dos quebrados no **resumo do run** (com aviso `::warning::`). **Não falha** por link quebrado: sem e-mail, sem PR, sem issue, sem segredos. |
-| `.github/actions/setup/action.yml` | (composite usado pelos três) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
+| `.github/actions/setup/action.yml` | (composite usado pelos dois) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
+
+A verificação de links das Ofertas **não** roda no CI: é manual, por
+`pnpm verificar-links` (ADR-0014; README).
 
 O **merge em `main` é a publicação** (ADR-0004). Nenhum caminho publica sem PR.
 
@@ -314,7 +316,7 @@ publicada e confira no HTML o beacon `static.cloudflareinsights.com/beacon.min.j
 | Deploy publica conteúdo antigo | merge não passou pelo PR / branch errada | revisar a proteção de branch (§1.2) |
 | Deploy cai em **preview** em vez de produção | production branch do projeto ≠ `main` (projeto Direct Upload não tem UI) | corrigir pela API (§2.3) |
 | Deploy falha com `ERR_PNPM_ADDING_TO_ROOT` ou `Command "wrangler" not found` | `wrangler` não está nas devDependencies da raiz e o `wrangler-action` não consegue instalá-lo num workspace pnpm | manter `wrangler` nas devDependencies da raiz (`pnpm add -D -w wrangler@4`); o action então usa o local |
-| Run de `Verificar links` verde, com aviso de links quebrados | comportamento esperado (ADR-0014): link quebrado não falha o job | abrir o **resumo do run** para ver URL/loja/motivo e corrigir `apps/site/ofertas.json` por PR |
+| `pnpm verificar-links` não aponta nada | comportamento esperado se `apps/site/ofertas.json` está vazio | cadastrar/atualizar as Ofertas (`apps/site/ofertas.json`) e rodar de novo |
 
 ---
 
@@ -333,4 +335,4 @@ publicada e confira no HTML o beacon `static.cloudflareinsights.com/beacon.min.j
 | 2026-10-19 | Worker dinâmico aposentado (ADR-0011): sai o `wrangler deploy` do `publish.yml`, a permissão `Workers Scripts: Edit` do token (§2.4) e a antiga §2.6; a §2.6 passa a documentar a remoção única do Worker já publicado. O `wrangler` continua nas devDependencies da raiz porque o deploy do Pages usa `wrangler-action`. | ticket #13 |
 | 2026-10-19 | Removido o Worker `especialista-do-ar-api` no dashboard da Cloudflare e dispensada a permissão `Workers Scripts: Edit` do token (§2.6). | ticket #13 |
 | 2026-10-19 | Trilha dupla de CI/CD (ADR-0012): o job `report` só anexa o Relatório de revisão quando o PR adiciona `data/raw/*.csv` (novo job `changes`); nova §1.4. | ticket #14 |
-| 2026-10-19 | Links quebrados deixam de falhar o job: o resultado vai para o resumo do run (aviso `::warning::`), sem PR/issue/arquivo (ADR-0014). Nova §2.7 habilita o Web Analytics (tráfego humano); acesso do Agente segue adiado. | ticket #15 |
+| 2026-10-19 | Verificação de links passa a ser **manual** (`pnpm verificar-links`, ADR-0014): removido o workflow agendado `verificar-links.yml` (criado no ticket #12). Nova §2.7 habilita o Web Analytics (tráfego humano); acesso do Agente segue adiado. | ticket #15 |
