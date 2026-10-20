@@ -256,7 +256,7 @@ não é mais necessária.
 ### 2.7 Web Analytics (tráfego humano)
 
 Cloudflare Web Analytics é grátis, sem cookies e sem banner de consentimento; o
-snippet (beacon) é injetado pela própria Cloudflare no build do Pages.
+snippet (beacon) é injetado pela própria Cloudflare ao servir o site do Pages.
 
 **Habilitar (uma vez):**
 
@@ -271,8 +271,8 @@ mudança de código, segredo nem variable. Para ver os números: Dashboard →
 publicada e confira no HTML o beacon `static.cloudflareinsights.com/beacon.min.js`
 (ou veja os primeiros page views no dashboard).
 
-> **Executado em 2026-10-19 (ticket 15).** O snippet só passa a aparecer no
-> próximo deploy do site.
+> **Habilitação em 2026-10-19 (ticket 15):** o mantenedor habilitou no dashboard.
+> Confirme o beacon após o próximo deploy; o snippet só passa a aparecer nele.
 
 **Limite:** o Web Analytics mede **tráfego humano** (beacon JS). O acesso do
 **Agente** — `fetch` dos arquivos `.json`, sem navegador — não é medido. Isso exige

@@ -61,29 +61,25 @@ function escaparCelula(valor: string): string {
 /** Renderiza o resultado em Markdown, para o resumo do run. */
 export function renderizarRelatorioLinks(relatorio: RelatorioLinks): string {
   const { total, quebradas } = relatorio;
+  const resumo =
+    quebradas.length === 0
+      ? `${total} Oferta(s) verificada(s), nenhum link quebrado.`
+      : `${total} Oferta(s) verificada(s), ${quebradas.length} link(s) quebrado(s).`;
 
-  if (quebradas.length === 0) {
-    return [
-      "## Links das Ofertas",
-      "",
-      `${total} Oferta(s) verificada(s), nenhum link quebrado.`,
-      "",
-    ].join("\n");
-  }
+  const tabela =
+    quebradas.length === 0
+      ? []
+      : [
+          "",
+          "| Loja | URL | Motivo |",
+          "| --- | --- | --- |",
+          ...quebradas.map(
+            ({ oferta, motivo }) =>
+              `| ${escaparCelula(oferta.loja)} | ${escaparCelula(oferta.url)} | ${escaparCelula(motivo)} |`,
+          ),
+        ];
 
-  const linhas = quebradas.map(
-    ({ oferta, motivo }) =>
-      `| ${escaparCelula(oferta.loja)} | ${escaparCelula(oferta.url)} | ${escaparCelula(motivo)} |`,
+  return ["## Relatório de links quebrados", "", resumo, ...tabela, ""].join(
+    "\n",
   );
-
-  return [
-    "## Links das Ofertas",
-    "",
-    `${total} Oferta(s) verificada(s), ${quebradas.length} link(s) quebrado(s).`,
-    "",
-    "| Loja | URL | Motivo |",
-    "| --- | --- | --- |",
-    ...linhas,
-    "",
-  ].join("\n");
 }

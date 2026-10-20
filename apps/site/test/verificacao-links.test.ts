@@ -102,14 +102,17 @@ describe("renderizarRelatorioLinks", () => {
     );
   });
 
-  it("é determinístico: a mesma lista rende o mesmo texto", () => {
-    const relatorio = {
-      total: 1,
-      quebradas: [{ oferta: oferta("https://x"), motivo: "HTTP 500" }],
-    };
+  it("preserva a ordem dos quebrados", () => {
+    const texto = renderizarRelatorioLinks({
+      total: 2,
+      quebradas: [
+        { oferta: oferta("https://x/primeira"), motivo: "HTTP 404" },
+        { oferta: oferta("https://x/segunda"), motivo: "HTTP 500" },
+      ],
+    });
 
-    expect(renderizarRelatorioLinks(relatorio)).toBe(
-      renderizarRelatorioLinks(relatorio),
+    expect(texto.indexOf("https://x/primeira")).toBeLessThan(
+      texto.indexOf("https://x/segunda"),
     );
   });
 });

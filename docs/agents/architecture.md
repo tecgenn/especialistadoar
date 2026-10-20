@@ -24,12 +24,13 @@ Entregue em fases — ver `docs/prd.md` para o detalhamento completo. **MVP = Fa
 3. **Site (Astro), Ofertas, job de verificação de links.**
 4. **Admin** (pós-MVP) — na prática, **observabilidade** (Fase 4).
 
-> **Fase 4 (em implementação, 2026-10-19).** O "admin" colapsa em observabilidade
+> **Fase 4 (concluída, 2026-10-19).** O "admin" colapsou em observabilidade
 > (o conteúdo continua no git, editado por PR comum). Decisões: **aposentar o
 > Worker dinâmico** (ADR-0011), **trilha dupla de CI/CD** com o Relatório de
 > revisão só em nova Versão da tabela (ADR-0012) e **observabilidade por
-> dashboards** (ADR-0013). Este documento já reflete a remoção do Worker
-> (ticket 13); o Valor calculado virou fórmula documentada em `docs/agentes.md`.
+> dashboards** (ADR-0013), com links quebrados no resumo do run (ADR-0014). Este
+> documento já reflete os tickets 13, 14 e 15; o Valor calculado virou fórmula
+> documentada em `docs/agentes.md`.
 
 ## Fonte de verdade
 
