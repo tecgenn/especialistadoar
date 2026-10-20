@@ -234,7 +234,9 @@ Ver ADR-0003 e ADR-0011.
   repositório é público, então minutos de runner não são cobrados (a regra foi
   mantida por decisão do ticket #06). O CI roda lint, typecheck, build
   (validação Ajv + invariantes) e Vitest, e inclui um gate de reprodutibilidade
-  que falha se `data/build`/`reports` divergirem de um `pnpm build` novo. A
+  que falha se `data/build`/`reports` divergirem de um `pnpm build` novo. O
+  Relatório de revisão só é anexado ao PR quando ele **adiciona** uma nova Versão
+  da tabela (`data/raw/*.csv`); PRs de código/site ficam silenciosos (ADR-0012). A
   publicação é via PR (merge = deploy do **site** — `apps/site/dist`, que embute a
   base servida — no Cloudflare Pages). O que
   precisa existir **fora do git** (secrets/variables, proteção de branch, projeto
