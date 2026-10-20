@@ -55,7 +55,7 @@ Caveats medidos do CSV (tratados pelo parser, não à mão):
 ```
 .github/                               # CI (build+testes) e publicação (Cloudflare Pages)
   workflows/{ci,publish}.yml
-  workflows/verificar-links.yml        # job agendado: verifica os links das Ofertas
+  workflows/verificar-links.yml        # job agendado: verifica links e publica no resumo do run
   actions/setup/action.yml             # composite: pnpm + Node 24 + install
   branch-protection.json               # regra de branch de main (reaplicável)
 data/
@@ -77,7 +77,7 @@ packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
 apps/site/                            # catálogo Astro estático (fase 3)
   ofertas.json                        # CAMADA CURADA do site: Ofertas (links de afiliado), só no site
-  scripts/verificar-links.ts          # job: verifica os links das Ofertas
+  scripts/verificar-links.ts          # job: verifica links e escreve o resumo do run
 ```
 
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
@@ -165,8 +165,8 @@ nova exportação CSV
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site e renderizadas numa seção própria da página do
   Aparelho — separadas dos dados técnicos. Um job agendado
-  (`verificar-links.yml`, via `pnpm verificar-links`) reporta links quebrados. Ver
-  ADR-0010.
+  (`verificar-links.yml`, via `pnpm verificar-links`) verifica os links e publica
+  o resultado no resumo do run, sem falhar o job. Ver ADR-0010 e ADR-0014.
 
 ## Interfaces
 
@@ -243,8 +243,20 @@ Ver ADR-0003 e ADR-0011.
   Pages) está em `docs/agents/ci-cd-setup.md`. Ver ADR-0002 e ADR-0004.
 
 Um job separado, **agendado** (`.github/workflows/verificar-links.yml`), verifica
-os links das Ofertas e reporta os quebrados — não bloqueia PRs (a rede é instável).
-Ver ADR-0010.
+os links das Ofertas, publica URL/loja/motivo dos quebrados no **resumo do run** e
+emite um aviso; o job **não falha** (sem e-mail, sem PR, sem issue) e não bloqueia
+PRs. Ver ADR-0010 e ADR-0014.
+
+## Observabilidade (Fase 4)
+
+- **Tráfego humano:** Cloudflare Web Analytics no projeto Pages (beacon sem cookies
+  nem banner, injetado pela Cloudflare). Habilitado no dashboard; ver
+  `docs/agents/ci-cd-setup.md` §2.7. Ver ADR-0013.
+- **Links quebrados:** o job diário verifica as Ofertas e publica o resultado no
+  resumo do run (ADR-0014). A verificação é independente de commits e de PRs; o PR
+  só aparece quando uma Oferta é corrigida em `apps/site/ofertas.json`.
+- **Acesso do Agente:** o fetch dos `.json` não é medido pelo beacon; exige
+  **domínio próprio** + analytics de zona por caminho — adiado (ADR-0013).
 
 ## Fora de escopo (MVP)
 

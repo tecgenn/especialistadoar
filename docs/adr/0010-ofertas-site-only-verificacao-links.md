@@ -36,3 +36,6 @@ URL e **reporta as quebradas**, para o site não exibir links mortos.
 - `data/build/` e `reports/` permanecem inalterados; o pipeline não conhece
   Ofertas. Uma guarda de teste confere que nenhum Aparelho publicado traz campo de
   Oferta.
+
+> **Revisão (2026-10-19, ticket 15):** o job deixou de sair com código 1; o resultado
+> passou a ser publicado no resumo do run, sem e-mail, PR ou issue. Ver ADR-0014.

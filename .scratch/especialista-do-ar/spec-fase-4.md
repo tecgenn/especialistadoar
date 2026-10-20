@@ -1,6 +1,6 @@
 # Spec — Fase 4: Observabilidade e aposentadoria do Worker
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Problem Statement
 
@@ -24,8 +24,8 @@ no git, editado por PR comum (ADR-0013):
 - **Trilha dupla de CI/CD** (ADR-0012): o Relatório de revisão só roda em PR que
   traz nova Versão da tabela (`data/raw/`); PRs de código/site ficam silenciosos.
 - **Observabilidade** (ADR-0013): **Cloudflare Web Analytics** para o tráfego humano;
-  **links quebrados** em `reports/links-quebrados.md` (o job deixa de falhar → sem
-  e-mail); acesso do Agente **adiado** até haver domínio próprio.
+  **links quebrados** no resumo do run (o job deixa de falhar → sem e-mail, PR ou
+  issue; ADR-0014); acesso do Agente **adiado** até haver domínio próprio.
 
 ## User Stories
 
@@ -46,8 +46,9 @@ no git, editado por PR comum (ADR-0013):
   `ci-cd-setup.md`; documentar a fórmula do Valor calculado. Ver ADR-0011.
 - **Trilha dupla de CI/CD** — condicionar o job `report` a `data/raw/**`; a
   publicação continua via PR (ADR-0004). Ver ADR-0012.
-- **Observabilidade** — Cloudflare Web Analytics (humano); `reports/links-quebrados.md`
-  escrito pelo job de verificação, commitado só quando muda; job não falha. Ver ADR-0013.
+- **Observabilidade** — Cloudflare Web Analytics (humano); resultado dos links
+  quebrados publicado no resumo do run, sem arquivo/PR/issue; job não falha. Ver
+  ADR-0013 e ADR-0014.
 - **Fora de escopo:** cobrança/API paga; medição do acesso do Agente (exige domínio
   próprio); blog/artigos (Fase 5); qualquer UI de admin.
 
@@ -58,9 +59,9 @@ no git, editado por PR comum (ADR-0013):
   a `api/v1` no repositório ou nos workflows.
 - **Trilha dupla:** um PR sem mudança em `data/raw/` não gera comentário de
   Relatório; um PR que adiciona `data/raw/*.csv` gera.
-- **Links quebrados:** o job não sai com código 1; `reports/links-quebrados.md`
-  reflete a lista e só muda quando a lista muda (coberto no teste puro
-  `verificacao-links`).
+- **Links quebrados:** o job não sai com código 1; o resumo do run reflete a lista
+  (URL, loja, motivo) e há aviso `::warning::` quando há quebrados (coberto no
+  teste puro `verificacao-links`).
 
 ## Out of Scope
 
@@ -70,7 +71,8 @@ no git, editado por PR comum (ADR-0013):
 
 ## Further Notes
 
-- ADRs: 0011 (Worker), 0012 (trilha dupla), 0013 (observabilidade).
+- ADRs: 0011 (Worker), 0012 (trilha dupla), 0013 (observabilidade), 0014
+  (links quebrados no resumo do run).
 - Docs atualizadas: `CONTEXT.md`, `docs/prd.md`, `docs/agents/architecture.md`,
   `docs/agents/ci-cd-setup.md`, `docs/agentes.md`, `README.md`.
 

@@ -6,6 +6,7 @@ import type { Oferta } from "./ofertas.ts";
  * (`apps/site/scripts/verificar-links.ts`) liga o `fetch` real e roda agendado no
  * CI. Uma Oferta é "quebrada" quando a busca falha (rede/timeout) ou quando a
  * resposta tem status de erro (>= 400). Redirecionamentos são seguidos antes.
+ * O resultado é publicado no resumo do run (ticket 15), não em arquivo nem issue.
  */
 
 export interface RespostaLink {
@@ -48,4 +49,41 @@ export async function verificarOfertas(
   }
 
   return { total: ofertas.length, quebradas };
+}
+
+function escaparCelula(valor: string): string {
+  return valor
+    .replace(/\\/g, "\\\\")
+    .replace(/\|/g, "\\|")
+    .replace(/\r?\n/g, " ");
+}
+
+/** Renderiza o resultado em Markdown, para o resumo do run. */
+export function renderizarRelatorioLinks(relatorio: RelatorioLinks): string {
+  const { total, quebradas } = relatorio;
+
+  if (quebradas.length === 0) {
+    return [
+      "## Links das Ofertas",
+      "",
+      `${total} Oferta(s) verificada(s), nenhum link quebrado.`,
+      "",
+    ].join("\n");
+  }
+
+  const linhas = quebradas.map(
+    ({ oferta, motivo }) =>
+      `| ${escaparCelula(oferta.loja)} | ${escaparCelula(oferta.url)} | ${escaparCelula(motivo)} |`,
+  );
+
+  return [
+    "## Links das Ofertas",
+    "",
+    `${total} Oferta(s) verificada(s), ${quebradas.length} link(s) quebrado(s).`,
+    "",
+    "| Loja | URL | Motivo |",
+    "| --- | --- | --- |",
+    ...linhas,
+    "",
+  ].join("\n");
 }

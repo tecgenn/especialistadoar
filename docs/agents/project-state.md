@@ -6,7 +6,9 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**15 — Observabilidade: Web Analytics e relatório de links quebrados** (`.scratch/especialista-do-ar/issues/15-observabilidade-analytics-relatorio-links.md`). Último ticket aberto da Fase 4 (observabilidade); **13** (aposentar o Worker) e **14** (trilha dupla de CI/CD) concluídos. Sem bloqueios.
+Nenhum ticket aberto — **Fase 4 concluída** (tickets 13, 14 e 15). O tracker é a
+fonte de verdade; o próximo trabalho depende de uma nova rodada de planejamento
+(Fase 5, se houver).
 
 ## Completed
 
@@ -105,4 +107,11 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** O Relatório de revisão deixa de ser anexado a **todo** PR. Um job `changes` marca `nova-versao` quando o PR **adiciona** `data/raw/inmetro-export-<data>.csv`; o job `report` só anexa o comentário com esse flag ligado, então PRs de código/site ficam silenciosos (fim do e-mail "0 novos / 0 alterados"). O portão de reprodutibilidade e o `build` continuam rodando em todo PR; a publicação segue só via PR (ADR-0004). As duas trilhas (Código/Site × Tabela) ficam documentadas no runbook §1.4. `pnpm build`/`build:site` inalterados nos dados reais.
 - **Ticket:** #14 (local tracker: `14-relatorio-revisao-so-em-nova-tabela`)
 - **Checks:** YAML do `ci.yml` válido (parse + inspeção dos jobs/`if`); Vitest 165/165, tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2462 páginas). O comentário do PR passa a escolher o Relatório de revisão mais recente (antes pegava o primeiro por nome — o mais antigo — quando há mais de uma Versão publicada).
+
+### 15 — Observabilidade: Web Analytics e links quebrados no resumo do run (2026-10-19)
+
+- **Changed:** `apps/site/src/lib/verificacao-links.ts` (+`renderizarRelatorioLinks`, Markdown com URL/loja/motivo e escape de células); `apps/site/scripts/verificar-links.ts` (publica o resultado em `GITHUB_STEP_SUMMARY`, emite `::warning::` e deixa de sair com código 1); `apps/site/test/verificacao-links.test.ts` (+4 testes do renderizador); `docs/agents/ci-cd-setup.md` (linha do workflow, nova §2.7 Web Analytics, troubleshooting e registro de mudanças); `docs/agents/architecture.md` (job agendado + nova seção Observabilidade); `docs/prd.md`, `CONTEXT.md`, `README.md`; ADR-0014 (novo) e nota datada no ADR-0013; `docs/agents/project-state.md`.
+- **What works:** O job diário de links **não falha mais** por link quebrado e publica o resultado no **resumo do run** (tabela com URL, loja e motivo; ou "nenhum link quebrado"), com um aviso `::warning::` na contagem — sem e-mail, PR, issue ou arquivo versionado. A verificação continua independente de commits (schedule diário + `workflow_dispatch`) e `pnpm verificar-links` roda à mão. `ofertas.json` inválido ainda falha alto. O **Cloudflare Web Analytics** foi habilitado no projeto Pages (passo manual §2.7; beacon entra no próximo deploy) para o tráfego humano; medir o acesso do **Agente** segue adiado até haver domínio próprio (ADR-0013).
+- **Ticket:** #15 (local tracker: `15-observabilidade-analytics-relatorio-links`)
+- **Checks:** Vitest 169/169 (21 arquivos; +4 do renderizador), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2462 páginas); `pnpm verificar-links` roda duas vezes sem gerar mudanças (`0 Oferta(s) verificada(s), 0 quebrada(s)`).
 

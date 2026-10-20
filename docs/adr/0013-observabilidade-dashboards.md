@@ -37,3 +37,8 @@ prontas:
   não houver domínio, só o tráfego humano é medido.
 - A "ação no admin para enviar tabela" não existe: subir uma tabela é um PR na
   trilha Tabela (ADR-0012).
+
+> **Revisão (2026-10-19, ticket 15):** a ideia de versionar
+> `reports/links-quebrados.md` foi descartada — com `main` protegida, exigiria um PR
+> automático (e um PAT) só para guardar o resultado. O relatório passa a viver no
+> **resumo do run**; ver ADR-0014.

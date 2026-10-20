@@ -100,8 +100,9 @@ comum), o "admin" colapsa em **observabilidade e alertas**.
 - **Trilha dupla de CI/CD**: o Relatório de revisão só roda em PR que traz uma nova
   Versão da tabela (`data/raw/`); PRs de código/site ficam silenciosos. Ver ADR-0012.
 - **Observabilidade**: Cloudflare Web Analytics para o tráfego humano; links
-  quebrados em `reports/links-quebrados.md` (o job deixa de falhar → sem e-mail);
-  acesso do Agente adiado até haver domínio próprio. Ver ADR-0013.
+  quebrados no **resumo do run** do job diário (o job deixa de falhar → sem e-mail,
+  sem PR, sem issue); acesso do Agente adiado até haver domínio próprio. Ver
+  ADR-0013 e ADR-0014.
 
 ## Decisões registradas
 

@@ -25,7 +25,7 @@ pnpm build       # CSV bruto + curadoria -> data/build/ + reports/
 pnpm build:site  # site Astro (apps/site/dist), sobre data/build/ — rode pnpm build antes
 pnpm dev:site    # Astro em modo dev (site)
 pnpm preview:site # pré-visualiza o build do site
-pnpm verificar-links # verifica os links das Ofertas (site) e reporta os quebrados
+pnpm verificar-links # verifica os links das Ofertas (site) e publica o resultado no resumo do run
 pnpm test        # suíte Vitest (uma passada)
 pnpm test:watch  # Vitest em watch
 pnpm typecheck   # tsc --noEmit
