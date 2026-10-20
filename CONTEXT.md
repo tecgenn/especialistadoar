@@ -32,6 +32,14 @@ _Avoid_: Produto incompleto, registro vazio
 Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos.
 _Avoid_: Link de compra, anúncio
 
+**Análise**:
+Texto editorial sobre um único Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial.
+_Avoid_: Artigo, review, resenha
+
+**Guia**:
+Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
+_Avoid_: Artigo, ranking, lista
+
 **Anomalia**:
 Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto. O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
 _Avoid_: Erro, defeito (não temos como saber se o dado está de fato errado)
