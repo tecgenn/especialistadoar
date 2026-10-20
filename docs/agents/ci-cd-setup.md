@@ -29,7 +29,7 @@ existir **fora do git** para que ele funcione de ponta a ponta.
 
 | Workflow | Dispara em | O que faz |
 |---|---|---|
-| `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes), `build:site` (build do site Astro) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo); anexa o Relatório de revisão ao PR. |
+| `.github/workflows/ci.yml` | `pull_request` e `push` em `main` | Matrix Linux (referência) + Windows (não-bloqueante): lint, typecheck, `build` (validação Ajv + invariantes), `build:site` (build do site Astro) e Vitest; gate de reprodutibilidade (`data/build`/`reports` têm de bater com um build novo). Anexa o Relatório de revisão ao PR **só quando o PR adiciona uma nova Versão da tabela** (`data/raw/*.csv`) — ver §1.4. |
 | `.github/workflows/publish.yml` | `push` em `main` (merge) | Rebuilda, publica o **site** (`apps/site/dist`, que já embute a base servida — `aparelhos.json`, `consulta.json`, …) no Cloudflare Pages; pula com aviso se as credenciais não existirem. |
 | `.github/workflows/verificar-links.yml` | `schedule` (diário, 06:00 UTC) e `workflow_dispatch` | Verifica os links das Ofertas (`pnpm verificar-links`) e **reporta os quebrados** (falha o job se houver algum). Não bloqueia PRs e não exige segredos. |
 | `.github/actions/setup/action.yml` | (composite usado pelos três) | Instala pnpm (versão lida de `packageManager`) + Node 24 + dependências. |
@@ -132,6 +132,27 @@ Vale só para merges feitos pelo GitHub (PR): um merge local (`git merge` +
 `git push`) não apaga nada. E a ref local `origin/<branch>` **não some sozinha** —
 o Git a mantém como cache; limpe com `git fetch --prune` (ou configure
 `fetch.prune=true`).
+
+### 1.4 Duas trilhas de CI/CD (Código/Site × Tabela)
+
+A mesma esteira (`ci.yml`) atende dois tipos de PR, distinguidos pelo que o PR
+traz (ADR-0012):
+
+| Trilha | Quando | O que roda |
+|---|---|---|
+| **Código/Site** (frequente) | PR sem arquivo novo em `data/raw/` | lint, typecheck, `build`, `build:site`, Vitest, gate de reprodutibilidade. **Sem** comentário de Relatório de revisão (fim do e-mail "0 novos / 0 alterados"). |
+| **Tabela** (raro, ~2–3×/ano) | PR que **adiciona** `data/raw/inmetro-export-<data>.csv` | o mesmo acima **mais** o comentário do Relatório de revisão no PR. |
+
+A distinção é feita pelo job `changes` do `ci.yml`: ele lista os arquivos do PR
+pela API (`github.rest.pulls.listFiles`) e marca `nova-versao = true` quando há
+um arquivo **adicionado** (`status: added`) que casa `^data/raw/.+\.csv$`. O job
+`report` só roda com esse flag ligado. O gate de reprodutibilidade e o `build`
+continuam rodando em **todo** PR — nada muda para a trilha Código/Site além do
+silêncio do Relatório.
+
+Para disparar a trilha Tabela: adicione o CSV bruto em `data/raw/`, rode
+`pnpm build` e commite `data/build/` + `reports/revisao-<data>.md` no mesmo PR
+(ver README, "Antes de dar push").
 
 ---
 
@@ -284,3 +305,4 @@ não é mais necessária.
 | 2026-10-18 | Workflow agendado `verificar-links.yml` (diário + `workflow_dispatch`): roda `pnpm verificar-links` e reporta Ofertas com link quebrado. Sem segredos nem projeto novo. | ticket #12 |
 | 2026-10-19 | Worker dinâmico aposentado (ADR-0011): sai o `wrangler deploy` do `publish.yml`, a permissão `Workers Scripts: Edit` do token (§2.4) e a antiga §2.6; a §2.6 passa a documentar a remoção única do Worker já publicado. O `wrangler` continua nas devDependencies da raiz porque o deploy do Pages usa `wrangler-action`. | ticket #13 |
 | 2026-10-19 | Removido o Worker `especialista-do-ar-api` no dashboard da Cloudflare e dispensada a permissão `Workers Scripts: Edit` do token (§2.6). | ticket #13 |
+| 2026-10-19 | Trilha dupla de CI/CD (ADR-0012): o job `report` só anexa o Relatório de revisão quando o PR adiciona `data/raw/*.csv` (novo job `changes`); nova §1.4. | ticket #14 |

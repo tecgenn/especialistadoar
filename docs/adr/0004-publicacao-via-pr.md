@@ -16,3 +16,7 @@ Nenhuma Versão da tabela vai ao ar sem passar por esse portão.
 
 - O CI roda build + validação + testes e anexa o Relatório de revisão ao PR.
 - Merge em `main` dispara o deploy (Cloudflare Pages) dos artefatos publicados.
+
+> **Atualizado em 2026-10-19 (ticket 14):** desde o ADR-0012, o Relatório de
+> revisão só é anexado quando o PR **adiciona uma nova Versão da tabela**
+> (`data/raw/*.csv`); PRs de código/site não o recebem.

@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**14 — Relatório de revisão só em nova Versão da tabela** (`.scratch/especialista-do-ar/issues/14-relatorio-revisao-so-em-nova-tabela.md`). A Fase 4 (observabilidade + limpeza) segue; o ticket **13** (aposentar o Worker dinâmico) foi concluído. Também pronto e independente: **15** (Web Analytics + `reports/links-quebrados.md`).
+**15 — Observabilidade: Web Analytics e relatório de links quebrados** (`.scratch/especialista-do-ar/issues/15-observabilidade-analytics-relatorio-links.md`). Último ticket aberto da Fase 4 (observabilidade); **13** (aposentar o Worker) e **14** (trilha dupla de CI/CD) concluídos. Sem bloqueios.
 
 ## Completed
 
@@ -98,4 +98,11 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 - **What works:** a parte dinâmica da API deixa de existir — a única superfície pública de dados volta a ser a **API estática** (os arquivos JSON publicados pelo site). O `publish.yml` só publica o build do site no Pages; o token não exige mais `Workers Scripts: Edit` e o limite por IP morre junto. O **Valor calculado** passa a ser **fórmula documentada** para Agentes (`consumoAnualKwh × tarifa`, por Variante, sempre com fórmula, entradas e o aviso de que **não** é Valor oficial), no lugar do endpoint. O pacote permanece recuperável pelo hash registrado no ADR-0011 (`git checkout 9e68732 -- packages/worker`; `git ls-tree -r 9e68732 -- packages/worker` conferido antes da remoção). `pnpm build` inalterado nos dados reais.
 - **Ticket:** #13 (local tracker: `13-aposentar-worker-dinamico`)
 - **Checks:** Vitest 165/165 (21 arquivos; −22 do Worker, +1 guarda positiva da ilha), tsc --noEmit OK, biome check OK; `pnpm build` e `pnpm build:site` verdes (2462 páginas); `data/build`+`reports` reproduzidos byte a byte; nenhuma referência a `api/v1` em código ou workflows (só histórico anotado em ADRs, docs de aceitação e PRD).
+
+### 14 — Relatório de revisão só em nova Versão da tabela (2026-10-19)
+
+- **Changed:** `.github/workflows/ci.yml` (novo job `changes` que detecta um arquivo **adicionado** em `data/raw/*.csv` via `github.rest.pulls.listFiles`; o job `report` passa a exigir `needs.changes.outputs.nova-versao == 'true'`); `docs/agents/ci-cd-setup.md` (linha do `ci.yml` na tabela + nova §1.4 "Duas trilhas de CI/CD" + registro de mudanças); `docs/agents/architecture.md` (§CI/CD: o Relatório só é anexado quando o PR adiciona uma Versão da tabela); `docs/adr/0004-publicacao-via-pr.md` (nota datada apontando o ADR-0012).
+- **What works:** O Relatório de revisão deixa de ser anexado a **todo** PR. Um job `changes` marca `nova-versao` quando o PR **adiciona** `data/raw/inmetro-export-<data>.csv`; o job `report` só anexa o comentário com esse flag ligado, então PRs de código/site ficam silenciosos (fim do e-mail "0 novos / 0 alterados"). O portão de reprodutibilidade e o `build` continuam rodando em todo PR; a publicação segue só via PR (ADR-0004). As duas trilhas (Código/Site × Tabela) ficam documentadas no runbook §1.4. `pnpm build`/`build:site` inalterados nos dados reais.
+- **Ticket:** #14 (local tracker: `14-relatorio-revisao-so-em-nova-tabela`)
+- **Checks:** YAML do `ci.yml` válido (parse + inspeção dos jobs/`if`); Vitest 165/165, tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2462 páginas). O comentário do PR passa a escolher o Relatório de revisão mais recente (antes pegava o primeiro por nome — o mais antigo — quando há mais de uma Versão publicada).
 

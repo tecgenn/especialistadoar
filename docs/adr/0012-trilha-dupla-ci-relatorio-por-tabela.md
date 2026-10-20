@@ -34,3 +34,13 @@ A publicação continua **via PR** — o merge é a publicação (ADR-0004).
 - A trilha Tabela é disparada por um PR que adiciona
   `data/raw/inmetro-export-<data>.csv` e regenera `data/build` + `reports`.
 - Passos manuais/serviços envolvidos ficam em `docs/agents/ci-cd-setup.md`.
+
+## Implementação
+
+**Atualizado em 2026-10-19 (ticket 14).** O filtro é aplicado pelo job `changes`
+do `ci.yml`: ele lista os arquivos do PR pela API
+(`github.rest.pulls.listFiles`) e marca `nova-versao` quando há um arquivo
+**adicionado** (`status: added`) que casa `^data/raw/.+\.csv$`. O job `report`
+passa a exigir esse flag (`needs.changes.outputs.nova-versao == 'true'`). O
+`build`, o `build:site`, os testes e o gate de reprodutibilidade continuam
+rodando em todo PR. Detalhes no runbook §1.4.

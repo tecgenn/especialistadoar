@@ -58,10 +58,38 @@ jobs:
           name: review-report
           path: reports/revisao-*.md
 
+  changes:
+    name: detect new table version
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      nova-versao: ${{ steps.detect.outputs.nova-versao }}
+    steps:
+      - name: Detect a new export in data/raw
+        id: detect
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100,
+            });
+            const novaVersao = files.some(
+              (f) => f.status === 'added' && /^data\/raw\/.+\.csv$/.test(f.filename),
+            );
+            core.setOutput('nova-versao', novaVersao ? 'true' : 'false');
+            core.info(`Nova Versão da tabela neste PR: ${novaVersao}`);
+
   report:
     name: attach review report
-    needs: ci
-    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+    needs: [ci, changes]
+    if: ${{ !cancelled() && needs.changes.outputs.nova-versao == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -87,7 +115,11 @@ jobs:
               core.warning('Relatório de revisão indisponível — build do Linux não produziu artefato.');
               return;
             }
-            const file = fs.readdirSync(dir).find((f) => /^revisao-.*\.md$/.test(f));
+            const relatorios = fs
+              .readdirSync(dir)
+              .filter((f) => /^revisao-.*\.md$/.test(f))
+              .sort();
+            const file = relatorios.at(-1);
             if (!file) {
               core.warning('Nenhum Relatório de revisão encontrado.');
               return;

@@ -12,12 +12,12 @@ código/site não gerem o comentário-e-mail de "0 novos / 0 alterados" (ADR-001
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] PR sem mudança em `data/raw/` não gera o comentário de Relatório (sem e-mail).
-- [ ] PR que adiciona uma nova exportação (`data/raw/…csv`) gera o comentário.
-- [ ] O portão de reprodutibilidade continua em todo PR.
-- [ ] Runbook de CI/CD atualizado; ADR-0012 registrado.
+- [x] PR sem mudança em `data/raw/` não gera o comentário de Relatório (sem e-mail).
+- [x] PR que adiciona uma nova exportação (`data/raw/…csv`) gera o comentário.
+- [x] O portão de reprodutibilidade continua em todo PR.
+- [x] Runbook de CI/CD atualizado; ADR-0012 registrado.
 
 ## Origin
 
