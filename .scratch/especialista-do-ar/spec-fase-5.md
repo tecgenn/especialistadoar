@@ -131,6 +131,11 @@ hoje.
   e o CTA da Oferta. `title`, meta description, canonical e OG image saem do
   frontmatter. JSON-LD de `Article`, sem nota/`Review` inventada.
 
+- **Imagens.** Toda imagem de Análise entra por `astro:assets` (componente de imagem
+  do Astro), com `alt`, dimensões e formatos otimizados; nada de `<img>` cru no MDX.
+  Imagem grande é o principal risco de Core Web Vitals numa página editorial — o
+  número de páginas não é.
+
 - **Convivência com a ficha.** A ficha exibe "Leia a análise" quando existe Análise
   para aquele `aparelhoId`; o mapa `aparelhoId → Análise` é construído no build.
   Títulos e intenções são distintos: ficha = dados oficiais; Análise = decisão de
@@ -212,7 +217,9 @@ hoje.
   36.000, escolhidas pelo mantenedor (priorizando Aparelhos com Oferta).
 - **Adesão a programa de afiliado e Ofertas reais** (Mercado Livre/Amazon) — entram
   junto com o primeiro artigo.
-- **Domínio próprio** — fase posterior; a migração exigirá 301 e troca do `site:`.
+- **Domínio próprio** — fase posterior; a migração exigirá **301 de cada URL
+  antiga para a nova**, atualização do `site:` do Astro, do canonical e do sitemap,
+  e a mudança de endereço no Search Console; o `pages.dev` continua redirecionando.
 - **Redesign/estilização** — fase posterior; os componentes nascem prontos para
   receber o design.
 - **Guias** (conteúdo que cruza vários Aparelhos).
@@ -234,5 +241,9 @@ hoje.
   verdes.
 - O sucesso de aquisição (impressões, cliques) só pode ser medido depois de haver
   Análises: Search Console, Web Analytics e painel de afiliado.
+- **Custo acumulado da migração de domínio.** Quanto mais cedo
+  `especialistadoar.com.br` entrar, menos URLs e links externos há para redirecionar;
+  o custo cresce com o número de páginas e de Análises publicadas. Não é urgente,
+  mas é a decisão com maior efeito acumulado entre as fases futuras.
 - `docs/agents/architecture.md` deve ser reescrito quando a camada de conteúdo
   existir de fato (o `grill-with-docs` só o altera quando a estrutura muda).
