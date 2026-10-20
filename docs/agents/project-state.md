@@ -6,9 +6,16 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-Nenhum ticket aberto — **Fase 4 concluída** (tickets 13, 14 e 15). O tracker é a
-fonte de verdade; o próximo trabalho depende de uma nova rodada de planejamento
-(Fase 5, se houver).
+**Fase 5 — Camada editorial de Análises** (spec:
+`.scratch/especialista-do-ar/spec-fase-5.md`; ADR-0015). Entrega a capacidade de
+escrever/publicar Análises em MDX, sem publicar nenhuma nesta fase.
+
+- **16** — Buscar Aparelho para o frontmatter — sem bloqueio.
+- **17** — Camada de Análises ponta a ponta — sem bloqueio.
+- **18** — CTA de Oferta na Análise — bloqueado por 17.
+- **19** — Destaques de Análises na home — bloqueado por 17 e 18.
+
+**Frontier agora:** 16 e 17.
 
 ## Completed
 
