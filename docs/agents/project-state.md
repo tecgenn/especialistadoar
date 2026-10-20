@@ -10,12 +10,11 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 `.scratch/especialista-do-ar/spec-fase-5.md`; ADR-0015). Entrega a capacidade de
 escrever/publicar Análises em MDX, sem publicar nenhuma nesta fase.
 
-- **16** — Buscar Aparelho para o frontmatter — sem bloqueio.
 - **17** — Camada de Análises ponta a ponta — sem bloqueio.
 - **18** — CTA de Oferta na Análise — bloqueado por 17.
 - **19** — Destaques de Análises na home — bloqueado por 17 e 18.
 
-**Frontier agora:** 16 e 17.
+**Frontier agora:** 17.
 
 ## Completed
 
@@ -121,4 +120,11 @@ escrever/publicar Análises em MDX, sem publicar nenhuma nesta fase.
 - **What works:** A verificação de links das Ofertas é **manual e sob demanda**: `pnpm verificar-links` imprime no terminal a tabela com URL, loja e motivo dos quebrados (ou "nenhum link quebrado") e **não falha** por link quebrado. Não há workflow agendado, resumo de run, e-mail, PR, issue nem arquivo versionado; corrigir uma Oferta é um PR comum em `apps/site/ofertas.json`. `ofertas.json` inválido ainda falha alto. O **Cloudflare Web Analytics** foi habilitado no projeto Pages (passo manual §2.7; beacon entra no próximo deploy) para o tráfego humano; medir o acesso do **Agente** segue adiado até haver domínio próprio (ADR-0013).
 - **Ticket:** #15 (local tracker: `15-observabilidade-analytics-relatorio-links`)
 - **Checks:** Vitest 169/169 (21 arquivos; +4 do renderizador), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2462 páginas); `pnpm verificar-links` imprime `0 Oferta(s) verificada(s), nenhum link quebrado.` e não gera mudanças.
+
+### 16 — Buscar Aparelho para o frontmatter (2026-10-20)
+
+- **Changed:** `apps/site/src/lib/buscar-aparelho.ts` (novo — módulo puro `buscarAparelhos` + `renderizarAparelhosEncontrados`); `apps/site/scripts/buscar-aparelho.ts` (novo — lê a base servida via `abrirApiEstatica` e imprime o resultado); `apps/site/test/buscar-aparelho.test.ts` (novo — 9 testes); `package.json` (script `aparelho:buscar`); `README.md` (comando + seção de busca).
+- **What works:** `pnpm aparelho:buscar "<termo>"` procura na base servida publicada por **marca** ou **modelo** (trecho, ignorando caixa e acento) e por **potência** em BTU (valor exato, aceitando `12.000`, `27000 BTU` e `27000 BTUs`) e imprime, um por linha, marca, modelo, potência(s) e o `id` — o valor do `aparelhoId` de uma Análise —, com uma dica de uso. Busca sem resultado imprime mensagem clara em vez de saída vazia, e termo em branco mostra o uso e sai com código 2. O comando é só leitura: usa a API estática sobre `data/build/`, não cria artefato nem toca o pipeline; a base servida e os relatórios são reproduzidos byte a byte.
+- **Ticket:** #16 (local tracker: `16-buscar-aparelho-frontmatter`)
+- **Checks:** Vitest 177/177 (22 arquivos; +9 da busca), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm aparelho:buscar` conferido por marca (`britania` → 32), modelo (`gjc07`), potência (`12000` → 484) e vazio.
 

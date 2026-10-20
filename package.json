@@ -12,6 +12,7 @@
     "dev:site": "pnpm --filter @especialista-do-ar/site run dev",
     "preview:site": "pnpm --filter @especialista-do-ar/site run preview",
     "verificar-links": "node apps/site/scripts/verificar-links.ts",
+    "aparelho:buscar": "node apps/site/scripts/buscar-aparelho.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",

@@ -9,16 +9,16 @@ O comando é para autoria de conteúdo; não altera a base servida nem o pipelin
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `pnpm aparelho:buscar "<termo>"` lista os Aparelhos que casam por marca, modelo
+- [x] `pnpm aparelho:buscar "<termo>"` lista os Aparelhos que casam por marca, modelo
       ou potência, com marca, modelo, potências e `id`.
-- [ ] Busca sem resultado imprime uma mensagem clara (nada de saída vazia).
-- [ ] Lê a base servida publicada; não cria artefato novo nem toca `data/build/`.
-- [ ] Testes do módulo puro cobrem match por marca, por modelo, por potência e
+- [x] Busca sem resultado imprime uma mensagem clara (nada de saída vazia).
+- [x] Lê a base servida publicada; não cria artefato novo nem toca `data/build/`.
+- [x] Testes do módulo puro cobrem match por marca, por modelo, por potência e
       resultado vazio.
-- [ ] Comando documentado no README.
-- [ ] `pnpm build && pnpm lint && pnpm typecheck && pnpm test` verdes.
+- [x] Comando documentado no README.
+- [x] `pnpm build && pnpm lint && pnpm typecheck && pnpm test` verdes.
 
 ## Origin
 

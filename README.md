@@ -26,6 +26,7 @@ pnpm build:site  # site Astro (apps/site/dist), sobre data/build/ — rode pnpm 
 pnpm dev:site    # Astro em modo dev (site)
 pnpm preview:site # pré-visualiza o build do site
 pnpm verificar-links # verifica os links das Ofertas e lista os quebrados (manual, sem CI)
+pnpm aparelho:buscar "termo" # busca Aparelho por marca/modelo/potência e imprime o id
 pnpm test        # suíte Vitest (uma passada)
 pnpm test:watch  # Vitest em watch
 pnpm typecheck   # tsc --noEmit
@@ -68,6 +69,34 @@ Se algum link estiver quebrado, aparece a loja, a URL e o motivo — e o comando
 Para corrigir, atualize a Oferta em `apps/site/ofertas.json` e abra um PR normal.
 `ofertas.json` inválido (fora do schema) ainda faz o comando falhar — é erro de
 configuração, não link quebrado.
+
+## Buscar o `id` de um Aparelho para o frontmatter
+
+Uma Análise é ligada ao Aparelho pelo `aparelhoId` do frontmatter. Para achar esse
+`id` sem caçar no JSON:
+
+```bash
+pnpm aparelho:buscar "britania"
+pnpm aparelho:buscar "12.000"
+pnpm aparelho:buscar "gjc07"
+```
+
+A busca é por marca, modelo (trecho, sem diferenciar caixa nem acento) ou potência
+em BTU (valor exato), e lê a base servida publicada em `data/build/` — rode
+`pnpm build` antes se ela estiver desatualizada. A saída lista um Aparelho por linha:
+
+```
+32 Aparelhos encontrados para "britania":
+
+BRITÂNIA — BAC24FC — 24.000 BTU — ap-c8637455a11e
+BRITÂNIA — BAC12FC — 12.000 BTU — ap-a14e9894ce8e
+...
+
+Copie o `id` para o `aparelhoId` no frontmatter da Análise.
+```
+
+Sem resultado, o comando imprime uma mensagem clara em vez de saída vazia. Ele só
+lê a base: não altera `data/build/` nem cria artefato.
 
 ## ⚠️ Antes de dar push
 
