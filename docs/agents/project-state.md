@@ -6,14 +6,14 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 5 — Camada editorial de Análises** (spec:
-`.scratch/especialista-do-ar/spec-fase-5.md`; ADR-0015). A capacidade de
-escrever/publicar Análises em MDX está pronta (ticket 17) e a Análise já exibe o
-CTA de Oferta (ticket 18); falta só levá-las aos destaques da home.
+Nenhum ticket aberto. A **Fase 5 — Camada editorial de Análises** fechou com o
+ticket 19: a capacidade de escrever/publicar Análises em MDX, o CTA de Oferta na
+Análise e os destaques de Análises na home estão prontos — com zero Análises
+publicadas (o conteúdo é operação contínua, fora da fase).
 
-- **19** — Destaques de Análises na home — sem bloqueio.
-
-**Frontier agora:** 19.
+**Frontier agora:** nenhum. Os próximos passos não são tickets desta fase:
+publicar a primeira Análise (com Ofertas reais) e, quando fizer sentido, a
+migração para domínio próprio — ver `spec-fase-5.md` › Further Notes.
 
 ## Completed
 
@@ -140,3 +140,10 @@ CTA de Oferta (ticket 18); falta só levá-las aos destaques da home.
 - **What works:** A Análise passa a exibir o **CTA da Oferta** do Aparelho usando o mesmo componente reutilizável da ficha: `OfertaCartao` (um link com `rel="sponsored nofollow noopener"`, `target="_blank"`) e `OfertaFaixa` (a faixa com título, aviso de link comercial e os cartões), que aceita `ofertas` já resolvidas ou um `aparelhoId` — nesse caso busca e valida no build. A ficha continua exibindo as Ofertas como antes; a Análise mostra "Onde comprar" só quando o Aparelho está na Versão atual **e** há Oferta para ele — sem Oferta, ou com o Aparelho Ausente, nada é renderizado (nunca há link vazio). O MDX pode usar o mesmo componente no meio do texto (`<OfertaFaixa aparelhoId="ap-..." />`), sem estilo inline. As Ofertas continuam **site-only**: não entram em `data/build/`, não viram arquivo servido (`dist/ofertas.json` não existe) nem aparecem nos scripts da ilha de consulta/filtros — tudo coberto por teste.
 - **Ticket:** #18 (local tracker: `18-cta-oferta-na-analise`)
 - **Checks:** Vitest 199/199 (24 arquivos; +2 guardas da ilha e o build ponta a ponta ampliado com CTA, uso no MDX e ausência de CTA), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2.462 páginas, sem `/analises/` nem CTA no estado real com `ofertas.json` vazio).
+
+### 19 — Destaques de Análises na home (2026-10-21)
+
+- **Changed:** `apps/site/src/components/AnalisesDestaque.astro` (novo — bloco estático de Análises em destaque); `apps/site/src/components/OfertaFaixa.astro` (+`nivelTitulo`, para a faixa respeitar a hierarquia da página que a recebe); `apps/site/src/lib/analises.ts` (+`DestaqueAnalise`: Análise + Ofertas resolvidas); `apps/site/src/pages/index.astro` (monta os destaques no build via `carregarAnalises` + `ofertasDoAparelho`); `apps/site/src/styles/global.css` (bloco `.analises-destaque*`, título da faixa em `h2/h3/h4`); `apps/site/test/analises-build.test.ts` (home no build com fixture e no estado zero).
+- **What works:** A home ganha um bloco **estático** de Análises em destaque — título, descrição e link de cada Análise publicada, na ordem da mais recente para a mais antiga (a mesma de `montarAnalises`), mais "Todas as análises". O CTA usa o `OfertaFaixa` reutilizável (mesmo `rel="sponsored nofollow noopener"`, `target="_blank"` e aviso de link comercial) e só aparece quando há Oferta para o Aparelho: com o Aparelho Ausente não há Oferta (o glue recusa Oferta órfã), então nunca há CTA vazio. O bloco é gerado no build — o cliente não baixa `ofertas.json` nem `analises.json` (guardado por teste no HTML e nos scripts). Com **zero** Análises, o bloco não é renderizado e a home permanece a de hoje (2.462 páginas). Nada muda em `data/build/`, `reports/`, na API ou na consulta.
+- **Ticket:** #19 (local tracker: `19-destaques-analises-home`)
+- **Checks:** Vitest 199/199 (24 arquivos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2.462 páginas) e build de fixture gera o bloco com `h2` → `h3` → `h4` e o CTA apenas na Análise com Oferta.

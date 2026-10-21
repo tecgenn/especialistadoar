@@ -1,12 +1,26 @@
 ---
 import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import Consulta from "../components/Consulta.tsx";
+import { carregarAnalises } from "../conteudo/analises.ts";
+import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
+import type { DestaqueAnalise } from "../lib/analises.ts";
 import { opcoesDe } from "../lib/opcoes.ts";
 
 const dataset = consultaJson as ItemConsulta[];
 const opcoes = opcoesDe(dataset);
+
+// Os destaques são montados no build: cada Análise publicada, na ordem da mais
+// recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um
+// Aparelho Ausente não tem Oferta (o glue recusa Oferta órfã), então fica sem
+// CTA sem precisar de checagem própria.
+const { analises } = await carregarAnalises();
+const destaques: DestaqueAnalise[] = analises.map((analise) => ({
+  analise,
+  ofertas: ofertasDoAparelho(analise.aparelhoId),
+}));
 ---
 
 <Base
@@ -19,5 +33,6 @@ const opcoes = opcoesDe(dataset);
     oficial de produtos do INMETRO. Filtre por marca, tipo, capacidade e tensão,
     ou busque por marca, modelo e tipo.
   </p>
+  <AnalisesDestaque destaques={destaques} />
   <Consulta client:load opcoes={opcoes} />
 </Base>

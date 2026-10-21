@@ -170,7 +170,9 @@ footer {
   background: var(--superficie);
 }
 
-.ofertas h2 {
+.ofertas h2,
+.ofertas h3,
+.ofertas h4 {
   margin-top: 0;
 }
 
@@ -222,4 +224,44 @@ footer {
 .analises-lista time {
   color: var(--texto-suave);
   font-size: 0.9rem;
+}
+
+.analises-destaque {
+  margin-block: 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.analises-destaque h2 {
+  margin-top: 0;
+}
+
+.analises-destaque-lista {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+}
+
+.analises-destaque-lista li {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.analises-destaque-lista li:first-child {
+  padding-top: 0;
+}
+
+.analises-destaque-lista li:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.analises-destaque-lista h3 {
+  margin: 0 0 0.25rem;
+}
+
+.analises-destaque-lista .ofertas {
+  margin-block: 0.75rem 0;
 }

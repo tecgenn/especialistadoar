@@ -1,0 +1,49 @@
+---
+import type { DestaqueAnalise } from "../lib/analises.ts";
+import OfertaFaixa from "./OfertaFaixa.astro";
+
+/**
+ * Bloco estático de Análises em destaque na home. As Análises e as Ofertas de
+ * cada uma chegam já resolvidas do build — o cliente não baixa `analises.json`
+ * nem `ofertas.json` para renderizá-lo. Sem Análise, não renderiza nada: a home
+ * fica exatamente como antes.
+ *
+ * O CTA usa o mesmo `OfertaFaixa` da ficha e da Análise; sem Oferta (ou com o
+ * Aparelho Ausente), nada dele aparece.
+ */
+interface Props {
+  destaques: DestaqueAnalise[];
+}
+
+const { destaques } = Astro.props;
+---
+
+{
+  destaques.length > 0 ? (
+    <section class="analises-destaque">
+      <h2>Análises em destaque</h2>
+      <p class="intro">
+        Leituras editoriais sobre aparelhos de ar-condicionado, com link para os
+        dados oficiais do INMETRO na ficha de cada Aparelho.
+      </p>
+      <ul class="analises-destaque-lista">
+        {destaques.map(({ analise, ofertas }) => (
+          <li>
+            <h3>
+              <a href={analise.url}>{analise.titulo}</a>
+            </h3>
+            <p class="intro">{analise.descricao}</p>
+            <OfertaFaixa
+              ofertas={ofertas}
+              titulo="Onde comprar"
+              nivelTitulo={4}
+            />
+          </li>
+        ))}
+      </ul>
+      <p>
+        <a href="/analises/">Todas as análises</a>
+      </p>
+    </section>
+  ) : null
+}
