@@ -6,14 +6,16 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-Nenhum ticket aberto. A **Fase 5 — Camada editorial de Análises** fechou com o
-ticket 19: a capacidade de escrever/publicar Análises em MDX, o CTA de Oferta na
-Análise e os destaques de Análises na home estão prontos — com zero Análises
-publicadas (o conteúdo é operação contínua, fora da fase).
+A **Fase 6 — Filtros do catálogo** está aberta: a spec está em `spec-fase-6.md` e
+os tickets `20`–`22` nasceram dela. Nada foi implementado ainda.
 
-**Frontier agora:** nenhum. Os próximos passos não são tickets desta fase:
-publicar a primeira Análise (com Ofertas reais) e, quando fizer sentido, a
-migração para domínio próprio — ver `spec-fase-5.md` › Further Notes.
+**Frontier agora:** `20 — Capacidades impossíveis corrigidas e sinalizadas`.
+O `21 — Marca de catálogo` depende do 20 (os dois mexem em `data/build`) e o
+`22 — Chips de marca e capacidade` depende do 21.
+
+A operação da Fase 5 segue em paralelo: publicar a primeira Análise (com Ofertas
+reais) e, quando fizer sentido, a migração para domínio próprio — ver
+`spec-fase-5.md` › Further Notes.
 
 ## Completed
 
