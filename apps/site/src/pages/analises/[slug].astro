@@ -4,6 +4,7 @@ import aparelhosJson from "@dados/aparelhos.json";
 import manifestJson from "@dados/manifest.json";
 import type { Aparelho, Manifest } from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
+import OfertaFaixa from "../../components/OfertaFaixa.astro";
 import {
   carregarAnalises,
   type EntradaAnalise,
@@ -116,6 +117,15 @@ const jsonLd: Record<string, unknown> = {
             <a href={`/aparelhos/${aparelho.id}/`}>Ver ficha técnica</a>
           </p>
         </section>
+      )
+    }
+
+    {
+      // O CTA da Oferta só existe quando o Aparelho está na Versão atual e há
+      // Oferta para ele; o componente não renderiza nada quando a lista é vazia
+      // (nada de link vazio, ADR-0010).
+      aparelho === undefined ? null : (
+        <OfertaFaixa aparelhoId={aparelho.id} titulo="Onde comprar" />
       )
     }
   </article>

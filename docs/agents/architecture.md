@@ -166,10 +166,11 @@ nova exportação CSV
   (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind indexa o conteúdo do
   site. As **Ofertas** (links comerciais de afiliado) vivem só aqui, em
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
-  validadas no build do site e renderizadas numa seção própria da página do
-  Aparelho — separadas dos dados técnicos. `pnpm verificar-links` confere os links
-  sob demanda e imprime URL/loja/motivo dos quebrados, sem falhar. Ver ADR-0010 e
-  ADR-0014.
+  validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por
+  componentes reutilizáveis (`OfertaCartao`/`OfertaFaixa`, que recebem `Oferta[]`
+  ou um `aparelhoId`) na ficha do Aparelho e na Análise — separadas dos dados
+  técnicos. `pnpm verificar-links` confere os links sob demanda e imprime
+  URL/loja/motivo dos quebrados, sem falhar. Ver ADR-0010 e ADR-0014.
 - **Análises (conteúdo editorial)** — também em `apps/site`, uma coleção de
   conteúdo MDX (`src/content/analises/`, com `ANALISES_BASE` para o teste apontar
   uma fixture). Cada Análise é ligada a um Aparelho por `aparelhoId` e renderiza
@@ -180,7 +181,9 @@ nova exportação CSV
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
   e o site segue com as 2.462 páginas. Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
-  o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise".
+  o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise"
+  e a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
+  ou com o Aparelho Ausente, nada é renderizado).
   Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada
   com aviso, sem bloco de dados e sem CTA. Nada disso entra em `data/build/`, na
   API ou na consulta. Ver ADR-0015.
@@ -247,7 +250,8 @@ Ver ADR-0003 e ADR-0011.
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
-  (ADR-0010 e ADR-0014).
+  (ADR-0010 e ADR-0014); os componentes `OfertaCartao`/`OfertaFaixa` renderizam o
+  CTA na ficha e na Análise sem tocar na ilha.
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
   repositório é público, então minutos de runner não são cobrados (a regra foi

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Aparelho } from "@especialista-do-ar/pipeline";
 import { describe, expect, it } from "vitest";
@@ -104,5 +104,32 @@ describe("Ofertas nunca vazam para a base servida", () => {
       ),
     ) as Oferta[];
     validarOfertas(ofertas, new Set(aparelhos.map((aparelho) => aparelho.id)));
+  });
+});
+
+/**
+ * A ilha de consulta (filtros + busca, ADR-0008) roda no cliente sobre
+ * `consulta.json` e **não** conhece Oferta (ADR-0010): nada de anúncio no
+ * resultado da busca.
+ */
+describe("Ofertas ficam fora da ilha de consulta", () => {
+  const modulosDaIlha = [
+    "../src/components/Consulta.tsx",
+    "../src/lib/estado.ts",
+    "../src/lib/opcoes.ts",
+  ];
+
+  it("nenhum módulo da ilha menciona Oferta", () => {
+    for (const caminho of modulosDaIlha) {
+      expect(
+        readFileSync(new URL(caminho, import.meta.url), "utf8"),
+      ).not.toMatch(/oferta/i);
+    }
+  });
+
+  it("ofertas.json não é um arquivo público servido pelo site", () => {
+    expect(existsSync(new URL("../public/ofertas.json", import.meta.url))).toBe(
+      false,
+    );
   });
 });

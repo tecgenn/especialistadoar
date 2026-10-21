@@ -8,13 +8,12 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 **Fase 5 — Camada editorial de Análises** (spec:
 `.scratch/especialista-do-ar/spec-fase-5.md`; ADR-0015). A capacidade de
-escrever/publicar Análises em MDX está pronta (ticket 17); falta o CTA de Oferta
-na Análise e os destaques na home.
+escrever/publicar Análises em MDX está pronta (ticket 17) e a Análise já exibe o
+CTA de Oferta (ticket 18); falta só levá-las aos destaques da home.
 
-- **18** — CTA de Oferta na Análise — sem bloqueio.
-- **19** — Destaques de Análises na home — bloqueado por 18.
+- **19** — Destaques de Análises na home — sem bloqueio.
 
-**Frontier agora:** 18.
+**Frontier agora:** 19.
 
 ## Completed
 
@@ -135,3 +134,9 @@ na Análise e os destaques na home.
 - **Ticket:** #17 (local tracker: `17-camada-de-analises-ponta-a-ponta`)
 - **Checks:** Vitest 197/197 (24 arquivos; +17 do módulo puro e +3 do build ponta a ponta — válida, inválida e estado zero), tsc --noEmit OK, biome check OK; `pnpm build:site` gera 2462 páginas no estado real e 2465 com a fixture; `pnpm build` reproduz `data/build`+`reports` byte a byte; a fixture e o estado zero conferem página, link bidirecional, sitemap, `analises.json`, JSON-LD, menu, página degradada e Pagefind.
 
+### 18 — CTA de Oferta na Análise (2026-10-21)
+
+- **Changed:** `apps/site/src/components/OfertaCartao.astro` e `apps/site/src/components/OfertaFaixa.astro` (novos — CTA reutilizável: `OfertaCartao` recebe uma `Oferta`; `OfertaFaixa` recebe `Oferta[]` ou um `aparelhoId` e não renderiza nada sem Oferta); `apps/site/src/conteudo/ofertas.ts` (novo — glue do site que lê `ofertas.json`, valida contra a base servida e indexa por Aparelho; `OFERTAS_JSON` é a seam do teste de build); `apps/site/src/pages/aparelhos/[id].astro` (seção de Ofertas passa a usar o componente; a guarda de Oferta órfã foi para o glue); `apps/site/src/pages/analises/[slug].astro` (CTA "Onde comprar" ao fim da Análise, só com Aparelho na Versão atual e Oferta cadastrada); `apps/site/src/styles/global.css` (cartão de Oferta); testes `test/analises-build.test.ts` (fixture de Ofertas + CTA na Análise, componente no corpo MDX, ficha preservada, sem Oferta = sem CTA, `ofertas.json` não servido e fora dos scripts) e `test/ofertas.test.ts` (guardas da ilha); `README.md` (§Escrever uma Análise) e `docs/agents/architecture.md`.
+- **What works:** A Análise passa a exibir o **CTA da Oferta** do Aparelho usando o mesmo componente reutilizável da ficha: `OfertaCartao` (um link com `rel="sponsored nofollow noopener"`, `target="_blank"`) e `OfertaFaixa` (a faixa com título, aviso de link comercial e os cartões), que aceita `ofertas` já resolvidas ou um `aparelhoId` — nesse caso busca e valida no build. A ficha continua exibindo as Ofertas como antes; a Análise mostra "Onde comprar" só quando o Aparelho está na Versão atual **e** há Oferta para ele — sem Oferta, ou com o Aparelho Ausente, nada é renderizado (nunca há link vazio). O MDX pode usar o mesmo componente no meio do texto (`<OfertaFaixa aparelhoId="ap-..." />`), sem estilo inline. As Ofertas continuam **site-only**: não entram em `data/build/`, não viram arquivo servido (`dist/ofertas.json` não existe) nem aparecem nos scripts da ilha de consulta/filtros — tudo coberto por teste.
+- **Ticket:** #18 (local tracker: `18-cta-oferta-na-analise`)
+- **Checks:** Vitest 199/199 (24 arquivos; +2 guardas da ilha e o build ponta a ponta ampliado com CTA, uso no MDX e ausência de CTA), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2.462 páginas, sem `/analises/` nem CTA no estado real com `ofertas.json` vazio).
