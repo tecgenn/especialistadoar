@@ -12,20 +12,20 @@ Nada de Oferta na ilha de busca/filtros (ADR-0010).
 
 **Blocked by:** 17 — Camada de Análises ponta a ponta.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A renderização de Oferta da ficha é extraída para um componente reutilizável
+- [x] A renderização de Oferta da ficha é extraída para um componente reutilizável
       (cartão e faixa/banner) que recebe `Oferta` e/ou `aparelhoId`.
-- [ ] A ficha continua exibindo as Ofertas como hoje, sem mudança de comportamento.
-- [ ] A Análise exibe o CTA quando há Oferta para o Aparelho e **não** exibe nada
+- [x] A ficha continua exibindo as Ofertas como hoje, sem mudança de comportamento.
+- [x] A Análise exibe o CTA quando há Oferta para o Aparelho e **não** exibe nada
       quando não há.
-- [ ] Links mantêm `rel="sponsored nofollow noopener"`, `target="_blank"` e o aviso
+- [x] Links mantêm `rel="sponsored nofollow noopener"`, `target="_blank"` e o aviso
       de que são links comerciais, separados dos dados técnicos.
-- [ ] Conteúdo MDX consegue usar o componente aprovado no meio do texto, sem estilo
+- [x] Conteúdo MDX consegue usar o componente aprovado no meio do texto, sem estilo
       inline.
-- [ ] Nenhuma Oferta entra em `data/build/` nem na ilha de busca; guarda de teste
+- [x] Nenhuma Oferta entra em `data/build/` nem na ilha de busca; guarda de teste
       cobre os dois casos.
-- [ ] `pnpm build`, `pnpm build:site`, `pnpm lint`, `pnpm typecheck` e `pnpm test`
+- [x] `pnpm build`, `pnpm build:site`, `pnpm lint`, `pnpm typecheck` e `pnpm test`
       verdes.
 
 ## Origin

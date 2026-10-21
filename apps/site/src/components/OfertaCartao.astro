@@ -1,0 +1,18 @@
+---
+import type { Oferta } from "../lib/ofertas.ts";
+
+/**
+ * Um único CTA de Oferta. Puro e reutilizável: recebe a `Oferta` e não sabe de
+ * onde ela veio. Os atributos que o programa de afiliados exige ficam aqui, uma
+ * vez só (ADR-0010).
+ */
+interface Props {
+  oferta: Oferta;
+}
+
+const { oferta } = Astro.props;
+---
+
+<a class="oferta-cartao" href={oferta.url} rel="sponsored nofollow noopener" target="_blank">
+  <span class="oferta-titulo">{oferta.titulo}</span> — <span class="oferta-loja">{oferta.loja}</span>
+</a>

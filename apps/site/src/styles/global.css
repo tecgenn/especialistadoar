@@ -179,6 +179,17 @@ footer {
   padding-left: 1.25rem;
 }
 
+.oferta-cartao {
+  display: inline-block;
+  margin-block: 0.15rem;
+  font-weight: 600;
+}
+
+.oferta-loja {
+  color: var(--texto-suave);
+  font-weight: 400;
+}
+
 .analise-corpo {
   margin-block: 1.5rem;
 }

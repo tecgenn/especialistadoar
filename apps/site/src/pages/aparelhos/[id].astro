@@ -5,23 +5,15 @@ import type {
   DadosDeclarados,
   Tensao,
 } from "@especialista-do-ar/pipeline";
-import ofertasJson from "../../../ofertas.json";
+import OfertaFaixa from "../../components/OfertaFaixa.astro";
 import { carregarAnalises } from "../../conteudo/analises.ts";
+import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
 import Base from "../../layouts/Base.astro";
 import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
-import {
-  indexarOfertas,
-  type Oferta,
-  validarOfertas,
-} from "../../lib/ofertas.ts";
+import type { Oferta } from "../../lib/ofertas.ts";
 
 export async function getStaticPaths() {
   const aparelhos = aparelhosJson as Aparelho[];
-  const ofertas = ofertasJson as Oferta[];
-  // Guarda de build: uma Oferta órfã (Aparelho inexistente) falha o build do
-  // site, em vez de sumir em silêncio. Ver `ofertas.json` e ADR-0010.
-  validarOfertas(ofertas, new Set(aparelhos.map((aparelho) => aparelho.id)));
-  const porAparelho = indexarOfertas(ofertas);
   // O link de volta depende do mapa `aparelhoId → Análise` construído no build.
   const { analises } = await carregarAnalises();
   const analisePorAparelho = mapaPorAparelho(analises);
@@ -29,7 +21,9 @@ export async function getStaticPaths() {
     params: { id: aparelho.id },
     props: {
       aparelho,
-      ofertas: porAparelho.get(aparelho.id) ?? [],
+      // As Ofertas vêm do glue do site, que valida o insumo (inclusive Oferta
+      // órfã) no primeiro uso do build — ver `conteudo/ofertas.ts` e ADR-0010.
+      ofertas: ofertasDoAparelho(aparelho.id),
       analise: analisePorAparelho.get(aparelho.id),
     },
   }));
@@ -157,27 +151,7 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       ) : null
     }
 
-    {
-      ofertas.length > 0 ? (
-        <section class="ofertas">
-          <h2>Ofertas</h2>
-          <p class="intro">
-            Links comerciais (de afiliado), exibidos apenas aqui no site. Não
-            fazem parte dos dados técnicos do INMETRO e não alteram as
-            informações acima.
-          </p>
-          <ul>
-            {ofertas.map((oferta) => (
-              <li>
-                <a href={oferta.url} rel="sponsored nofollow noopener" target="_blank">
-                  {oferta.titulo} — {oferta.loja}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null
-    }
+    <OfertaFaixa ofertas={ofertas} />
 
     <p>
       <a href={`/?marca=${encodeURIComponent(aparelho.marca)}`}>
