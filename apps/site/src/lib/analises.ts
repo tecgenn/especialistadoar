@@ -5,6 +5,8 @@
  * validação, indexação e visibilidade condicional, sem I/O e sem Astro.
  */
 
+import type { Oferta } from "./ofertas.ts";
+
 export interface AnaliseFrontmatter {
   /** O `id` do Aparelho (`ap-<12 hex>`) ao qual a Análise se refere. */
   aparelhoId: string;
@@ -21,6 +23,16 @@ export interface AnaliseFrontmatter {
 export interface Analise extends AnaliseFrontmatter {
   /** A URL pública da Análise, derivada do `slug`. */
   url: string;
+}
+
+/**
+ * Uma Análise em destaque na home, com as Ofertas do seu Aparelho já resolvidas
+ * no build. Um Aparelho fora da base servida (Ausente) fica sem Oferta: nunca há
+ * CTA para um Aparelho que não está na Versão atual.
+ */
+export interface DestaqueAnalise {
+  analise: Analise;
+  ofertas: Oferta[];
 }
 
 const FORMATO_APARELHO_ID = /^ap-[0-9a-f]{12}$/;

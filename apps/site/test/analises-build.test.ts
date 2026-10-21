@@ -251,7 +251,36 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlFicha).toContain("Links comerciais");
 
     expect(lerHtml("analises")).toContain(`href="/analises/${valida.slug}/"`);
-    expect(lerHtml("")).toContain('href="/analises/"');
+
+    // A home exibe o bloco estático de Análises em destaque: título, descrição e
+    // link de cada Análise publicada.
+    const htmlHome = lerHtml("");
+    expect(htmlHome).toContain("Análises em destaque");
+    expect(htmlHome).toContain('href="/analises/"');
+    for (const analise of [valida, ausente, semOferta]) {
+      expect(htmlHome).toContain(`href="/analises/${analise.slug}/"`);
+      expect(htmlHome).toContain(analise.titulo);
+      expect(htmlHome).toContain(analise.descricao);
+    }
+
+    // Na home, só o Aparelho na Versão atual e com Oferta ganha CTA — o Ausente e
+    // o Aparelho sem Oferta não geram link comercial nenhum.
+    expect(htmlHome).toContain(`href="${oferta.url}"`);
+    expect(htmlHome).toContain('rel="sponsored nofollow noopener"');
+    expect(htmlHome).toContain('target="_blank"');
+    expect(htmlHome).toContain("Onde comprar");
+    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(1);
+
+    // O bloco é gerado no build: o cliente não baixa `ofertas.json` nem
+    // `analises.json` para renderizá-lo.
+    const scripts = readdirSync(join(distDir, "_astro"))
+      .filter((nome) => nome.endsWith(".js"))
+      .map((nome) => readFileSync(join(distDir, "_astro", nome), "utf8"));
+    expect(htmlHome).not.toContain("analises.json");
+    expect(htmlHome).not.toContain("ofertas.json");
+    for (const nome of ["analises.json", "ofertas.json"]) {
+      expect(scripts.some((texto) => texto.includes(nome))).toBe(false);
+    }
 
     const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
     expect(sitemap).toContain(`/analises/${valida.slug}/`);
@@ -304,9 +333,6 @@ describe("build com uma Análise de fixture", () => {
 
     // Ofertas são site-only: não viram arquivo servido nem entram na ilha.
     expect(existsSync(join(distDir, "ofertas.json"))).toBe(false);
-    const scripts = readdirSync(join(distDir, "_astro"))
-      .filter((nome) => nome.endsWith(".js"))
-      .map((nome) => readFileSync(join(distDir, "_astro", nome), "utf8"));
     expect(scripts.some((texto) => texto.includes(oferta.url))).toBe(false);
 
     expect(existsSync(join(distDir, "pagefind"))).toBe(true);
@@ -347,6 +373,8 @@ describe("build sem nenhuma Análise (estado zero)", () => {
 
     const htmlHome = lerHtml("");
     expect(htmlHome).not.toContain('href="/analises/"');
+    expect(htmlHome).not.toContain("Análises em destaque");
+    expect(htmlHome).not.toContain('rel="sponsored');
 
     const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
     expect(sitemap).not.toContain("/analises/");

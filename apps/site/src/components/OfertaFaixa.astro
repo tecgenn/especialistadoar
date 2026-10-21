@@ -16,18 +16,21 @@ interface Props {
   aparelhoId?: string;
   /** Título da seção; a ficha usa "Ofertas", a Análise usa um CTA. */
   titulo?: string;
+  /** Nível do título, para respeitar a hierarquia da página que recebe a faixa. */
+  nivelTitulo?: 2 | 3 | 4;
 }
 
-const { aparelhoId, titulo = "Ofertas" } = Astro.props;
+const { aparelhoId, titulo = "Ofertas", nivelTitulo = 2 } = Astro.props;
 const ofertas =
   Astro.props.ofertas ??
   (aparelhoId === undefined ? [] : ofertasDoAparelho(aparelhoId));
+const Titulo = `h${nivelTitulo}`;
 ---
 
 {
   ofertas.length > 0 ? (
     <section class="ofertas">
-      <h2>{titulo}</h2>
+      <Titulo>{titulo}</Titulo>
       <p class="intro">
         Links comerciais (de afiliado), exibidos apenas aqui no site. Não fazem
         parte dos dados técnicos do INMETRO e não alteram as informações acima.

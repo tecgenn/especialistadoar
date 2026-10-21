@@ -9,16 +9,16 @@ Com zero Análises, a home é exatamente a de hoje: o bloco não aparece.
 
 **Blocked by:** 17 — Camada de Análises ponta a ponta; 18 — CTA de Oferta na Análise.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A home exibe um bloco de Análises em destaque com título, descrição, link para
+- [x] A home exibe um bloco de Análises em destaque com título, descrição, link para
       `/analises/<slug>/` e o CTA quando houver Oferta.
-- [ ] O bloco é gerado no build; o cliente não baixa `ofertas.json` nem
+- [x] O bloco é gerado no build; o cliente não baixa `ofertas.json` nem
       `analises.json` para renderizá-lo.
-- [ ] Com zero Análises, o bloco não é renderizado e a home permanece como hoje.
-- [ ] O bloco usa os componentes reutilizáveis de Oferta (sem duplicar markup).
-- [ ] Teste de build com fixture cobre o bloco com e sem Análises.
-- [ ] `pnpm build`, `pnpm build:site`, `pnpm lint`, `pnpm typecheck` e `pnpm test`
+- [x] Com zero Análises, o bloco não é renderizado e a home permanece como hoje.
+- [x] O bloco usa os componentes reutilizáveis de Oferta (sem duplicar markup).
+- [x] Teste de build com fixture cobre o bloco com e sem Análises.
+- [x] `pnpm build`, `pnpm build:site`, `pnpm lint`, `pnpm typecheck` e `pnpm test`
       verdes.
 
 ## Origin
