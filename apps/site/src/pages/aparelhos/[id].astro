@@ -6,32 +6,42 @@ import type {
   Tensao,
 } from "@especialista-do-ar/pipeline";
 import ofertasJson from "../../../ofertas.json";
+import { carregarAnalises } from "../../conteudo/analises.ts";
 import Base from "../../layouts/Base.astro";
+import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
 import {
   indexarOfertas,
   type Oferta,
   validarOfertas,
 } from "../../lib/ofertas.ts";
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
   const aparelhos = aparelhosJson as Aparelho[];
   const ofertas = ofertasJson as Oferta[];
   // Guarda de build: uma Oferta órfã (Aparelho inexistente) falha o build do
   // site, em vez de sumir em silêncio. Ver `ofertas.json` e ADR-0010.
   validarOfertas(ofertas, new Set(aparelhos.map((aparelho) => aparelho.id)));
   const porAparelho = indexarOfertas(ofertas);
+  // O link de volta depende do mapa `aparelhoId → Análise` construído no build.
+  const { analises } = await carregarAnalises();
+  const analisePorAparelho = mapaPorAparelho(analises);
   return aparelhos.map((aparelho) => ({
     params: { id: aparelho.id },
-    props: { aparelho, ofertas: porAparelho.get(aparelho.id) ?? [] },
+    props: {
+      aparelho,
+      ofertas: porAparelho.get(aparelho.id) ?? [],
+      analise: analisePorAparelho.get(aparelho.id),
+    },
   }));
 }
 
 interface Props {
   aparelho: Aparelho;
   ofertas: Oferta[];
+  analise: Analise | undefined;
 }
 
-const { aparelho, ofertas } = Astro.props;
+const { aparelho, ofertas, analise } = Astro.props;
 
 function texto(valor: number | null, sufixo = ""): string {
   return valor === null ? "—" : `${valor.toLocaleString("pt-BR")}${sufixo}`;
@@ -134,6 +144,18 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       Linhas da tabela: {aparelho.linhas.join(", ")}. Os valores acima são
       Valores oficiais, padronizados apenas quanto ao formato.
     </p>
+
+    {
+      analise ? (
+        <section class="analise-destaque">
+          <h2>Leia a análise</h2>
+          <p class="intro">{analise.descricao}</p>
+          <p>
+            <a href={analise.url}>{analise.titulo}</a>
+          </p>
+        </section>
+      ) : null
+    }
 
     {
       ofertas.length > 0 ? (

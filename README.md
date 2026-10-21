@@ -98,6 +98,38 @@ Copie o `id` para o `aparelhoId` no frontmatter da Análise.
 Sem resultado, o comando imprime uma mensagem clara em vez de saída vazia. Ele só
 lê a base: não altera `data/build/` nem cria artefato.
 
+## Escrever uma Análise
+
+Uma **Análise** é uma peça editorial em MDX sobre **um** Aparelho, publicada em
+`/analises/<slug>/` e ligada à ficha pelo `aparelhoId` (ADR-0015). Os arquivos
+vivem em `apps/site/src/content/analises/` — nada dela entra em `data/build/`:
+
+```mdx
+---
+aparelhoId: ap-c8637455a11e
+slug: britania-bac24fc-vale-a-pena
+titulo: "Britânia BAC24FC: vale a pena para 24.000 BTU?"
+descricao: "Uma leitura editorial do Britânia BAC24FC."
+data: 2026-10-20
+---
+
+## O que os dados mostram
+
+Texto editorial, com números próprios...
+```
+
+- `aparelhoId` é o `id` do Aparelho — obtenha com `pnpm aparelho:buscar "termo"`.
+- `slug` vira a URL e precisa ser único, sem `/`.
+- `data` pode ficar sem aspas; o build normaliza para `YYYY-MM-DD`.
+- Imagens entram pelo componente de imagem do Astro (`astro:assets`), com `alt`.
+- Com **zero** Análises o site fica exatamente como hoje: sem `/analises/`, sem
+  menu, sem `analises.json` e sem entrada no sitemap. A primeira Análise liga
+  tudo automaticamente, inclusive o "Leia a análise" na ficha do Aparelho.
+- O build valida o contrato e **falha** em campo obrigatório vazio, `aparelhoId`
+  fora do formato, `slug` repetido ou mais de uma Análise para o mesmo Aparelho.
+- Se o Aparelho sair da tabela, a Análise continua publicada em estado degradado:
+  aviso de que ele não consta na Versão atual, sem bloco de dados e sem CTA.
+
 ## ⚠️ Antes de dar push
 
 Rode a suíte completa **e** o build antes de enviar qualquer mudança:

@@ -77,6 +77,9 @@ packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
 apps/site/                            # catálogo Astro estático (fase 3)
   ofertas.json                        # CAMADA CURADA do site: Ofertas (links de afiliado), só no site
+  src/content/analises/               # CAMADA EDITORIAL do site: Análises em MDX, só no site
+  src/content.config.ts               # coleção `analises` (frontmatter obrigatório)
+  src/conteudo/                       # glue do site (astro:content), fora de src/lib
   scripts/verificar-links.ts          # verificação manual: imprime o relatório de links
 ```
 
@@ -167,6 +170,20 @@ nova exportação CSV
   Aparelho — separadas dos dados técnicos. `pnpm verificar-links` confere os links
   sob demanda e imprime URL/loja/motivo dos quebrados, sem falhar. Ver ADR-0010 e
   ADR-0014.
+- **Análises (conteúdo editorial)** — também em `apps/site`, uma coleção de
+  conteúdo MDX (`src/content/analises/`, com `ANALISES_BASE` para o teste apontar
+  uma fixture). Cada Análise é ligada a um Aparelho por `aparelhoId` e renderiza
+  em `/analises/<slug>/`, com H1/data/corpo próprios, JSON-LD de `Article` e link
+  para a ficha. O módulo puro `src/lib/analises.ts` valida o contrato (obrigatórios,
+  formato do id e da data, slug único, uma por Aparelho) e constrói os índices; o
+  glue `src/conteudo/analises.ts` lê a coleção. A seção é **condicional**: com zero
+  Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
+  e o site segue com as 2.462 páginas. Com ≥ 1, o índice, o menu, o inventário
+  `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
+  o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise".
+  Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada
+  com aviso, sem bloco de dados e sem CTA. Nada disso entra em `data/build/`, na
+  API ou na consulta. Ver ADR-0015.
 
 ## Interfaces
 
@@ -205,8 +222,10 @@ Ver ADR-0003 e ADR-0011.
 - **Publicação (fase 1):** o merge em `main` publica o **build do site**
   (`apps/site/dist`) no **Cloudflare Pages** — o `pnpm build:site` roda sobre
   `data/build` e copia a base servida para a raiz do site, então a API estática
-  (sem servidor nem cota) continua servida ao lado das páginas. Setup manual em
-  `docs/agents/ci-cd-setup.md`; ver ADR-0004.
+  (sem servidor nem cota) continua servida ao lado das páginas. Quando há Análise
+  publicada, o build também emite `/analises.json` na raiz do site (o inventário
+  editorial, separado da base servida). Setup manual em `docs/agents/ci-cd-setup.md`;
+  ver ADR-0004.
 - **D1 (SQLite)** é só plano B, derivado do JSONL — nunca fonte de verdade.
 - **R2** guarda blobs grandes se os assets estáticos passarem do bundle do site.
 - **Caveats do free tier:** o plano gratuito do Cloudflare Pages tem limites de

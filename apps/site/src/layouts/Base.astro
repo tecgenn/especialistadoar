@@ -2,15 +2,22 @@
 import manifestJson from "@dados/manifest.json";
 import type { Manifest } from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
+import { carregarAnalises } from "../conteudo/analises.ts";
+import { secaoVisivel } from "../lib/analises.ts";
 import "../styles/global.css";
 
 interface Props {
   titulo: string;
   descricao?: string;
+  /** Canonical da página; por padrão, a própria URL servida. */
+  canonical?: string;
+  /** Dados estruturados (JSON-LD) da página, quando houver. */
+  jsonLd?: Record<string, unknown>;
 }
 
-const { titulo, descricao } = Astro.props;
+const { titulo, descricao, canonical, jsonLd } = Astro.props;
 const versao = versaoAtualDo(manifestJson as Manifest);
+const { analises } = await carregarAnalises();
 ---
 
 <!doctype html>
@@ -20,13 +27,22 @@ const versao = versaoAtualDo(manifestJson as Manifest);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titulo}</title>
     {descricao ? <meta name="description" content={descricao} /> : null}
-    <link rel="canonical" href={Astro.url.href} />
+    <link rel="canonical" href={canonical ?? Astro.url.href} />
+    {
+      jsonLd ? (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify(jsonLd)}
+        />
+      ) : null
+    }
   </head>
   <body>
     <header>
       <a class="marca" href="/">Especialista do Ar</a>
       <nav>
         <a href="/">Catálogo</a>
+        {secaoVisivel(analises) ? <a href="/analises/">Análises</a> : null}
         <a href="/busca/">Buscar no site</a>
       </nav>
     </header>
