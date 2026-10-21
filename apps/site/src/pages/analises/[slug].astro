@@ -1,0 +1,122 @@
+---
+import { render } from "astro:content";
+import aparelhosJson from "@dados/aparelhos.json";
+import manifestJson from "@dados/manifest.json";
+import type { Aparelho, Manifest } from "@especialista-do-ar/pipeline";
+import { versaoAtualDo } from "@especialista-do-ar/pipeline";
+import {
+  carregarAnalises,
+  type EntradaAnalise,
+} from "../../conteudo/analises.ts";
+import Base from "../../layouts/Base.astro";
+import type { Analise } from "../../lib/analises.ts";
+
+export async function getStaticPaths() {
+  const aparelhos = aparelhosJson as Aparelho[];
+  const porId = new Map(aparelhos.map((aparelho) => [aparelho.id, aparelho]));
+  const { analises, entradas } = await carregarAnalises();
+  return analises.map((analise) => ({
+    params: { slug: analise.slug },
+    props: {
+      analise,
+      entrada: entradas.get(analise.slug),
+      aparelho: porId.get(analise.aparelhoId),
+    },
+  }));
+}
+
+interface Props {
+  analise: Analise;
+  entrada: EntradaAnalise;
+  aparelho: Aparelho | undefined;
+}
+
+const { analise, entrada, aparelho } = Astro.props;
+const { Content } = await render(entrada);
+const versao = versaoAtualDo(manifestJson as Manifest);
+
+const url = new URL(analise.url, Astro.site).href;
+const urlFicha =
+  aparelho === undefined
+    ? undefined
+    : new URL(`/aparelhos/${aparelho.id}/`, Astro.site).href;
+
+const jsonLd: Record<string, unknown> = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: analise.titulo,
+  description: analise.descricao,
+  datePublished: analise.data,
+  inLanguage: "pt-BR",
+  url,
+  mainEntityOfPage: url,
+  isPartOf: {
+    "@type": "WebSite",
+    name: "Especialista do Ar",
+    url: Astro.site?.href,
+  },
+  author: {
+    "@type": "Organization",
+    name: "Especialista do Ar",
+    url: Astro.site?.href,
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Especialista do Ar",
+    url: Astro.site?.href,
+  },
+  ...(aparelho === undefined
+    ? {}
+    : {
+        about: {
+          "@type": "Product",
+          name: `${aparelho.marca} ${aparelho.modelo}`,
+          url: urlFicha,
+        },
+      }),
+};
+---
+
+<Base
+  titulo={`${analise.titulo} — Especialista do Ar`}
+  descricao={analise.descricao}
+  canonical={url}
+  jsonLd={jsonLd}
+>
+  <article class="analise">
+    <p><a href="/analises/">← Todas as análises</a></p>
+    <h1>{analise.titulo}</h1>
+    <p class="intro">
+      <time datetime={analise.data}>{analise.data}</time>
+    </p>
+
+    <div class="analise-corpo">
+      <Content />
+    </div>
+
+    {
+      aparelho === undefined ? (
+        <section class="analise-aviso">
+          <h2>Modelo fora da tabela atual</h2>
+          <p>
+            O aparelho desta análise não consta na Versão atual da tabela do
+            INMETRO
+            {versao ? ` (${versao.obtidoEm})` : ""}. A análise continua
+            publicada, mas não há dados técnicos oficiais para exibir.
+          </p>
+        </section>
+      ) : (
+        <section class="analise-ficha">
+          <h2>Dados oficiais do INMETRO</h2>
+          <p>
+            A ficha técnica de {aparelho.marca} {aparelho.modelo} traz os
+            Valores oficiais — capacidade, consumo, IDRS e tensão.
+          </p>
+          <p>
+            <a href={`/aparelhos/${aparelho.id}/`}>Ver ficha técnica</a>
+          </p>
+        </section>
+      )
+    }
+  </article>
+</Base>

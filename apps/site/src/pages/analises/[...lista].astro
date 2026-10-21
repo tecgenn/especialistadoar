@@ -1,0 +1,45 @@
+---
+import { carregarAnalises } from "../../conteudo/analises.ts";
+import Base from "../../layouts/Base.astro";
+import { type Analise, secaoVisivel } from "../../lib/analises.ts";
+
+/**
+ * Índice de Análises. Sem Análise publicada, `getStaticPaths` devolve `[]` e a
+ * rota `/analises/` não existe — nem no menu, nem no sitemap (ADR-0015).
+ */
+export async function getStaticPaths() {
+  const { analises } = await carregarAnalises();
+  if (!secaoVisivel(analises)) {
+    return [];
+  }
+  return [{ params: { lista: undefined }, props: { analises } }];
+}
+
+interface Props {
+  analises: Analise[];
+}
+
+const { analises } = Astro.props;
+---
+
+<Base
+  titulo="Análises — Especialista do Ar"
+  descricao="Análises editoriais dos aparelhos de ar-condicionado, com link para a ficha técnica de cada modelo."
+>
+  <h1>Análises</h1>
+  <p class="intro">
+    Leituras editoriais para decidir a compra, sempre com link para os dados
+    oficiais do INMETRO de cada Aparelho.
+  </p>
+  <ul class="analises-lista">
+    {
+      analises.map((analise) => (
+        <li>
+          <a href={analise.url}>{analise.titulo}</a>
+          <p class="intro">{analise.descricao}</p>
+          <time datetime={analise.data}>{analise.data}</time>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

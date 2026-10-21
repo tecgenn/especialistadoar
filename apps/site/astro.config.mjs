@@ -1,6 +1,7 @@
 // @ts-check
 import { cpSync, existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
@@ -35,7 +36,7 @@ function artefatosEstaticos() {
 export default defineConfig({
   site: "https://especialista-do-ar.pages.dev",
   output: "static",
-  integrations: [react(), sitemap(), pagefind(), artefatosEstaticos()],
+  integrations: [react(), mdx(), sitemap(), pagefind(), artefatosEstaticos()],
   vite: {
     resolve: {
       // Os artefatos publicados são importados como JSON no build do site

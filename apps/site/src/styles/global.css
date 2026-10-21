@@ -178,3 +178,37 @@ footer {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;
 }
+
+.analise-corpo {
+  margin-block: 1.5rem;
+}
+
+.analise-aviso,
+.analise-destaque {
+  margin-block: 1.5rem 1rem;
+  padding: 1rem;
+  border: 1px dashed var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.analise-aviso h2,
+.analise-destaque h2 {
+  margin-top: 0;
+}
+
+.analises-lista {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.analises-lista li {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.analises-lista time {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}

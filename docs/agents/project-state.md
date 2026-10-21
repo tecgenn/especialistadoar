@@ -7,14 +7,14 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 ## Frontier
 
 **Fase 5 — Camada editorial de Análises** (spec:
-`.scratch/especialista-do-ar/spec-fase-5.md`; ADR-0015). Entrega a capacidade de
-escrever/publicar Análises em MDX, sem publicar nenhuma nesta fase.
+`.scratch/especialista-do-ar/spec-fase-5.md`; ADR-0015). A capacidade de
+escrever/publicar Análises em MDX está pronta (ticket 17); falta o CTA de Oferta
+na Análise e os destaques na home.
 
-- **17** — Camada de Análises ponta a ponta — sem bloqueio.
-- **18** — CTA de Oferta na Análise — bloqueado por 17.
-- **19** — Destaques de Análises na home — bloqueado por 17 e 18.
+- **18** — CTA de Oferta na Análise — sem bloqueio.
+- **19** — Destaques de Análises na home — bloqueado por 18.
 
-**Frontier agora:** 17.
+**Frontier agora:** 18.
 
 ## Completed
 
@@ -127,4 +127,11 @@ escrever/publicar Análises em MDX, sem publicar nenhuma nesta fase.
 - **What works:** `pnpm aparelho:buscar "<termo>"` procura na base servida publicada por **marca** ou **modelo** (trecho, ignorando caixa e acento) e por **potência** em BTU (valor exato, aceitando `12.000`, `27000 BTU` e `27000 BTUs`) e imprime, um por linha, marca, modelo, potência(s) e o `id` — o valor do `aparelhoId` de uma Análise —, com uma dica de uso. Busca sem resultado imprime mensagem clara em vez de saída vazia, e termo em branco mostra o uso e sai com código 2. O comando é só leitura: usa a API estática sobre `data/build/`, não cria artefato nem toca o pipeline; a base servida e os relatórios são reproduzidos byte a byte.
 - **Ticket:** #16 (local tracker: `16-buscar-aparelho-frontmatter`)
 - **Checks:** Vitest 177/177 (22 arquivos; +9 da busca), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm aparelho:buscar` conferido por marca (`britania` → 32), modelo (`gjc07`), potência (`12000` → 484) e vazio.
+
+### 17 — Camada de Análises ponta a ponta (2026-10-21)
+
+- **Changed:** `apps/site/package.json` (+`@astrojs/mdx`); `apps/site/astro.config.mjs` (`mdx()`); `apps/site/src/content.config.ts` (coleção `analises` com `glob`, `generateId` por caminho e `ANALISES_BASE`); `apps/site/src/conteudo/{base-analises,analises}.ts` (base única do diretório + glue `astro:content` com cache por build); `apps/site/src/content/analises/.gitkeep`; `apps/site/src/lib/analises.ts` (contrato, validação, montagem, índices, inventário e visibilidade); rotas `src/pages/analises/[slug].astro`, `src/pages/analises/[...lista].astro` e `src/pages/[inventario].json.ts`; `Base.astro` (menu condicional, `canonical` e `jsonLd`); `aparelhos/[id].astro` (mapa `aparelhoId → Análise` e "Leia a análise"); `global.css`; testes `test/analises.test.ts` e `test/analises-build.test.ts`; `README.md` (§Escrever uma Análise); `docs/agents/architecture.md`; `.gitignore`.
+- **What works:** Existe a **capacidade** de publicar uma Análise editorial em MDX (`/analises/<slug>/`) ligada a um Aparelho pelo `aparelhoId`, sem publicar nenhuma nesta fase. O contrato puro valida campos obrigatórios, formato de `aparelhoId` (`ap-<12 hex>`) e `data` (`YYYY-MM-DD`), `slug` sem `/` e único, e no máximo uma Análise por Aparelho — violação falha o build com mensagem em pt-BR. A página traz H1/data/corpo próprios, canonical e JSON-LD de `Article` (com author/publisher, data e assunto via `about` do Produto), e link "Ver ficha técnica"; a ficha ganha "Leia a análise" pelo mapa construído no build. Com **≥ 1** Análise aparecem automaticamente o índice `/analises/`, o item de menu, a entrada no sitemap, o índice do Pagefind e o `analises.json` na raiz do site (slug, url, aparelhoId, título, descrição, data); com **zero**, nada disso existe e o site continua com as **2.462 páginas**. Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada com aviso de que o modelo não consta na Versão atual, sem bloco de dados e sem CTA. O `generateId` do loader usa o caminho do arquivo (o padrão usaria o `slug` do frontmatter e colapsaria duplicatas antes da validação). Nada entra em `data/build/`, `reports/`, na API ou na consulta. `ANALISES_BASE` é a seam que deixa o teste de build apontar para uma fixture fora do conteúdo publicado.
+- **Ticket:** #17 (local tracker: `17-camada-de-analises-ponta-a-ponta`)
+- **Checks:** Vitest 197/197 (24 arquivos; +17 do módulo puro e +3 do build ponta a ponta — válida, inválida e estado zero), tsc --noEmit OK, biome check OK; `pnpm build:site` gera 2462 páginas no estado real e 2465 com a fixture; `pnpm build` reproduz `data/build`+`reports` byte a byte; a fixture e o estado zero conferem página, link bidirecional, sitemap, `analises.json`, JSON-LD, menu, página degradada e Pagefind.
 

@@ -16,32 +16,32 @@ consulta.
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O site renderiza MDX numa coleção de conteúdo, com frontmatter obrigatório:
+- [x] O site renderiza MDX numa coleção de conteúdo, com frontmatter obrigatório:
       `aparelhoId`, `slug`, `titulo`, `descricao` e `data`.
-- [ ] O build falha com mensagem clara para campo obrigatório vazio, `slug` repetido
+- [x] O build falha com mensagem clara para campo obrigatório vazio, `slug` repetido
       e mais de uma Análise para o mesmo `aparelhoId`.
-- [ ] Com uma Análise de fixture, o build gera `/analises/<slug>/` com H1/título
+- [x] Com uma Análise de fixture, o build gera `/analises/<slug>/` com H1/título
       próprios (distintos da ficha), data e corpo renderizado, e link para a ficha
       do Aparelho.
-- [ ] A ficha do Aparelho passa a exibir "Leia a análise" quando existe Análise para
+- [x] A ficha do Aparelho passa a exibir "Leia a análise" quando existe Análise para
       aquele `aparelhoId`, num mapa construído no build.
-- [ ] A Análise entra no sitemap e no índice do Pagefind.
-- [ ] O build publica `analises.json` na raiz do site com `slug`, `url`,
+- [x] A Análise entra no sitemap e no índice do Pagefind.
+- [x] O build publica `analises.json` na raiz do site com `slug`, `url`,
       `aparelhoId`, `titulo`, `descricao` e `data`.
-- [ ] A página traz JSON-LD de `Article` (sem nota/`Review` inventada), `title`,
+- [x] A página traz JSON-LD de `Article` (sem nota/`Review` inventada), `title`,
       meta description e canonical a partir do frontmatter.
-- [ ] Com zero Análises, a rota `/analises/` não é gerada, não há item de menu nem
+- [x] Com zero Análises, a rota `/analises/` não é gerada, não há item de menu nem
       `analises.json`, e o site continua com as 2.462 páginas.
-- [ ] Estado degradado: Análise de Aparelho ausente da base continua publicada, com
+- [x] Estado degradado: Análise de Aparelho ausente da base continua publicada, com
       aviso de que não consta na Versão atual, sem dados técnicos e sem CTA; o build
       não falha.
-- [ ] Teste de build ponta a ponta com fixture cobre página, link bidirecional,
+- [x] Teste de build ponta a ponta com fixture cobre página, link bidirecional,
       sitemap, `analises.json` e JSON-LD; o mesmo teste cobre o estado zero.
-- [ ] Testes do módulo puro cobrem validação, indexação, mapa `aparelhoId → Análise`,
+- [x] Testes do módulo puro cobrem validação, indexação, mapa `aparelhoId → Análise`,
       lista do `analises.json` e visibilidade condicional.
-- [ ] `data/build/` e `reports/` reproduzidos byte a byte; `pnpm build`,
+- [x] `data/build/` e `reports/` reproduzidos byte a byte; `pnpm build`,
       `pnpm build:site`, `pnpm lint`, `pnpm typecheck` e `pnpm test` verdes.
 
 ## Origin
