@@ -168,8 +168,9 @@ nova exportação CSV
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por
   componentes reutilizáveis (`OfertaCartao`/`OfertaFaixa`, que recebem `Oferta[]`
-  ou um `aparelhoId`) na ficha do Aparelho e na Análise — separadas dos dados
-  técnicos. `pnpm verificar-links` confere os links sob demanda e imprime
+  ou um `aparelhoId`) na ficha do Aparelho, na Análise e nos destaques da home —
+  separadas dos dados técnicos. A faixa aceita um `nivelTitulo` para acompanhar a
+  hierarquia da página que a recebe. `pnpm verificar-links` confere os links sob demanda e imprime
   URL/loja/motivo dos quebrados, sem falhar. Ver ADR-0010 e ADR-0014.
 - **Análises (conteúdo editorial)** — também em `apps/site`, uma coleção de
   conteúdo MDX (`src/content/analises/`, com `ANALISES_BASE` para o teste apontar
@@ -181,9 +182,11 @@ nova exportação CSV
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
   e o site segue com as 2.462 páginas. Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
-  o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise"
-  e a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
-  ou com o Aparelho Ausente, nada é renderizado).
+  o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise",
+  a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
+  ou com o Aparelho Ausente, nada é renderizado) e a home ganha um bloco estático
+  de Análises em destaque (`AnalisesDestaque`, montado no build — o cliente não
+  baixa `analises.json` nem `ofertas.json`).
   Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada
   com aviso, sem bloco de dados e sem CTA. Nada disso entra em `data/build/`, na
   API ou na consulta. Ver ADR-0015.
@@ -251,7 +254,7 @@ Ver ADR-0003 e ADR-0011.
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
   (ADR-0010 e ADR-0014); os componentes `OfertaCartao`/`OfertaFaixa` renderizam o
-  CTA na ficha e na Análise sem tocar na ilha.
+  CTA na ficha, na Análise e nos destaques da home sem tocar na ilha.
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
   repositório é público, então minutos de runner não são cobrados (a regra foi
