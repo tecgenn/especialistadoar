@@ -123,7 +123,10 @@ nova exportação CSV
   parsing de tensão, coerção numérica, `º`/`°`); o texto de origem é preservado para
   proveniência.
 - **anomalias** — sinaliza valores fora do padrão (não-numérico em campo numérico,
-  colunas desalinhadas); o valor original é preservado, não corrigido.
+  colunas desalinhadas) e valores numericamente válidos, mas implausíveis para a
+  coluna, por uma tabela de regras de plausibilidade (`valor_implausivel`); o valor
+  original é preservado, não corrigido. A detecção roda depois das Exceções, então
+  uma capacidade corrigida não vira Anomalia.
 - **excecoes** — lê e valida a Exceção manual; aplica-a sobre o Valor original
   *antes* da normalização; recusa correção só-de-formato, campo inexistente e
   exceção órfã (que não casa com nenhuma Linha desta Versão da tabela).

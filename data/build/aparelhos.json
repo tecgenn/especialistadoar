@@ -53244,7 +53244,7 @@
           ]
         },
         "dados": {
-          "capacidadeNominalBtu": 12,
+          "capacidadeNominalBtu": 12000,
           "capacidadeNominalW": 3516,
           "potenciaEsperaW": 1,
           "capacidade35TotalW": 3516,
@@ -70832,8 +70832,8 @@
           ]
         },
         "dados": {
-          "capacidadeNominalBtu": 16115,
-          "capacidadeNominalW": 55000,
+          "capacidadeNominalBtu": 55000,
+          "capacidadeNominalW": 16115,
           "potenciaEsperaW": 10,
           "capacidade35TotalW": 16115,
           "potencia35TotalW": 6715,
@@ -99290,7 +99290,7 @@
           ]
         },
         "dados": {
-          "capacidadeNominalBtu": 30,
+          "capacidadeNominalBtu": 30000,
           "capacidadeNominalW": 8790,
           "potenciaEsperaW": 2,
           "capacidade35TotalW": 8790,
@@ -128887,7 +128887,7 @@
           ]
         },
         "dados": {
-          "capacidadeNominalBtu": 12,
+          "capacidadeNominalBtu": 12000,
           "capacidadeNominalW": 3516,
           "potenciaEsperaW": 1,
           "capacidade35TotalW": 3516,
@@ -132058,7 +132058,7 @@
           ]
         },
         "dados": {
-          "capacidadeNominalBtu": 120,
+          "capacidadeNominalBtu": 12000,
           "capacidadeNominalW": 3516,
           "potenciaEsperaW": 1,
           "capacidade35TotalW": 3516,

@@ -5,7 +5,10 @@ import {
 } from "./normalize.ts";
 import type { ValoresDaLinha } from "./parse.ts";
 
-export type TipoAnomalia = "valor_multiplo" | "texto_em_campo_numerico";
+export type TipoAnomalia =
+  | "valor_multiplo"
+  | "texto_em_campo_numerico"
+  | "valor_implausivel";
 
 export interface Anomalia {
   linha: number;
@@ -20,10 +23,41 @@ export interface ContextoAnomalia {
   versao: string;
 }
 
+/**
+ * Regra de plausibilidade de uma coluna numérica. É uma tabela, não um `if`:
+ * acrescentar outra inconsistência é acrescentar uma linha aqui, sem mexer no
+ * detector.
+ */
+interface RegraPlausibilidade {
+  campo: string;
+  /** Menor valor plausível, inclusive. */
+  minimo: number;
+}
+
+const CAPACIDADE_BTU = "Capacidade de Refrigeração Nominal (Btu/h)";
+
+const REGRAS_PLAUSIBILIDADE: readonly RegraPlausibilidade[] = [
+  // Um ar-condicionado de 1.000 BTU/h já não existe; abaixo disso o valor foi
+  // truncado (ex.: `12` no lugar de `12000`) ou trocado com outra coluna. A
+  // Anomalia só sinaliza — a correção é uma Exceção manual com motivo e fonte.
+  { campo: CAPACIDADE_BTU, minimo: 1000 },
+];
+
 export function classificarAnomalia(valor: string): TipoAnomalia {
   return contarValoresNumericos(valor) >= 2
     ? "valor_multiplo"
     : "texto_em_campo_numerico";
+}
+
+function regraDoCampo(campo: string): RegraPlausibilidade | undefined {
+  return REGRAS_PLAUSIBILIDADE.find((regra) => regra.campo === campo);
+}
+
+function foraDaPlausibilidade(
+  numero: number,
+  regra: RegraPlausibilidade,
+): boolean {
+  return numero < regra.minimo;
 }
 
 export function detectarAnomalias(
@@ -36,13 +70,27 @@ export function detectarAnomalias(
     if (!colunaNumerica(campo) || valor.trim() === "") {
       continue;
     }
-    if (parseNumero(valor) === null) {
+
+    const numero = parseNumero(valor);
+    if (numero === null) {
       anomalias.push({
         linha,
         versao,
         campo,
         valor,
         tipo: classificarAnomalia(valor),
+      });
+      continue;
+    }
+
+    const regra = regraDoCampo(campo);
+    if (regra !== undefined && foraDaPlausibilidade(numero, regra)) {
+      anomalias.push({
+        linha,
+        versao,
+        campo,
+        valor,
+        tipo: "valor_implausivel",
       });
     }
   }
