@@ -95,7 +95,9 @@ Resultado: 818 kWh/ano × 0,95 = **R$ 777,10/ano**.
   Sempre apresente junto a **fórmula** e as **entradas** usadas, e deixe claro que
   **não** é um Valor oficial — ver "Valor calculado — fórmula documentada".
 - **Anomalia** é um sinal, não um erro: um campo que deveria ser numérico e veio
-  com texto, ou com múltiplos números. O valor original é preservado; quem
+  com texto (`texto_em_campo_numerico`), com múltiplos números (`valor_multiplo`) ou
+  com um número válido, mas implausível para a coluna (`valor_implausivel`, ex.:
+  capacidade nominal abaixo de 1.000 BTU/h). O valor original é preservado; quem
   consulta decide como tratar.
 - **Ausente** (um Aparelho de uma versão anterior que sumiu) não presume causa, e
   **Aparelho sem dados declarados** é um estado — não trate nenhum dos dois como

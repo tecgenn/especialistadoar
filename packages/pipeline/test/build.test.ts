@@ -12,6 +12,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runBuild } from "../src/build.ts";
 import { type Manifest, sha256Hex } from "../src/ingest.ts";
+import { escreverJsonl } from "../src/jsonl.ts";
 
 const fixturePath = fileURLToPath(
   new URL("./fixtures/amostra.csv", import.meta.url),
@@ -22,6 +23,12 @@ const anomaliasFixturePath = fileURLToPath(
 );
 const exportVersadaPath = fileURLToPath(
   new URL("../../../data/raw/inmetro-export-2026-10-12.csv", import.meta.url),
+);
+const excecoesReaisPath = fileURLToPath(
+  new URL("../../../data/excecoes-manuais.jsonl", import.meta.url),
+);
+const implausivelFixturePath = fileURLToPath(
+  new URL("./fixtures/amostra-implausivel.csv", import.meta.url),
 );
 
 let dataDir: string;
@@ -46,6 +53,17 @@ function buildCom(source: string): ReturnType<typeof runBuild> {
 
 function build(): ReturnType<typeof runBuild> {
   return buildCom(fixturePath);
+}
+
+function buildExportacaoRealComCuradoria(): ReturnType<typeof runBuild> {
+  copyFileSync(excecoesReaisPath, join(dataDir, "excecoes-manuais.jsonl"));
+  return runBuild({
+    dataDir,
+    source: exportVersadaPath,
+    origem: "teste",
+    obtidoEm: "2026-10-12",
+    reportsDir: join(dataDir, "reports"),
+  });
 }
 
 function lerRegistros(): Array<{
@@ -237,13 +255,7 @@ describe("runBuild — Anomalias", () => {
 
 describe("runBuild — Anomalias na exportação versionada real", () => {
   it("encontra as 15 Anomalias sem abortar o build", () => {
-    const { registros, anomalias } = runBuild({
-      dataDir,
-      source: exportVersadaPath,
-      origem: "teste",
-      obtidoEm: "2026-10-12",
-      reportsDir: join(dataDir, "reports"),
-    });
+    const { registros, anomalias } = buildExportacaoRealComCuradoria();
     expect(registros).toHaveLength(7474);
     expect(anomalias).toHaveLength(15);
     expect(
@@ -254,16 +266,56 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
     ).toBe(true);
   });
 
+  it("expõe as capacidades truncadas como valor_implausivel sem curadoria", () => {
+    const { anomalias } = buildCom(exportVersadaPath);
+    const implausiveis = anomalias.filter(
+      (anomalia) => anomalia.tipo === "valor_implausivel",
+    );
+    expect(implausiveis.map((anomalia) => anomalia.linha)).toEqual([
+      5278, 7133, 7200, 7428,
+    ]);
+  });
+
+  // O golden é do build com a curadoria publicada: as Exceções corrigem as
+  // capacidades truncadas e as 15 Anomalias são as mesmas da base servida.
   it("bate com o snapshot golden de anomalias.jsonl", () => {
-    runBuild({
-      dataDir,
-      source: exportVersadaPath,
-      origem: "teste",
-      obtidoEm: "2026-10-12",
-      reportsDir: join(dataDir, "reports"),
-    });
+    buildExportacaoRealComCuradoria();
     expect(
       readFileSync(join(dataDir, "build/anomalias.jsonl"), "utf8"),
     ).toMatchSnapshot();
+  });
+});
+
+describe("runBuild — Anomalia de valor implausível", () => {
+  it("sinaliza a capacidade truncada sem corrigir o Valor oficial", () => {
+    const { anomalias, registros } = buildCom(implausivelFixturePath);
+    expect(anomalias).toEqual([
+      {
+        linha: 1,
+        versao: sha256Hex(readFileSync(implausivelFixturePath)),
+        campo: "Capacidade de Refrigeração Nominal (Btu/h)",
+        valor: "30",
+        tipo: "valor_implausivel",
+      },
+    ]);
+    expect(
+      registros[0]?.oficial["Capacidade de Refrigeração Nominal (Btu/h)"],
+    ).toBe(30);
+  });
+
+  it("deixa de sinalizar quando a capacidade é corrigida por Exceção manual", () => {
+    escreverJsonl(join(dataDir, "excecoes-manuais.jsonl"), [
+      {
+        versao: sha256Hex(readFileSync(implausivelFixturePath)),
+        linha: 1,
+        campo: "Capacidade de Refrigeração Nominal (Btu/h)",
+        valor: "30000",
+        motivo: "valor truncado na exportação",
+        fonte: "Capacidade de Refrigeração Nominal (W) = 8790 W na mesma Linha",
+      },
+    ]);
+
+    const { anomalias } = buildCom(implausivelFixturePath);
+    expect(anomalias).toEqual([]);
   });
 });

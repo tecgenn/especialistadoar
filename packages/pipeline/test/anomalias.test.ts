@@ -48,3 +48,40 @@ describe("detectarAnomalias", () => {
     ).toEqual([]);
   });
 });
+
+describe("detectarAnomalias — valores implausíveis", () => {
+  const CAPACIDADE = "Capacidade de Refrigeração Nominal (Btu/h)";
+
+  it("sinaliza capacidade nominal abaixo de 1.000 BTU/h", () => {
+    expect(detectarAnomalias({ [CAPACIDADE]: "30" }, contexto)).toEqual<
+      Anomalia[]
+    >([
+      {
+        linha: 7,
+        versao: "abc123",
+        campo: CAPACIDADE,
+        valor: "30",
+        tipo: "valor_implausivel",
+      },
+    ]);
+  });
+
+  it("aceita exatamente 1.000 BTU/h como plausível", () => {
+    expect(detectarAnomalias({ [CAPACIDADE]: "1000" }, contexto)).toEqual([]);
+  });
+
+  it("não sinaliza capacidade plausível", () => {
+    expect(detectarAnomalias({ [CAPACIDADE]: "12000" }, contexto)).toEqual([]);
+  });
+
+  it("aplica a regra só à coluna dela", () => {
+    expect(
+      detectarAnomalias({ "Carga do Fluido Refrigerante (g)": "30" }, contexto),
+    ).toEqual([]);
+  });
+
+  it("continua sinalizando texto na coluna de capacidade como texto", () => {
+    const anomalias = detectarAnomalias({ [CAPACIDADE]: "abc" }, contexto);
+    expect(anomalias[0]?.tipo).toBe("texto_em_campo_numerico");
+  });
+});

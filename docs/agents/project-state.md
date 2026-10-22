@@ -6,14 +6,16 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-Nenhum ticket aberto. A **Fase 5 — Camada editorial de Análises** fechou com o
-ticket 19: a capacidade de escrever/publicar Análises em MDX, o CTA de Oferta na
-Análise e os destaques de Análises na home estão prontos — com zero Análises
-publicadas (o conteúdo é operação contínua, fora da fase).
+A **Fase 6 — Filtros do catálogo** está em andamento: a spec está em
+`spec-fase-6.md`. O ticket `20` foi concluído (6 Exceções corrigem as capacidades
+impossíveis e o detector ganhou `valor_implausivel`).
 
-**Frontier agora:** nenhum. Os próximos passos não são tickets desta fase:
-publicar a primeira Análise (com Ofertas reais) e, quando fizer sentido, a
-migração para domínio próprio — ver `spec-fase-5.md` › Further Notes.
+**Frontier agora:** `21 — Marca de catálogo (Midea e Fujitsu)`.
+O `22 — Chips de marca e capacidade` depende do 21.
+
+A operação da Fase 5 segue em paralelo: publicar a primeira Análise (com Ofertas
+reais) e, quando fizer sentido, a migração para domínio próprio — ver
+`spec-fase-5.md` › Further Notes.
 
 ## Completed
 
@@ -147,3 +149,10 @@ migração para domínio próprio — ver `spec-fase-5.md` › Further Notes.
 - **What works:** A home ganha um bloco **estático** de Análises em destaque — título, descrição e link de cada Análise publicada, na ordem da mais recente para a mais antiga (a mesma de `montarAnalises`), mais "Todas as análises". O CTA usa o `OfertaFaixa` reutilizável (mesmo `rel="sponsored nofollow noopener"`, `target="_blank"` e aviso de link comercial) e só aparece quando há Oferta para o Aparelho: com o Aparelho Ausente não há Oferta (o glue recusa Oferta órfã), então nunca há CTA vazio. O bloco é gerado no build — o cliente não baixa `ofertas.json` nem `analises.json` (guardado por teste no HTML e nos scripts). Com **zero** Análises, o bloco não é renderizado e a home permanece a de hoje (2.462 páginas). Nada muda em `data/build/`, `reports/`, na API ou na consulta.
 - **Ticket:** #19 (local tracker: `19-destaques-analises-home`)
 - **Checks:** Vitest 199/199 (24 arquivos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` verde (2.462 páginas) e build de fixture gera o bloco com `h2` → `h3` → `h4` e o CTA apenas na Análise com Oferta.
+
+### 20 — Capacidades impossíveis corrigidas e sinalizadas (2026-10-22)
+
+- **Changed:** `packages/pipeline/src/anomalias.ts` (novo tipo `valor_implausivel` + tabela `REGRAS_PLAUSIBILIDADE` por coluna, estreando com capacidade nominal abaixo de 1.000 BTU/h; a detecção roda depois das Exceções); `data/excecoes-manuais.jsonl` (6 Exceções com `motivo` + `fonte` em 5 Linhas); `data/build/{excecoes-manuais.jsonl,registros.jsonl,aparelhos.jsonl,aparelhos.json,consulta.json}` regenerados; testes `packages/pipeline/test/{anomalias,build}.test.ts` + fixture `test/fixtures/amostra-implausivel.csv`; `docs/agentes.md` e `docs/agents/architecture.md` (novo tipo documentado).
+- **What works:** a exportação deixa de oferecer `12`, `30`, `120` e `16115` BTU/h: as Linhas 5278, 7133, 7200 e 7428 (Gree, zeros omitidos) e 3709 (AGRATTO, BTU e Watts trocados) ganham Exceções manuais e a base publicada passa a mostrar 12.000, 30.000 e 55.000 BTU/h na ficha, na consulta e para os Agentes, sem excluir Aparelho (seguem 2.460) nem mudar `id`/URL. O detector ganha `valor_implausivel` a partir de uma tabela de regras por coluna — sinaliza, nunca corrige —, então a próxima Versão que trouxer o erro o mostrará no Relatório de revisão; na Versão atual seguem 15 Anomalias e `anomalias.jsonl` intacto. `aparelhos.json` muda em 5 entradas: as 4 afetadas mais `ap-21ea78c03c84`, cuja Linha 7428 compartilha a identidade com a Linha 2688 corrigida. As Exceções são presas à Versão e precisam ser recadastradas quando entrar uma exportação nova.
+- **Ticket:** #20 (local tracker: `20-capacidades-impossiveis-corrigidas`)
+- **Checks:** Vitest 207/207 (24 arquivos; +8), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas; `consulta.json` com 48 capacidades distintas (sem 12/30/120/16115).
