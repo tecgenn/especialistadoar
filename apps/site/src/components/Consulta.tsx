@@ -21,6 +21,46 @@ export interface PropsConsulta {
   consultaUrl?: string;
 }
 
+/** Uma marca nos chips: `valor` é o filtro, `rotulo` o que se lê. */
+interface OpcaoChip {
+  valor: string;
+  rotulo: string;
+}
+
+/**
+ * Os chips de um filtro (ticket 22): botões com `aria-pressed`, que quebram
+ * linha. Clicar no chip ativo limpa; o chamador decide o que "ativo" significa.
+ */
+function Chips({
+  ariaLabel,
+  opcoes,
+  estaAtivo,
+  selecionar,
+}: {
+  ariaLabel: string;
+  opcoes: OpcaoChip[];
+  estaAtivo: (valor: string) => boolean;
+  selecionar: (valor: string) => void;
+}) {
+  if (opcoes.length === 0) {
+    return null;
+  }
+  return (
+    <fieldset className="chips" aria-label={ariaLabel}>
+      {opcoes.map(({ valor, rotulo }) => (
+        <button
+          key={valor}
+          type="button"
+          aria-pressed={estaAtivo(valor)}
+          onClick={() => selecionar(valor)}
+        >
+          {rotulo}
+        </button>
+      ))}
+    </fieldset>
+  );
+}
+
 export default function Consulta({
   opcoes,
   consultaUrl = "/consulta.json",
@@ -82,30 +122,53 @@ export default function Consulta({
   // Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER MIDEA`). Ela
   // continua valendo no filtro; sem esta opção extra o `<select>` cairia em
   // "Todas" enquanto a lista estivesse filtrada (ADR-0016).
+  const valoresChip = new Set(opcoes.marcasChip.map((marca) => marca.valor));
   const marcasDoFiltro =
-    estado.marca !== undefined && !opcoes.marcas.includes(estado.marca)
+    estado.marca !== undefined &&
+    !opcoes.marcas.includes(estado.marca) &&
+    !valoresChip.has(estado.marca)
       ? [...opcoes.marcas, estado.marca].sort()
       : opcoes.marcas;
+  // O chip aceso **é** o valor do filtro: o `<select>` não repete esse valor,
+  // então mostra "Todas" enquanto o chip estiver ativo (um valor por vez).
+  const marcaDoSelect =
+    estado.marca !== undefined && marcasDoFiltro.includes(estado.marca)
+      ? estado.marca
+      : "";
+  const btuDoSelect =
+    estado.btu !== undefined && opcoes.btus.includes(estado.btu)
+      ? String(estado.btu)
+      : "";
 
   return (
     <section className="consulta">
       <form className="filtros" onSubmit={(evento) => evento.preventDefault()}>
-        <label>
-          <span>Marca</span>
-          <select
-            value={estado.marca ?? ""}
-            onChange={(evento) =>
-              atualizar({ marca: evento.target.value || undefined })
+        <div className="campo">
+          <Chips
+            ariaLabel="Marcas conhecidas"
+            opcoes={opcoes.marcasChip}
+            estaAtivo={(valor) => estado.marca === valor}
+            selecionar={(valor) =>
+              atualizar({ marca: estado.marca === valor ? undefined : valor })
             }
-          >
-            <option value="">Todas</option>
-            {marcasDoFiltro.map((marca) => (
-              <option key={marca} value={marca}>
-                {marca}
-              </option>
-            ))}
-          </select>
-        </label>
+          />
+          <label>
+            <span>Marca</span>
+            <select
+              value={marcaDoSelect}
+              onChange={(evento) =>
+                atualizar({ marca: evento.target.value || undefined })
+              }
+            >
+              <option value="">Todas</option>
+              {marcasDoFiltro.map((marca) => (
+                <option key={marca} value={marca}>
+                  {marca}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         <label>
           <span>Tipo</span>
@@ -124,27 +187,41 @@ export default function Consulta({
           </select>
         </label>
 
-        <label>
-          <span>Capacidade (BTU/h)</span>
-          <select
-            value={estado.btu === undefined ? "" : String(estado.btu)}
-            onChange={(evento) =>
-              atualizar({
-                btu:
-                  evento.target.value === ""
-                    ? undefined
-                    : Number(evento.target.value),
-              })
-            }
-          >
-            <option value="">Todas</option>
-            {opcoes.btus.map((btu) => (
-              <option key={btu} value={btu}>
-                {btu.toLocaleString("pt-BR")}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="campo">
+          <Chips
+            ariaLabel="Capacidades comuns"
+            opcoes={opcoes.btusChip.map((btu) => ({
+              valor: String(btu),
+              rotulo: btu.toLocaleString("pt-BR"),
+            }))}
+            estaAtivo={(valor) => estado.btu === Number(valor)}
+            selecionar={(valor) => {
+              const btu = Number(valor);
+              atualizar({ btu: estado.btu === btu ? undefined : btu });
+            }}
+          />
+          <label>
+            <span>Capacidade (BTU/h)</span>
+            <select
+              value={btuDoSelect}
+              onChange={(evento) =>
+                atualizar({
+                  btu:
+                    evento.target.value === ""
+                      ? undefined
+                      : Number(evento.target.value),
+                })
+              }
+            >
+              <option value="">Todas</option>
+              {opcoes.btus.map((btu) => (
+                <option key={btu} value={btu}>
+                  {btu.toLocaleString("pt-BR")}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
         <label>
           <span>Tensão (V)</span>

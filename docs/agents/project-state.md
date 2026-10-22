@@ -6,17 +6,15 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-A **Fase 6 — Filtros do catálogo** está em andamento: a spec está em
-`spec-fase-6.md`. Os tickets `20` (capacidades corrigidas + `valor_implausivel`)
-e `21` (Marca de catálogo) estão concluídos.
+A **Fase 6 — Filtros do catálogo** está concluída: os três tickets (`20`
+capacidades corrigidas + `valor_implausivel`, `21` Marca de catálogo e `22` chips
+de marca/capacidade) estão prontos. A spec está em `spec-fase-6.md`.
 
-**Frontier agora:** `22 — Chips de marca e capacidade no catálogo`, desbloqueado
-pelo 21. O `23 — Separador de milhar nos campos numéricos` segue em
-`needs-triage` (grill das decisões em aberto) e não bloqueia o 22.
-
-A operação da Fase 5 segue em paralelo: publicar a primeira Análise (com Ofertas
-reais) e, quando fizer sentido, a migração para domínio próprio — ver
-`spec-fase-5.md` › Further Notes.
+**Frontier agora:** nenhum ticket `ready-for-agent`. O `23 — Separador de milhar
+nos campos numéricos` segue em `needs-triage` (decisões de formato em aberto no
+grill) e não bloqueia nada. A operação da Fase 5 segue em paralelo: publicar a
+primeira Análise (com Ofertas reais) e, quando fizer sentido, a migração para
+domínio próprio — ver `spec-fase-5.md` › Further Notes.
 
 ## Completed
 
@@ -164,3 +162,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** o catálogo agrupa Marcas oficiais sem reescrever a Marca do INMETRO. Uma camada curada nova (`data/marcas-catalogo.jsonl`, com `motivo` e `fonte`) define `SPRINGER MIDEA → MIDEA`, `FUJITSU/AIRSTAGE → FUJITSU` e `AIRSTAGE → FUJITSU`; o build valida o contrato (campos obrigatórios, alias para si mesma e duplicata recusados), ignora em silêncio a entrada cuja marca de origem não está na Versão (sem quebrar o build) e republica a cópia em `data/build/`. O `consulta.json` passa a trazer `marcaCatalogo` em todos os itens (igual à `marca` quando não há agrupamento) — o `aparelhos.json`/`schema.json` e as identidades não mudam. A consulta devolve **164** para "MIDEA", **67** para "SPRINGER MIDEA" (valor oficial antigo, para links compartilhados) e **27** para "FUJITSU", e a busca por "fujitsu" acha os **27**; filtro e busca continuam se intersectando. A ilha lista os resultados pela Marca de catálogo (uma opção por família: 71 marcas) e a ficha mantém a Marca oficial no `<h1>`, no título e na descrição, com o link "Ver outros aparelhos da marca" apontando para `?marca=MIDEA`/`?marca=FUJITSU`; `id`, URL e sitemap seguem idênticos. Um link antigo com o valor oficial continua filtrando (67) e o `<select>` exibe o valor em vez de cair em "Todas". Nada muda em Ofertas, Análises ou no `aparelhos.json`; `pnpm build` nessa Versão só altera `consulta.json` e cria a cópia da curadoria.
 - **Ticket:** #21 (local tracker: `21-marca-de-catalogo`)
 - **Checks:** Vitest 235/235 (26 arquivos; +28), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.
+
+### 22 — Chips de marca e capacidade no catálogo (2026-10-22)
+
+- **Changed:** `apps/site/filtros.json` (novo — curadoria site-only dos 10 chips de marca com `{ valor, rotulo }` e das 6 capacidades comuns); `apps/site/src/lib/filtros.ts` (novo — contrato `FiltrosCurados`, `validarFiltros` puro, `FILTROS_VAZIOS`); `apps/site/src/lib/opcoes.ts` (`opcoesDe(dataset, curadoria)`: `marcasChip`/`btusChip` na ordem curada e `marcas`/`btus` com o resto, sem repetir chip); `apps/site/src/conteudo/filtros.ts` (novo glue com a seam `FILTROS_JSON`); `apps/site/src/pages/index.astro` (valida a curadoria no build e deriva as opções); `apps/site/src/components/Consulta.tsx` (componente `Chips` com `<fieldset>`/`<button aria-pressed>`, estado único chip ⇄ select, `marcaDoSelect`/`btuDoSelect`); `apps/site/src/lib/estado.ts` (marca normalizada em maiúsculas ao ler a URL); `apps/site/src/styles/global.css` (chips em linha própria, `flex-wrap`, chip aceso na cor primária); testes `apps/site/test/{filtros,filtros-glue}.test.ts` (novos) e `{opcoes,consulta,estado,analises-build}.test.ts(x)`; docs `README.md` (§Chips dos filtros) e `docs/agents/architecture.md` (camadas + módulo `site`).
+- **What works:** os dois filtros do catálogo abrem pelas marcas e capacidades que as pessoas procuram. As 10 marcas conhecidas (Samsung, LG, Midea, TCL, Elgin, Hisense, Daikin, Fujitsu, Hitachi, Gree) e as 6 capacidades comuns (9.000 a 36.000 BTU/h) viram chips visíveis a um clique, na ordem curada; cada `<select>` guarda "Todas…" + o resto (61 marcas, 42 capacidades), sem repetir o chip. O chip aceso **é** o valor do filtro: clicar de novo limpa, escolher no `<select>` desliga o chip, e o estado restaurado da URL acende o chip certo — inclusive com a marca em minúsculas (`?marca=midea`), porque a marca é normalizada na leitura da URL. Os chips são `<button aria-pressed>` alcançáveis por teclado e quebram linha no celular. A curadoria é validada no build (rótulo não vazio, marca/rótulo sem duplicata, capacidade inteira positiva) e um valor curado ausente da base é escondido em silêncio. `pnpm build`/`build:site` inalterados nos dados: nada entra em `data/build/`, na API, na consulta ou na identificação das fichas.
+- **Ticket:** #22 (local tracker: `22-chips-filtros-marca-capacidade`)
+- **Checks:** Vitest 258/258 (28 arquivos; +23), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas com os chips no HTML e sem `MIDEA`/`SPRINGER MIDEA` no `<select>`.

@@ -1,0 +1,15 @@
+{
+  "marcas": [
+    { "valor": "SAMSUNG", "rotulo": "Samsung" },
+    { "valor": "LG", "rotulo": "LG" },
+    { "valor": "MIDEA", "rotulo": "Midea" },
+    { "valor": "TCL", "rotulo": "TCL" },
+    { "valor": "ELGIN", "rotulo": "Elgin" },
+    { "valor": "HISENSE", "rotulo": "Hisense" },
+    { "valor": "DAIKIN", "rotulo": "Daikin" },
+    { "valor": "FUJITSU", "rotulo": "Fujitsu" },
+    { "valor": "HITACHI", "rotulo": "Hitachi" },
+    { "valor": "GREE", "rotulo": "Gree" }
+  ],
+  "btus": [9000, 12000, 18000, 24000, 30000, 36000]
+}

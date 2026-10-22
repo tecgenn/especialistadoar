@@ -4,13 +4,16 @@ import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import Consulta from "../components/Consulta.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
+import { carregarFiltros } from "../conteudo/filtros.ts";
 import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
 import { opcoesDe } from "../lib/opcoes.ts";
 
 const dataset = consultaJson as ItemConsulta[];
-const opcoes = opcoesDe(dataset);
+// Os chips (marcas e capacidades conhecidas) vêm da curadoria do site; o resto
+// continua no `<select>`. A curadoria é validada aqui, no build.
+const opcoes = opcoesDe(dataset, carregarFiltros());
 
 // Os destaques são montados no build: cada Análise publicada, na ordem da mais
 // recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um

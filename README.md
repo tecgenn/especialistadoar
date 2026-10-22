@@ -98,6 +98,31 @@ Copie o `id` para o `aparelhoId` no frontmatter da Análise.
 Sem resultado, o comando imprime uma mensagem clara em vez de saída vazia. Ele só
 lê a base: não altera `data/build/` nem cria artefato.
 
+## Chips dos filtros do catálogo
+
+As marcas e capacidades que aparecem como **botões** no topo dos filtros vêm de
+`apps/site/filtros.json` — uma curadoria do site, fora de `data/build/`:
+
+```json
+{
+  "marcas": [
+    { "valor": "MIDEA", "rotulo": "Midea" },
+    { "valor": "LG", "rotulo": "LG" }
+  ],
+  "btus": [9000, 12000, 18000]
+}
+```
+
+- `valor` é o filtro (a Marca de catálogo, ou a capacidade em BTU/h) e `rotulo`
+  é o texto do chip. O resto continua no `<select>` de cada filtro.
+- A ordem das marcas é a dos chips; as capacidades são exibidas em ordem
+  crescente. O chip aceso **é** o valor do filtro — clicar de novo limpa, e
+  escolher no `<select>` desliga o chip.
+- Um valor curado que não existe na base atual é **escondido em silêncio** (a
+  lista é curadoria, o dado manda). O build **falha** com rótulo vazio, marca ou
+  rótulo repetido, ou capacidade que não seja inteira e positiva.
+- Nada disso entra em `data/build/`, na API ou na consulta: é apresentação.
+
 ## Escrever uma Análise
 
 Uma **Análise** é uma peça editorial em MDX sobre **um** Aparelho, publicada em

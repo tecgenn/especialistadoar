@@ -402,11 +402,17 @@ describe("build sem nenhuma Análise (estado zero)", () => {
       "Ver outros aparelhos da marca SPRINGER MIDEA",
     );
 
-    // As opções do filtro trazem a Marca de catálogo (uma por família).
-    expect(htmlHome).toContain('<option value="MIDEA">MIDEA</option>');
+    // As opções do filtro trazem a Marca de catálogo (uma por família); as 10
+    // marcas conhecidas e as 6 capacidades comuns são chips curados (ticket 22)
+    // e não se repetem no `<select>`.
+    expect(htmlHome).toContain(">Midea</button>");
+    expect(htmlHome).toContain(">Samsung</button>");
+    expect(htmlHome).toContain(">36.000</button>");
+    expect(htmlHome).not.toContain('<option value="MIDEA">MIDEA</option>');
     expect(htmlHome).not.toContain(
       '<option value="SPRINGER MIDEA">SPRINGER MIDEA</option>',
     );
+    expect(htmlHome).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
 
     const consultaPublicada = JSON.parse(
       readFileSync(join(distDir, "consulta.json"), "utf8"),
