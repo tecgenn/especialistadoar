@@ -34,18 +34,22 @@ function aparelho(
 
 describe("projetarConsulta — dataset enxuto", () => {
   it("projeta a identidade de cada Aparelho", () => {
-    const itens = projetarConsulta([
-      aparelho({
-        id: "ap-1",
-        marca: "GREE",
-        modelo: "GREE-09",
-        tipo: "Split Hi-Wall",
-      }),
-    ]);
+    const itens = projetarConsulta(
+      [
+        aparelho({
+          id: "ap-1",
+          marca: "GREE",
+          modelo: "GREE-09",
+          tipo: "Split Hi-Wall",
+        }),
+      ],
+      (marca) => marca,
+    );
     expect(itens).toEqual([
       {
         id: "ap-1",
         marca: "GREE",
+        marcaCatalogo: "GREE",
         modelo: "GREE-09",
         tipo: "Split Hi-Wall",
         capacidadesBtu: [],
@@ -54,29 +58,41 @@ describe("projetarConsulta — dataset enxuto", () => {
     ]);
   });
 
+  it("projeta a Marca de catálogo sem tocar na Marca oficial", () => {
+    const itens = projetarConsulta(
+      [aparelho({ id: "ap-1", marca: "SPRINGER MIDEA" })],
+      (marca) => (marca === "SPRINGER MIDEA" ? "MIDEA" : marca),
+    );
+    expect(itens[0]?.marca).toBe("SPRINGER MIDEA");
+    expect(itens[0]?.marcaCatalogo).toBe("MIDEA");
+  });
+
   it("deduplica e ordena capacidades e tensões de todas as Variantes", () => {
-    const itens = projetarConsulta([
-      aparelho({
-        id: "ap-1",
-        variantes: [
-          {
-            tensao: { voltagens: [220], fases: ["monofásico"] },
-            dados: dadosVazios({ capacidadeNominalBtu: 10000 }),
-            linhas: [1],
-          },
-          {
-            tensao: { voltagens: [127, 220], fases: ["monofásico"] },
-            dados: dadosVazios({ capacidadeNominalBtu: 9000 }),
-            linhas: [2],
-          },
-          {
-            tensao: null,
-            dados: dadosVazios({ capacidadeNominalBtu: 9000 }),
-            linhas: [3],
-          },
-        ],
-      }),
-    ]);
+    const itens = projetarConsulta(
+      [
+        aparelho({
+          id: "ap-1",
+          variantes: [
+            {
+              tensao: { voltagens: [220], fases: ["monofásico"] },
+              dados: dadosVazios({ capacidadeNominalBtu: 10000 }),
+              linhas: [1],
+            },
+            {
+              tensao: { voltagens: [127, 220], fases: ["monofásico"] },
+              dados: dadosVazios({ capacidadeNominalBtu: 9000 }),
+              linhas: [2],
+            },
+            {
+              tensao: null,
+              dados: dadosVazios({ capacidadeNominalBtu: 9000 }),
+              linhas: [3],
+            },
+          ],
+        }),
+      ],
+      (marca) => marca,
+    );
     expect(itens[0]?.capacidadesBtu).toEqual([9000, 10000]);
     expect(itens[0]?.tensoes).toEqual([127, 220]);
   });
@@ -109,7 +125,9 @@ describe("runBuild — artefato consulta.json", () => {
     const { aparelhos, consulta } = build();
     const conteudo = readFileSync(join(buildDir, "consulta.json"), "utf8");
     expect(consulta).toHaveLength(aparelhos.length);
-    expect(conteudo).toBe(`${JSON.stringify(projetarConsulta(aparelhos))}\n`);
+    expect(conteudo).toBe(
+      `${JSON.stringify(projetarConsulta(aparelhos, (marca) => marca))}\n`,
+    );
     expect(conteudo.trimEnd().split("\n")).toHaveLength(1);
   });
 

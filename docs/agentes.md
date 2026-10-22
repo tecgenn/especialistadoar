@@ -22,11 +22,11 @@ Base publicada no Cloudflare Pages: **`https://especialista-do-ar.pages.dev/`**.
 |---|---|---|
 | `manifest.json` | A Versão da tabela atual (hash, data de obtenção, origem, contagem de Linhas) | Citar a **proveniência** de qualquer resposta |
 | `aparelhos.json` | A base servida completa (array de Aparelhos, com Variantes, Dados declarados, `linhas` e `registros`) | Consulta por ID e detalhe técnico |
-| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca`, `modelo`, `tipo`, `capacidadesBtu` e `tensoes` | Filtrar/buscar antes de buscar o detalhe |
+| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `capacidadesBtu` e `tensoes` | Filtrar/buscar antes de buscar o detalhe |
 | `schema.json` | JSON Schema do contrato de Aparelho | Validar o formato |
 | `registros.jsonl` | As Linhas da tabela normalizadas (uma por Linha, com o Valor original) | Proveniência: voltar da Linha ao dado cru |
 | `anomalias.jsonl` | Anomalias por Linha da tabela (campo, valor original, tipo) | Sinalizar dados suspeitos — não são erros fatais |
-| `aparelhos.jsonl`, `excecoes-manuais.jsonl`, `vinculos-confirmados.jsonl` | Mesmas informações em JSON Lines / curadoria publicada | Streaming e auditoria |
+| `aparelhos.jsonl`, `excecoes-manuais.jsonl`, `vinculos-confirmados.jsonl`, `marcas-catalogo.jsonl` | Mesmas informações em JSON Lines / curadoria publicada | Streaming e auditoria |
 
 O `id` de um Aparelho tem a forma `ap-<12 hex>` (ex.: `ap-4693b862644d`). Um
 Aparelho aponta para uma ou mais `linhas` (o número 1-based da Linha da tabela) e
@@ -54,7 +54,24 @@ O módulo de consulta isomórfico (`@especialista-do-ar/api/consulta`) implement
 esses filtros sobre o `consulta.json`: `marca` e `tipo` (texto, sem diferenciar
 maiúsculas), `btu` (a capacidade nominal casa com qualquer Variante do Aparelho),
 `tensao` (a voltagem casa com qualquer Variante) e `q` (busca textual sobre marca,
-modelo e tipo). Um filtro em branco equivale a não filtrar.
+marcaCatalogo, modelo e tipo). Um filtro em branco equivale a não filtrar.
+
+### Marca oficial × Marca de catálogo
+
+Cada item traz duas marcas:
+
+- `marca` — a **Marca oficial** do INMETRO, exatamente como está na tabela (e na
+  ficha do Aparelho).
+- `marcaCatalogo` — a **Marca de catálogo**: o agrupamento curado sob o nome que
+  as pessoas procuram. É igual a `marca` quando não há agrupamento.
+
+Na Versão atual, MIDEA agrupa `MIDEA` e `SPRINGER MIDEA` (164 Aparelhos) e
+FUJITSU agrupa `FUJITSU/AIRSTAGE` e `AIRSTAGE` (27). O filtro `marca` casa a
+`marcaCatalogo` **e** a `marca` oficial, então `marca: "MIDEA"` devolve 164 e
+`marca: "SPRINGER MIDEA"` (o valor oficial antigo) devolve os 67 da família;
+`q: "fujitsu"` encontra os 27. Use `marcaCatalogo` para agrupar, e `marca` quando
+precisar citar o Valor oficial. A curadoria exata está em
+`marcas-catalogo.jsonl`.
 
 ## Valor calculado — fórmula documentada
 

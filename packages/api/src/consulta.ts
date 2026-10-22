@@ -12,7 +12,11 @@ export type { ItemConsulta };
  * ADR-0008.
  */
 export interface FiltrosConsulta {
-  /** Marca do Aparelho (comparação sem diferenciar maiúsculas/minúsculas). */
+  /**
+   * Marca do Aparelho, comparada sem diferenciar maiúsculas/minúsculas. Casa a
+   * Marca de catálogo (o agrupamento curado) **e** a Marca oficial, para links
+   * antigos com o valor oficial continuarem funcionando. Ver ADR-0016.
+   */
   marca?: string;
   /** Tipo do Aparelho (idem). */
   tipo?: string;
@@ -34,7 +38,7 @@ export interface Consulta {
   filtrar(filtros?: FiltrosConsulta): ItemConsulta[];
 }
 
-const CAMPOS_BUSCA = ["marca", "modelo", "tipo"] as const;
+const CAMPOS_BUSCA = ["marca", "marcaCatalogo", "modelo", "tipo"] as const;
 
 /** Normaliza um filtro textual; valor em branco é ausência de filtro. */
 function filtroDeTexto(valor: string | undefined): string | undefined {
@@ -46,8 +50,13 @@ function filtroDeTexto(valor: string | undefined): string | undefined {
 
 function combinaCampos(item: ItemConsulta, filtros: FiltrosConsulta): boolean {
   const marca = filtroDeTexto(filtros.marca);
-  if (marca !== undefined && item.marca.trim().toLowerCase() !== marca) {
-    return false;
+  if (marca !== undefined) {
+    const marcas = [item.marcaCatalogo, item.marca].map((valor) =>
+      valor.trim().toLowerCase(),
+    );
+    if (!marcas.includes(marca)) {
+      return false;
+    }
   }
   const tipo = filtroDeTexto(filtros.tipo);
   if (tipo !== undefined && (item.tipo ?? "").trim().toLowerCase() !== tipo) {
