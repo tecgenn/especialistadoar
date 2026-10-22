@@ -31,6 +31,12 @@ describe("estado da consulta na URL", () => {
     });
   });
 
+  it("normaliza a marca para maiúsculas (o filtro não diferencia caixa)", () => {
+    expect(lerEstado(new URLSearchParams("marca=springer+midea"))).toEqual({
+      marca: "SPRINGER MIDEA",
+    });
+  });
+
   it("escreve só os filtros presentes", () => {
     expect(escreverEstado({ marca: "LG", btu: 9000 }).toString()).toBe(
       "marca=LG&btu=9000",

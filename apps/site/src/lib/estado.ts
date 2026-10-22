@@ -25,7 +25,10 @@ function numero(valor: string | null): number | undefined {
 
 /** Lê o estado da consulta de uma querystring; entradas vazias ou inválidas caem fora. */
 export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
-  const marca = texto(busca.get("marca"));
+  // A marca é comparada sem diferenciar caixa pelo motor de consulta; normalizar
+  // aqui mantém o mesmo valor canônico no chip, no `<select>` e na URL (um
+  // `?marca=midea` acende o chip "Midea" e não cria uma opção duplicada).
+  const marca = texto(busca.get("marca"))?.toUpperCase();
   const tipo = texto(busca.get("tipo"));
   const btu = numero(busca.get("btu"));
   const tensao = numero(busca.get("tensao"));

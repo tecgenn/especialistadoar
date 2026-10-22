@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Consulta from "../src/components/Consulta.tsx";
+import type { FiltrosCurados } from "../src/lib/filtros.ts";
 import { opcoesDe } from "../src/lib/opcoes.ts";
 
 /**
@@ -41,7 +42,7 @@ const itens: ItemConsulta[] = [
     marcaCatalogo: "MIDEA",
     modelo: "Xtreme Save",
     tipo: "Split Hi-Wall",
-    capacidadesBtu: [18000],
+    capacidadesBtu: [12000],
     tensoes: [220],
   },
   {
@@ -73,8 +74,8 @@ function servirConsulta() {
 }
 
 /** Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando"). */
-async function montar() {
-  render(<Consulta opcoes={opcoesDe(itens)} />);
+async function montar(curadoria?: FiltrosCurados) {
+  render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
   await screen.findByText(/aparelho\(s\) com Dados declarados/);
 }
 
@@ -205,6 +206,138 @@ describe("ilha de consulta (ADR-0008)", () => {
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
       "GREE",
+    );
+  });
+});
+
+/**
+ * Os chips são a curadoria do site (ticket 22): marcas e capacidades conhecidas
+ * a um clique, com o resto no `<select>`. O chip aceso **é** o valor do filtro —
+ * sem dois valores de marca ao mesmo tempo.
+ */
+describe("chips de marca e capacidade", () => {
+  const curadoria: FiltrosCurados = {
+    marcas: [
+      { valor: "MIDEA", rotulo: "Midea" },
+      { valor: "LG", rotulo: "LG" },
+      // Curada mas ausente da base: não aparece.
+      { valor: "SAMSUNG", rotulo: "Samsung" },
+    ],
+    btus: [12000, 9000, 24000],
+  };
+
+  function chip(nome: string): HTMLElement {
+    return screen.getByRole("button", { name: nome });
+  }
+
+  function pressionado(nome: string): string | null {
+    return chip(nome).getAttribute("aria-pressed");
+  }
+
+  it("mostra as marcas e capacidades conhecidas como chips, sem as repetir no select", async () => {
+    await montar(curadoria);
+
+    expect(chip("Midea")).toBeDefined();
+    expect(chip("LG")).toBeDefined();
+    expect(chip("12.000")).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Samsung" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "24.000" })).toBeNull();
+
+    // O `<select>` guarda "Todas…" + o resto, sem duplicar o chip.
+    expect(screen.queryByRole("option", { name: "MIDEA" })).toBeNull();
+    expect(screen.getByRole("option", { name: "GREE" })).toBeDefined();
+    expect(screen.queryByRole("option", { name: "12.000" })).toBeNull();
+    expect(screen.getByRole("option", { name: "18.000" })).toBeDefined();
+
+    expect(pressionado("Midea")).toBe("false");
+  });
+
+  it("filtra ao clicar no chip, acende o chip e escreve a URL", async () => {
+    await montar(curadoria);
+    fireEvent.click(chip("Midea"));
+
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+    expect(screen.getByText("MIDEA — Xtreme Save")).toBeDefined();
+    expect(screen.getByText("MIDEA — Springer Inverter")).toBeDefined();
+    expect(pressionado("Midea")).toBe("true");
+    expect(new URLSearchParams(window.location.search).get("marca")).toBe(
+      "MIDEA",
+    );
+  });
+
+  it("clicar de novo no chip ativo limpa o filtro", async () => {
+    await montar(curadoria);
+    fireEvent.click(chip("Midea"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+
+    fireEvent.click(chip("Midea"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+    expect(pressionado("Midea")).toBe("false");
+    expect(new URLSearchParams(window.location.search).get("marca")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
+  });
+
+  it("escolher no select desliga o chip (um valor de marca por vez)", async () => {
+    await montar(curadoria);
+    fireEvent.click(chip("Midea"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+
+    fireEvent.change(screen.getByLabelText("Marca"), {
+      target: { value: "GREE" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    expect(pressionado("Midea")).toBe("false");
+    expect(new URLSearchParams(window.location.search).get("marca")).toBe(
+      "GREE",
+    );
+  });
+
+  it("restaura da URL o chip aceso", async () => {
+    window.history.replaceState(null, "", "/?marca=MIDEA&btu=12000");
+    render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    expect(pressionado("Midea")).toBe("true");
+    expect(pressionado("12.000")).toBe("true");
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+  });
+
+  it("filtra por capacidade no chip e limpa no segundo clique", async () => {
+    await montar(curadoria);
+    fireEvent.click(chip("12.000"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
+    expect(pressionado("12.000")).toBe("true");
+    expect(new URLSearchParams(window.location.search).get("btu")).toBe(
+      "12000",
+    );
+
+    fireEvent.click(chip("12.000"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+    expect(pressionado("12.000")).toBe("false");
+  });
+
+  it("um link antigo com o valor oficial não acende nem some do select", async () => {
+    window.history.replaceState(null, "", "/?marca=SPRINGER%20MIDEA");
+    render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+
+    expect(pressionado("Midea")).toBe("false");
+    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
+      "SPRINGER MIDEA",
+    );
+  });
+
+  it("acende o chip e filtra com a marca em minúsculas na URL", async () => {
+    window.history.replaceState(null, "", "/?marca=midea");
+    render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    expect(pressionado("Midea")).toBe("true");
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+    expect(screen.queryByRole("option", { name: "midea" })).toBeNull();
+    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
+      "",
     );
   });
 });

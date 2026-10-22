@@ -78,6 +78,7 @@ reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão 
 packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
 apps/site/                            # catálogo Astro estático (fase 3)
+  filtros.json                        # CAMADA CURADA do site: chips de marca/capacidade
   ofertas.json                        # CAMADA CURADA do site: Ofertas (links de afiliado), só no site
   src/content/analises/               # CAMADA EDITORIAL do site: Análises em MDX, só no site
   src/content.config.ts               # coleção `analises` (frontmatter obrigatório)
@@ -179,7 +180,12 @@ nova exportação CSV
   (`?marca=&tipo=&btu=&tensao=&q=`). Uma integração copia `data/build/*` para
   `dist/`, então a API estática continua servida nas mesmas URLs
   (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind indexa o conteúdo do
-  site. As **Ofertas** (links comerciais de afiliado) vivem só aqui, em
+  site. Os **chips de filtro** (marcas conhecidas e as seis capacidades comuns)
+  vêm de uma curadoria do site (`apps/site/filtros.json`), validada no build:
+  viram `<button aria-pressed>` a um clique, o resto fica no `<select>` e um
+  valor curado ausente da base é ocultado — site-only, sem tocar em
+  `data/build/` nem na semântica da consulta. As **Ofertas** (links comerciais de
+  afiliado) vivem só aqui, em
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por
   componentes reutilizáveis (`OfertaCartao`/`OfertaFaixa`, que recebem `Oferta[]`
