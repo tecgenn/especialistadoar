@@ -20,8 +20,10 @@ export function opcoesDe(dataset: ItemConsulta[]): OpcoesConsulta {
   const tensoes = new Set<number>();
 
   for (const item of dataset) {
-    if (item.marca !== "") {
-      marcas.add(item.marca);
+    // O filtro do catálogo é por Marca de catálogo (ADR-0016): as opções não
+    // repetem a mesma família sob dois nomes oficiais.
+    if (item.marcaCatalogo !== "") {
+      marcas.add(item.marcaCatalogo);
     }
     if (item.tipo !== null && item.tipo !== "") {
       tipos.add(item.tipo);

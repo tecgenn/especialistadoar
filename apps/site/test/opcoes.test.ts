@@ -2,15 +2,16 @@ import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
 import { opcoesDe } from "../src/lib/opcoes.ts";
 
-function item(over: Partial<ItemConsulta>): ItemConsulta {
+function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
   return {
     id: "x",
-    marca: "X",
     modelo: "M",
     tipo: null,
     capacidadesBtu: [],
     tensoes: [],
     ...over,
+    marca: over.marca ?? "X",
+    marcaCatalogo: over.marcaCatalogo ?? over.marca ?? "X",
   };
 }
 
@@ -41,8 +42,19 @@ describe("opções da consulta", () => {
   });
 
   it("ignora tipo ausente e marca vazia", () => {
-    const opcoes = opcoesDe([item({ marca: "", tipo: null })]);
+    const opcoes = opcoesDe([
+      item({ marca: "", marcaCatalogo: "", tipo: null }),
+    ]);
     expect(opcoes.marcas).toEqual([]);
     expect(opcoes.tipos).toEqual([]);
+  });
+
+  it("lista a Marca de catálogo, sem repetir a mesma família", () => {
+    const opcoes = opcoesDe([
+      item({ id: "a", marca: "MIDEA", marcaCatalogo: "MIDEA" }),
+      item({ id: "b", marca: "SPRINGER MIDEA", marcaCatalogo: "MIDEA" }),
+      item({ id: "c", marca: "AIRSTAGE", marcaCatalogo: "FUJITSU" }),
+    ]);
+    expect(opcoes.marcas).toEqual(["FUJITSU", "MIDEA"]);
   });
 });

@@ -7,6 +7,7 @@ import type {
 } from "@especialista-do-ar/pipeline";
 import OfertaFaixa from "../../components/OfertaFaixa.astro";
 import { carregarAnalises } from "../../conteudo/analises.ts";
+import { marcaCatalogoDo } from "../../conteudo/marcas-catalogo.ts";
 import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
 import Base from "../../layouts/Base.astro";
 import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
@@ -36,6 +37,11 @@ interface Props {
 }
 
 const { aparelho, ofertas, analise } = Astro.props;
+
+// A Marca de catálogo (ADR-0016) é o agrupamento curado usado pelo filtro e pelo
+// link "Ver outros aparelhos da marca". A ficha continua exibindo a Marca
+// oficial do INMETRO no título, no `<h1>` e na URL.
+const marcaCatalogo = marcaCatalogoDo(aparelho);
 
 function texto(valor: number | null, sufixo = ""): string {
   return valor === null ? "—" : `${valor.toLocaleString("pt-BR")}${sufixo}`;
@@ -154,8 +160,8 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
     <OfertaFaixa ofertas={ofertas} />
 
     <p>
-      <a href={`/?marca=${encodeURIComponent(aparelho.marca)}`}>
-        Ver outros aparelhos da marca {aparelho.marca}
+      <a href={`/?marca=${encodeURIComponent(marcaCatalogo)}`}>
+        Ver outros aparelhos da marca {marcaCatalogo}
       </a>
     </p>
   </article>

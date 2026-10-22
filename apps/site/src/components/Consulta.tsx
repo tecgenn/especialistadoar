@@ -79,6 +79,13 @@ export default function Consulta({
 
   const resultados = motor === null ? [] : motor.filtrar(estado);
   const temFiltro = escreverEstado(estado).toString() !== "";
+  // Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER MIDEA`). Ela
+  // continua valendo no filtro; sem esta opção extra o `<select>` cairia em
+  // "Todas" enquanto a lista estivesse filtrada (ADR-0016).
+  const marcasDoFiltro =
+    estado.marca !== undefined && !opcoes.marcas.includes(estado.marca)
+      ? [...opcoes.marcas, estado.marca].sort()
+      : opcoes.marcas;
 
   return (
     <section className="consulta">
@@ -92,7 +99,7 @@ export default function Consulta({
             }
           >
             <option value="">Todas</option>
-            {opcoes.marcas.map((marca) => (
+            {marcasDoFiltro.map((marca) => (
               <option key={marca} value={marca}>
                 {marca}
               </option>
@@ -193,7 +200,7 @@ export default function Consulta({
             {resultados.map((item) => (
               <li key={item.id}>
                 <a href={`/aparelhos/${item.id}`}>
-                  {item.marca} — {item.modelo}
+                  {item.marcaCatalogo} — {item.modelo}
                 </a>
                 {item.tipo === null ? null : (
                   <span className="tipo"> · {item.tipo}</span>

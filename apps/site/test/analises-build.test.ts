@@ -383,5 +383,38 @@ describe("build sem nenhuma Análise (estado zero)", () => {
       existsSync(join(distDir, "aparelhos", aparelho.id, "index.html")),
     ).toBe(true);
     expect(pageCountDoPagefind()).toBe(2462);
+
+    // Ficha com Marca de catálogo (ADR-0016): o `<h1>`, o título e a URL seguem
+    // com a Marca oficial; só a lista de resultados e o link de volta usam a
+    // Marca de catálogo. Este é o build real do site — o mesmo seam das Análises.
+    const springer = aparelhosDaBase().find(
+      (item) => item.marca === "SPRINGER MIDEA",
+    );
+    expect(springer).toBeDefined();
+    const htmlSpringer = lerHtml("aparelhos", springer?.id as string);
+    expect(htmlSpringer).toContain("<h1>SPRINGER MIDEA — ");
+    expect(htmlSpringer).toContain(
+      `rel="canonical" href="https://especialista-do-ar.pages.dev/aparelhos/${springer?.id}/"`,
+    );
+    expect(htmlSpringer).toContain('href="/?marca=MIDEA"');
+    expect(htmlSpringer).toContain("Ver outros aparelhos da marca MIDEA");
+    expect(htmlSpringer).not.toContain(
+      "Ver outros aparelhos da marca SPRINGER MIDEA",
+    );
+
+    // As opções do filtro trazem a Marca de catálogo (uma por família).
+    expect(htmlHome).toContain('<option value="MIDEA">MIDEA</option>');
+    expect(htmlHome).not.toContain(
+      '<option value="SPRINGER MIDEA">SPRINGER MIDEA</option>',
+    );
+
+    const consultaPublicada = JSON.parse(
+      readFileSync(join(distDir, "consulta.json"), "utf8"),
+    ) as Array<{ id: string; marca: string; marcaCatalogo: string }>;
+    const itemSpringer = consultaPublicada.find(
+      (item) => item.id === springer?.id,
+    );
+    expect(itemSpringer?.marca).toBe("SPRINGER MIDEA");
+    expect(itemSpringer?.marcaCatalogo).toBe("MIDEA");
   }, 600_000);
 });

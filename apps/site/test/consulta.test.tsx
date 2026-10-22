@@ -20,6 +20,7 @@ const itens: ItemConsulta[] = [
   {
     id: "lg-split",
     marca: "LG",
+    marcaCatalogo: "LG",
     modelo: "Dual Inverter",
     tipo: "Split Hi-Wall",
     capacidadesBtu: [9000],
@@ -28,14 +29,34 @@ const itens: ItemConsulta[] = [
   {
     id: "lg-janela",
     marca: "LG",
+    marcaCatalogo: "LG",
     modelo: "Janela",
     tipo: "Janela",
     capacidadesBtu: [12000],
     tensoes: [127, 220],
   },
   {
+    id: "midea-oficial",
+    marca: "MIDEA",
+    marcaCatalogo: "MIDEA",
+    modelo: "Xtreme Save",
+    tipo: "Split Hi-Wall",
+    capacidadesBtu: [18000],
+    tensoes: [220],
+  },
+  {
+    id: "midea-springer",
+    marca: "SPRINGER MIDEA",
+    marcaCatalogo: "MIDEA",
+    modelo: "Springer Inverter",
+    tipo: "Split Hi-Wall",
+    capacidadesBtu: [18000],
+    tensoes: [220],
+  },
+  {
     id: "gree-split",
     marca: "GREE",
+    marcaCatalogo: "GREE",
     modelo: "G-Top Inverter",
     tipo: "Split Hi-Wall",
     capacidadesBtu: [12000],
@@ -72,7 +93,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     await montar();
     expect(screen.getByText("LG — Dual Inverter")).toBeDefined();
     expect(screen.getByText("GREE — G-Top Inverter")).toBeDefined();
-    expect(screen.getAllByRole("link")).toHaveLength(3);
+    expect(screen.getAllByRole("link")).toHaveLength(5);
   });
 
   it("filtra por marca", async () => {
@@ -82,6 +103,35 @@ describe("ilha de consulta (ADR-0008)", () => {
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect(screen.getByText("GREE — G-Top Inverter")).toBeDefined();
+  });
+
+  it("mostra a Marca de catálogo e filtra pela família (ADR-0016)", async () => {
+    await montar();
+    // As Marcas oficiais são MIDEA e SPRINGER MIDEA; o catálogo exibe o grupo.
+    expect(screen.getByText("MIDEA — Springer Inverter")).toBeDefined();
+    expect(screen.getByText("MIDEA — Xtreme Save")).toBeDefined();
+    expect(screen.getByRole("option", { name: "MIDEA" })).toBeDefined();
+    expect(screen.queryByRole("option", { name: "SPRINGER MIDEA" })).toBeNull();
+
+    fireEvent.change(screen.getByLabelText("Marca"), {
+      target: { value: "MIDEA" },
+    });
+    // O filtro da família traz a marca oficial e o alias, não um só.
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+    expect(screen.getByText("MIDEA — Springer Inverter")).toBeDefined();
+    expect(screen.getByText("MIDEA — Xtreme Save")).toBeDefined();
+  });
+
+  it("mantém um link antigo com o valor oficial visível no filtro", async () => {
+    window.history.replaceState(null, "", "/?marca=SPRINGER%20MIDEA");
+    render(<Consulta opcoes={opcoesDe(itens)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    // O filtro continua valendo (67 na base real) e o `<select>` não mente.
+    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
+      "SPRINGER MIDEA",
+    );
+    expect(screen.getByText("MIDEA — Springer Inverter")).toBeDefined();
   });
 
   it("filtra por tipo", async () => {

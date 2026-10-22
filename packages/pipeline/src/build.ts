@@ -33,6 +33,13 @@ import {
   versaoAtualDo,
 } from "./ingest.ts";
 import { escreverJsonl } from "./jsonl.ts";
+import {
+  ARQUIVO_MARCAS_CATALOGO,
+  lerMarcasCatalogo,
+  type MarcaCatalogo,
+  montarMarcaCatalogo,
+  validarMarcasCatalogo,
+} from "./marcas-catalogo.ts";
 import { normalizarValores } from "./normalize.ts";
 import { parseLinhas } from "./parse.ts";
 import { renderizarRelatorio } from "./report.ts";
@@ -63,6 +70,7 @@ export interface BuildResult {
   consulta: ItemConsulta[];
   excecoes: ExcecaoManual[];
   vinculos: VinculoConfirmado[];
+  marcasCatalogo: MarcaCatalogo[];
   revisao: ClassificacaoRevisao;
   relatorio: string;
 }
@@ -190,6 +198,8 @@ export function runBuild(options: BuildOptions): BuildResult {
   validarExcecoes(excecoes);
   const vinculos = lerVinculosConfirmados(dataDir);
   validarVinculosConfirmados(vinculos);
+  const marcasCatalogo = lerMarcasCatalogo(dataDir);
+  validarMarcasCatalogo(marcasCatalogo);
 
   const excecoesDaVersao = excecoes.filter(
     (excecao) => excecao.versao === versao.hash,
@@ -220,7 +230,13 @@ export function runBuild(options: BuildOptions): BuildResult {
   const aparelhos = todosAparelhos.filter(aparelhoTemDadosDeclarados);
   validarBaseServida(aparelhos);
 
-  const consulta = projetarConsulta(aparelhos);
+  const consulta = projetarConsulta(
+    aparelhos,
+    montarMarcaCatalogo(
+      marcasCatalogo,
+      todosAparelhos.map((aparelho) => aparelho.marca),
+    ),
+  );
 
   const anterior = versaoPrecedente(manifest, versao);
   let aparelhosAnteriores: Aparelho[] | null = null;
@@ -259,6 +275,7 @@ export function runBuild(options: BuildOptions): BuildResult {
   escreverJson(join(buildDir, "schema.json"), SCHEMA_APARELHO);
   escreverJsonl(join(buildDir, ARQUIVO_EXCECOES), excecoes);
   escreverJsonl(join(buildDir, ARQUIVO_VINCULOS), vinculos);
+  escreverJsonl(join(buildDir, ARQUIVO_MARCAS_CATALOGO), marcasCatalogo);
 
   escreverManifest(dataDir, manifest);
 
@@ -283,6 +300,7 @@ export function runBuild(options: BuildOptions): BuildResult {
     consulta,
     excecoes,
     vinculos,
+    marcasCatalogo,
     revisao,
     relatorio,
   };

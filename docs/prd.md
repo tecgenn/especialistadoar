@@ -34,14 +34,16 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 - **Anomalias:** detectar valores fora do padrão (texto em campo numérico, coluna
   desalinhada) e mantê-los visíveis. É um sinal, não um erro fatal.
 - **Exceção manual** e **Vínculo confirmado:** artefatos com motivo e fonte
-  registrados; são a única forma de alterar conteúdo.
+  registrados; são a única forma de alterar conteúdo. A **Marca de catálogo**
+  agrupa Marcas oficiais na consulta, também com motivo e fonte, sem alterar
+  conteúdo.
 - **Agrupar em Aparelho:** identidade = marca + unid. interna + unid. externa (ou
   Modelo quando as unidades não vêm separadas); tensão fora da identidade. A base
   servida só inclui Aparelhos **com** Dados declarados; os demais ficam no
   histórico.
 - **Artefatos:** `aparelhos.jsonl` + `aparelhos.json`, `registros.jsonl`,
   `schema.json` (gerado por TypeBox), `manifest.json`, `anomalias.jsonl`,
-  `excecoes-manuais.jsonl`, `vinculos-confirmados.jsonl`.
+  `excecoes-manuais.jsonl`, `vinculos-confirmados.jsonl`, `marcas-catalogo.jsonl`.
 - **Validação:** JSON Schema (Ajv) + invariantes de domínio (identidade única,
   só Aparelhos com Dados declarados na base servida, proveniência presente);
   violação falha o build.

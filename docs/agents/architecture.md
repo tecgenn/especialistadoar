@@ -62,16 +62,18 @@ data/
   raw/inmetro-export-YYYY-MM-DD.csv   # imutável, versionado + sha256 no manifest
   excecoes-manuais.jsonl              # CAMADA CURADA: correções à mão (motivo + fonte)
   vinculos-confirmados.jsonl          # CAMADA CURADA: fusões confirmadas por pessoa
+  marcas-catalogo.jsonl               # CAMADA CURADA: Marcas de catálogo (agrupamento)
   build/
     aparelhos.jsonl                   # base servida (Aparelhos com Dados declarados)
     aparelhos.json                    # espelho em array do acima
-    consulta.json                     # dataset enxuto de consulta (~350 KB) p/ a ilha do site
+    consulta.json                     # dataset enxuto de consulta (~350 KB, com marcaCatalogo)
     registros.jsonl                   # Linhas normalizadas (proveniência)
     schema.json                       # contrato JSON Schema
     manifest.json                     # metadados de versão (hash, data, contagens)
     anomalias.jsonl                   # Anomalias por Linha
     excecoes-manuais.jsonl            # cópia publicada da Camada curada
     vinculos-confirmados.jsonl        # cópia publicada da Camada curada
+    marcas-catalogo.jsonl             # cópia publicada da Camada curada
 reports/revisao-YYYY-MM-DD.md         # Relatório de revisão por nova versão (fase 1)
 packages/pipeline/                    # o pipeline de build (CLI)
 packages/api/                         # a API estática (leitura Node) + módulo de consulta isomórfico
@@ -86,11 +88,13 @@ apps/site/                            # catálogo Astro estático (fase 3)
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
    identificada por hash de conteúdo + data de obtenção. Preserva *toda* Linha,
    inclusive as sem Dados declarados — necessário para o diff.
-2. **Camada curada.** As duas formas sancionadas de alterar conteúdo além de regra
-   de formato, editadas à mão e **canônicas** na raiz de `data/`: a **Exceção
+2. **Camada curada.** As formas sancionadas de curadoria, editadas à mão e
+   **canônicas** na raiz de `data/`: as duas que alteram conteúdo são a **Exceção
    manual** (correção de um campo de uma Linha, com motivo + fonte) e o **Vínculo
-   confirmado** (fusão de identidade aprovada por uma pessoa). São *insumos* do
-   build, não derivados. Ver ADR-0006.
+   confirmado** (fusão de identidade aprovada por uma pessoa); a terceira é a
+   **Marca de catálogo** (agrupamento de Marcas oficiais para a consulta, também
+   com motivo + fonte). São *insumos* do build, não derivados. Ver ADR-0006 e
+   ADR-0016.
 3. **Build (derivado).** Um script lê um snapshot bruto + a Camada curada e emite a
    base servida, os artefatos laterais e as cópias publicadas da curadoria.
 4. **Base servida.** `aparelhos.jsonl` (+ `.json`) com `schema.json`.
@@ -106,10 +110,12 @@ nova exportação CSV
     -> detecção de Anomalias                          (sinal, não erro)
     -> Vínculo confirmado remapeia a identidade       (camada curada, antes de agrupar)
     -> agrupamento em Aparelho                        (marca + unid. interna + unid. externa)
+    -> Marca de catálogo resolve a marca da consulta  (camada curada, só na consulta)
     -> validação: schema.json + invariantes           (falha dura)
     -> data/build/aparelhos.jsonl (+ .json)           (só Aparelhos com Dados declarados)
     -> data/build/consulta.json                       (dataset enxuto p/ a ilha de consulta)
-    -> data/build/{excecoes-manuais,vinculos-confirmados}.jsonl   (cópias publicadas)
+    -> data/build/{excecoes-manuais,vinculos-confirmados,marcas-catalogo}.jsonl
+                                                       (cópias publicadas)
     -> reports/revisao-<data>.md                      (novos / alterados / Ausentes / Anomalias / Vínculos)
     -> revisão humana (PR) antes de publicar
 ```
@@ -134,6 +140,11 @@ nova exportação CSV
   (`anterior`) é canônica e absorve o Aparelho novo; guarda contra ciclos.
 - **jsonl** — leitura/escrita de JSON Lines (writer único, também usado para
   republicar a curadoria).
+- **marcas-catalogo** — lê e valida a camada curada que agrupa Marcas oficiais
+  sob a **Marca de catálogo** (motivo + fonte; alias para si mesma recusado) e
+  resolve a marca de consulta de um nível. Alias cujo lado oficial não está na
+  Versão da tabela é ignorado, não é erro de build. Só o dataset de consulta
+  recebe o campo — a base servida mantém a Marca oficial (ADR-0016).
 - **group** — dobra Linhas em Aparelhos. A identidade é marca + unid. interna +
   unid. externa (ou Modelo quando as unidades não vêm separadas); a tensão fica fora
   da identidade (bivolt é um só Aparelho). Aceita um remapeamento canônico de
@@ -157,9 +168,10 @@ nova exportação CSV
 - **consulta** — mesmo pacote `packages/api`, mas num *entry point* **isomórfico**
   (lógica pura, **sem** dependências de Node): filtros por campo e busca textual
   sobre o `data/build/consulta.json`. É importado pela **ilha do site** (navegador)
-  e por qualquer consumidor que queira a mesma semântica. A leitura de arquivo
-  fica de fora desse entry (separar por entry point é o que impede `fs` de entrar
-  no bundle). Ver ADR-0008.
+  e por qualquer consumidor que queira a mesma semântica. O filtro `marca` casa a
+  Marca de catálogo **e** a Marca oficial, e a busca indexa as duas (ADR-0016). A
+  leitura de arquivo fica de fora desse entry (separar por entry point é o que
+  impede `fs` de entrar no bundle). Ver ADR-0008.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
   **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
@@ -198,9 +210,9 @@ nova exportação CSV
 
 - **Entrada:** um caminho para uma exportação CSV nova do INMETRO.
 - **Saída:** `aparelhos.jsonl`, `aparelhos.json`, `consulta.json`, `schema.json`,
-  `registros.jsonl`, `manifest.json`, `anomalias.jsonl`, `excecoes-manuais.jsonl` e
-  `vinculos-confirmados.jsonl` (estes dois últimos como cópias publicadas) e um
-  Relatório de revisão (Markdown).
+  `registros.jsonl`, `manifest.json`, `anomalias.jsonl`, `excecoes-manuais.jsonl`,
+  `vinculos-confirmados.jsonl` e `marcas-catalogo.jsonl` (estes três últimos como
+  cópias publicadas) e um Relatório de revisão (Markdown).
 
 ## Serviço (fase 2) — API estática
 

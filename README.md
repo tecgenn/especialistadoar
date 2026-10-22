@@ -145,13 +145,14 @@ pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 
 E **commite os artefatos gerados junto com a mudança** sempre que ela tocar o CSV
 bruto (`data/raw/`) ou a camada curada (`data/excecoes-manuais.jsonl`,
-`data/vinculos-confirmados.jsonl`). O `pnpm build` regenera `data/build/` e
-`reports/revisao-<data>.md`; esses arquivos são **commitados** e o CI falha se
+`data/vinculos-confirmados.jsonl`, `data/marcas-catalogo.jsonl`). O `pnpm build`
+regenera `data/build/` e `reports/revisao-<data>.md`; esses arquivos são **commitados** e o CI falha se
 divergirem de um build novo (o gate *"Published artifacts match a fresh build"*).
 
 **Nunca edite `data/build/` à mão** — ele é derivado. Alterações de conteúdo
-passam só pela camada curada (Exceção manual, Vínculo confirmado); o resto é regra
-de formato no pipeline.
+passam só pela camada curada (Exceção manual, Vínculo confirmado; a Marca de
+catálogo agrupa marcas na consulta sem alterar conteúdo); o resto é regra de
+formato no pipeline.
 
 ## Contribuição
 

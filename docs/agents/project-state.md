@@ -7,11 +7,12 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 ## Frontier
 
 A **Fase 6 — Filtros do catálogo** está em andamento: a spec está em
-`spec-fase-6.md`. O ticket `20` foi concluído (6 Exceções corrigem as capacidades
-impossíveis e o detector ganhou `valor_implausivel`).
+`spec-fase-6.md`. Os tickets `20` (capacidades corrigidas + `valor_implausivel`)
+e `21` (Marca de catálogo) estão concluídos.
 
-**Frontier agora:** `21 — Marca de catálogo (Midea e Fujitsu)`.
-O `22 — Chips de marca e capacidade` depende do 21.
+**Frontier agora:** `22 — Chips de marca e capacidade no catálogo`, desbloqueado
+pelo 21. O `23 — Separador de milhar nos campos numéricos` segue em
+`needs-triage` (grill das decisões em aberto) e não bloqueia o 22.
 
 A operação da Fase 5 segue em paralelo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -156,3 +157,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** a exportação deixa de oferecer `12`, `30`, `120` e `16115` BTU/h: as Linhas 5278, 7133, 7200 e 7428 (Gree, zeros omitidos) e 3709 (AGRATTO, BTU e Watts trocados) ganham Exceções manuais e a base publicada passa a mostrar 12.000, 30.000 e 55.000 BTU/h na ficha, na consulta e para os Agentes, sem excluir Aparelho (seguem 2.460) nem mudar `id`/URL. O detector ganha `valor_implausivel` a partir de uma tabela de regras por coluna — sinaliza, nunca corrige —, então a próxima Versão que trouxer o erro o mostrará no Relatório de revisão; na Versão atual seguem 15 Anomalias e `anomalias.jsonl` intacto. `aparelhos.json` muda em 5 entradas: as 4 afetadas mais `ap-21ea78c03c84`, cuja Linha 7428 compartilha a identidade com a Linha 2688 corrigida. As Exceções são presas à Versão e precisam ser recadastradas quando entrar uma exportação nova.
 - **Ticket:** #20 (local tracker: `20-capacidades-impossiveis-corrigidas`)
 - **Checks:** Vitest 207/207 (24 arquivos; +8), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas; `consulta.json` com 48 capacidades distintas (sem 12/30/120/16115).
+
+### 21 — Marca de catálogo (Midea e Fujitsu) (2026-10-22)
+
+- **Changed:** `packages/pipeline/src/marcas-catalogo.ts` (novo — contrato TypeBox `{marca, catalogo, motivo, fonte}`, leitura/validação e `montarMarcaCatalogo`, que resolve a marca de consulta); `packages/pipeline/src/consulta.ts` (`ItemConsulta` ganha `marcaCatalogo` e `projetarConsulta(aparelhos, resolver)`); `packages/pipeline/src/build.ts` (lê a curadoria, aplica na projeção e publica a cópia derivada); `packages/pipeline/src/index.ts` (+`MarcaCatalogo`); `data/marcas-catalogo.jsonl` (3 entradas) e `data/build/marcas-catalogo.jsonl`; `data/build/consulta.json` regenerado; `packages/api/src/consulta.ts` (o filtro `marca` casa `marcaCatalogo` **e** `marca`, e a busca indexa as duas); `apps/site/src/lib/opcoes.ts` (opções pela Marca de catálogo); `apps/site/src/components/Consulta.tsx` (a lista mostra a Marca de catálogo e um link antigo com o valor oficial ganha opção própria no `<select>`); `apps/site/src/conteudo/marcas-catalogo.ts` (novo glue do build, índice por `aparelhoId`) e `apps/site/src/pages/aparelhos/[id].astro` (o link "Ver outros aparelhos da marca" usa a Marca de catálogo; a ficha segue oficial); testes `packages/pipeline/test/{marcas-catalogo,consulta}.test.ts` e snapshot, `packages/api/test/marca-catalogo.test.ts`, `apps/site/test/{opcoes,consulta,analises-build}.test.ts(x)`; docs `CONTEXT.md` (+**Marca de catálogo**), `docs/agentes.md` (campo, semântica e exemplos), `docs/agents/architecture.md`, `README.md`, `docs/prd.md`; ADR-0016.
+- **What works:** o catálogo agrupa Marcas oficiais sem reescrever a Marca do INMETRO. Uma camada curada nova (`data/marcas-catalogo.jsonl`, com `motivo` e `fonte`) define `SPRINGER MIDEA → MIDEA`, `FUJITSU/AIRSTAGE → FUJITSU` e `AIRSTAGE → FUJITSU`; o build valida o contrato (campos obrigatórios, alias para si mesma e duplicata recusados), ignora em silêncio a entrada cuja marca de origem não está na Versão (sem quebrar o build) e republica a cópia em `data/build/`. O `consulta.json` passa a trazer `marcaCatalogo` em todos os itens (igual à `marca` quando não há agrupamento) — o `aparelhos.json`/`schema.json` e as identidades não mudam. A consulta devolve **164** para "MIDEA", **67** para "SPRINGER MIDEA" (valor oficial antigo, para links compartilhados) e **27** para "FUJITSU", e a busca por "fujitsu" acha os **27**; filtro e busca continuam se intersectando. A ilha lista os resultados pela Marca de catálogo (uma opção por família: 71 marcas) e a ficha mantém a Marca oficial no `<h1>`, no título e na descrição, com o link "Ver outros aparelhos da marca" apontando para `?marca=MIDEA`/`?marca=FUJITSU`; `id`, URL e sitemap seguem idênticos. Um link antigo com o valor oficial continua filtrando (67) e o `<select>` exibe o valor em vez de cair em "Todas". Nada muda em Ofertas, Análises ou no `aparelhos.json`; `pnpm build` nessa Versão só altera `consulta.json` e cria a cópia da curadoria.
+- **Ticket:** #21 (local tracker: `21-marca-de-catalogo`)
+- **Checks:** Vitest 235/235 (26 arquivos; +28), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.
