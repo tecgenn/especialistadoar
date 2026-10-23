@@ -53,20 +53,20 @@ falso: há **uma** ocorrência em coluna numérica —
 
 **Blocked by:** Nenhum.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `parseNumero` aplica a gramática acima em todas as colunas numéricas;
+- [x] `parseNumero` aplica a gramática acima em todas as colunas numéricas;
       fixture cobre `1.000`, `12.000`, `3.500`, `1.000,50`, `0.351`, `1.160`,
       `3.50` e o formato en-US `1,000.50` (→ `null`).
-- [ ] `data/build` continua reproduzível byte a byte a partir do raw (gate do
+- [x] `data/build` continua reproduzível byte a byte a partir do raw (gate do
       CI); em relação ao build anterior, só
       `oficial["Carga do Fluido Refrigerante (g)"]` da Linha `2712` muda
       (`1.16` → `1160`); `aparelhos.json*`, `consulta.json`, `anomalias.jsonl` e
       `reports/` ficam idênticos.
-- [ ] Piso de `valor_implausivel` passa a `< 6.000` BTU/h, sem Anomalia nova na
+- [x] Piso de `valor_implausivel` passa a `< 6.000` BTU/h, sem Anomalia nova na
       Versão atual e com `docs/agentes.md` atualizado.
-- [ ] Nenhum Aparelho excluído (seguem 2.460) e nenhum tipo de Anomalia novo.
-- [ ] Regra de formato registrada em `docs/agents/architecture.md` (módulo
+- [x] Nenhum Aparelho excluído (seguem 2.460) e nenhum tipo de Anomalia novo.
+- [x] Regra de formato registrada em `docs/agents/architecture.md` (módulo
       `normalize`).
 
 **Out of scope:** suportar formato en-US; novo tipo de Anomalia para formato não

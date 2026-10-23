@@ -37,10 +37,12 @@ interface RegraPlausibilidade {
 const CAPACIDADE_BTU = "Capacidade de Refrigeração Nominal (Btu/h)";
 
 const REGRAS_PLAUSIBILIDADE: readonly RegraPlausibilidade[] = [
-  // Um ar-condicionado de 1.000 BTU/h já não existe; abaixo disso o valor foi
-  // truncado (ex.: `12` no lugar de `12000`) ou trocado com outra coluna. A
-  // Anomalia só sinaliza — a correção é uma Exceção manual com motivo e fonte.
-  { campo: CAPACIDADE_BTU, minimo: 1000 },
+  // 6.000 BTU/h é a menor capacidade de um split residencial; abaixo disso o
+  // valor foi truncado (ex.: `12` no lugar de `12000`) ou trocado com outra
+  // coluna. O piso acompanha o separador de milhar (ticket 23): `1.000` agora é
+  // um parse válido de 1000 BTU/h e não pode escapar do sinal. A Anomalia só
+  // sinaliza — a correção é uma Exceção manual com motivo e fonte.
+  { campo: CAPACIDADE_BTU, minimo: 6000 },
 ];
 
 export function classificarAnomalia(valor: string): TipoAnomalia {

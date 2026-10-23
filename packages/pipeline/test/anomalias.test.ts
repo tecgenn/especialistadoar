@@ -52,7 +52,7 @@ describe("detectarAnomalias", () => {
 describe("detectarAnomalias — valores implausíveis", () => {
   const CAPACIDADE = "Capacidade de Refrigeração Nominal (Btu/h)";
 
-  it("sinaliza capacidade nominal abaixo de 1.000 BTU/h", () => {
+  it("sinaliza capacidade nominal abaixo de 6.000 BTU/h", () => {
     expect(detectarAnomalias({ [CAPACIDADE]: "30" }, contexto)).toEqual<
       Anomalia[]
     >([
@@ -66,8 +66,23 @@ describe("detectarAnomalias — valores implausíveis", () => {
     ]);
   });
 
-  it("aceita exatamente 1.000 BTU/h como plausível", () => {
-    expect(detectarAnomalias({ [CAPACIDADE]: "1000" }, contexto)).toEqual([]);
+  it("sinaliza 1.000 BTU/h — o milhar deixou de escapar do piso", () => {
+    expect(detectarAnomalias({ [CAPACIDADE]: "1.000" }, contexto)).toEqual<
+      Anomalia[]
+    >([
+      {
+        linha: 7,
+        versao: "abc123",
+        campo: CAPACIDADE,
+        valor: "1.000",
+        tipo: "valor_implausivel",
+      },
+    ]);
+  });
+
+  it("aceita exatamente 6.000 BTU/h como plausível", () => {
+    expect(detectarAnomalias({ [CAPACIDADE]: "6000" }, contexto)).toEqual([]);
+    expect(detectarAnomalias({ [CAPACIDADE]: "6.000" }, contexto)).toEqual([]);
   });
 
   it("não sinaliza capacidade plausível", () => {
