@@ -1,6 +1,6 @@
 # Spec — Fase 5: Camada editorial de Análises
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Problem Statement
 

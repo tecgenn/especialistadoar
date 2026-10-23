@@ -6,15 +6,21 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-A **Fase 6 — Filtros do catálogo** está concluída: os três tickets (`20`
-capacidades corrigidas + `valor_implausivel`, `21` Marca de catálogo e `22` chips
-de marca/capacidade) estão prontos. A spec está em `spec-fase-6.md`.
+As Fases 5 (camada editorial de Análises) e 6 (filtros do catálogo) estão
+concluídas — as specs `spec-fase-5.md` e `spec-fase-6.md` foram marcadas `done`.
+Os tickets `20` (capacidades corrigidas + `valor_implausivel`), `21` (Marca de
+catálogo) e `22` (chips de marca/capacidade) estão prontos.
 
-**Frontier agora:** nenhum ticket `ready-for-agent`. O `23 — Separador de milhar
-nos campos numéricos` segue em `needs-triage` (decisões de formato em aberto no
-grill) e não bloqueia nada. A operação da Fase 5 segue em paralelo: publicar a
-primeira Análise (com Ofertas reais) e, quando fizer sentido, a migração para
-domínio próprio — ver `spec-fase-5.md` › Further Notes.
+**Frontier agora:** `23 — Separador de milhar nos campos numéricos`, triado em
+2026-10-23 para `ready-for-agent`. Entrega a gramática pt-BR no `parseNumero`
+(todas as colunas numéricas), sobe o piso de `valor_implausivel` para `< 6.000`
+BTU/h e corrige um valor de carga (`1.160` → `1160`) em `registros.jsonl`. As
+decisões estão no próprio ticket e a política de não excluir Aparelho por
+Anomalia no `ADR-0017`.
+
+A operação da Fase 5 segue em paralelo: publicar a primeira Análise (com Ofertas
+reais) e, quando fizer sentido, a migração para domínio próprio — ver
+`spec-fase-5.md` › Further Notes. Nenhuma das duas bloqueia o `23`.
 
 ## Completed
 

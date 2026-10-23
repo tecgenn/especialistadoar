@@ -1,6 +1,6 @@
 # Spec — Fase 6: Filtros do catálogo, Marca de catálogo e capacidades corrigidas
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Problem Statement
 

@@ -133,7 +133,8 @@ nova exportação CSV
   colunas desalinhadas) e valores numericamente válidos, mas implausíveis para a
   coluna, por uma tabela de regras de plausibilidade (`valor_implausivel`); o valor
   original é preservado, não corrigido. A detecção roda depois das Exceções, então
-  uma capacidade corrigida não vira Anomalia.
+  uma capacidade corrigida não vira Anomalia. A Anomalia **nunca exclui** o
+  Aparelho (ADR-0017).
 - **excecoes** — lê e valida a Exceção manual; aplica-a sobre o Valor original
   *antes* da normalização; recusa correção só-de-formato, campo inexistente e
   exceção órfã (que não casa com nenhuma Linha desta Versão da tabela).
