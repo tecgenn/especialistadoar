@@ -286,6 +286,21 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
   });
 });
 
+describe("runBuild — separador de milhar na exportação real", () => {
+  // Linha da Midea 42AGVQI24M5 / 38AGVQI24M5 — a única ocorrência de milhar em
+  // coluna numérica na Versão atual.
+  const LINHA_CARGA_MILHAR = 2712;
+
+  it("lê a carga `1.160` g como 1160 g e preserva o original", () => {
+    const { registros } = buildCom(exportVersadaPath);
+    const linha = registros.find(
+      (registro) => registro.linha === LINHA_CARGA_MILHAR,
+    );
+    expect(linha?.valores["Carga do Fluido Refrigerante (g)"]).toBe("1.160");
+    expect(linha?.oficial["Carga do Fluido Refrigerante (g)"]).toBe(1160);
+  });
+});
+
 describe("runBuild — Anomalia de valor implausível", () => {
   it("sinaliza a capacidade truncada sem corrigir o Valor oficial", () => {
     const { anomalias, registros } = buildCom(implausivelFixturePath);

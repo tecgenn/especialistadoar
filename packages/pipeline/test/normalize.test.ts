@@ -72,6 +72,53 @@ describe("parseNumero — coerção numérica", () => {
   });
 });
 
+describe("parseNumero — separador de milhar pt-BR", () => {
+  it("lê ponto entre grupos de três dígitos como milhar", () => {
+    expect(parseNumero("1.000")).toBe(1000);
+    expect(parseNumero("12.000")).toBe(12000);
+    expect(parseNumero("1.234.567")).toBe(1234567);
+  });
+
+  it("aplica a regra também com unidade embutida", () => {
+    expect(parseNumero("1.000 BTU/h")).toBe(1000);
+    expect(parseNumero("1.160 g")).toBe(1160);
+    expect(parseNumero("10.500 W")).toBe(10500);
+    expect(parseNumero("1.234,5 kWh")).toBe(1234.5);
+    expect(parseNumero("3.500Wh/Wh")).toBe(3500);
+  });
+
+  it("lê 3.500 como 3500 (o significado em pt-BR)", () => {
+    expect(parseNumero("3.500")).toBe(3500);
+  });
+
+  it("combina milhar por ponto com decimal por vírgula", () => {
+    expect(parseNumero("1.000,50")).toBe(1000.5);
+  });
+
+  it("nunca trata a parte inteira 0 como milhar", () => {
+    expect(parseNumero("0.351")).toBe(0.351);
+    expect(parseNumero("0,351")).toBe(0.351);
+    expect(parseNumero("00.351")).toBe(0.351);
+  });
+
+  it("só trata como milhar o agrupamento pt-BR (inicial de até 3 dígitos)", () => {
+    expect(parseNumero("1234.567")).toBe(1234.567);
+  });
+
+  it("continua lendo 1 ou 2 dígitos após o ponto como decimal", () => {
+    expect(parseNumero("3.50")).toBe(3.5);
+    expect(parseNumero("1.16")).toBe(1.16);
+  });
+
+  it("devolve null para o formato en-US", () => {
+    expect(parseNumero("1,000.50")).toBeNull();
+  });
+
+  it("devolve null para milhar malformado", () => {
+    expect(parseNumero("1.00.0")).toBeNull();
+  });
+});
+
 describe("parseTensao — parsing de bivolt", () => {
   it("parseia 127-220 como uma só tensão, com duas voltagens", () => {
     expect(parseTensao("127-220 (monofásico/bifásico)")).toEqual({

@@ -128,12 +128,18 @@ nova exportação CSV
 - **parse** — CSV em RFC 4180 com `bom: true`; cabeçalho aparado.
 - **normalize** — padronização só de formato (BOM, casing, unidades-no-texto,
   parsing de tensão, coerção numérica, `º`/`°`); o texto de origem é preservado para
-  proveniência.
+  proveniência. A coerção numérica segue a gramática **pt-BR**: ponto entre grupos
+  de três dígitos é separador de milhar (`1.000` = 1000, `1.160` g = 1160 g,
+  `1.000,50` = 1000.5), vírgula é decimal, e a parte inteira `0` nunca é milhar
+  (`0.351` = 0.351). O formato en-US (milhar com vírgula) não é suportado:
+  `1,000.50` vira `null`, mas `1,000` continua sendo lido como `1` (o
+  comportamento anterior à regra).
 - **anomalias** — sinaliza valores fora do padrão (não-numérico em campo numérico,
   colunas desalinhadas) e valores numericamente válidos, mas implausíveis para a
   coluna, por uma tabela de regras de plausibilidade (`valor_implausivel`); o valor
   original é preservado, não corrigido. A detecção roda depois das Exceções, então
-  uma capacidade corrigida não vira Anomalia.
+  uma capacidade corrigida não vira Anomalia. A Anomalia **nunca exclui** o
+  Aparelho (ADR-0017).
 - **excecoes** — lê e valida a Exceção manual; aplica-a sobre o Valor original
   *antes* da normalização; recusa correção só-de-formato, campo inexistente e
   exceção órfã (que não casa com nenhuma Linha desta Versão da tabela).

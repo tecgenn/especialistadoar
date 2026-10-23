@@ -6,15 +6,16 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-A **Fase 6 — Filtros do catálogo** está concluída: os três tickets (`20`
-capacidades corrigidas + `valor_implausivel`, `21` Marca de catálogo e `22` chips
-de marca/capacidade) estão prontos. A spec está em `spec-fase-6.md`.
+Não há ticket aberto no tracker local. O `23 — Separador de milhar nos campos
+numéricos` foi concluído em 2026-10-23: o `parseNumero` passou a seguir a
+gramática pt-BR em todas as colunas numéricas, o piso de `valor_implausivel`
+subiu para `< 6.000` BTU/h e a única ocorrência real (`1.160` g na Linha 2712)
+virou **1160** g. As decisões estão no próprio ticket e a política de não excluir
+Aparelho por Anomalia no `ADR-0017`.
 
-**Frontier agora:** nenhum ticket `ready-for-agent`. O `23 — Separador de milhar
-nos campos numéricos` segue em `needs-triage` (decisões de formato em aberto no
-grill) e não bloqueia nada. A operação da Fase 5 segue em paralelo: publicar a
-primeira Análise (com Ofertas reais) e, quando fizer sentido, a migração para
-domínio próprio — ver `spec-fase-5.md` › Further Notes.
+O trabalho que resta é operacional, não ticket: publicar a primeira Análise (com
+Ofertas reais) e, quando fizer sentido, a migração para domínio próprio — ver
+`spec-fase-5.md` › Further Notes.
 
 ## Completed
 
@@ -169,3 +170,10 @@ domínio próprio — ver `spec-fase-5.md` › Further Notes.
 - **What works:** os dois filtros do catálogo abrem pelas marcas e capacidades que as pessoas procuram. As 10 marcas conhecidas (Samsung, LG, Midea, TCL, Elgin, Hisense, Daikin, Fujitsu, Hitachi, Gree) e as 6 capacidades comuns (9.000 a 36.000 BTU/h) viram chips visíveis a um clique, na ordem curada; cada `<select>` guarda "Todas…" + o resto (61 marcas, 42 capacidades), sem repetir o chip. O chip aceso **é** o valor do filtro: clicar de novo limpa, escolher no `<select>` desliga o chip, e o estado restaurado da URL acende o chip certo — inclusive com a marca em minúsculas (`?marca=midea`), porque a marca é normalizada na leitura da URL. Os chips são `<button aria-pressed>` alcançáveis por teclado e quebram linha no celular. A curadoria é validada no build (rótulo não vazio, marca/rótulo sem duplicata, capacidade inteira positiva) e um valor curado ausente da base é escondido em silêncio. `pnpm build`/`build:site` inalterados nos dados: nada entra em `data/build/`, na API, na consulta ou na identificação das fichas.
 - **Ticket:** #22 (local tracker: `22-chips-filtros-marca-capacidade`)
 - **Checks:** Vitest 258/258 (28 arquivos; +23), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas com os chips no HTML e sem `MIDEA`/`SPRINGER MIDEA` no `<select>`.
+
+### 23 — Separador de milhar nos campos numéricos (2026-10-23)
+
+- **Changed:** `packages/pipeline/src/normalize.ts` (`parseNumero` ganha a gramática pt-BR: ponto entre grupos de três dígitos é milhar, vírgula é decimal, parte inteira `0` nunca é milhar; en-US continua fora); `packages/pipeline/src/anomalias.ts` (piso de `valor_implausivel` `< 1.000` → `< 6.000` BTU/h); testes `packages/pipeline/test/{normalize,anomalias,build}.test.ts` (+11, incluindo a Linha 2712 na exportação real); `data/build/registros.jsonl` regenerado; `docs/agents/architecture.md` (módulo `normalize` documenta a gramática) e `docs/agentes.md` + `CONTEXT.md` (novo piso).
+- **What works:** `parseNumero` lê o separador de milhar pt-BR em **todas as 13 colunas numéricas** — `1.000` = 1000, `12.000` = 12000, `1.234.567` = 1234567, `1.000,50` = 1000.5, `1.160 g` = 1160 g — sem confundir decimal (`3.50` = 3.5, `0.351` = 0.351; a parte inteira `0` nunca é milhar). O formato en-US (`1,000.50`) segue não suportado (`null`) e o milhar malformado (`1.00.0`) segue `null`. Na Versão atual só `oficial["Carga do Fluido Refrigerante (g)"]` da Linha 2712 muda (`1.16` → `1160` g; o `valores` original continua `"1.160"`); `aparelhos.json*`, `consulta.json`, `schema.json`, `anomalias.jsonl` e `reports/` ficam idênticos. O piso de plausibilidade em 6.000 BTU/h não cria Anomalia nova (seguem 15 e nenhum tipo novo) e garante que um `1.000` futuro não escape do sinal; seguem 2.460 Aparelhos. A payload continua reproduzível byte a byte a partir do raw + curadoria.
+- **Ticket:** #23 (local tracker: `23-separador-milhar-campos-numericos`)
+- **Checks:** Vitest 269/269 (28 arquivos; +11), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.

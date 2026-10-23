@@ -17,6 +17,10 @@ export interface LinhaComOficial {
 const UNIDADE_NUMERICA = /\((?:Btu\/h|W|g|kWh|Wh\/Wh)\)$/;
 const SUFIXO_UNIDADE = /(?:[A-Za-z]+\/[A-Za-z]+|[A-Za-z]+)$/;
 const NUMERO = /^-?\d+(?:\.\d+)?$/;
+// pt-BR: ponto entre grupos de três dígitos é separador de milhar (`12.000`,
+// `1.234.567`), com decimal por vírgula (`1.000,50`). O formato en-US
+// (`1,000.50`) fica de fora por decisão do ticket 23.
+const NUMERO_PT_BR_MILHAR = /^(-?\d{1,3})((?:\.\d{3})+)(?:,(\d+))?$/;
 const TOKEN_NUMERO = /\d+(?:[.,]\d+)?/g;
 
 export const COLUNA_TENSAO = "Tensão (V)";
@@ -44,10 +48,21 @@ export function parseNumero(texto: string): number | null {
     return null;
   }
 
-  let limpo = bruto.replace(/\s+/g, "").replace(SUFIXO_UNIDADE, "");
-  limpo = limpo.replace(",", ".");
+  const limpo = bruto.replace(/\s+/g, "").replace(SUFIXO_UNIDADE, "");
 
-  return NUMERO.test(limpo) ? Number(limpo) : null;
+  const milhar = NUMERO_PT_BR_MILHAR.exec(limpo);
+  if (milhar !== null) {
+    const [, inteiro = "", grupos = "", fracao] = milhar;
+    // A parte inteira `0` nunca é milhar: `0.351` é decimal.
+    if (Number(inteiro) !== 0) {
+      const digitos = `${inteiro}${grupos}`.replace(/\./g, "");
+      const valor = fracao === undefined ? digitos : `${digitos}.${fracao}`;
+      return Number(valor);
+    }
+  }
+
+  const decimal = limpo.replace(",", ".");
+  return NUMERO.test(decimal) ? Number(decimal) : null;
 }
 
 export function parseTensao(texto: string): TensaoNormalizada | null {
