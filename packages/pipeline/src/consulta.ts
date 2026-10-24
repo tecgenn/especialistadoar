@@ -1,12 +1,13 @@
-import type { Aparelho } from "./aparelho.ts";
+import type { Aparelho, Situacao } from "./aparelho.ts";
 import type { ResolverMarcaCatalogo } from "./marcas-catalogo.ts";
 
 /**
  * Contrato do dataset enxuto de consulta (`consulta.json`): uma projeção de cada
- * Aparelho com o que a consulta usa — identidade para exibir e linkar, e os
- * valores sobre os quais filtrar (capacidade em BTU e tensão). A base servida
- * completa (`aparelhos.json`, ~3,2 MB) fica para as páginas de detalhe; este é o
- * artefato que a ilha do site baixa (~350 KB). Ver ADR-0008.
+ * Aparelho com o que a consulta usa — identidade para exibir e linkar, Situação,
+ * Função e Rotação, e os valores sobre os quais filtrar (BTU, tensão, Classe,
+ * IDRS e consumo). A base servida completa (`aparelhos.json`, ~3,25 MB) fica para
+ * as páginas de detalhe; este é o artefato que a ilha do site baixa (~680 KB).
+ * Ver ADR-0008 e ADR-0018.
  *
  * `marca` é a Marca oficial do INMETRO; `marcaCatalogo` é a Marca de catálogo
  * (ADR-0016), igual a `marca` quando não há agrupamento curado. Só o dataset de
@@ -18,13 +19,24 @@ export interface ItemConsulta {
   marcaCatalogo: string;
   modelo: string;
   tipo: string | null;
+  situacao: Situacao;
+  funcao: string | null;
+  rotacao: string | null;
   capacidadesBtu: number[];
   tensoes: number[];
+  classes: string[];
+  idrs: number[];
+  consumosKwh: number[];
 }
 
 function numerosUnicos(valores: Array<number | null>): number[] {
   const presentes = valores.filter((valor): valor is number => valor !== null);
   return [...new Set(presentes)].sort((a, b) => a - b);
+}
+
+function textosUnicos(valores: Array<string | null>): string[] {
+  const presentes = valores.filter((valor): valor is string => valor !== null);
+  return [...new Set(presentes)].sort();
 }
 
 /** Projeta a base servida no dataset enxuto de consulta. */
@@ -38,6 +50,9 @@ export function projetarConsulta(
     marcaCatalogo: marcaCatalogo(aparelho.marca),
     modelo: aparelho.modelo,
     tipo: aparelho.tipo,
+    situacao: aparelho.situacao,
+    funcao: aparelho.funcao,
+    rotacao: aparelho.rotacao,
     capacidadesBtu: numerosUnicos(
       aparelho.variantes.map((variante) => variante.dados.capacidadeNominalBtu),
     ),
@@ -45,6 +60,15 @@ export function projetarConsulta(
       aparelho.variantes.flatMap(
         (variante) => variante.tensao?.voltagens ?? [],
       ),
+    ),
+    classes: textosUnicos(
+      aparelho.variantes.map((variante) => variante.dados.classe),
+    ),
+    idrs: numerosUnicos(
+      aparelho.variantes.map((variante) => variante.dados.idrs),
+    ),
+    consumosKwh: numerosUnicos(
+      aparelho.variantes.map((variante) => variante.dados.consumoAnualKwh),
     ),
   }));
 }

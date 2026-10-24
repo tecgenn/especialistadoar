@@ -87,11 +87,12 @@ _Avoid_: Valor original (o original é o que o Registro INMETRO guarda, sem padr
 **Valor calculado**:
 Dado derivado por conta determinística a partir de Valores oficiais e de entradas informadas por quem consulta, como o custo anual estimado com uma tarifa dada na consulta. Sempre acompanha a fórmula e as entradas usadas, para nunca ser confundido com um Valor oficial.
 _Avoid_: Estimativa, recomendação
-
 **Dados declarados**:
-Valores de capacidade e consumo informados para quatro condições (carga total e parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais detalhada de cada Linha da tabela.
+Valores de capacidade e consumo informados para quatro condições (carga total e
+parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais
+detalhada de cada Linha da tabela. A **Classe** é guardada junto deles, por
+Linha/Variante, embora não seja capacidade nem consumo (ADR-0018).
 _Avoid_: Dados de ensaio, dados medidos (a própria tabela os chama de declarados)
-
 **Relatório de revisão**:
 Resumo gerado a cada nova Versão da tabela, antes de qualquer publicação: Aparelhos novos, alterados e Ausentes, Anomalias novas e Vínculos sugeridos. A nova versão só vai ao ar depois que uma pessoa o revisa e aprova.
 _Avoid_: Log de importação, diff

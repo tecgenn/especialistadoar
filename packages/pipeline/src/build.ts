@@ -270,7 +270,7 @@ export function runBuild(options: BuildOptions): BuildResult {
   escreverJsonl(join(buildDir, "aparelhos.jsonl"), aparelhos);
   escreverJson(join(buildDir, "aparelhos.json"), aparelhos);
   // O dataset de consulta é o único artefato sem indentação: ele existe para o
-  // navegador baixar, e o formato enxuto o mantém perto dos ~350 KB (ADR-0008).
+  // navegador baixar, e o formato enxuto o mantém perto dos ~680 KB (ADR-0008).
   escreverJson(join(buildDir, "consulta.json"), consulta, false);
   escreverJson(join(buildDir, "schema.json"), SCHEMA_APARELHO);
   escreverJsonl(join(buildDir, ARQUIVO_EXCECOES), excecoes);

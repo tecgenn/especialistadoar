@@ -22,7 +22,7 @@ Base publicada no Cloudflare Pages: **`https://especialista-do-ar.pages.dev/`**.
 |---|---|---|
 | `manifest.json` | A Versão da tabela atual (hash, data de obtenção, origem, contagem de Linhas) | Citar a **proveniência** de qualquer resposta |
 | `aparelhos.json` | A base servida completa (array de Aparelhos, com Variantes, Dados declarados, `linhas` e `registros`) | Consulta por ID e detalhe técnico |
-| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `capacidadesBtu` e `tensoes` | Filtrar/buscar antes de buscar o detalhe |
+| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `situacao`, `funcao`, `rotacao` e as listas `capacidadesBtu`, `tensoes`, `classes`, `idrs` e `consumosKwh` | Filtrar/buscar antes de buscar o detalhe |
 | `schema.json` | JSON Schema do contrato de Aparelho | Validar o formato |
 | `registros.jsonl` | As Linhas da tabela normalizadas (uma por Linha, com o Valor original) | Proveniência: voltar da Linha ao dado cru |
 | `anomalias.jsonl` | Anomalias por Linha da tabela (campo, valor original, tipo) | Sinalizar dados suspeitos — não são erros fatais |
@@ -72,6 +72,27 @@ FUJITSU agrupa `FUJITSU/AIRSTAGE` e `AIRSTAGE` (27). O filtro `marca` casa a
 `q: "fujitsu"` encontra os 27. Use `marcaCatalogo` para agrupar, e `marca` quando
 precisar citar o Valor oficial. A curadoria exata está em
 `marcas-catalogo.jsonl`.
+
+### Classe e Situação
+
+Dois campos novos acompanham cada Aparelho (ADR-0018):
+
+- **Classe** (`classe`, dentro do `dados` de cada **Variante**) — a faixa A a F que
+  o INMETRO declara na coluna "Faixa de Classificação", por Linha. É um **Valor
+  oficial**, aparado e em maiúsculas; uma célula vazia vira `null`. **Nunca** a
+  recalcule a partir do IDRS: classe e IDRS não andam juntos entre tipos de
+  aparelho. Variantes podem divergir (a coluna é por Linha); por isso o
+  `consulta.json` traz `classes` como lista única e ordenada.
+- **Situação** (`situacao`) — `"ativo"` quando ao menos um dos Registros INMETRO do
+  Aparelho tem status Ativo; `"inativo"` caso contrário. É derivada dos `registros`,
+  não um dado novo, e é a mesma definição no `aparelhos.json` e no `consulta.json`:
+  não monte a sua própria regra no cliente.
+
+O `consulta.json` também carrega `funcao`, `rotacao` e as listas `idrs` e
+`consumosKwh` (únicas, ordenadas, ignorando Variantes sem o dado), para filtrar e
+ordenar a tabela sem baixar a base completa. `classes`, `idrs` e `consumosKwh`
+seguem a mesma regra de `capacidadesBtu`: o valor de qualquer Variante do Aparelho
+conta.
 
 ## Valor calculado — fórmula documentada
 

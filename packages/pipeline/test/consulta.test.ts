@@ -23,6 +23,7 @@ function aparelho(
     tipo: null,
     funcao: null,
     rotacao: null,
+    situacao: "ativo",
     fluidoRefrigerante: null,
     fluidoEspecificado: null,
     linhas: [1],
@@ -52,10 +53,81 @@ describe("projetarConsulta — dataset enxuto", () => {
         marcaCatalogo: "GREE",
         modelo: "GREE-09",
         tipo: "Split Hi-Wall",
+        situacao: "ativo",
+        funcao: null,
+        rotacao: null,
         capacidadesBtu: [],
         tensoes: [],
+        classes: [],
+        idrs: [],
+        consumosKwh: [],
       },
     ]);
+  });
+
+  it("projeta Situação, Função e Rotação do Aparelho", () => {
+    const [item] = projetarConsulta(
+      [
+        aparelho({
+          id: "ap-1",
+          situacao: "inativo",
+          funcao: "Frio",
+          rotacao: "Velocidade Variável",
+        }),
+      ],
+      (marca) => marca,
+    );
+    expect(item?.situacao).toBe("inativo");
+    expect(item?.funcao).toBe("Frio");
+    expect(item?.rotacao).toBe("Velocidade Variável");
+  });
+
+  it("deduplica e ordena Classes, IDRS e consumos, ignorando Variantes sem dado", () => {
+    const [item] = projetarConsulta(
+      [
+        aparelho({
+          id: "ap-1",
+          variantes: [
+            {
+              tensao: { voltagens: [220], fases: ["monofásico"] },
+              dados: dadosVazios({
+                classe: "B",
+                idrs: 4.5,
+                consumoAnualKwh: 2000,
+              }),
+              linhas: [1],
+            },
+            {
+              tensao: { voltagens: [127], fases: ["monofásico"] },
+              dados: dadosVazios({
+                classe: "A",
+                idrs: 3.5,
+                consumoAnualKwh: 1100,
+              }),
+              linhas: [2],
+            },
+            {
+              tensao: { voltagens: [220], fases: ["monofásico"] },
+              dados: dadosVazios({
+                classe: "A",
+                idrs: 3.5,
+                consumoAnualKwh: 1100,
+              }),
+              linhas: [3],
+            },
+            {
+              tensao: null,
+              dados: dadosVazios(),
+              linhas: [4],
+            },
+          ],
+        }),
+      ],
+      (marca) => marca,
+    );
+    expect(item?.classes).toEqual(["A", "B"]);
+    expect(item?.idrs).toEqual([3.5, 4.5]);
+    expect(item?.consumosKwh).toEqual([1100, 2000]);
   });
 
   it("projeta a Marca de catálogo sem tocar na Marca oficial", () => {
