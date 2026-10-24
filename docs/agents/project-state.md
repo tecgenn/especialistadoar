@@ -6,15 +6,27 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-Não há ticket aberto no tracker local. O `23 — Separador de milhar nos campos
-numéricos` foi concluído em 2026-10-23: o `parseNumero` passou a seguir a
-gramática pt-BR em todas as colunas numéricas, o piso de `valor_implausivel`
-subiu para `< 6.000` BTU/h e a única ocorrência real (`1.160` g na Linha 2712)
-virou **1160** g. As decisões estão no próprio ticket e a política de não excluir
-Aparelho por Anomalia no `ADR-0017`.
+A **Fase 7** está especificada em `.scratch/especialista-do-ar/spec-fase-7.md`
+(página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de
+afiliado e remoção da busca). Os tickets estão em
+`.scratch/especialista-do-ar/issues/24` a `30`, todos `ready-for-agent`, nesta
+ordem:
 
-O trabalho que resta é operacional, não ticket: publicar a primeira Análise (com
-Ofertas reais) e, quando fizer sentido, a migração para domínio próprio — ver
+| # | Ticket | Bloqueado por |
+| --- | --- | --- |
+| 24 | Classe, Situação e campos da tabela (ADR-0018) | — |
+| 25 | Sinal de consumo implausível | 24 |
+| 26 | Ficha técnica nova | 24 |
+| 27 | Página Aparelhos (tabela) | 24, 25 |
+| 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | 27 |
+| 29 | Home, menu e redirects | 27, 28 |
+| 30 | Remover `/busca/` e o Pagefind | 27 |
+
+Os tickets `22` (chips) e `23` (separador de milhar) foram concluídos e estão no
+log abaixo; a Fase 7 os assume prontos.
+
+O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
+reais) e, quando fizer sentido, a migração para domínio próprio — ver
 `spec-fase-5.md` › Further Notes.
 
 ## Completed
