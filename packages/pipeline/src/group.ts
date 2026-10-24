@@ -3,6 +3,7 @@ import type {
   Aparelho,
   DadosDeclarados,
   RegistroInmetro,
+  Situacao,
   Tensao,
   Variante,
 } from "./aparelho.ts";
@@ -30,11 +31,15 @@ const COLUNA_FUNCAO = "Função";
 const COLUNA_ROTACAO = "Rotação";
 const COLUNA_FLUIDO = "Fluido Refrigerante";
 const COLUNA_FLUIDO_ESPECIFICADO = "Se outro fluido refrigerante, especificar";
+const COLUNA_CLASSE = "Faixa de Classificação";
 const COLUNA_REGISTRO = "Número do Registro";
 const COLUNA_STATUS_REGISTRO = "Status do Registro";
+const STATUS_ATIVO = "ativo";
+
+type CampoNumerico = Exclude<keyof DadosDeclarados, "classe">;
 
 /** Colunas numéricas que compõem os Dados declarados de uma variante. */
-const COLUNAS_DADOS: ReadonlyArray<[string, keyof DadosDeclarados]> = [
+const COLUNAS_DADOS: ReadonlyArray<[string, CampoNumerico]> = [
   ["Capacidade de Refrigeração Nominal (Btu/h)", "capacidadeNominalBtu"],
   ["Capacidade de Refrigeração Nominal (W)", "capacidadeNominalW"],
   ["Potência Consumida no Modo Espera (W)", "potenciaEsperaW"],
@@ -49,6 +54,10 @@ const COLUNAS_DADOS: ReadonlyArray<[string, keyof DadosDeclarados]> = [
   ["IDRS (Wh/Wh)", "idrs"],
   ["Consumo Anual de Energia (kWh)", "consumoAnualKwh"],
 ];
+
+const CAMPOS_NUMERICOS: ReadonlyArray<CampoNumerico> = COLUNAS_DADOS.map(
+  ([, campo]) => campo,
+);
 
 function comoTexto(valor: ValorOficial | undefined): string | null {
   if (typeof valor !== "string") {
@@ -115,11 +124,21 @@ function extrairDados(oficial: ValoresOficiais): DadosDeclarados {
   for (const [coluna, campo] of COLUNAS_DADOS) {
     dados[campo] = comoNumero(oficial[coluna]);
   }
+  // A Classe é oficial e fica em `dados` (ADR-0018), mas não é um Dado
+  // declarado: só os campos numéricos contam para decidir se a Linha os tem.
+  dados.classe = comoTexto(oficial[COLUNA_CLASSE])?.toUpperCase() ?? null;
   return dados;
 }
 
 export function temDadosDeclarados(dados: DadosDeclarados): boolean {
-  return Object.values(dados).some((valor) => valor !== null);
+  return CAMPOS_NUMERICOS.some((campo) => dados[campo] !== null);
+}
+
+function situacaoDosRegistros(registros: RegistroInmetro[]): Situacao {
+  const ativo = registros.some(
+    (registro) => registro.status.trim().toLowerCase() === STATUS_ATIVO,
+  );
+  return ativo ? "ativo" : "inativo";
 }
 
 export function aparelhoTemDadosDeclarados(aparelho: Aparelho): boolean {
@@ -194,6 +213,7 @@ function finalizar(emConstrucao: AparelhoEmConstrucao): Aparelho {
     tipo: emConstrucao.tipo,
     funcao: emConstrucao.funcao,
     rotacao: emConstrucao.rotacao,
+    situacao: situacaoDosRegistros(emConstrucao.registros),
     fluidoRefrigerante: emConstrucao.fluidoRefrigerante,
     fluidoEspecificado: emConstrucao.fluidoEspecificado,
     linhas: emConstrucao.linhas,

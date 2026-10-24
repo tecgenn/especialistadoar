@@ -18,6 +18,7 @@ export function dadosVazios(
     potencia29TotalW: null,
     idrs: null,
     consumoAnualKwh: null,
+    classe: null,
     ...overrides,
   };
 }

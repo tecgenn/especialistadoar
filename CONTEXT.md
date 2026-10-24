@@ -33,16 +33,28 @@ Um Aparelho presente na tabela que não traz Dados declarados. É um estado, nã
 _Avoid_: Produto incompleto, registro vazio
 
 **Oferta**:
-Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos.
+Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos. É sempre identificada na tela como link de afiliado.
 _Avoid_: Link de compra, anúncio
 
 **Análise**:
 Texto editorial sobre um único Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial.
 _Avoid_: Artigo, review, resenha
 
+**Aparelho analisado**:
+Aparelho que tem uma Análise publicada. Ganha o selo "Analisado" com link para a Análise e aparece antes dos demais na tabela de Aparelhos, dentro dos filtros ativos. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Como a Análise existe para levar a uma Oferta, sempre que há Oferta o aviso de link de afiliado aparece de forma visível no grupo da tabela, na Análise e em cada Oferta; o selo tem um tooltip com o mesmo aviso.
+_Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de qualidade ou escondem a relação comercial)
+
 **Guia**:
 Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
 _Avoid_: Artigo, ranking, lista
+
+**Classe**:
+Faixa de classificação de eficiência (A a F) que o INMETRO declara para uma Linha da tabela, lida da coluna oficial "Faixa de Classificação". É sempre o valor oficial: nunca é recalculada a partir do IDRS, porque classe e IDRS não andam juntos entre tipos de aparelho.
+_Avoid_: Nota, faixa, selo
+
+**Situação**:
+Estado de um Aparelho na consulta: **Ativo** quando ao menos um dos seus Registros INMETRO está Ativo; caso contrário, não está ativo. É derivada dos status dos Registros, não um dado novo.
+_Avoid_: Status (é o nome da coluna do Registro, não do Aparelho)
 
 **Anomalia**:
 Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto, ou um número válido mas implausível para a coluna (capacidade nominal abaixo de 6.000 BTU/h). O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
@@ -75,11 +87,12 @@ _Avoid_: Valor original (o original é o que o Registro INMETRO guarda, sem padr
 **Valor calculado**:
 Dado derivado por conta determinística a partir de Valores oficiais e de entradas informadas por quem consulta, como o custo anual estimado com uma tarifa dada na consulta. Sempre acompanha a fórmula e as entradas usadas, para nunca ser confundido com um Valor oficial.
 _Avoid_: Estimativa, recomendação
-
 **Dados declarados**:
-Valores de capacidade e consumo informados para quatro condições (carga total e parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais detalhada de cada Linha da tabela.
+Valores de capacidade e consumo informados para quatro condições (carga total e
+parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais
+detalhada de cada Linha da tabela. A **Classe** é guardada junto deles, por
+Linha/Variante, embora não seja capacidade nem consumo (ADR-0018).
 _Avoid_: Dados de ensaio, dados medidos (a própria tabela os chama de declarados)
-
 **Relatório de revisão**:
 Resumo gerado a cada nova Versão da tabela, antes de qualquer publicação: Aparelhos novos, alterados e Ausentes, Anomalias novas e Vínculos sugeridos. A nova versão só vai ao ar depois que uma pessoa o revisa e aprova.
 _Avoid_: Log de importação, diff

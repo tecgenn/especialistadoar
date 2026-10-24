@@ -41,4 +41,8 @@ describe("temDadosDeclarados", () => {
       temDadosDeclarados(dadosVazios({ capacidadeNominalBtu: 9000 })),
     ).toBe(true);
   });
+
+  it("não conta a Classe como Dado declarado", () => {
+    expect(temDadosDeclarados(dadosVazios({ classe: "A" }))).toBe(false);
+  });
 });

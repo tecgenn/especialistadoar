@@ -6,15 +6,26 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-Não há ticket aberto no tracker local. O `23 — Separador de milhar nos campos
-numéricos` foi concluído em 2026-10-23: o `parseNumero` passou a seguir a
-gramática pt-BR em todas as colunas numéricas, o piso de `valor_implausivel`
-subiu para `< 6.000` BTU/h e a única ocorrência real (`1.160` g na Linha 2712)
-virou **1160** g. As decisões estão no próprio ticket e a política de não excluir
-Aparelho por Anomalia no `ADR-0017`.
+A **Fase 7** está especificada em `.scratch/especialista-do-ar/spec-fase-7.md`
+(página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de
+afiliado e remoção da busca). Os tickets estão em
+`.scratch/especialista-do-ar/issues/24` a `30`, todos `ready-for-agent`, nesta
+ordem:
 
-O trabalho que resta é operacional, não ticket: publicar a primeira Análise (com
-Ofertas reais) e, quando fizer sentido, a migração para domínio próprio — ver
+| # | Ticket | Bloqueado por |
+| --- | --- | --- |
+| 25 | Sinal de consumo implausível | — |
+| 26 | Ficha técnica nova | — |
+| 27 | Página Aparelhos (tabela) | 25 |
+| 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | 27 |
+| 29 | Home, menu e redirects | 27, 28 |
+| 30 | Remover `/busca/` e o Pagefind | 27 |
+
+O ticket `24` (Classe, Situação e campos da tabela) foi concluído e está no log
+abaixo; a Fase 7 o assume pronto. `25` e `26` estão livres, nesta ordem.
+
+O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
+reais) e, quando fizer sentido, a migração para domínio próprio — ver
 `spec-fase-5.md` › Further Notes.
 
 ## Completed
@@ -177,3 +188,10 @@ Ofertas reais) e, quando fizer sentido, a migração para domínio próprio — 
 - **What works:** `parseNumero` lê o separador de milhar pt-BR em **todas as 13 colunas numéricas** — `1.000` = 1000, `12.000` = 12000, `1.234.567` = 1234567, `1.000,50` = 1000.5, `1.160 g` = 1160 g — sem confundir decimal (`3.50` = 3.5, `0.351` = 0.351; a parte inteira `0` nunca é milhar). O formato en-US (`1,000.50`) segue não suportado (`null`) e o milhar malformado (`1.00.0`) segue `null`. Na Versão atual só `oficial["Carga do Fluido Refrigerante (g)"]` da Linha 2712 muda (`1.16` → `1160` g; o `valores` original continua `"1.160"`); `aparelhos.json*`, `consulta.json`, `schema.json`, `anomalias.jsonl` e `reports/` ficam idênticos. O piso de plausibilidade em 6.000 BTU/h não cria Anomalia nova (seguem 15 e nenhum tipo novo) e garante que um `1.000` futuro não escape do sinal; seguem 2.460 Aparelhos. A payload continua reproduzível byte a byte a partir do raw + curadoria.
 - **Ticket:** #23 (local tracker: `23-separador-milhar-campos-numericos`)
 - **Checks:** Vitest 269/269 (28 arquivos; +11), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.
+
+### 24 — Classe, Situação e campos da tabela (2026-10-24)
+
+- **Changed:** `packages/pipeline/src/aparelho.ts` (`DadosDeclarados.classe: string | null` e `Aparelho.situacao: "ativo" | "inativo"`, com `SituacaoSchema`/`Situacao`; `schema.json` derivado); `packages/pipeline/src/group.ts` (lê "Faixa de Classificação" aparada/em maiúsculas em `dados` de cada Variante, deriva `situacao` dos status dos Registros, `temDadosDeclarados` passa a contar só os campos numéricos via `CAMPOS_NUMERICOS`); `packages/pipeline/src/consulta.ts` (`ItemConsulta`/`projetarConsulta` com `situacao`, `funcao`, `rotacao`, `classes`, `idrs`, `consumosKwh` — listas únicas e ordenadas, ignorando Variantes sem dado); `packages/pipeline/src/index.ts` (+`Situacao`); artefatos regenerados `data/build/{aparelhos.jsonl,aparelhos.json,consulta.json,schema.json}`; testes `packages/pipeline/test/classe-situacao.test.ts` (novo) + fixture `amostra-classe.csv`, `amostra-aparelhos.csv` (+coluna de Classificação), `{consulta,group,validate}.test.ts` e snapshots; docs `docs/agentes.md` (§Classe e Situação), `docs/agents/architecture.md` e `CONTEXT.md` (Classe guardada junto dos Dados declarados).
+- **What works:** a base servida carrega a **Classe** (Valor oficial da coluna "Faixa de Classificação", por Variante, aparada e em maiúsculas; `null` quando vazia; fora de A–F é preservada, sem falhar o build) e a **Situação** (`ativo` com ao menos um Registro Ativo; `inativo` caso contrário), nunca recalculando Classe pelo IDRS. O `consulta.json` traz `situacao`, `funcao`, `rotacao`, `classes`, `idrs` e `consumosKwh` por Aparelho, com a mesma semântica de `capacidadesBtu` (união das Variantes, dedupe, ordem) — nada editorial. Na Versão atual: 2.460 Aparelhos, todos com Classe (6 distintas, A–F), 2.314 `ativo` e 146 `inativo`; `id` e URL idênticos. A Classe entra na dedupe de Variante, então 60 Aparelhos com Linhas divergentes só na Classe ganharam uma Variante (ex.: `ap-bd1e231a0e9a`, A na Linha 861 e B na 2620) — o ADR-0018 manda preservar, não escolher. Tamanhos: `consulta.json` 403.491 B → 698.556 B; `aparelhos.json` 3.232.280 B → 3.406.926 B. `reports/` inalterado.
+- **Ticket:** #24 (local tracker: `24-classe-situacao-e-campos-da-tabela`)
+- **Checks:** Vitest 280/280 (29 arquivos; +11), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.

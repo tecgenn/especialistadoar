@@ -13,6 +13,7 @@ function aparelhoValido(overrides: Partial<Aparelho> = {}): Aparelho {
     tipo: null,
     funcao: null,
     rotacao: null,
+    situacao: "ativo",
     fluidoRefrigerante: null,
     fluidoEspecificado: null,
     linhas: [1],
@@ -64,6 +65,13 @@ describe("validarBaseServida — invariantes de domínio", () => {
   it("falha quando o Aparelho viola o contrato", () => {
     const quebrado = aparelhoValido({
       linhas: "não é array" as unknown as number[],
+    });
+    expect(() => validarBaseServida([quebrado])).toThrow(/viola o contrato/);
+  });
+
+  it("falha quando a Situação está fora do contrato", () => {
+    const quebrado = aparelhoValido({
+      situacao: "cancelado" as Aparelho["situacao"],
     });
     expect(() => validarBaseServida([quebrado])).toThrow(/viola o contrato/);
   });

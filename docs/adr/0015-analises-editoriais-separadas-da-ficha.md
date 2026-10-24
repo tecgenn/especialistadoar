@@ -2,6 +2,13 @@
 
 **Status:** aceito
 
+> **Nota (2026-10-23):** a Fase 7 dá um segundo papel à Análise: publicar uma
+> Análise torna o Aparelho um **Aparelho analisado** (selo, link e topo da tabela
+> de Aparelhos). A marca é derivada no build do site e passada à ilha de consulta;
+> a base servida e o `consulta.json` continuam sem nenhum dado editorial. Como a
+> Análise leva a uma Oferta de afiliado, o selo, o grupo na tabela e cada Oferta
+> trazem aviso visível de link de afiliado. Ver `spec-fase-7.md`.
+
 A partir da Fase 5 o site passa a ter **Análises** (ver `CONTEXT.md`): textos
 editoriais sobre um único Aparelho, com objetivo de aquisição (SEO e marketing),
 publicados numa seção própria (`/analises/<slug>`) e ligados ao Aparelho por

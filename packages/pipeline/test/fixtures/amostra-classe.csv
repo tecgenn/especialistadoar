@@ -1,0 +1,7 @@
+Marca,Modelo,Modelo Unidade Interna,Modelo Unidade Externa,Tipo,Tensão (V),Função,Rotação,Fluido Refrigerante,"Se outro fluido refrigerante, especificar",Carga do Fluido Refrigerante (g),Capacidade de Refrigeração Nominal (Btu/h),Capacidade a 35 °C e em Carga Total (W),Potência Consumida a 35 °C e em Carga Total (W),IDRS (Wh/Wh),Consumo Anual de Energia (kWh),Faixa de Classificação,Status do Registro,Número do Registro
+ALFA,A-09,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,4.20,818,A,Ativo,001/2021
+ALFA,A-09,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,9000,2637,700,4.20,818,  a  ,Inativo,002/2021
+BETA,B-12,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Fixa,R410a,,500,12000,3517,1100,4.00,1100,Z,Inativo,003/2021
+GAMA,G-18,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Fixa,R410a,,500,18000,5274,1600,4.00,1500,,Ativo,004/2021
+DELTA,D-24,,,Split Hi-Wall,127 (monofásico),Frio,Velocidade Variável,R32,,640,24000,7030,2200,4.50,2000,B,Ativo,005/2021
+DELTA,D-24,,,Split Hi-Wall,220 (monofásico),Frio,Velocidade Variável,R32,,640,24000,7030,2200,4.50,2000,A,Ativo,005/2021

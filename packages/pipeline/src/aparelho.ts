@@ -40,6 +40,11 @@ export const DadosDeclaradosSchema = Type.Object({
   potencia29TotalW: Nullable(Type.Number()),
   idrs: Nullable(Type.Number()),
   consumoAnualKwh: Nullable(Type.Number()),
+  /**
+   * Faixa de Classificação declarada pelo INMETRO (A a F), por Linha. É sempre
+   * o Valor oficial: nunca recalculada a partir do IDRS (ADR-0018).
+   */
+  classe: Nullable(Type.String()),
 });
 export type DadosDeclarados = Static<typeof DadosDeclaradosSchema>;
 
@@ -50,6 +55,12 @@ export const VarianteSchema = Type.Object({
 });
 export type Variante = Static<typeof VarianteSchema>;
 
+export const SituacaoSchema = Type.Union([
+  Type.Literal("ativo"),
+  Type.Literal("inativo"),
+]);
+export type Situacao = Static<typeof SituacaoSchema>;
+
 export const AparelhoSchema = Type.Object({
   id: Type.String(),
   marca: Type.String(),
@@ -59,6 +70,11 @@ export const AparelhoSchema = Type.Object({
   tipo: Nullable(Type.String()),
   funcao: Nullable(Type.String()),
   rotacao: Nullable(Type.String()),
+  /**
+   * `ativo` quando ao menos um dos Registros INMETRO está Ativo; derivada dos
+   * status dos Registros, nunca um dado novo (ADR-0018).
+   */
+  situacao: SituacaoSchema,
   fluidoRefrigerante: Nullable(Type.String()),
   fluidoEspecificado: Nullable(Type.String()),
   linhas: Type.Array(Type.Number()),

@@ -66,7 +66,7 @@ data/
   build/
     aparelhos.jsonl                   # base servida (Aparelhos com Dados declarados)
     aparelhos.json                    # espelho em array do acima
-    consulta.json                     # dataset enxuto de consulta (~350 KB, com marcaCatalogo)
+    consulta.json                     # dataset enxuto de consulta (~680 KB, com marcaCatalogo, classe e situação)
     registros.jsonl                   # Linhas normalizadas (proveniência)
     schema.json                       # contrato JSON Schema
     manifest.json                     # metadados de versão (hash, data, contagens)
@@ -155,7 +155,11 @@ nova exportação CSV
 - **group** — dobra Linhas em Aparelhos. A identidade é marca + unid. interna +
   unid. externa (ou Modelo quando as unidades não vêm separadas); a tensão fica fora
   da identidade (bivolt é um só Aparelho). Aceita um remapeamento canônico de
-  identidade vindo dos Vínculos.
+  identidade vindo dos Vínculos. Lê a **Classe** da coluna oficial em `dados` de
+  cada Variante (aparada, em maiúsculas; `null` quando vazia — uma Classe fora de
+  A–F é preservada, sem falhar o build) e deriva a **Situação** do Aparelho dos
+  status dos Registros (`ativo` com ao menos um Ativo; `inativo` caso contrário).
+  A Classe não conta como Dado declarado. Ver ADR-0018.
 - **validate** — JSON Schema (Ajv) + invariantes de domínio; violação é falha dura.
 - **build** — orquestra o pipeline: resolução da versão, leitura da curadoria,
   parse/normalização/anomalias/agrupamento, validação, escrita dos artefatos e das
@@ -176,9 +180,12 @@ nova exportação CSV
   (lógica pura, **sem** dependências de Node): filtros por campo e busca textual
   sobre o `data/build/consulta.json`. É importado pela **ilha do site** (navegador)
   e por qualquer consumidor que queira a mesma semântica. O filtro `marca` casa a
-  Marca de catálogo **e** a Marca oficial, e a busca indexa as duas (ADR-0016). A
-  leitura de arquivo fica de fora desse entry (separar por entry point é o que
-  impede `fs` de entrar no bundle). Ver ADR-0008.
+  Marca de catálogo **e** a Marca oficial, e a busca indexa as duas (ADR-0016). O
+  dataset projeta, por Aparelho, `situacao`, `funcao`, `rotacao` e as listas únicas
+  e ordenadas `classes`, `idrs` e `consumosKwh` (além de `capacidadesBtu` e
+  `tensoes`) — Variantes sem o dado não contribuem. A leitura de arquivo fica de
+  fora desse entry (separar por entry point é o que impede `fs` de entrar no
+  bundle). Ver ADR-0008 e ADR-0018.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
   **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
