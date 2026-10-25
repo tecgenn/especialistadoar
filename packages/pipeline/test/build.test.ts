@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { CAPACIDADE_BTU } from "../src/anomalias.ts";
 import { runBuild } from "../src/build.ts";
 import { type Manifest, sha256Hex } from "../src/ingest.ts";
 import { escreverJsonl } from "../src/jsonl.ts";
@@ -254,13 +255,14 @@ describe("runBuild — Anomalias", () => {
 });
 
 describe("runBuild — Anomalias na exportação versionada real", () => {
-  it("encontra as 15 Anomalias sem abortar o build", () => {
+  it("encontra as 170 Anomalias sem abortar o build", () => {
     const { registros, anomalias } = buildExportacaoRealComCuradoria();
     expect(registros).toHaveLength(7474);
-    expect(anomalias).toHaveLength(15);
-    expect(
-      anomalias.every((anomalia) => anomalia.tipo === "valor_multiplo"),
-    ).toBe(true);
+    expect(anomalias).toHaveLength(170);
+    const multiplas = anomalias.filter(
+      (anomalia) => anomalia.tipo === "valor_multiplo",
+    );
+    expect(multiplas).toHaveLength(15);
     expect(
       anomalias.some((anomalia) => anomalia.valor === "640g / 600g / 690g"),
     ).toBe(true);
@@ -269,7 +271,9 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
   it("expõe as capacidades truncadas como valor_implausivel sem curadoria", () => {
     const { anomalias } = buildCom(exportVersadaPath);
     const implausiveis = anomalias.filter(
-      (anomalia) => anomalia.tipo === "valor_implausivel",
+      (anomalia) =>
+        anomalia.tipo === "valor_implausivel" &&
+        anomalia.campo === CAPACIDADE_BTU,
     );
     expect(implausiveis.map((anomalia) => anomalia.linha)).toEqual([
       5278, 7133, 7200, 7428,
@@ -277,7 +281,8 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
   });
 
   // O golden é do build com a curadoria publicada: as Exceções corrigem as
-  // capacidades truncadas e as 15 Anomalias são as mesmas da base servida.
+  // capacidades truncadas, sobram 15 multiplicidades e 155 consumos
+  // implausíveis por 1.000 BTU/h.
   it("bate com o snapshot golden de anomalias.jsonl", () => {
     buildExportacaoRealComCuradoria();
     expect(

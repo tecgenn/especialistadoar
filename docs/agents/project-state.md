@@ -9,20 +9,18 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 A **Fase 7** está especificada em `.scratch/especialista-do-ar/spec-fase-7.md`
 (página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de
 afiliado e remoção da busca). Os tickets estão em
-`.scratch/especialista-do-ar/issues/24` a `30`, todos `ready-for-agent`, nesta
-ordem:
+`.scratch/especialista-do-ar/issues/24` a `30`, nesta ordem:
 
 | # | Ticket | Bloqueado por |
 | --- | --- | --- |
-| 25 | Sinal de consumo implausível | — |
 | 26 | Ficha técnica nova | — |
-| 27 | Página Aparelhos (tabela) | 25 |
+| 27 | Página Aparelhos (tabela) | — |
 | 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | 27 |
 | 29 | Home, menu e redirects | 27, 28 |
 | 30 | Remover `/busca/` e o Pagefind | 27 |
 
-O ticket `24` (Classe, Situação e campos da tabela) foi concluído e está no log
-abaixo; a Fase 7 o assume pronto. `25` e `26` estão livres, nesta ordem.
+Os tickets `24` (Classe, Situação e campos da tabela) e `25` (Sinal de consumo
+implausível) foram concluídos e estão no log abaixo; `26` e `27` estão livres.
 
 O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -195,3 +193,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** a base servida carrega a **Classe** (Valor oficial da coluna "Faixa de Classificação", por Variante, aparada e em maiúsculas; `null` quando vazia; fora de A–F é preservada, sem falhar o build) e a **Situação** (`ativo` com ao menos um Registro Ativo; `inativo` caso contrário), nunca recalculando Classe pelo IDRS. O `consulta.json` traz `situacao`, `funcao`, `rotacao`, `classes`, `idrs` e `consumosKwh` por Aparelho, com a mesma semântica de `capacidadesBtu` (união das Variantes, dedupe, ordem) — nada editorial. Na Versão atual: 2.460 Aparelhos, todos com Classe (6 distintas, A–F), 2.314 `ativo` e 146 `inativo`; `id` e URL idênticos. A Classe entra na dedupe de Variante, então 60 Aparelhos com Linhas divergentes só na Classe ganharam uma Variante (ex.: `ap-bd1e231a0e9a`, A na Linha 861 e B na 2620) — o ADR-0018 manda preservar, não escolher. Tamanhos: `consulta.json` 403.491 B → 698.556 B; `aparelhos.json` 3.232.280 B → 3.406.926 B. `reports/` inalterado.
 - **Ticket:** #24 (local tracker: `24-classe-situacao-e-campos-da-tabela`)
 - **Checks:** Vitest 280/280 (29 arquivos; +11), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.
+
+### 25 — Sinal de consumo implausível (2026-10-24)
+
+- **Changed:** `packages/pipeline/src/anomalias.ts` (regra `valor_implausivel` de consumo por 1.000 BTU/h, com `minimo`/`maximo` e `porCapacidade` na tabela; `linhasComConsumoImplausivel`); `packages/pipeline/src/consulta.ts` (`ItemConsulta.suspeito` + `projetarConsulta(..., linhasSuspeitas)`); `packages/pipeline/src/build.ts` (liga as Linhas sinalizadas à projeção); artefatos `data/build/{anomalias.jsonl,consulta.json}`; testes `packages/pipeline/test/{anomalias,consulta,build}.test.ts` + snapshots, `apps/site/test/{consulta,filtros,opcoes}.test.ts(x)`, `docs/aceitacao/gabarito.json`; docs `docs/agentes.md`, `docs/agents/architecture.md`, `CONTEXT.md`.
+- **What works:** o detector sinaliza consumo anual fora de **10–120 kWh por 1.000 BTU/h** (capacidade da mesma Linha; sem capacidade numérica a regra não opina) sem corrigir nem excluir nada. Na Versão atual: 155 Linhas de consumo + 15 multiplicidades = **170 Anomalias**; **137 de 2.460 Aparelhos** ficam `suspeito: true` no `consulta.json`, incluindo MYSTIC 9.000/32,8, CONSUL 22.000/70,1 e MBO 18.000/2.534,4. A métrica do INMETRO é a mesma para todos os tipos (kWh do ciclo de 2.080 h/ano), então os Janela não pediram limiar próprio. `reports/` não muda porque esta é a primeira Versão (`anomaliasNovas` vazio).
+- **Ticket:** #25 (local tracker: `25-sinal-de-consumo-implausivel`)
+- **Checks:** Vitest 289/289 (29 arquivos; +9), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.

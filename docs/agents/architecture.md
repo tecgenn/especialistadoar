@@ -66,7 +66,7 @@ data/
   build/
     aparelhos.jsonl                   # base servida (Aparelhos com Dados declarados)
     aparelhos.json                    # espelho em array do acima
-    consulta.json                     # dataset enxuto de consulta (~680 KB, com marcaCatalogo, classe e situação)
+    consulta.json                     # dataset enxuto de consulta (~680 KB, com marcaCatalogo, classe, situação e suspeito)
     registros.jsonl                   # Linhas normalizadas (proveniência)
     schema.json                       # contrato JSON Schema
     manifest.json                     # metadados de versão (hash, data, contagens)
@@ -136,10 +136,12 @@ nova exportação CSV
   comportamento anterior à regra).
 - **anomalias** — sinaliza valores fora do padrão (não-numérico em campo numérico,
   colunas desalinhadas) e valores numericamente válidos, mas implausíveis para a
-  coluna, por uma tabela de regras de plausibilidade (`valor_implausivel`); o valor
-  original é preservado, não corrigido. A detecção roda depois das Exceções, então
-  uma capacidade corrigida não vira Anomalia. A Anomalia **nunca exclui** o
-  Aparelho (ADR-0017).
+  coluna, por uma tabela de regras de plausibilidade (`valor_implausivel`). A regra
+  pode normalizar o valor pela capacidade da Linha (consumo anual por 1.000 BTU/h,
+  faixa 10–120); o valor original é preservado, não corrigido. A detecção roda
+  depois das Exceções, então uma capacidade corrigida não vira Anomalia. A Anomalia
+  **nunca exclui** o Aparelho (ADR-0017); `linhasComConsumoImplausivel` alimenta o
+  `suspeito` do `consulta.json`.
 - **excecoes** — lê e valida a Exceção manual; aplica-a sobre o Valor original
   *antes* da normalização; recusa correção só-de-formato, campo inexistente e
   exceção órfã (que não casa com nenhuma Linha desta Versão da tabela).
@@ -181,11 +183,11 @@ nova exportação CSV
   sobre o `data/build/consulta.json`. É importado pela **ilha do site** (navegador)
   e por qualquer consumidor que queira a mesma semântica. O filtro `marca` casa a
   Marca de catálogo **e** a Marca oficial, e a busca indexa as duas (ADR-0016). O
-  dataset projeta, por Aparelho, `situacao`, `funcao`, `rotacao` e as listas únicas
-  e ordenadas `classes`, `idrs` e `consumosKwh` (além de `capacidadesBtu` e
-  `tensoes`) — Variantes sem o dado não contribuem. A leitura de arquivo fica de
-  fora desse entry (separar por entry point é o que impede `fs` de entrar no
-  bundle). Ver ADR-0008 e ADR-0018.
+  dataset projeta, por Aparelho, `situacao`, `funcao`, `rotacao`, `suspeito` e as
+  listas únicas e ordenadas `classes`, `idrs` e `consumosKwh` (além de
+  `capacidadesBtu` e `tensoes`) — Variantes sem o dado não contribuem. A leitura de
+  arquivo fica de fora desse entry (separar por entry point é o que impede `fs` de
+  entrar no bundle). Ver ADR-0008 e ADR-0018.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
   **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e

@@ -26,10 +26,10 @@
     },
     {
       "id": 2,
-      "resposta": "A base servida tem 2460 Aparelhos (só os com Dados declarados) e 15 Anomalias sinalizadas.",
+      "resposta": "A base servida tem 2460 Aparelhos (só os com Dados declarados) e 170 Anomalias sinalizadas.",
       "verificacoes": [
         { "tipo": "contagem-aparelhos", "esperado": 2460 },
-        { "tipo": "contagem-anomalias", "esperado": 15 }
+        { "tipo": "contagem-anomalias", "esperado": 170 }
       ]
     },
     {
