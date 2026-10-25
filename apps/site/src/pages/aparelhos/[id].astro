@@ -1,16 +1,21 @@
 ---
 import aparelhosJson from "@dados/aparelhos.json";
-import type {
-  Aparelho,
-  DadosDeclarados,
-  Tensao,
-} from "@especialista-do-ar/pipeline";
+import type { Aparelho } from "@especialista-do-ar/pipeline";
 import OfertaFaixa from "../../components/OfertaFaixa.astro";
 import { carregarAnalises } from "../../conteudo/analises.ts";
 import { marcaCatalogoDo } from "../../conteudo/marcas-catalogo.ts";
 import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
 import Base from "../../layouts/Base.astro";
 import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
+import {
+  agruparVariantes,
+  descreverCapacidade,
+  formatarCelula,
+  formatarFaixa,
+  gradeDeCondicoes,
+  resumoDaFicha,
+  titulosDosBlocos,
+} from "../../lib/ficha.ts";
 import type { Oferta } from "../../lib/ofertas.ts";
 
 export async function getStaticPaths() {
@@ -43,37 +48,12 @@ const { aparelho, ofertas, analise } = Astro.props;
 // oficial do INMETRO no título, no `<h1>` e na URL.
 const marcaCatalogo = marcaCatalogoDo(aparelho);
 
-function texto(valor: number | null, sufixo = ""): string {
-  return valor === null ? "—" : `${valor.toLocaleString("pt-BR")}${sufixo}`;
-}
-
-function tensaoTexto(tensao: Tensao | null): string {
-  if (tensao === null || tensao.voltagens.length === 0) {
-    return "—";
-  }
-  const voltagens = `${tensao.voltagens.join(" / ")} V`;
-  return tensao.fases.length === 0
-    ? voltagens
-    : `${voltagens} · ${tensao.fases.join(", ")}`;
-}
-
-function linhasDados(dados: DadosDeclarados): Array<[string, string]> {
-  return [
-    ["Capacidade nominal", texto(dados.capacidadeNominalBtu, " BTU/h")],
-    ["Capacidade nominal", texto(dados.capacidadeNominalW, " W")],
-    ["Potência esperada", texto(dados.potenciaEsperaW, " W")],
-    ["IDRS", texto(dados.idrs)],
-    ["Consumo anual", texto(dados.consumoAnualKwh, " kWh/ano")],
-    ["Capacidade — 35 °C total", texto(dados.capacidade35TotalW, " W")],
-    ["Potência — 35 °C total", texto(dados.potencia35TotalW, " W")],
-    ["Capacidade — 35 °C parcial", texto(dados.capacidade35ParcialW, " W")],
-    ["Potência — 35 °C parcial", texto(dados.potencia35ParcialW, " W")],
-    ["Capacidade — 29 °C total", texto(dados.capacidade29TotalW, " W")],
-    ["Potência — 29 °C total", texto(dados.potencia29TotalW, " W")],
-    ["Capacidade — 29 °C parcial", texto(dados.capacidade29ParcialW, " W")],
-    ["Potência — 29 °C parcial", texto(dados.potencia29ParcialW, " W")],
-  ];
-}
+// Variantes de dados idênticos (127 V e 220 V) viram um bloco só; as vazias
+// desaparecem. O resumo é do Aparelho inteiro, com faixa quando as Variantes
+// divergem — a ficha continua mostrando cada condição de ensaio logo abaixo.
+const blocos = agruparVariantes(aparelho.variantes);
+const resumo = resumoDaFicha(blocos);
+const titulos = titulosDosBlocos(blocos);
 
 const identificacao: Array<[string, string | null]> = [
   ["Tipo", aparelho.tipo],
@@ -117,26 +97,66 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       }
     </ul>
 
-    <h2>Dados declarados por Variante</h2>
+    <h2>Resumo</h2>
+    <dl>
+      <dt>Capacidade nominal</dt>
+      <dd>{descreverCapacidade(resumo)}</dd>
+      <dt>IDRS</dt>
+      <dd>{formatarFaixa(resumo.idrs)}</dd>
+      <dt>Classe</dt>
+      <dd>{resumo.classes.join(", ") || "—"}</dd>
+      <dt>Consumo anual</dt>
+      <dd>{formatarFaixa(resumo.consumosKwh, " kWh/ano")}</dd>
+      <dt>Potência em espera</dt>
+      <dd>{formatarFaixa(resumo.potenciasEsperaW, " W")}</dd>
+    </dl>
+
+    <h2>Condições de ensaio</h2>
+    <p class="intro">
+      As condições de ensaio combinam a temperatura externa (35 °C e 29 °C) com a
+      carga (total e parcial). Cada célula mostra a capacidade e a potência
+      elétrica declaradas pelo INMETRO, em W.
+    </p>
     {
-      aparelho.variantes.map((variante) => (
-        <section class="variante">
-          <h3>Tensão: {tensaoTexto(variante.tensao)}</h3>
-          <table>
-            <tbody>
-              {linhasDados(variante.dados).map(([rotulo, valor]) => (
-                <tr>
-                  <th scope="row">{rotulo}</th>
-                  <td>{valor}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p class="intro">
-            Linhas da tabela: {variante.linhas.join(", ")}.
-          </p>
-        </section>
-      ))
+      blocos.map((bloco, indice) => {
+        const grade = gradeDeCondicoes(bloco.dados);
+        return (
+          <section class="variante">
+            <h3>{titulos[indice]}</h3>
+            {grade.linhas.length === 0 ? (
+              <p class="intro">Sem dados nas condições de ensaio.</p>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Condição</th>
+                    {grade.mostrarTotal ? <th scope="col">Carga total</th> : null}
+                    {grade.mostrarParcial ? (
+                      <th scope="col">Carga parcial</th>
+                    ) : null}
+                  </tr>
+                </thead>
+                <tbody>
+                  {grade.linhas.map((linha) => (
+                    <tr>
+                      <th scope="row">{linha.temperatura} °C</th>
+                      {grade.mostrarTotal ? (
+                        <td>{formatarCelula(linha.total)}</td>
+                      ) : null}
+                      {grade.mostrarParcial ? (
+                        <td>{formatarCelula(linha.parcial)}</td>
+                      ) : null}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <p class="intro">
+              Linhas da tabela: {bloco.linhas.join(", ")}.
+            </p>
+          </section>
+        );
+      })
     }
 
     <h2>Proveniência</h2>

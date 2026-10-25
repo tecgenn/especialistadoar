@@ -414,6 +414,42 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     );
     expect(htmlHome).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
 
+    // Ficha nova (ticket 26): resumo no topo, grade 2×2 das condições de ensaio
+    // e Variantes de dados idênticos fundidas num bloco com as tensões unidas.
+    const gree = aparelhosDaBase().find(
+      (item) => item.modelo === "GJC07BK-A3NRND2A",
+    );
+    expect(gree).toBeDefined();
+    const htmlGree = lerHtml("aparelhos", gree?.id as string);
+    expect(htmlGree).toContain("<h2>Resumo</h2>");
+    expect(htmlGree).toContain("7.500 BTU/h (2.197 W)");
+    expect(htmlGree).toContain("2,97");
+    expect(htmlGree).toContain("15,5 kWh/ano");
+    expect(htmlGree.match(/class="variante"/g) ?? []).toHaveLength(1);
+    expect(htmlGree).toContain("Tensão: 127 / 220 V");
+    expect(htmlGree).toContain('<th scope="col">Condição</th>');
+    expect(htmlGree).toContain('<th scope="col">Carga total</th>');
+    expect(htmlGree).not.toContain('<th scope="col">Carga parcial</th>');
+    expect(htmlGree).toContain("2.200 / 740 W");
+    // A fase acompanha a voltagem: 127 V é monofásico, 220 V aceita
+    // monofásico e bifásico — as fases não são fundidas numa lista só.
+    expect(htmlGree).toContain(
+      "Tensão: 127 / 220 V · 127 V: monofásico · 220 V: monofásico, bifásico",
+    );
+    // As 13 linhas repetidas por Variante saíram da ficha.
+    expect(htmlGree).not.toContain("Potência — 35 °C total");
+    expect(htmlGree).toContain("Linhas da tabela: 784, 5867");
+
+    // A ficha precisa caber em 360 px sem rolagem horizontal: o resumo vira uma
+    // coluna e as células da grade podem quebrar. O CSS é embutido na página.
+    const cssDaFicha = [
+      ...htmlGree.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g),
+    ]
+      .map((achado) => achado[1])
+      .join("");
+    expect(cssDaFicha).toMatch(/@media[^{]*\{[^}]*\.aparelho dl\{[^}]*1fr/);
+    expect(cssDaFicha).toContain("overflow-wrap:anywhere");
+
     const consultaPublicada = JSON.parse(
       readFileSync(join(distDir, "consulta.json"), "utf8"),
     ) as Array<{ id: string; marca: string; marcaCatalogo: string }>;
