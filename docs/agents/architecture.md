@@ -199,7 +199,10 @@ nova exportação CSV
   vêm de uma curadoria do site (`apps/site/filtros.json`), validada no build:
   viram `<button aria-pressed>` a um clique, o resto fica no `<select>` e um
   valor curado ausente da base é ocultado — site-only, sem tocar em
-  `data/build/` nem na semântica da consulta. As **Ofertas** (links comerciais de
+  `data/build/` nem na semântica da consulta. A **ficha** do Aparelho
+  (`src/lib/ficha.ts`) funde as Variantes de `dados` idênticos num bloco só com as
+  tensões unidas, omite as vazias e troca as 13 linhas repetidas por um resumo e
+  uma grade 2×2 das condições de ensaio (35 °C e 29 °C × carga total e parcial). As **Ofertas** (links comerciais de
   afiliado) vivem só aqui, em
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por

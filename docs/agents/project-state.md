@@ -13,14 +13,14 @@ afiliado e remoção da busca). Os tickets estão em
 
 | # | Ticket | Bloqueado por |
 | --- | --- | --- |
-| 26 | Ficha técnica nova | — |
 | 27 | Página Aparelhos (tabela) | — |
 | 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | 27 |
 | 29 | Home, menu e redirects | 27, 28 |
 | 30 | Remover `/busca/` e o Pagefind | 27 |
 
-Os tickets `24` (Classe, Situação e campos da tabela) e `25` (Sinal de consumo
-implausível) foram concluídos e estão no log abaixo; `26` e `27` estão livres.
+Os tickets `24` (Classe, Situação e campos da tabela), `25` (Sinal de consumo
+implausível) e `26` (Ficha técnica nova) foram concluídos e estão no log abaixo;
+`27` está livre.
 
 O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -200,3 +200,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** o detector sinaliza consumo anual fora de **10–120 kWh por 1.000 BTU/h** (capacidade da mesma Linha; sem capacidade numérica a regra não opina) sem corrigir nem excluir nada. Na Versão atual: 155 Linhas de consumo + 15 multiplicidades = **170 Anomalias**; **137 de 2.460 Aparelhos** ficam `suspeito: true` no `consulta.json`, incluindo MYSTIC 9.000/32,8, CONSUL 22.000/70,1 e MBO 18.000/2.534,4. A métrica do INMETRO é a mesma para todos os tipos (kWh do ciclo de 2.080 h/ano), então os Janela não pediram limiar próprio. `reports/` não muda porque esta é a primeira Versão (`anomaliasNovas` vazio).
 - **Ticket:** #25 (local tracker: `25-sinal-de-consumo-implausivel`)
 - **Checks:** Vitest 289/289 (29 arquivos; +9), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas.
+
+### 26 — Ficha técnica nova (2026-10-24)
+
+- **Changed:** novo `apps/site/src/lib/ficha.ts` (puro: `agruparVariantes`, `resumoDaFicha`, `gradeDeCondicoes`, `titulosDosBlocos`, `formatarFaixa`/`descreverCapacidade`/`formatarCelula`); `apps/site/src/pages/aparelhos/[id].astro` (resumo no topo, grade 2×2 das condições de ensaio, blocos de Variante fundidas — sai a tabela de 13 linhas por Variante); `apps/site/src/styles/global.css` (ficha em coluna única e células quebráveis no celular); testes `apps/site/test/ficha.test.ts` (novo, 10 testes) e `apps/site/test/analises-build.test.ts` (ficha do GREE no build real); docs `docs/agents/architecture.md`.
+- **What works:** a ficha de cada Aparelho mostra um **resumo** (capacidade em BTU/h com W entre parênteses, IDRS, Classe, consumo anual e potência em espera; "—" quando falta) e uma **grade 2×2** das condições de ensaio (35 °C e 29 °C × carga total e parcial), com "capacidade / potência" em W, linhas e colunas vazias omitidas e uma frase explicando as condições. As Variantes de `dados` idênticos viram **um bloco só** com as tensões unidas ("127 / 220 V") e as Variantes sem Dado declarado somem (a Classe não conta como Dado declarado, ADR-0018): o `GREE GJC07BK-A3NRND2A` (3 Variantes) sai com um bloco e a grade de 35 °C. A fase **acompanha a voltagem** — fundir "220 V · monofásico, bifásico" com "380 V · trifásico" não pode virar uma lista de fases, que associaria trifásico aos 220 V: quando as voltagens aceitam as mesmas fases elas vêm juntas, e quando diferem cada voltagem vem com as suas. A célula da grade mostra sempre o par "capacidade / potência", com "—" no valor ausente. Quando as Variantes divergem (261 Aparelhos), o resumo mostra **faixa** e os blocos com a mesma tensão ganham "declaração N de M", para não descartar nada em silêncio nem repetir títulos idênticos. A Proveniência continua listando todas as Linhas; Ofertas, "Leia a análise" e o link da marca ficam como estão; `id`s, URLs e a base servida não mudam.
+- **Ticket:** #26 (local tracker: `26-ficha-tecnica-nova`)
+- **Checks:** Vitest 304/304 (30 arquivos; +15), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas; a ficha do GREE conferida no HTML do build, com a regra de celular (resumo em uma coluna e células quebráveis) guardada no CSS embutido.

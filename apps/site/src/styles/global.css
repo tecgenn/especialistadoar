@@ -301,3 +301,22 @@ footer {
 .analises-destaque-lista .ofertas {
   margin-block: 0.75rem 0;
 }
+
+/* Ficha no celular: o resumo vira uma coluna e as células da grade de condições
+   podem quebrar, sem rolagem horizontal. */
+@media (max-width: 40rem) {
+  .aparelho dl {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  .aparelho dt {
+    margin-top: 0.5rem;
+  }
+
+  .variante th,
+  .variante td {
+    padding: 0.3rem 0.35rem;
+    overflow-wrap: anywhere;
+  }
+}
