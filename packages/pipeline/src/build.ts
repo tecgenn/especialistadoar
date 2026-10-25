@@ -6,7 +6,11 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
-import { type Anomalia, detectarAnomalias } from "./anomalias.ts";
+import {
+  type Anomalia,
+  detectarAnomalias,
+  linhasComConsumoImplausivel,
+} from "./anomalias.ts";
 import { type Aparelho, SCHEMA_APARELHO } from "./aparelho.ts";
 import { type ItemConsulta, projetarConsulta } from "./consulta.ts";
 import { type ClassificacaoRevisao, classificarRevisao } from "./diff.ts";
@@ -236,6 +240,7 @@ export function runBuild(options: BuildOptions): BuildResult {
       marcasCatalogo,
       todosAparelhos.map((aparelho) => aparelho.marca),
     ),
+    linhasComConsumoImplausivel(anomalias),
   );
 
   const anterior = versaoPrecedente(manifest, versao);

@@ -23,6 +23,7 @@ function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
     idrs: [],
     consumosKwh: [],
     ...over,
+    suspeito: over.suspeito ?? false,
     marca: over.marca ?? "X",
     marcaCatalogo: over.marcaCatalogo ?? over.marca ?? "X",
   };

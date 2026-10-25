@@ -32,6 +32,7 @@ const itens: ItemConsulta[] = [
     classes: ["A"],
     idrs: [3.5],
     consumosKwh: [818],
+    suspeito: false,
   },
   {
     id: "lg-janela",
@@ -47,6 +48,7 @@ const itens: ItemConsulta[] = [
     classes: ["B"],
     idrs: [3.5],
     consumosKwh: [818],
+    suspeito: false,
   },
   {
     id: "midea-oficial",
@@ -62,6 +64,7 @@ const itens: ItemConsulta[] = [
     classes: ["A"],
     idrs: [3.5],
     consumosKwh: [818],
+    suspeito: false,
   },
   {
     id: "midea-springer",
@@ -77,6 +80,7 @@ const itens: ItemConsulta[] = [
     classes: ["A"],
     idrs: [3.5],
     consumosKwh: [818],
+    suspeito: false,
   },
   {
     id: "gree-split",
@@ -92,6 +96,7 @@ const itens: ItemConsulta[] = [
     classes: ["A"],
     idrs: [3.5],
     consumosKwh: [818],
+    suspeito: false,
   },
 ];
 

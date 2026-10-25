@@ -22,7 +22,7 @@ Base publicada no Cloudflare Pages: **`https://especialista-do-ar.pages.dev/`**.
 |---|---|---|
 | `manifest.json` | A Versão da tabela atual (hash, data de obtenção, origem, contagem de Linhas) | Citar a **proveniência** de qualquer resposta |
 | `aparelhos.json` | A base servida completa (array de Aparelhos, com Variantes, Dados declarados, `linhas` e `registros`) | Consulta por ID e detalhe técnico |
-| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `situacao`, `funcao`, `rotacao` e as listas `capacidadesBtu`, `tensoes`, `classes`, `idrs` e `consumosKwh` | Filtrar/buscar antes de buscar o detalhe |
+| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `situacao`, `funcao`, `rotacao`, `suspeito` e as listas `capacidadesBtu`, `tensoes`, `classes`, `idrs` e `consumosKwh` | Filtrar/buscar antes de buscar o detalhe |
 | `schema.json` | JSON Schema do contrato de Aparelho | Validar o formato |
 | `registros.jsonl` | As Linhas da tabela normalizadas (uma por Linha, com o Valor original) | Proveniência: voltar da Linha ao dado cru |
 | `anomalias.jsonl` | Anomalias por Linha da tabela (campo, valor original, tipo) | Sinalizar dados suspeitos — não são erros fatais |
@@ -92,7 +92,8 @@ O `consulta.json` também carrega `funcao`, `rotacao` e as listas `idrs` e
 `consumosKwh` (únicas, ordenadas, ignorando Variantes sem o dado), para filtrar e
 ordenar a tabela sem baixar a base completa. `classes`, `idrs` e `consumosKwh`
 seguem a mesma regra de `capacidadesBtu`: o valor de qualquer Variante do Aparelho
-conta.
+conta. `suspeito` é `true` quando alguma Linha do Aparelho tem consumo implausível
+por 1.000 BTU/h (ticket 25) — sinaliza, mas o Aparelho continua na base.
 
 ## Valor calculado — fórmula documentada
 
@@ -135,8 +136,8 @@ Resultado: 818 kWh/ano × 0,95 = **R$ 777,10/ano**.
 - **Anomalia** é um sinal, não um erro: um campo que deveria ser numérico e veio
   com texto (`texto_em_campo_numerico`), com múltiplos números (`valor_multiplo`) ou
   com um número válido, mas implausível para a coluna (`valor_implausivel`, ex.:
-  capacidade nominal abaixo de 6.000 BTU/h). O valor original é preservado; quem
-  consulta decide como tratar.
+  capacidade nominal abaixo de 6.000 BTU/h ou consumo fora de 10–120 kWh por
+  1.000 BTU/h). O valor original é preservado; quem consulta decide como tratar.
 - **Ausente** (um Aparelho de uma versão anterior que sumiu) não presume causa, e
   **Aparelho sem dados declarados** é um estado — não trate nenhum dos dois como
   "produto removido/cancelado".

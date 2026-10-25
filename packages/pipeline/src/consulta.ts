@@ -27,6 +27,11 @@ export interface ItemConsulta {
   classes: string[];
   idrs: number[];
   consumosKwh: number[];
+  /**
+   * Alguma Linha do Aparelho tem consumo implausível por 1.000 BTU/h (ticket
+   * 25). Sinaliza para o usuário sem excluir o Aparelho da base (ADR-0017).
+   */
+  suspeito: boolean;
 }
 
 function numerosUnicos(valores: Array<number | null>): number[] {
@@ -43,6 +48,7 @@ function textosUnicos(valores: Array<string | null>): string[] {
 export function projetarConsulta(
   aparelhos: Aparelho[],
   marcaCatalogo: ResolverMarcaCatalogo,
+  linhasSuspeitas: ReadonlySet<number>,
 ): ItemConsulta[] {
   return aparelhos.map((aparelho) => ({
     id: aparelho.id,
@@ -70,5 +76,6 @@ export function projetarConsulta(
     consumosKwh: numerosUnicos(
       aparelho.variantes.map((variante) => variante.dados.consumoAnualKwh),
     ),
+    suspeito: aparelho.linhas.some((linha) => linhasSuspeitas.has(linha)),
   }));
 }
