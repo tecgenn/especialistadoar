@@ -23,6 +23,11 @@ export interface PropsConsulta {
   opcoes: OpcoesConsulta;
   /** URL do dataset enxuto de consulta (servido ao lado das páginas). */
   consultaUrl?: string;
+  /** Mapa de Aparelhos analisados: aparelhoId → { titulo, url, temLinkAfiliado }. */
+  analisados?: Map<
+    string,
+    { titulo: string; url: string; temLinkAfiliado: boolean }
+  >;
 }
 
 /** Quantas linhas aparecem antes de "Mostrar mais". */
@@ -123,6 +128,7 @@ function Cabecalho({
 export default function Consulta({
   opcoes,
   consultaUrl = "/consulta.json",
+  analisados = new Map(),
 }: PropsConsulta) {
   const [motor, setMotor] = useState<MotorConsulta | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -219,7 +225,22 @@ export default function Consulta({
   // MiniSearch; A–Z e as colunas só entram quando a pessoa pede.
   const usarOrdenacao =
     estado.ordem !== undefined || (estado.q ?? "").trim() === "";
-  const resultados = usarOrdenacao ? ordenar(filtrados, estado) : filtrados;
+  const resultadosOrdenados = usarOrdenacao
+    ? ordenar(filtrados, estado)
+    : filtrados;
+
+  // Divide em dois grupos: analisados primeiro (ordenados dentro do grupo), depois demais.
+  const analisadosIds = new Set(analisados.keys());
+  const grupoAnalisados: ItemConsulta[] = [];
+  const grupoDemais: ItemConsulta[] = [];
+  for (const item of resultadosOrdenados) {
+    if (analisadosIds.has(item.id)) {
+      grupoAnalisados.push(item);
+    } else {
+      grupoDemais.push(item);
+    }
+  }
+  const resultados = [...grupoAnalisados, ...grupoDemais];
 
   // Mudar filtro ou ordem volta para o início; "Mostrar mais" só cresce a
   // quantidade dentro do mesmo estado.
@@ -228,6 +249,10 @@ export default function Consulta({
     paginacao.chave === chaveEstado ? paginacao.quantidade : TAMANHO_PAGINA;
   const exibidos = resultados.slice(0, mostrados);
   const temFiltro = temFiltroAtivo(estado);
+  const temAnalisadosVisiveis = grupoAnalisados.length > 0;
+  const analisadosComLinkAfiliado = grupoAnalisados.some(
+    (item) => analisados.get(item.id)?.temLinkAfiliado,
+  );
 
   // Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER MIDEA`). Ela
   // continua valendo no filtro; sem esta opção extra o `<select>` cairia em
@@ -506,35 +531,100 @@ export default function Consulta({
               </tr>
             </thead>
             <tbody>
-              {exibidos.map((item) => (
-                <tr key={item.id}>
-                  {COLUNAS_TABELA.map((coluna) => {
-                    const valor = valorDaColuna(item, coluna.campo);
-                    return (
-                      <td key={coluna.campo} data-label={coluna.rotulo}>
-                        {coluna.campo === "modelo" ? (
-                          <a href={`/aparelhos/${item.id}`}>{valor}</a>
-                        ) : (
-                          valor
-                        )}
-                        {coluna.campo === "consumo" && item.suspeito ? (
-                          <span
-                            className="suspeito"
-                            title="Consumo declarado fora do padrão"
-                          >
-                            {" "}
-                            ⚠
-                            <span className="sr-only">
-                              {" "}
-                              consumo declarado suspeito
-                            </span>
-                          </span>
-                        ) : null}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
+              {(() => {
+                const linhas: React.ReactNode[] = [];
+                let grupoAtual: "analisados" | "demais" | null = null;
+
+                for (const item of exibidos) {
+                  const ehAnalisado = analisadosIds.has(item.id);
+                  const grupo = ehAnalisado ? "analisados" : "demais";
+
+                  // Cabeçalho do grupo quando muda de grupo
+                  if (grupo !== grupoAtual) {
+                    if (grupo === "analisados") {
+                      linhas.push(
+                        <tr key="grupo-analisados" className="grupo-cabecalho">
+                          <td colSpan={COLUNAS_TABELA.length}>
+                            <strong>Analisados por nós</strong>
+                            {analisadosComLinkAfiliado && (
+                              <span className="aviso-afiliado">
+                                {" "}
+                                · contém links de afiliado
+                              </span>
+                            )}
+                          </td>
+                        </tr>,
+                      );
+                    } else if (grupo === "demais" && temAnalisadosVisiveis) {
+                      linhas.push(
+                        <tr key="grupo-demais" className="grupo-cabecalho">
+                          <td colSpan={COLUNAS_TABELA.length}>
+                            <strong>Demais aparelhos</strong>
+                          </td>
+                        </tr>,
+                      );
+                    }
+                    grupoAtual = grupo;
+                  }
+
+                  const analise = ehAnalisado
+                    ? analisados.get(item.id)
+                    : undefined;
+
+                  linhas.push(
+                    <tr key={item.id}>
+                      {COLUNAS_TABELA.map((coluna) => {
+                        const valor = valorDaColuna(item, coluna.campo);
+                        return (
+                          <td key={coluna.campo} data-label={coluna.rotulo}>
+                            {coluna.campo === "marca" && analise ? (
+                              <>
+                                {valor}
+                                <span
+                                  className="analisado-selo"
+                                  id={`analisado-tooltip-${item.id}`}
+                                >
+                                  <a
+                                    href={analise.url}
+                                    className="analisado-link"
+                                  >
+                                    Analisado
+                                  </a>
+                                  <span
+                                    className="analisado-tooltip"
+                                    role="tooltip"
+                                  >
+                                    Análise completa: {analise.titulo}. Contém
+                                    links de afiliado.
+                                  </span>
+                                </span>
+                              </>
+                            ) : coluna.campo === "modelo" ? (
+                              <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                            ) : (
+                              valor
+                            )}
+                            {coluna.campo === "consumo" && item.suspeito ? (
+                              <span
+                                className="suspeito"
+                                title="Consumo declarado fora do padrão"
+                              >
+                                {" "}
+                                ⚠
+                                <span className="sr-only">
+                                  {" "}
+                                  consumo declarado suspeito
+                                </span>
+                              </span>
+                            ) : null}
+                          </td>
+                        );
+                      })}
+                    </tr>,
+                  );
+                }
+                return linhas;
+              })()}
             </tbody>
           </table>
           {resultados.length > mostrados ? (

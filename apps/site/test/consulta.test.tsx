@@ -606,3 +606,125 @@ describe("chips de marca e capacidade", () => {
     );
   });
 });
+
+describe("Aparelhos analisados (ticket 28)", () => {
+  const analisadosMap = new Map<
+    string,
+    { titulo: string; url: string; temLinkAfiliado: boolean }
+  >([
+    [
+      "lg-split",
+      {
+        titulo: "Análise do LG Dual Inverter",
+        url: "/analises/lg-dual-inverter/",
+        temLinkAfiliado: true,
+      },
+    ],
+    [
+      "midea-oficial",
+      {
+        titulo: "Análise do Midea Xtreme Save",
+        url: "/analises/midea-xtreme-save/",
+        temLinkAfiliado: false,
+      },
+    ],
+  ]);
+
+  async function montarComAnalisados() {
+    render(<Consulta opcoes={opcoesDe(itens)} analisados={analisadosMap} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+  }
+
+  it("mostra grupo 'Analisados por nós' com aviso de afiliado quando há analisados com link", async () => {
+    await montarComAnalisados();
+    expect(screen.getByText("Analisados por nós")).toBeDefined();
+    expect(screen.getByText(/contém links de afiliado/)).toBeDefined();
+  });
+
+  it("mostra grupo 'Demais aparelhos' quando há analisados", async () => {
+    await montarComAnalisados();
+    expect(screen.getByText("Demais aparelhos")).toBeDefined();
+  });
+
+  it("analisados aparecem antes dos demais na tabela", async () => {
+    await montarComAnalisados();
+    const linhas = screen.getAllByRole("row").slice(1); // pula cabeçalho da tabela
+    // Primeira linha é o cabeçalho do grupo "Analisados por nós"
+    expect(linhas[0]?.textContent).toContain("Analisados por nós");
+    // Segunda linha é o primeiro analisado (LG Dual Inverter)
+    expect(linhas[1]?.textContent).toContain("Dual Inverter");
+    // Terceira linha é o segundo analisado (Midea Xtreme Save)
+    expect(linhas[2]?.textContent).toContain("Xtreme Save");
+    // Quarta linha é o cabeçalho "Demais aparelhos"
+    expect(linhas[3]?.textContent).toContain("Demais aparelhos");
+  });
+
+  it("renderiza selo 'Analisado' com link para a Análise na coluna Marca", async () => {
+    await montarComAnalisados();
+    const selos = screen.getAllByText("Analisado");
+    expect(selos.length).toBeGreaterThan(0);
+    const link = selos[0].closest("a");
+    expect(link).not.toBeNull();
+    expect(link?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
+  });
+
+  it("tooltip do selo mostra título da Análise e aviso de afiliado", async () => {
+    await montarComAnalisados();
+    const selos = screen.getAllByText("Analisado");
+    expect(selos.length).toBeGreaterThan(0);
+    // O texto "Analisado" está dentro do <a>, cujo pai é .analisado-selo
+    const selo = selos[0].closest(".analisado-selo");
+    expect(selo).not.toBeNull();
+    const tooltip = selo?.querySelector('[role="tooltip"]');
+    expect(tooltip).not.toBeNull();
+    expect(tooltip?.textContent).toContain(
+      "Análise completa: Análise do LG Dual Inverter",
+    );
+    expect(tooltip?.textContent).toContain("Contém links de afiliado");
+  });
+
+  it("ordenação por coluna funciona dentro de cada grupo", async () => {
+    await montarComAnalisados();
+    // Ordena por consumo
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+    await waitFor(() => {
+      const linhas = screen.getAllByRole("row").slice(1);
+      // Primeira linha é o cabeçalho do grupo "Analisados por nós"
+      expect(linhas[0]?.textContent).toContain("Analisados por nós");
+      // Dentro do grupo analisados, o de menor consumo (Xtreme Save = 200) vem primeiro
+      expect(linhas[1]?.textContent).toContain("Xtreme Save");
+      expect(linhas[2]?.textContent).toContain("Dual Inverter");
+    });
+  });
+
+  it("sem analisados, a tabela é idêntica ao ticket 27 (sem grupos)", async () => {
+    render(<Consulta opcoes={opcoesDe(itens)} analisados={new Map()} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    expect(screen.queryByText("Analisados por nós")).toBeNull();
+    expect(screen.queryByText("Demais aparelhos")).toBeNull();
+    expect(screen.queryByText("Analisado")).toBeNull();
+  });
+
+  it("filtro por marca mantém analisados no topo dentro do filtro", async () => {
+    await montarComAnalisados();
+    fireEvent.change(screen.getByLabelText("Marca"), {
+      target: { value: "LG" },
+    });
+    // Aguarda a tabela atualizar (2 modelos da marca LG: Dual Inverter e Janela)
+    await waitFor(() => {
+      const modelos = screen.getAllByRole("link", {
+        name: /Dual Inverter|Janela/,
+      });
+      expect(modelos).toHaveLength(2);
+    });
+    const linhas = screen.getAllByRole("row").slice(1);
+    // Primeira linha é o cabeçalho do grupo "Analisados por nós"
+    expect(linhas[0]?.textContent).toContain("Analisados por nós");
+    // Segunda linha é o analisado (Dual Inverter)
+    expect(linhas[1]?.textContent).toContain("Dual Inverter");
+    // Terceira linha é o cabeçalho "Demais aparelhos"
+    expect(linhas[2]?.textContent).toContain("Demais aparelhos");
+    // Quarta linha é o demais (Janela)
+    expect(linhas[3]?.textContent).toContain("Janela");
+  });
+});
