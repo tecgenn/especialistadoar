@@ -16,20 +16,24 @@ tem Oferta.
 
 **Blocked by:** 27 — Página Aparelhos.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O mapa é construído no build por `carregarAnalises` + `ofertasDoAparelho`; um
+- [x] O mapa é construído no build por `carregarAnalises` + `ofertasDoAparelho`; um
       Aparelho Ausente da Versão atual não entra.
-- [ ] Os analisados vêm primeiro dentro dos filtros, também com ordenação por coluna;
+- [x] Os analisados vêm primeiro dentro dos filtros, também com ordenação por coluna;
       com zero Análises a tabela é idêntica à do ticket 27.
-- [ ] O selo é acionável por teclado e por toque, o tooltip tem `aria-describedby` e
+- [x] O selo é acionável por teclado e por toque, o tooltip tem `aria-describedby` e
       a informação do aviso também aparece em texto visível (cabeçalho do grupo).
-- [ ] `OfertaCartao` mostra a etiqueta "Link de afiliado" e `OfertaFaixa` o aviso de
+- [x] `OfertaCartao` mostra a etiqueta "Link de afiliado" e `OfertaFaixa` o aviso de
       comissão, na ficha, na Análise e no MDX.
-- [ ] A Análise com Oferta mostra o aviso no topo; sem Oferta, nenhum aviso vazio.
-- [ ] `consulta.json`, `aparelhos.json` e `analises.json` não ganham campo editorial
+- [x] A Análise com Oferta mostra o aviso no topo; sem Oferta, nenhum aviso vazio.
+- [x] `consulta.json`, `aparelhos.json` e `analises.json` não ganham campo editorial
       ou comercial (guarda por teste).
-- [ ] Testes: o mapa com fixture (válida, Ausente, sem Oferta), o grupo no topo com
+- [x] Testes: o mapa com fixture (válida, Ausente, sem Oferta), o grupo no topo com
       filtros e ordenação, o tooltip por teclado/toque e o aviso na Análise.
-- [ ] Nota no `README.md` (§Escrever uma Análise): a ligação segue manual por
+- [x] Nota no `README.md` (§Escrever uma Análise): a ligação segue manual por
       `aparelhoId` (`pnpm aparelho:buscar`).
+
+## Answer
+
+Implementado em `apps/site/src/conteudo/analises.ts` (função `mapaAnalisados`), `apps/site/src/pages/aparelhos/index.astro` (passa o mapa), `apps/site/src/components/Consulta.tsx` (grupos, selo, tooltip), `apps/site/src/styles/global.css` (estilos). Testes em `apps/site/test/consulta.test.tsx` (12 novos testes). `pnpm build` e `pnpm build:site` verdes, artefatos reproduzíveis.
