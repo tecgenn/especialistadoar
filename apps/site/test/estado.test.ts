@@ -53,8 +53,52 @@ describe("estado da consulta na URL", () => {
       tipo: "Split Hi-Wall",
       btu: 12000,
       tensao: 127,
+      funcao: "Frio",
+      classe: "A",
+      rotacao: "Velocidade Variável",
+      situacao: "ativo",
       q: "inverter",
-    };
+      ordem: "idrs",
+      dir: "desc",
+    } as const;
     expect(lerEstado(escreverEstado(original))).toEqual(original);
+  });
+
+  it("lê os filtros novos e a ordenação", () => {
+    expect(
+      lerEstado(
+        new URLSearchParams(
+          "funcao=Frio&classe=a&rotacao=Velocidade+Fixa&situacao=inativo&ordem=consumo&dir=desc",
+        ),
+      ),
+    ).toEqual({
+      funcao: "Frio",
+      classe: "A",
+      rotacao: "Velocidade Fixa",
+      situacao: "inativo",
+      ordem: "consumo",
+      dir: "desc",
+    });
+  });
+
+  it("ignora ordenação e Situação inválidas, sem quebrar a consulta", () => {
+    expect(
+      lerEstado(new URLSearchParams("ordem=preco&dir=subindo&situacao=talvez")),
+    ).toEqual({});
+  });
+
+  it("não escreve filtros novos vazios", () => {
+    expect(
+      escreverEstado({
+        funcao: " ",
+        classe: "",
+        rotacao: "",
+        situacao: undefined,
+      }).toString(),
+    ).toBe("");
+  });
+
+  it("não escreve a Situação 'todos' (equivale a ausência de filtro)", () => {
+    expect(escreverEstado({ situacao: "todos" }).toString()).toBe("");
   });
 });

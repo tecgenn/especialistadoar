@@ -13,14 +13,13 @@ afiliado e remoção da busca). Os tickets estão em
 
 | # | Ticket | Bloqueado por |
 | --- | --- | --- |
-| 27 | Página Aparelhos (tabela) | — |
-| 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | 27 |
-| 29 | Home, menu e redirects | 27, 28 |
-| 30 | Remover `/busca/` e o Pagefind | 27 |
+| 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | — |
+| 29 | Home, menu e redirects | 28 |
+| 30 | Remover `/busca/` e o Pagefind | — |
 
 Os tickets `24` (Classe, Situação e campos da tabela), `25` (Sinal de consumo
-implausível) e `26` (Ficha técnica nova) foram concluídos e estão no log abaixo;
-`27` está livre.
+implausível), `26` (Ficha técnica nova) e `27` (Página Aparelhos em tabela) foram
+concluídos e estão no log abaixo; `28` está livre.
 
 O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -207,3 +206,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** a ficha de cada Aparelho mostra um **resumo** (capacidade em BTU/h com W entre parênteses, IDRS, Classe, consumo anual e potência em espera; "—" quando falta) e uma **grade 2×2** das condições de ensaio (35 °C e 29 °C × carga total e parcial), com "capacidade / potência" em W, linhas e colunas vazias omitidas e uma frase explicando as condições. As Variantes de `dados` idênticos viram **um bloco só** com as tensões unidas ("127 / 220 V") e as Variantes sem Dado declarado somem (a Classe não conta como Dado declarado, ADR-0018): o `GREE GJC07BK-A3NRND2A` (3 Variantes) sai com um bloco e a grade de 35 °C. A fase **acompanha a voltagem** — fundir "220 V · monofásico, bifásico" com "380 V · trifásico" não pode virar uma lista de fases, que associaria trifásico aos 220 V: quando as voltagens aceitam as mesmas fases elas vêm juntas, e quando diferem cada voltagem vem com as suas. A célula da grade mostra sempre o par "capacidade / potência", com "—" no valor ausente. Quando as Variantes divergem (261 Aparelhos), o resumo mostra **faixa** e os blocos com a mesma tensão ganham "declaração N de M", para não descartar nada em silêncio nem repetir títulos idênticos. A Proveniência continua listando todas as Linhas; Ofertas, "Leia a análise" e o link da marca ficam como estão; `id`s, URLs e a base servida não mudam.
 - **Ticket:** #26 (local tracker: `26-ficha-tecnica-nova`)
 - **Checks:** Vitest 304/304 (30 arquivos; +15), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas; a ficha do GREE conferida no HTML do build, com a regra de celular (resumo em uma coluna e células quebráveis) guardada no CSS embutido.
+
+### 27 — Página Aparelhos (tabela) (2026-10-26)
+
+- **Changed:** `packages/api/src/consulta.ts` (`FiltrosConsulta` ganha `funcao`, `classe`, `rotacao`, `situacao`; `OrdenacaoConsulta` com `ordem`/`dir`; `ORDENS_CONSULTA`/`DIRECOES_CONSULTA`/`SITUACOES_CONSULTA` canônicos; **`ordenar`** — A–Z por Marca de catálogo e modelo, menor/maior valor da lista por coluna, ausente no fim, suspeitos no fim em IDRS e consumo); `apps/site/src/components/Consulta.tsx` (a ilha vira `<table>`: cabeçalhos `<button>` com `aria-sort`, "Mostrar mais" (+50), contagem, filtros de função/Classe/rotação/Situação, seletor "Ordenar por", botão de direção, ⚠ + texto `sr-only` para suspeitos, `data-label` por célula); `apps/site/src/lib/estado.ts` (URL ⇆ estado com os filtros e a ordenação novos); `apps/site/src/lib/opcoes.ts` (`funcoes`, `classes`, `rotacoes`, `situacoes`); `apps/site/src/lib/tabela.ts` (novo — `COLUNAS_TABELA` e `valorDaColuna`); `apps/site/src/pages/aparelhos/index.astro` (novo — `/aparelhos/`); `apps/site/src/styles/global.css` (tabela, `.sr-only` e cartões abaixo de 640 px); testes `packages/api/test/ordenacao.test.ts` (novo), `apps/site/test/tabela.test.ts` (novo), `{consulta,estado,opcoes,analises-build}.test.ts(x)`; docs `docs/agents/architecture.md`; ticket `27` com as decisões.
+- **What works:** `/aparelhos/` é a **tabela** de Aparelhos — uma linha por Aparelho (Marca de catálogo, Modelo com link para a ficha, BTU/h, Consumo, IDRS, Classe, Tipo e Situação), cabeçalhos clicáveis que ordenam com `aria-sort` e o seletor "Ordenar por" repetindo as colunas. A ordenação é **função pura** no entry isomórfico (`ordenar`), com a mesma semântica para a ilha e para qualquer Agente: A–Z por Marca de catálogo e modelo com números em ordem natural (`Intl.Collator("pt-BR", { numeric: true })`), por coluna o menor valor da lista para crescente e o maior para decrescente, quem não declara o dado no fim e os **suspeitos** (ticket 25) no fim em IDRS e consumo — MYSTIC, CONSUL e MBO não dominam o topo. MIDEA e SPRINGER MIDEA ficam juntos pela Marca de catálogo. Com busca, a ordem inicial é a relevância. Os filtros novos (função, Classe, rotação e Situação) entram ao lado dos antigos e dos chips, e o estado inteiro fica na URL (`?funcao=&classe=&rotacao=&situacao=&ordem=&dir=`), sem quebrar os links antigos. A tabela mostra 50 linhas e "Mostrar mais" acrescenta 50; abaixo de 640 px cada linha vira um cartão (`data-label`), sem rolagem horizontal — e, como o cabeçalho some, um botão ao lado de "Ordenar por" inverte a direção. "Limpar filtros" limpa os filtros e **mantém** a ordenação. `/` mostra a mesma ilha até o ticket 29; `data/build` e `reports/` não mudam.
+- **Ticket:** #27 (local tracker: `27-pagina-aparelhos-tabela`)
+- **Checks:** Vitest 331/331 (32 arquivos; +27), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera **2.463** páginas (2.462 só no fim da Fase 7, quando `/busca/` sai no ticket 30) — o desvio está registrado no ticket.

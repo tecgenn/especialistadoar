@@ -64,4 +64,27 @@ describe("opções da consulta", () => {
     ]);
     expect(opcoes.marcas).toEqual(["FUJITSU", "MIDEA"]);
   });
+
+  it("deriva as opções de função, Classe, rotação e Situação", () => {
+    const opcoes = opcoesDe([
+      item({
+        id: "a",
+        funcao: "Quente/Frio",
+        rotacao: "Velocidade Variável",
+        classes: ["A", "B"],
+        situacao: "ativo",
+      }),
+      item({
+        id: "b",
+        funcao: "Frio",
+        rotacao: "Velocidade Fixa",
+        classes: ["C"],
+        situacao: "inativo",
+      }),
+    ]);
+    expect(opcoes.funcoes).toEqual(["Frio", "Quente/Frio"]);
+    expect(opcoes.classes).toEqual(["A", "B", "C"]);
+    expect(opcoes.rotacoes).toEqual(["Velocidade Fixa", "Velocidade Variável"]);
+    expect(opcoes.situacoes).toEqual(["ativo", "inativo"]);
+  });
 });
