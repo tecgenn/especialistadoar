@@ -21,6 +21,10 @@ export interface OpcoesConsulta {
   btus: number[];
   tipos: string[];
   tensoes: number[];
+  funcoes: string[];
+  classes: string[];
+  rotacoes: string[];
+  situacoes: Array<ItemConsulta["situacao"]>;
 }
 
 /**
@@ -37,6 +41,10 @@ export function opcoesDe(
   const tipos = new Set<string>();
   const btus = new Set<number>();
   const tensoes = new Set<number>();
+  const funcoes = new Set<string>();
+  const classes = new Set<string>();
+  const rotacoes = new Set<string>();
+  const situacoes = new Set<ItemConsulta["situacao"]>();
 
   for (const item of dataset) {
     // O filtro do catálogo é por Marca de catálogo (ADR-0016): as opções não
@@ -47,6 +55,18 @@ export function opcoesDe(
     if (item.tipo !== null && item.tipo !== "") {
       tipos.add(item.tipo);
     }
+    if (item.funcao !== null && item.funcao !== "") {
+      funcoes.add(item.funcao);
+    }
+    if (item.rotacao !== null && item.rotacao !== "") {
+      rotacoes.add(item.rotacao);
+    }
+    for (const classe of item.classes) {
+      if (classe !== "") {
+        classes.add(classe);
+      }
+    }
+    situacoes.add(item.situacao);
     for (const btu of item.capacidadesBtu) {
       btus.add(btu);
     }
@@ -74,5 +94,9 @@ export function opcoesDe(
       .sort((a, b) => a - b),
     tipos: [...tipos].sort(),
     tensoes: [...tensoes].sort((a, b) => a - b),
+    funcoes: [...funcoes].sort(),
+    classes: [...classes].sort(),
+    rotacoes: [...rotacoes].sort(),
+    situacoes: [...situacoes].sort(),
   };
 }

@@ -1,0 +1,26 @@
+---
+import consultaJson from "@dados/consulta.json";
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import Consulta from "../../components/Consulta.tsx";
+import { carregarFiltros } from "../../conteudo/filtros.ts";
+import Base from "../../layouts/Base.astro";
+import { opcoesDe } from "../../lib/opcoes.ts";
+
+const dataset = consultaJson as ItemConsulta[];
+// Os chips (marcas e capacidades conhecidas) vêm da curadoria do site; o resto
+// continua no `<select>`. A curadoria é validada aqui, no build.
+const opcoes = opcoesDe(dataset, carregarFiltros());
+---
+
+<Base
+  titulo="Aparelhos de ar-condicionado — Especialista do Ar"
+  descricao="Tabela de aparelhos de ar-condicionado com os Dados declarados do INMETRO: compare marca, modelo, capacidade, consumo, IDRS e Classe, com filtros e ordenação."
+>
+  <h1>Aparelhos de ar-condicionado</h1>
+  <p class="intro">
+    {dataset.length} Aparelhos com Dados declarados, a partir da exportação
+    oficial de produtos do INMETRO. Ordene por qualquer coluna e filtre por
+    marca, tipo, capacidade, tensão, função, Classe, rotação e Situação.
+  </p>
+  <Consulta client:load opcoes={opcoes} />
+</Base>

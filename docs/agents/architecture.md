@@ -179,20 +179,33 @@ nova exportação CSV
   seu contrato pelo entry point (`packages/pipeline/src/index.ts`) — o `api`
   nunca importa os internos.
 - **consulta** — mesmo pacote `packages/api`, mas num *entry point* **isomórfico**
-  (lógica pura, **sem** dependências de Node): filtros por campo e busca textual
-  sobre o `data/build/consulta.json`. É importado pela **ilha do site** (navegador)
-  e por qualquer consumidor que queira a mesma semântica. O filtro `marca` casa a
+  (lógica pura, **sem** dependências de Node): filtros por campo, busca textual e
+  **ordenação** sobre o `data/build/consulta.json`. É importado pela **ilha do
+  site** (navegador) e por qualquer consumidor que queira a mesma semântica. O
+  filtro `marca` casa a
   Marca de catálogo **e** a Marca oficial, e a busca indexa as duas (ADR-0016). O
   dataset projeta, por Aparelho, `situacao`, `funcao`, `rotacao`, `suspeito` e as
   listas únicas e ordenadas `classes`, `idrs` e `consumosKwh` (além de
-  `capacidadesBtu` e `tensoes`) — Variantes sem o dado não contribuem. A leitura de
+  `capacidadesBtu` e `tensoes`) — Variantes sem o dado não contribuem. A
+  ordenação (`ordenar`, ticket 27) é pura e vive aqui: A–Z por Marca de catálogo e
+  modelo por padrão; por coluna, o menor valor da lista para crescente e o maior
+  para decrescente, quem não declara o dado no fim e os suspeitos no fim em IDRS
+  e consumo. A leitura de
   arquivo fica de fora desse entry (separar por entry point é o que impede `fs` de
   entrar no bundle). Ver ADR-0008 e ADR-0018.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
   **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
   filtra/busca **no cliente** pelo módulo isomórfico (08), com o estado na URL
-  (`?marca=&tipo=&btu=&tensao=&q=`). Uma integração copia `data/build/*` para
+  (`?marca=&tipo=&btu=&tensao=&funcao=&classe=&rotacao=&situacao=&ordem=&dir=&q=`).
+  Em `/aparelhos/` a ilha rende a **tabela** de Aparelhos (ticket 27): uma linha
+  por Aparelho, cabeçalhos `<button>` com `aria-sort`, ordenação por `ordenar` do
+  entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
+  vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
+  botão ao lado de "Ordenar por" inverte a direção. A ordem padrão é A–Z por Marca de catálogo e
+  modelo; com busca e sem coluna escolhida, é a relevância. Os suspeitos (ticket
+  25) vão para o fim em IDRS e consumo. `/` mantém a mesma ilha até o ticket 29.
+  Uma integração copia `data/build/*` para
   `dist/`, então a API estática continua servida nas mesmas URLs
   (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind indexa o conteúdo do
   site. Os **chips de filtro** (marcas conhecidas e as seis capacidades comuns)
@@ -219,7 +232,8 @@ nova exportação CSV
   formato do id e da data, slug único, uma por Aparelho) e constrói os índices; o
   glue `src/conteudo/analises.ts` lê a coleção. A seção é **condicional**: com zero
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
-  e o site segue com as 2.462 páginas. Com ≥ 1, o índice, o menu, o inventário
+  e o site segue com as 2.463 páginas (2.460 fichas + `/` + `/aparelhos/` +
+  `/busca/`, que sai no ticket 30). Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
   o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise",
   a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,

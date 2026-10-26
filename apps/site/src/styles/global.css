@@ -107,6 +107,13 @@ footer {
   cursor: pointer;
 }
 
+/* O botão da direção fica ao lado do seletor "Ordenar por" e ocupa só o
+   próprio conteúdo (não estica na coluna da grade). */
+.consulta .filtros .ordem-direcao {
+  justify-self: start;
+  white-space: nowrap;
+}
+
 /* Um campo com chips ocupa a linha inteira: os chips quebram linha também no
    celular e o `<select>` logo abaixo guarda "Todas…" + o resto. */
 .consulta .filtros .campo {
@@ -159,21 +166,6 @@ footer {
   color: var(--texto-suave);
 }
 
-.aparelho dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
-  margin: 0 0 1rem;
-}
-
-.aparelho dt {
-  color: var(--texto-suave);
-}
-
-.aparelho dd {
-  margin: 0;
-}
-
 .variante {
   margin-block: 1rem;
   padding: 1rem;
@@ -196,6 +188,76 @@ footer {
   padding: 0.3rem 0.5rem;
   text-align: left;
   border-bottom: 1px solid var(--borda);
+}
+
+/* Tabela de Aparelhos (ticket 27): uma linha por Aparelho, cabeçalhos
+   ordenáveis e cartões no celular. */
+.consulta .tabela-aparelhos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.consulta .tabela-aparelhos th,
+.consulta .tabela-aparelhos td {
+  padding: 0.5rem 0.4rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--borda);
+}
+
+.consulta .tabela-aparelhos thead th {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+.consulta .tabela-aparelhos thead button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.consulta .tabela-aparelhos thead button:hover {
+  color: var(--primaria);
+}
+
+.consulta .tabela-aparelhos td[data-label="Modelo"] a {
+  font-weight: 600;
+}
+
+.consulta .suspeito {
+  color: #b45309;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.aparelho dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.aparelho dt {
+  color: var(--texto-suave);
+}
+
+.aparelho dd {
+  margin: 0;
 }
 
 .ofertas {
@@ -318,5 +380,43 @@ footer {
   .variante td {
     padding: 0.3rem 0.35rem;
     overflow-wrap: anywhere;
+  }
+
+  /* Abaixo de 640 px cada linha da tabela vira um cartão: o cabeçalho some (a
+     ordenação continua no seletor "Ordenar por") e cada célula ganha o rótulo
+     da coluna. Nada de rolagem horizontal escondida. */
+  .consulta .tabela-aparelhos,
+  .consulta .tabela-aparelhos tbody,
+  .consulta .tabela-aparelhos tr,
+  .consulta .tabela-aparelhos td {
+    display: block;
+    width: 100%;
+  }
+
+  .consulta .tabela-aparelhos thead {
+    display: none;
+  }
+
+  .consulta .tabela-aparelhos tbody tr {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--borda);
+    border-radius: 0.5rem;
+    background: var(--superficie);
+    overflow-wrap: anywhere;
+  }
+
+  .consulta .tabela-aparelhos td {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 0.5rem;
+    padding: 0.15rem 0;
+    border: 0;
+  }
+
+  .consulta .tabela-aparelhos td::before {
+    content: attr(data-label);
+    color: var(--texto-suave);
+    font-size: 0.8rem;
   }
 }

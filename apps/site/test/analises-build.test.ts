@@ -76,6 +76,21 @@ function pageCountDoPagefind(): number {
   return Math.max(...contagens);
 }
 
+/**
+ * O CSS que o build serve: as folhas em `_astro/` (o Astro deixa de embutir a
+ * folha quando ela cresce) mais qualquer `<style>` embutido na página.
+ */
+function cssDaPagina(html: string): string {
+  const embutido = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)]
+    .map((achado) => achado[1])
+    .join("");
+  const arquivos = readdirSync(join(distDir, "_astro"))
+    .filter((nome) => nome.endsWith(".css"))
+    .map((nome) => readFileSync(join(distDir, "_astro", nome), "utf8"))
+    .join("");
+  return embutido + arquivos;
+}
+
 function jsonLdDaPagina(html: string): Record<string, unknown> {
   const encontrado = html.match(
     /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
@@ -364,10 +379,10 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2462 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2463 páginas e omite seção, menu e analises.json", () => {
     buildarSite();
 
-    expect(contarHtml(distDir)).toBe(2462);
+    expect(contarHtml(distDir)).toBe(2463);
     expect(existsSync(join(distDir, "analises"))).toBe(false);
     expect(existsSync(join(distDir, "analises.json"))).toBe(false);
 
@@ -382,7 +397,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(
       existsSync(join(distDir, "aparelhos", aparelho.id, "index.html")),
     ).toBe(true);
-    expect(pageCountDoPagefind()).toBe(2462);
+    expect(pageCountDoPagefind()).toBe(2463);
 
     // Ficha com Marca de catálogo (ADR-0016): o `<h1>`, o título e a URL seguem
     // com a Marca oficial; só a lista de resultados e o link de volta usam a
@@ -414,6 +429,22 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     );
     expect(htmlHome).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
 
+    // A página /aparelhos/ (ticket 27) é a tabela: o HTML traz o título, o
+    // seletor "Ordenar por", os filtros novos e os chips; o CSS ligado esconde
+    // o cabeçalho e vira cada linha em cartão abaixo de 640 px.
+    const htmlTabela = lerHtml("aparelhos");
+    expect(htmlTabela).toContain("<h1>Aparelhos de ar-condicionado</h1>");
+    expect(htmlTabela).toContain("<span>Ordenar por</span>");
+    for (const filtro of ["Função", "Classe", "Rotação", "Situação"]) {
+      expect(htmlTabela).toContain(`<span>${filtro}</span>`);
+    }
+    expect(htmlTabela).toContain(">Midea</button>");
+    expect(htmlTabela).toContain(">36.000</button>");
+
+    expect(cssDaPagina(htmlTabela)).toMatch(
+      /@media \(width<=40rem\)\{[^@]*\.consulta \.tabela-aparelhos td\{[^}]*display:grid/,
+    );
+
     // Ficha nova (ticket 26): resumo no topo, grade 2×2 das condições de ensaio
     // e Variantes de dados idênticos fundidas num bloco com as tensões unidas.
     const gree = aparelhosDaBase().find(
@@ -441,12 +472,8 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlGree).toContain("Linhas da tabela: 784, 5867");
 
     // A ficha precisa caber em 360 px sem rolagem horizontal: o resumo vira uma
-    // coluna e as células da grade podem quebrar. O CSS é embutido na página.
-    const cssDaFicha = [
-      ...htmlGree.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g),
-    ]
-      .map((achado) => achado[1])
-      .join("");
+    // coluna e as células da grade podem quebrar.
+    const cssDaFicha = cssDaPagina(htmlGree);
     expect(cssDaFicha).toMatch(/@media[^{]*\{[^}]*\.aparelho dl\{[^}]*1fr/);
     expect(cssDaFicha).toContain("overflow-wrap:anywhere");
 

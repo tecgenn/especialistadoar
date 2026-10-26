@@ -3,16 +3,20 @@ import {
   type FiltrosConsulta,
   type ItemConsulta,
   type Consulta as MotorConsulta,
+  type OrdemConsulta,
+  ordenar,
 } from "@especialista-do-ar/api/consulta";
 import { useCallback, useEffect, useState } from "react";
 import { escreverEstado, lerEstado } from "../lib/estado";
 import type { OpcoesConsulta } from "../lib/opcoes";
+import { COLUNAS_TABELA, rotuloSituacao, valorDaColuna } from "../lib/tabela";
 
 /**
- * A **única ilha** do site (ADR-0008): a consulta com filtros combináveis e
- * busca textual roda **no cliente**, sobre o `consulta.json` publicado, pelo
- * módulo isomórfico do ticket 08 (`criarConsulta`). O estado vive na URL. A
- * consulta é 100% estática: o dataset é baixado como arquivo.
+ * A **única ilha** do site (ADR-0008): a tabela de Aparelhos com filtros
+ * combináveis, busca textual e ordenação rodam **no cliente**, sobre o
+ * `consulta.json` publicado, pelo módulo isomórfico do ticket 08
+ * (`criarConsulta`/`ordenar`). O estado vive na URL. A consulta é 100% estática:
+ * o dataset é baixado como arquivo.
  */
 export interface PropsConsulta {
   /** Opções dos filtros, derivadas do dataset no build do site. */
@@ -21,10 +25,35 @@ export interface PropsConsulta {
   consultaUrl?: string;
 }
 
+/** Quantas linhas aparecem antes de "Mostrar mais". */
+const TAMANHO_PAGINA = 50;
+
 /** Uma marca nos chips: `valor` é o filtro, `rotulo` o que se lê. */
 interface OpcaoChip {
   valor: string;
   rotulo: string;
+}
+
+/** Só os filtros contam para "Limpar filtros"; a ordenação não conta. */
+function temFiltroAtivo(estado: FiltrosConsulta): boolean {
+  const algumTexto = (
+    ["marca", "tipo", "funcao", "classe", "rotacao", "q"] as const
+  ).some((campo) => (estado[campo] ?? "").trim() !== "");
+  const situacao = (estado.situacao ?? "").trim().toLowerCase();
+  return (
+    algumTexto ||
+    estado.btu !== undefined ||
+    estado.tensao !== undefined ||
+    (situacao !== "" && situacao !== "todos")
+  );
+}
+
+/** Só a ordenação sobrevive a "Limpar filtros". */
+function somenteOrdem(estado: FiltrosConsulta): FiltrosConsulta {
+  return {
+    ...(estado.ordem === undefined ? {} : { ordem: estado.ordem }),
+    ...(estado.dir === undefined ? {} : { dir: estado.dir }),
+  };
 }
 
 /**
@@ -61,6 +90,36 @@ function Chips({
   );
 }
 
+/** Um cabeçalho ordenável: o botão alterna a direção; `aria-sort` fica no `th`. */
+function Cabecalho({
+  campo,
+  rotulo,
+  estado,
+  alternar,
+}: {
+  campo: OrdemConsulta;
+  rotulo: string;
+  estado: FiltrosConsulta;
+  alternar: (campo: OrdemConsulta) => void;
+}) {
+  const ativa = estado.ordem === campo;
+  const direcao = ativa ? (estado.dir ?? "asc") : null;
+  const ariaSort =
+    direcao === "asc"
+      ? "ascending"
+      : direcao === "desc"
+        ? "descending"
+        : "none";
+  return (
+    <th scope="col" aria-sort={ariaSort}>
+      <button type="button" onClick={() => alternar(campo)}>
+        {rotulo}
+        {direcao === "asc" ? " ↑" : direcao === "desc" ? " ↓" : null}
+      </button>
+    </th>
+  );
+}
+
 export default function Consulta({
   opcoes,
   consultaUrl = "/consulta.json",
@@ -68,6 +127,10 @@ export default function Consulta({
   const [motor, setMotor] = useState<MotorConsulta | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [estado, setEstado] = useState<FiltrosConsulta>({});
+  const [paginacao, setPaginacao] = useState({
+    chave: "",
+    quantidade: TAMANHO_PAGINA,
+  });
 
   useEffect(() => {
     let cancelado = false;
@@ -113,12 +176,59 @@ export default function Consulta({
   }, []);
 
   const limpar = useCallback(() => {
-    window.history.replaceState(null, "", window.location.pathname);
-    setEstado({});
-  }, []);
+    // "Limpar filtros" limpa os filtros e mantém a ordenação — a ordem escolhida
+    // não é um filtro (e o botão só aparece com filtro ativo).
+    const restante = somenteOrdem(estado);
+    const busca = escreverEstado(restante).toString();
+    const url = `${window.location.pathname}${busca === "" ? "" : `?${busca}`}`;
+    window.history.replaceState(null, "", url);
+    setEstado(restante);
+  }, [estado]);
 
-  const resultados = motor === null ? [] : motor.filtrar(estado);
-  const temFiltro = escreverEstado(estado).toString() !== "";
+  const alternar = (campo: OrdemConsulta) => {
+    const direcaoAtual = estado.ordem === campo ? (estado.dir ?? "asc") : null;
+    atualizar({
+      ordem: campo,
+      dir: direcaoAtual === "asc" ? "desc" : "asc",
+    });
+  };
+
+  const trocarOrdem = (valor: string) => {
+    if (valor === "") {
+      atualizar({ ordem: undefined, dir: undefined });
+      return;
+    }
+    const campo = valor as OrdemConsulta;
+    atualizar({
+      ordem: campo,
+      dir: estado.ordem === campo ? (estado.dir ?? "asc") : "asc",
+    });
+  };
+
+  /** Inverte o sentido da ordenação — o caminho do celular, onde o cabeçalho
+   *  da tabela some e o cabeçalho clicável não está à mão. */
+  const alternarDirecao = () => {
+    if (estado.ordem === undefined) {
+      return;
+    }
+    atualizar({ dir: (estado.dir ?? "asc") === "asc" ? "desc" : "asc" });
+  };
+
+  const filtrados = motor === null ? [] : motor.filtrar(estado);
+  // Com busca e sem coluna escolhida, a ordem inicial é a relevância do
+  // MiniSearch; A–Z e as colunas só entram quando a pessoa pede.
+  const usarOrdenacao =
+    estado.ordem !== undefined || (estado.q ?? "").trim() === "";
+  const resultados = usarOrdenacao ? ordenar(filtrados, estado) : filtrados;
+
+  // Mudar filtro ou ordem volta para o início; "Mostrar mais" só cresce a
+  // quantidade dentro do mesmo estado.
+  const chaveEstado = escreverEstado(estado).toString();
+  const mostrados =
+    paginacao.chave === chaveEstado ? paginacao.quantidade : TAMANHO_PAGINA;
+  const exibidos = resultados.slice(0, mostrados);
+  const temFiltro = temFiltroAtivo(estado);
+
   // Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER MIDEA`). Ela
   // continua valendo no filtro; sem esta opção extra o `<select>` cairia em
   // "Todas" enquanto a lista estivesse filtrada (ADR-0016).
@@ -245,6 +355,111 @@ export default function Consulta({
           </select>
         </label>
 
+        <label>
+          <span>Função</span>
+          <select
+            value={estado.funcao ?? ""}
+            onChange={(evento) =>
+              atualizar({ funcao: evento.target.value || undefined })
+            }
+          >
+            <option value="">Todas</option>
+            {opcoes.funcoes.map((funcao) => (
+              <option key={funcao} value={funcao}>
+                {funcao}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Classe</span>
+          <select
+            value={estado.classe ?? ""}
+            onChange={(evento) =>
+              atualizar({ classe: evento.target.value || undefined })
+            }
+          >
+            <option value="">Todas</option>
+            {opcoes.classes.map((classe) => (
+              <option key={classe} value={classe}>
+                {classe}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Rotação</span>
+          <select
+            value={estado.rotacao ?? ""}
+            onChange={(evento) =>
+              atualizar({ rotacao: evento.target.value || undefined })
+            }
+          >
+            <option value="">Todas</option>
+            {opcoes.rotacoes.map((rotacao) => (
+              <option key={rotacao} value={rotacao}>
+                {rotacao}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Situação</span>
+          <select
+            value={estado.situacao === "todos" ? "" : (estado.situacao ?? "")}
+            onChange={(evento) =>
+              atualizar({ situacao: evento.target.value || undefined })
+            }
+          >
+            <option value="">Todos</option>
+            {opcoes.situacoes.map((situacao) => (
+              <option key={situacao} value={situacao}>
+                {rotuloSituacao(situacao)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          <span>Ordenar por</span>
+          <select
+            value={estado.ordem ?? ""}
+            onChange={(evento) => trocarOrdem(evento.target.value)}
+          >
+            <option value="">
+              {estado.q === undefined || estado.q.trim() === ""
+                ? "Padrão (A–Z)"
+                : "Padrão (relevância)"}
+            </option>
+            {COLUNAS_TABELA.map((coluna) => (
+              <option key={coluna.campo} value={coluna.campo}>
+                {coluna.rotulo}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
+            a direção precisa de um controle próprio — sem ele, o celular só
+            ordenaria crescente. */}
+        {estado.ordem !== undefined ? (
+          <button
+            type="button"
+            className="ordem-direcao"
+            aria-label={
+              estado.dir === "desc"
+                ? "Ordenar de forma crescente"
+                : "Ordenar de forma decrescente"
+            }
+            onClick={alternarDirecao}
+          >
+            {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
+          </button>
+        ) : null}
+
         <label className="busca">
           <span>Busca</span>
           <input
@@ -273,18 +488,69 @@ export default function Consulta({
           <p role="status">
             {resultados.length} aparelho(s) com Dados declarados.
           </p>
-          <ul className="resultados">
-            {resultados.map((item) => (
-              <li key={item.id}>
-                <a href={`/aparelhos/${item.id}`}>
-                  {item.marcaCatalogo} — {item.modelo}
-                </a>
-                {item.tipo === null ? null : (
-                  <span className="tipo"> · {item.tipo}</span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <table className="tabela-aparelhos">
+            <caption className="sr-only">
+              Aparelhos de ar-condicionado, uma linha por Aparelho
+            </caption>
+            <thead>
+              <tr>
+                {COLUNAS_TABELA.map((coluna) => (
+                  <Cabecalho
+                    key={coluna.campo}
+                    campo={coluna.campo}
+                    rotulo={coluna.rotulo}
+                    estado={estado}
+                    alternar={alternar}
+                  />
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {exibidos.map((item) => (
+                <tr key={item.id}>
+                  {COLUNAS_TABELA.map((coluna) => {
+                    const valor = valorDaColuna(item, coluna.campo);
+                    return (
+                      <td key={coluna.campo} data-label={coluna.rotulo}>
+                        {coluna.campo === "modelo" ? (
+                          <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                        ) : (
+                          valor
+                        )}
+                        {coluna.campo === "consumo" && item.suspeito ? (
+                          <span
+                            className="suspeito"
+                            title="Consumo declarado fora do padrão"
+                          >
+                            {" "}
+                            ⚠
+                            <span className="sr-only">
+                              {" "}
+                              consumo declarado suspeito
+                            </span>
+                          </span>
+                        ) : null}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {resultados.length > mostrados ? (
+            <button
+              type="button"
+              className="mostrar-mais"
+              onClick={() =>
+                setPaginacao({
+                  chave: chaveEstado,
+                  quantidade: mostrados + TAMANHO_PAGINA,
+                })
+              }
+            >
+              Mostrar mais
+            </button>
+          ) : null}
         </>
       )}
     </section>
