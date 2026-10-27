@@ -6,9 +6,9 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 7 concluída** — todos os tickets da especificação em `.scratch/especialista-do-ar/spec-fase-7.md` foram entregues (página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de afiliado e remoção da busca). Nenhum ticket livre na Fase 7.
+**Fase 8 iniciada** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Próximo ticket: **31** (`pipeline-filtro-excluido-remocao-campos`), sem blockers. Tickets 31–37 criados cobrindo pipeline → API → site (dados) → site (UI) → validação.
 
-O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
+O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
 `spec-fase-5.md` › Further Notes.
 
