@@ -6,15 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-A **Fase 7** está especificada em `.scratch/especialista-do-ar/spec-fase-7.md`
-(página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de
-afiliado e remoção da busca). Falta só um ticket:
-
-| # | Ticket | Bloqueado por |
-| --- | --- | --- |
-| 30 | Remover `/busca/` e o Pagefind | — |
-
-Os tickets `24` a `29` foram concluídos e estão no log abaixo; `30` está livre.
+**Fase 7 concluída** — todos os tickets da especificação em `.scratch/especialista-do-ar/spec-fase-7.md` foram entregues (página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de afiliado e remoção da busca). Nenhum ticket livre na Fase 7.
 
 O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -222,3 +214,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** `/` volta a ser a **home** (texto curto, H1, Análises em destaque e o botão "Ver todos os aparelhos") e `/aparelhos/` é a tabela. O menu tem **Aparelhos** e, com ≥ 1 Análise, **Análises**; "Buscar no site" saiu. Um link antigo com filtros (`/?marca=MIDEA&btu=12000`) é levado a `/aparelhos/` com a mesma querystring — ordem dos parâmetros e `%20` da Marca oficial antiga (`?marca=SPRINGER%20MIDEA`) preservados — por um `<script>` de módulo curto na home, construído sobre o módulo puro; sem JavaScript, a pessoa vê a home com o botão. `/` sem parâmetros continua na home. `<title>`, descrição, canonical e JSON-LD (`WebSite` na home, `CollectionPage` em `/aparelhos/`) refletem as duas páginas; a ficha e a página de busca apontam para `/aparelhos/`. `data/build` e `reports` não mudam; `pnpm build:site` gera 2.463 páginas enquanto `/busca/` existir (2.462 no fim da Fase 7, ticket 30).
 - **Ticket:** #29 (local tracker: `29-home-menu-e-redirects`)
 - **Checks:** Vitest 343/343 (33 arquivos; +4 do redirect), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.463 páginas; redirect e metadados conferidos no build e no jsdom.
+
+### 30 — Remover `/busca/` e o Pagefind (2026-10-26)
+
+- **Changed:** `apps/site/src/pages/busca.astro` (removido); `apps/site/astro.config.mjs` (integração `astro-pagefind` removida); `apps/site/package.json` (dependência `astro-pagefind` removida); `apps/site/public/_redirects` (novo — redireciona `/busca/` e `/busca` para `/aparelhos/` 301); `apps/site/test/analises-build.test.ts` (esperar 2.462 páginas no estado zero, 2.466 com fixture; sem Pagefind, sem `/busca/`, redirecionamentos publicados); `docs/agents/architecture.md` (arquitetura do site atualizada: Pagefind removido, busca redirecionada); `docs/prd.md` (referência a Pagefind removida); `pnpm-lock.yaml` (atualizado).
+- **What works:** a página `/busca/` e o índice Pagefind (~11 MB) deixam de ser gerados — `pnpm build:site` produz **2.462 páginas** (2.460 fichas + `/` + `/aparelhos/`) e o `dist` perde ~11 MB. Os links antigos `/busca/` e `/busca` redirecionam (301) para `/aparelhos/` via `apps/site/public/_redirects` copiado para `dist/`. Nenhuma referência a Pagefind permanece no código ou nos testes (exceto comentários históricos). Lint, typecheck e todos os 343 testes passam.
+- **Ticket:** #30 (local tracker: `30-remover-busca-e-pagefind`)
+- **Checks:** Vitest 343/343 (33 arquivos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas sem `dist/pagefind/` nem `dist/busca/`, com `_redirects` publicado.

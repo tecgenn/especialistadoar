@@ -9,17 +9,17 @@ lista de Análises, em ticket próprio.
 
 **Blocked by:** 27 — Página Aparelhos.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `apps/site/src/pages/busca.astro`, a integração em `astro.config.mjs` e a
+- [x] `apps/site/src/pages/busca.astro`, a integração em `astro.config.mjs` e a
       dependência `astro-pagefind` (com `pnpm-lock.yaml`) saem; `dist/` não gera
       `pagefind/`.
-- [ ] `public/_redirects` redireciona `/busca/` e `/busca` para `/aparelhos/` (301) e
+- [x] `public/_redirects` redireciona `/busca/` e `/busca` para `/aparelhos/` (301) e
       aparece em `dist/`.
-- [ ] Nenhuma referência a Pagefind em código ou testes (`analises-build.test.ts`
+- [x] Nenhuma referência a Pagefind em código ou testes (`analises-build.test.ts`
       deixa de esperar o índice); a referência histórica nos tickets e specs antigos
       permanece.
-- [ ] `docs/agents/architecture.md`, `docs/prd.md` e `README.md` deixam de citar a
+- [x] `docs/agents/architecture.md`, `docs/prd.md` e `README.md` deixam de citar a
       busca por Pagefind.
-- [ ] `pnpm build:site` gera as 2.462 páginas (2.460 fichas, `/` e `/aparelhos/`) e o
+- [x] `pnpm build:site` gera as 2.462 páginas (2.460 fichas, `/` e `/aparelhos/`) e o
       `dist` perde ~11 MB; lint, typecheck e testes verdes.
