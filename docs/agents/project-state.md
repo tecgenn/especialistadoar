@@ -13,13 +13,13 @@ afiliado e remoção da busca). Os tickets estão em
 
 | # | Ticket | Bloqueado por |
 | --- | --- | --- |
-| 28 | Aparelhos analisados (selo, topo, aviso de afiliado) | — |
 | 29 | Home, menu e redirects | 28 |
 | 30 | Remover `/busca/` e o Pagefind | — |
 
 Os tickets `24` (Classe, Situação e campos da tabela), `25` (Sinal de consumo
-implausível), `26` (Ficha técnica nova) e `27` (Página Aparelhos em tabela) foram
-concluídos e estão no log abaixo; `28` está livre.
+implausível), `26` (Ficha técnica nova), `27` (Página Aparelhos em tabela) e
+`28` (Aparelhos analisados) foram concluídos e estão no log abaixo; `29` está
+livre.
 
 O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -213,3 +213,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** `/aparelhos/` é a **tabela** de Aparelhos — uma linha por Aparelho (Marca de catálogo, Modelo com link para a ficha, BTU/h, Consumo, IDRS, Classe, Tipo e Situação), cabeçalhos clicáveis que ordenam com `aria-sort` e o seletor "Ordenar por" repetindo as colunas. A ordenação é **função pura** no entry isomórfico (`ordenar`), com a mesma semântica para a ilha e para qualquer Agente: A–Z por Marca de catálogo e modelo com números em ordem natural (`Intl.Collator("pt-BR", { numeric: true })`), por coluna o menor valor da lista para crescente e o maior para decrescente, quem não declara o dado no fim e os **suspeitos** (ticket 25) no fim em IDRS e consumo — MYSTIC, CONSUL e MBO não dominam o topo. MIDEA e SPRINGER MIDEA ficam juntos pela Marca de catálogo. Com busca, a ordem inicial é a relevância. Os filtros novos (função, Classe, rotação e Situação) entram ao lado dos antigos e dos chips, e o estado inteiro fica na URL (`?funcao=&classe=&rotacao=&situacao=&ordem=&dir=`), sem quebrar os links antigos. A tabela mostra 50 linhas e "Mostrar mais" acrescenta 50; abaixo de 640 px cada linha vira um cartão (`data-label`), sem rolagem horizontal — e, como o cabeçalho some, um botão ao lado de "Ordenar por" inverte a direção. "Limpar filtros" limpa os filtros e **mantém** a ordenação. `/` mostra a mesma ilha até o ticket 29; `data/build` e `reports/` não mudam.
 - **Ticket:** #27 (local tracker: `27-pagina-aparelhos-tabela`)
 - **Checks:** Vitest 331/331 (32 arquivos; +27), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera **2.463** páginas (2.462 só no fim da Fase 7, quando `/busca/` sai no ticket 30) — o desvio está registrado no ticket.
+
+### 28 — Aparelhos analisados (selo, topo da tabela e aviso de afiliado) (2026-10-26)
+
+- **Changed:** `apps/site/src/conteudo/analises.ts` (nova função `mapaAnalisados`); `apps/site/src/pages/aparelhos/index.astro` (passa `analisados` para a ilha); `apps/site/src/components/Consulta.tsx` (divide resultados em grupos analisados/demais, cabeçalhos de grupo, selo "Analisado" com link e tooltip acessível); `apps/site/src/styles/global.css` (estilos para `.grupo-cabecalho`, `.aviso-afiliado`, `.analisado-selo`, `.analisado-link`, `.analisado-tooltip`); `apps/site/test/consulta.test.tsx` (+12 testes: grupos, selo, tooltip, ordenação dentro do grupo, filtro mantém analisados no topo, estado zero sem grupos).
+- **What works:** quando uma Análise é publicada, o Aparelho vira "analisado" na tabela `/aparelhos/`: ganha selo "Analisado" na coluna Marca (link para a Análise, tooltip com título e aviso "Contém links de afiliado" acessível por hover/foco/toque), aparece **antes dos demais dentro dos filtros ativos** e a ordenação vale **dentro de cada grupo**. Cabeçalho "Analisados por nós" com "· contém links de afiliado" quando algum analisado do resultado tem Oferta; "Demais aparelhos" só aparece quando há analisados. Com zero Análises, a tabela é idêntica ao ticket 27 (sem grupos, sem selos). `consulta.json`, `aparelhos.json` e `analises.json` não ganham campo editorial/comercial. `pnpm build` reproduz `data/build`+`reports` byte a byte.
+- **Ticket:** #28 (local tracker: `28-aparelhos-analisados`)
+- **Checks:** Vitest 339/339 (32 arquivos; +12), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.463 páginas.

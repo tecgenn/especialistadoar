@@ -9,6 +9,7 @@
 import { type CollectionEntry, getCollection } from "astro:content";
 import { type Analise, montarAnalises } from "../lib/analises.ts";
 import { temArquivosDeAnalise } from "./base-analises.ts";
+import { ofertasDoAparelho } from "./ofertas.ts";
 
 export type EntradaAnalise = CollectionEntry<"analises">;
 
@@ -42,4 +43,31 @@ let carregadas: Promise<AnalisesCarregadas> | undefined;
 export function carregarAnalises(): Promise<AnalisesCarregadas> {
   carregadas ??= lerAnalises();
   return carregadas;
+}
+
+/**
+ * Constrói o mapa de Aparelhos analisados para a tabela.
+ * Só entram Análises válidas cujo Aparelho está na Versão atual (idsDaBase).
+ * O valor traz o título e a URL da Análise, e se o Aparelho tem link de afiliado.
+ */
+export function mapaAnalisados(
+  analises: readonly Analise[],
+  idsDaBase: ReadonlySet<string>,
+): Map<string, { titulo: string; url: string; temLinkAfiliado: boolean }> {
+  const mapa = new Map<
+    string,
+    { titulo: string; url: string; temLinkAfiliado: boolean }
+  >();
+  for (const analise of analises) {
+    if (!idsDaBase.has(analise.aparelhoId)) {
+      continue; // Aparelho Ausente: não entra no mapa
+    }
+    const ofertas = ofertasDoAparelho(analise.aparelhoId);
+    mapa.set(analise.aparelhoId, {
+      titulo: analise.titulo,
+      url: analise.url,
+      temLinkAfiliado: ofertas.length > 0,
+    });
+  }
+  return mapa;
 }

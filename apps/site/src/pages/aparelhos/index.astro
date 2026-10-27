@@ -1,7 +1,10 @@
 ---
+import aparelhosJson from "@dados/aparelhos.json";
 import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import type { Aparelho } from "@especialista-do-ar/pipeline";
 import Consulta from "../../components/Consulta.tsx";
+import { carregarAnalises, mapaAnalisados } from "../../conteudo/analises.ts";
 import { carregarFiltros } from "../../conteudo/filtros.ts";
 import Base from "../../layouts/Base.astro";
 import { opcoesDe } from "../../lib/opcoes.ts";
@@ -10,6 +13,11 @@ const dataset = consultaJson as ItemConsulta[];
 // Os chips (marcas e capacidades conhecidas) vêm da curadoria do site; o resto
 // continua no `<select>`. A curadoria é validada aqui, no build.
 const opcoes = opcoesDe(dataset, carregarFiltros());
+
+// Mapa de Aparelhos analisados para a tabela (ticket 28).
+const { analises } = await carregarAnalises();
+const idsDaBase = new Set((aparelhosJson as Aparelho[]).map((a) => a.id));
+const analisados = mapaAnalisados(analises, idsDaBase);
 ---
 
 <Base
@@ -22,5 +30,5 @@ const opcoes = opcoesDe(dataset, carregarFiltros());
     oficial de produtos do INMETRO. Ordene por qualquer coluna e filtre por
     marca, tipo, capacidade, tensão, função, Classe, rotação e Situação.
   </p>
-  <Consulta client:load opcoes={opcoes} />
+  <Consulta client:load opcoes={opcoes} analisados={analisados} />
 </Base>

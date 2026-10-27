@@ -233,6 +233,99 @@ footer {
   color: #b45309;
 }
 
+/* Grupo de analisados (ticket 28): cabeçalho dentro da tabela. */
+.consulta .tabela-aparelhos .grupo-cabecalho td {
+  padding: 0.75rem 0.4rem;
+  border-bottom: 2px solid var(--primaria);
+  font-size: 0.9rem;
+}
+
+.consulta .aviso-afiliado {
+  color: var(--texto-suave);
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
+/* Selo "Analisado" na coluna Marca (ticket 28). */
+.consulta .analisado-selo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.consulta .analisado-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--primaria);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.consulta .analisado-link:hover {
+  background: #0284c7;
+  color: #fff;
+}
+
+.consulta .analisado-link:focus {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+/* Tooltip do selo: aparece no hover, foco e toque. */
+.consulta .analisado-tooltip {
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 20rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  background: var(--texto);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 400;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 10;
+}
+
+.consulta .analisado-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 0.4rem solid transparent;
+  border-top-color: var(--texto);
+}
+
+.consulta .analisado-selo:hover .analisado-tooltip,
+.consulta .analisado-link:focus + .analisado-tooltip,
+.consulta .analisado-selo:focus-within .analisado-tooltip {
+  opacity: 1;
+}
+
+/* No celular, o tooltip precisa de espaço. */
+@media (max-width: 40rem) {
+  .consulta .analisado-tooltip {
+    max-width: 90vw;
+    left: 0;
+    transform: none;
+  }
+  .consulta .analisado-tooltip::after {
+    left: 1rem;
+    transform: none;
+  }
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
