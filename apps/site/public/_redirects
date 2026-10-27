@@ -1,0 +1,4 @@
+# A busca do site saiu (ticket 30): a tabela de Aparelhos já tem busca e
+# filtros. Os links antigos vão para lá, para nada quebrar.
+/busca/ /aparelhos/ 301
+/busca /aparelhos/ 301

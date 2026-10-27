@@ -5,7 +5,6 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
-import pagefind from "astro-pagefind";
 
 /** Onde vivem os artefatos publicados (a base servida) — a raiz do repo. */
 const buildDir = fileURLToPath(new URL("../../data/build", import.meta.url));
@@ -36,7 +35,7 @@ function artefatosEstaticos() {
 export default defineConfig({
   site: "https://especialista-do-ar.pages.dev",
   output: "static",
-  integrations: [react(), mdx(), sitemap(), pagefind(), artefatosEstaticos()],
+  integrations: [react(), mdx(), sitemap(), artefatosEstaticos()],
   vite: {
     resolve: {
       // Os artefatos publicados são importados como JSON no build do site

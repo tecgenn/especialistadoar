@@ -211,9 +211,11 @@ nova exportação CSV
   tem Aparelhos e, com ≥ 1 Análise, Análises.
   Uma integração copia `data/build/*` para
   `dist/`, então a API estática continua servida nas mesmas URLs
-  (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind indexa o conteúdo do
-  site. Os **chips de filtro** (marcas conhecidas e as seis capacidades comuns)
-  vêm de uma curadoria do site (`apps/site/filtros.json`), validada no build:
+  (`/aparelhos.json`, `/consulta.json`, …). A página de busca do site saiu
+  (ticket 30): `/busca/` e `/busca` redirecionam (301) para `/aparelhos/` por
+  `apps/site/public/_redirects`. Os **chips de filtro** (marcas conhecidas e as
+  seis capacidades comuns) vêm de uma curadoria do site (`apps/site/filtros.json`),
+  validada no build:
   viram `<button aria-pressed>` a um clique, o resto fica no `<select>` e um
   valor curado ausente da base é ocultado — site-only, sem tocar em
   `data/build/` nem na semântica da consulta. A **ficha** do Aparelho
@@ -236,10 +238,9 @@ nova exportação CSV
   formato do id e da data, slug único, uma por Aparelho) e constrói os índices; o
   glue `src/conteudo/analises.ts` lê a coleção. A seção é **condicional**: com zero
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
-  e o site segue com as 2.463 páginas (2.460 fichas + `/` + `/aparelhos/` +
-  `/busca/`, que sai no ticket 30). Com ≥ 1, o índice, o menu, o inventário
+  e o site segue com as 2.462 páginas (2.460 fichas + `/` + `/aparelhos/`). Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
-  o JSON-LD e o Pagefind aparecem automaticamente; a ficha ganha "Leia a análise",
+  o JSON-LD aparecem automaticamente; a ficha ganha "Leia a análise",
   a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
   ou com o Aparelho Ausente, nada é renderizado) e a home ganha um bloco estático
   de Análises em destaque (`AnalisesDestaque`, montado no build — o cliente não
@@ -306,7 +307,7 @@ Ver ADR-0003 e ADR-0011.
 - **Lint/format:** Biome.
 - **Site:** Astro, **build estático**: páginas de detalhe pré-renderizadas para
   cada Aparelho + **uma ilha React** de consulta (filtros combináveis e busca
-  textual rodam no cliente, com o estado na URL). O Pagefind indexa o conteúdo; o
+  textual rodam no cliente, com o estado na URL). O
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
