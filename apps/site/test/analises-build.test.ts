@@ -270,6 +270,28 @@ describe("build com uma Análise de fixture", () => {
     // A home exibe o bloco estático de Análises em destaque: título, descrição e
     // link de cada Análise publicada.
     const htmlHome = lerHtml("");
+    // A home (ticket 29) é uma home de verdade: H1, texto curto, o botão para a
+    // tabela e o menu com Aparelhos/Análises — sem a ilha e sem a busca do site.
+    expect(htmlHome).toContain("<h1>Especialista do Ar</h1>");
+    expect(htmlHome).toContain("Ver todos os aparelhos");
+    expect(htmlHome).toContain('href="/aparelhos/"');
+    expect(htmlHome).toContain(">Aparelhos</a>");
+    expect(htmlHome).toContain(">Análises</a>");
+    expect(htmlHome).not.toContain("Buscar no site");
+    expect(htmlHome).not.toContain('href="/busca/"');
+    expect(htmlHome).not.toContain('class="tabela-aparelhos"');
+    expect(htmlHome).toContain(
+      "<title>Especialista do Ar — aparelhos de ar-condicionado com dados do INMETRO</title>",
+    );
+    expect(htmlHome).toContain(
+      '<meta name="description" content="Base estruturada dos aparelhos de ar-condicionado',
+    );
+    expect(htmlHome).toContain(
+      'rel="canonical" href="https://especialista-do-ar.pages.dev/"',
+    );
+    const jsonLdHome = jsonLdDaPagina(htmlHome);
+    expect(jsonLdHome["@type"]).toBe("WebSite");
+    expect(jsonLdHome.name).toBe("Especialista do Ar");
     expect(htmlHome).toContain("Análises em destaque");
     expect(htmlHome).toContain('href="/analises/"');
     for (const analise of [valida, ausente, semOferta]) {
@@ -277,6 +299,18 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlHome).toContain(analise.titulo);
       expect(htmlHome).toContain(analise.descricao);
     }
+
+    // A página Aparelhos (ticket 27) mantém o menu e ganha o JSON-LD próprio.
+    const htmlTabela = lerHtml("aparelhos");
+    expect(htmlTabela).toContain(">Aparelhos</a>");
+    expect(htmlTabela).toContain(">Análises</a>");
+    expect(htmlTabela).not.toContain("Buscar no site");
+    const jsonLdTabela = jsonLdDaPagina(htmlTabela);
+    expect(jsonLdTabela["@type"]).toBe("CollectionPage");
+    expect(jsonLdTabela.name).toBe("Aparelhos de ar-condicionado");
+    expect(jsonLdTabela.url).toBe(
+      "https://especialista-do-ar.pages.dev/aparelhos/",
+    );
 
     // Na home, só o Aparelho na Versão atual e com Oferta ganha CTA — o Ausente e
     // o Aparelho sem Oferta não geram link comercial nenhum.
@@ -391,6 +425,18 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain("Análises em destaque");
     expect(htmlHome).not.toContain('rel="sponsored');
 
+    // A home (ticket 29): H1, texto curto e botão para a tabela; o menu tem só
+    // Aparelhos (Análises é condicional) e a busca do site saiu.
+    expect(htmlHome).toContain("<h1>Especialista do Ar</h1>");
+    expect(htmlHome).toContain("Ver todos os aparelhos");
+    expect(htmlHome).toContain('href="/aparelhos/"');
+    expect(htmlHome).toContain(">Aparelhos</a>");
+    expect(htmlHome).not.toContain(">Análises</a>");
+    expect(htmlHome).not.toContain("Buscar no site");
+    expect(htmlHome).not.toContain('class="tabela-aparelhos"');
+    const jsonLdHome = jsonLdDaPagina(htmlHome);
+    expect(jsonLdHome["@type"]).toBe("WebSite");
+
     const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
     expect(sitemap).not.toContain("/analises/");
 
@@ -411,23 +457,11 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlSpringer).toContain(
       `rel="canonical" href="https://especialista-do-ar.pages.dev/aparelhos/${springer?.id}/"`,
     );
-    expect(htmlSpringer).toContain('href="/?marca=MIDEA"');
+    expect(htmlSpringer).toContain('href="/aparelhos/?marca=MIDEA"');
     expect(htmlSpringer).toContain("Ver outros aparelhos da marca MIDEA");
     expect(htmlSpringer).not.toContain(
       "Ver outros aparelhos da marca SPRINGER MIDEA",
     );
-
-    // As opções do filtro trazem a Marca de catálogo (uma por família); as 10
-    // marcas conhecidas e as 6 capacidades comuns são chips curados (ticket 22)
-    // e não se repetem no `<select>`.
-    expect(htmlHome).toContain(">Midea</button>");
-    expect(htmlHome).toContain(">Samsung</button>");
-    expect(htmlHome).toContain(">36.000</button>");
-    expect(htmlHome).not.toContain('<option value="MIDEA">MIDEA</option>');
-    expect(htmlHome).not.toContain(
-      '<option value="SPRINGER MIDEA">SPRINGER MIDEA</option>',
-    );
-    expect(htmlHome).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
 
     // A página /aparelhos/ (ticket 27) é a tabela: o HTML traz o título, o
     // seletor "Ordenar por", os filtros novos e os chips; o CSS ligado esconde
@@ -438,8 +472,31 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     for (const filtro of ["Função", "Classe", "Rotação", "Situação"]) {
       expect(htmlTabela).toContain(`<span>${filtro}</span>`);
     }
+
+    // Os metadados da nova página Aparelhos (ticket 29).
+    expect(htmlTabela).toContain(
+      "<title>Aparelhos de ar-condicionado — Especialista do Ar</title>",
+    );
+    expect(htmlTabela).toContain(
+      'rel="canonical" href="https://especialista-do-ar.pages.dev/aparelhos/"',
+    );
+    const jsonLdTabela = jsonLdDaPagina(htmlTabela);
+    expect(jsonLdTabela["@type"]).toBe("CollectionPage");
+    expect(jsonLdTabela.name).toBe("Aparelhos de ar-condicionado");
+
+    // As opções do filtro trazem a Marca de catálogo (uma por família); as 10
+    // marcas conhecidas e as 6 capacidades comuns são chips curados (ticket 22)
+    // e não se repetem no `<select>`. Eles vivem na tabela, não na home.
     expect(htmlTabela).toContain(">Midea</button>");
+    expect(htmlTabela).toContain(">Samsung</button>");
     expect(htmlTabela).toContain(">36.000</button>");
+    expect(htmlTabela).not.toContain('<option value="MIDEA">MIDEA</option>');
+    expect(htmlTabela).not.toContain(
+      '<option value="SPRINGER MIDEA">SPRINGER MIDEA</option>',
+    );
+    expect(htmlTabela).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
+    expect(htmlHome).not.toContain(">Midea</button>");
+    expect(htmlHome).not.toContain(">36.000</button>");
 
     expect(cssDaPagina(htmlTabela)).toMatch(
       /@media \(width<=40rem\)\{[^@]*\.consulta \.tabela-aparelhos td\{[^}]*display:grid/,

@@ -204,7 +204,11 @@ nova exportação CSV
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
   botão ao lado de "Ordenar por" inverte a direção. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. Os suspeitos (ticket
-  25) vão para o fim em IDRS e consumo. `/` mantém a mesma ilha até o ticket 29.
+  25) vão para o fim em IDRS e consumo. `/` é a **home** (ticket 29): texto curto,
+  Análises em destaque e o botão "Ver todos os aparelhos"; os links antigos
+  `/?marca=…` são levados a `/aparelhos/` com a mesma querystring por um script
+  curto na home (o `_redirects` não separa a mesma URL por parâmetros), e o menu
+  tem Aparelhos e, com ≥ 1 Análise, Análises.
   Uma integração copia `data/build/*` para
   `dist/`, então a API estática continua servida nas mesmas URLs
   (`/aparelhos.json`, `/consulta.json`, …), e o Pagefind indexa o conteúdo do

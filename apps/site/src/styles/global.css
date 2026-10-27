@@ -71,6 +71,21 @@ footer {
   color: var(--texto-suave);
 }
 
+.botao {
+  display: inline-block;
+  padding: 0.6rem 1rem;
+  border-radius: 0.375rem;
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.botao:hover {
+  background: #0284c7;
+  color: #fff;
+}
+
 .consulta .filtros {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));

@@ -8,18 +8,13 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 A **Fase 7** está especificada em `.scratch/especialista-do-ar/spec-fase-7.md`
 (página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de
-afiliado e remoção da busca). Os tickets estão em
-`.scratch/especialista-do-ar/issues/24` a `30`, nesta ordem:
+afiliado e remoção da busca). Falta só um ticket:
 
 | # | Ticket | Bloqueado por |
 | --- | --- | --- |
-| 29 | Home, menu e redirects | 28 |
 | 30 | Remover `/busca/` e o Pagefind | — |
 
-Os tickets `24` (Classe, Situação e campos da tabela), `25` (Sinal de consumo
-implausível), `26` (Ficha técnica nova), `27` (Página Aparelhos em tabela) e
-`28` (Aparelhos analisados) foram concluídos e estão no log abaixo; `29` está
-livre.
+Os tickets `24` a `29` foram concluídos e estão no log abaixo; `30` está livre.
 
 O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -220,3 +215,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** quando uma Análise é publicada, o Aparelho vira "analisado" na tabela `/aparelhos/`: ganha selo "Analisado" na coluna Marca (link para a Análise, tooltip com título e aviso "Contém links de afiliado" acessível por hover/foco/toque), aparece **antes dos demais dentro dos filtros ativos** e a ordenação vale **dentro de cada grupo**. Cabeçalho "Analisados por nós" com "· contém links de afiliado" quando algum analisado do resultado tem Oferta; "Demais aparelhos" só aparece quando há analisados. Com zero Análises, a tabela é idêntica ao ticket 27 (sem grupos, sem selos). `consulta.json`, `aparelhos.json` e `analises.json` não ganham campo editorial/comercial. `pnpm build` reproduz `data/build`+`reports` byte a byte.
 - **Ticket:** #28 (local tracker: `28-aparelhos-analisados`)
 - **Checks:** Vitest 339/339 (32 arquivos; +12), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.463 páginas.
+
+### 29 — Home, menu e redirect dos links antigos (2026-10-26)
+
+- **Changed:** `apps/site/src/pages/index.astro` (a home deixa de hospedar a ilha: H1, texto curto, `AnalisesDestaque` condicional, botão "Ver todos os aparelhos" para `/aparelhos/`, JSON-LD de `WebSite` e o script de redirect); `apps/site/src/lib/redirect.ts` (novo — `destinoDosFiltrosAntigos` e `redirecionarFiltrosAntigos`, puros); `apps/site/src/layouts/Base.astro` (menu com Aparelhos e, condicionalmente, Análises; sai "Buscar no site"); `apps/site/src/pages/aparelhos/index.astro` (JSON-LD de `CollectionPage`); `apps/site/src/pages/aparelhos/[id].astro` (volta para `/aparelhos/`); `apps/site/src/pages/busca.astro` (link para `/aparelhos/`); `apps/site/src/styles/global.css` (`.botao`); testes `apps/site/test/redirect.test.ts` (novo, 4 em jsdom) e `apps/site/test/analises-build.test.ts` (home e metadados no build com fixture e no estado zero); docs `docs/agents/architecture.md`.
+- **What works:** `/` volta a ser a **home** (texto curto, H1, Análises em destaque e o botão "Ver todos os aparelhos") e `/aparelhos/` é a tabela. O menu tem **Aparelhos** e, com ≥ 1 Análise, **Análises**; "Buscar no site" saiu. Um link antigo com filtros (`/?marca=MIDEA&btu=12000`) é levado a `/aparelhos/` com a mesma querystring — ordem dos parâmetros e `%20` da Marca oficial antiga (`?marca=SPRINGER%20MIDEA`) preservados — por um `<script>` de módulo curto na home, construído sobre o módulo puro; sem JavaScript, a pessoa vê a home com o botão. `/` sem parâmetros continua na home. `<title>`, descrição, canonical e JSON-LD (`WebSite` na home, `CollectionPage` em `/aparelhos/`) refletem as duas páginas; a ficha e a página de busca apontam para `/aparelhos/`. `data/build` e `reports` não mudam; `pnpm build:site` gera 2.463 páginas enquanto `/busca/` existir (2.462 no fim da Fase 7, ticket 30).
+- **Ticket:** #29 (local tracker: `29-home-menu-e-redirects`)
+- **Checks:** Vitest 343/343 (33 arquivos; +4 do redirect), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.463 páginas; redirect e metadados conferidos no build e no jsdom.

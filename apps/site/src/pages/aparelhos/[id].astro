@@ -70,7 +70,7 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
 
 <Base titulo={`${aparelho.marca} ${aparelho.modelo} — Especialista do Ar`} descricao={descricao}>
   <article class="aparelho">
-    <p><a href="/">← Voltar ao catálogo</a></p>
+    <p><a href="/aparelhos/">← Voltar aos aparelhos</a></p>
     <h1>{aparelho.marca} — {aparelho.modelo}</h1>
 
     <dl>
@@ -180,7 +180,7 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
     <OfertaFaixa ofertas={ofertas} />
 
     <p>
-      <a href={`/?marca=${encodeURIComponent(marcaCatalogo)}`}>
+      <a href={`/aparelhos/?marca=${encodeURIComponent(marcaCatalogo)}`}>
         Ver outros aparelhos da marca {marcaCatalogo}
       </a>
     </p>
