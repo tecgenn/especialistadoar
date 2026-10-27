@@ -1,19 +1,9 @@
 ---
-import consultaJson from "@dados/consulta.json";
-import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
-import Consulta from "../components/Consulta.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
-import { carregarFiltros } from "../conteudo/filtros.ts";
 import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
-import { opcoesDe } from "../lib/opcoes.ts";
-
-const dataset = consultaJson as ItemConsulta[];
-// Os chips (marcas e capacidades conhecidas) vêm da curadoria do site; o resto
-// continua no `<select>`. A curadoria é validada aqui, no build.
-const opcoes = opcoesDe(dataset, carregarFiltros());
 
 // Os destaques são montados no build: cada Análise publicada, na ordem da mais
 // recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um
@@ -24,18 +14,45 @@ const destaques: DestaqueAnalise[] = analises.map((analise) => ({
   analise,
   ofertas: ofertasDoAparelho(analise.aparelhoId),
 }));
+
+const descricao =
+  "Base estruturada dos aparelhos de ar-condicionado da exportação oficial do INMETRO: compare capacidade, consumo, IDRS e Classe, e leia as análises.";
+
+const jsonLd: Record<string, unknown> = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Especialista do Ar",
+  url: Astro.site?.href,
+  inLanguage: "pt-BR",
+  description: descricao,
+};
 ---
 
 <Base
-  titulo="Catálogo de aparelhos de ar-condicionado — Especialista do Ar"
-  descricao="Catálogo de aparelhos de ar-condicionado com Dados declarados do INMETRO: busque e filtre por marca, tipo, capacidade (BTU) e tensão."
+  titulo="Especialista do Ar — aparelhos de ar-condicionado com dados do INMETRO"
+  descricao={descricao}
+  jsonLd={jsonLd}
 >
-  <h1>Catálogo de aparelhos de ar-condicionado</h1>
+  <h1>Especialista do Ar</h1>
   <p class="intro">
-    {dataset.length} Aparelhos com Dados declarados, a partir da exportação
-    oficial de produtos do INMETRO. Filtre por marca, tipo, capacidade e tensão,
-    ou busque por marca, modelo e tipo.
+    A base dos aparelhos de ar-condicionado da exportação oficial do INMETRO,
+    organizada para comparar capacidade, consumo, IDRS e Classe sem abrir a
+    planilha bruta.
   </p>
+
   <AnalisesDestaque destaques={destaques} />
-  <Consulta client:load opcoes={opcoes} />
+
+  <p>
+    <a class="botao" href="/aparelhos/">Ver todos os aparelhos</a>
+  </p>
+
+  <script>
+    import { redirecionarFiltrosAntigos } from "../lib/redirect.ts";
+
+    // A tabela saiu da home no ticket 29. Um link antigo com filtros
+    // (`/?marca=…`) é levado a `/aparelhos/` com a mesma querystring.
+    redirecionarFiltrosAntigos(window.location, (url) => {
+      window.location.replace(url);
+    });
+  </script>
 </Base>

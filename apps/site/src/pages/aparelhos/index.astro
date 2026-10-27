@@ -18,11 +18,29 @@ const opcoes = opcoesDe(dataset, carregarFiltros());
 const { analises } = await carregarAnalises();
 const idsDaBase = new Set((aparelhosJson as Aparelho[]).map((a) => a.id));
 const analisados = mapaAnalisados(analises, idsDaBase);
+
+const descricao =
+  "Tabela de aparelhos de ar-condicionado com os Dados declarados do INMETRO: compare marca, modelo, capacidade, consumo, IDRS e Classe, com filtros e ordenação.";
+
+const jsonLd: Record<string, unknown> = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Aparelhos de ar-condicionado",
+  description: descricao,
+  url: Astro.site ? new URL("/aparelhos/", Astro.site).href : undefined,
+  inLanguage: "pt-BR",
+  isPartOf: {
+    "@type": "WebSite",
+    name: "Especialista do Ar",
+    url: Astro.site?.href,
+  },
+};
 ---
 
 <Base
   titulo="Aparelhos de ar-condicionado — Especialista do Ar"
-  descricao="Tabela de aparelhos de ar-condicionado com os Dados declarados do INMETRO: compare marca, modelo, capacidade, consumo, IDRS e Classe, com filtros e ordenação."
+  descricao={descricao}
+  jsonLd={jsonLd}
 >
   <h1>Aparelhos de ar-condicionado</h1>
   <p class="intro">
