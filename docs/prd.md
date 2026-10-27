@@ -64,7 +64,7 @@ O caminho completo: CSV bruto → base servida → Relatório de revisão.
 - **Módulo de consulta compartilhado:** isomórfico — um *entry point* puro em
   `packages/api`, **sem** dependências de Node, importado pela ilha do site sobre
   `data/build/consulta.json`. Filtros por campo (BTU, tensão); MiniSearch só para
-  busca textual (Pagefind fica para o conteúdo do site).
+  busca textual.
 - **Documentação para agentes:** como consumir a base, incluindo a fórmula do
   Valor calculado.
 - **Teste de aceitação com um agente (portão):** ver abaixo.

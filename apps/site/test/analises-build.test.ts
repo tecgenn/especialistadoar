@@ -18,7 +18,7 @@ import type { Oferta } from "../src/lib/ofertas.ts";
  * Seam de build (a mais alta) da camada de Análises: um build real do Astro com
  * uma fixture em MDX, fora do conteúdo publicado, e depois o build sem nenhuma
  * Análise. O teste olha só o que sai em `dist/` — página, link bidirecional,
- * sitemap, `analises.json`, JSON-LD, menu, página degradada e Pagefind.
+ * sitemap, `analises.json`, JSON-LD, menu e página degradada.
  */
 
 const raizRepo = fileURLToPath(new URL("../../../", import.meta.url));
@@ -66,14 +66,19 @@ function lerHtml(...partes: string[]): string {
   return readFileSync(join(distDir, ...partes, "index.html"), "utf8");
 }
 
-function pageCountDoPagefind(): number {
-  const entrada = JSON.parse(
-    readFileSync(join(distDir, "pagefind", "pagefind-entry.json"), "utf8"),
-  ) as { languages: Record<string, { page_count: number }> };
-  const contagens = Object.values(entrada.languages).map(
-    (idioma) => idioma.page_count,
-  );
-  return Math.max(...contagens);
+/** Páginas do site sem nenhuma Análise: 2.460 fichas + `/` + `/aparelhos/`. */
+const PAGINAS_BASE = 2462;
+
+/**
+ * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
+ * os redirecionamentos dos links antigos para a tabela de Aparelhos.
+ */
+function esperarSemBuscaAntiga(): void {
+  expect(existsSync(join(distDir, "pagefind"))).toBe(false);
+  expect(existsSync(join(distDir, "busca"))).toBe(false);
+  const redirects = readFileSync(join(distDir, "_redirects"), "utf8");
+  expect(redirects).toContain("/busca/ /aparelhos/ 301");
+  expect(redirects).toContain("/busca /aparelhos/ 301");
 }
 
 /**
@@ -384,8 +389,11 @@ describe("build com uma Análise de fixture", () => {
     expect(existsSync(join(distDir, "ofertas.json"))).toBe(false);
     expect(scripts.some((texto) => texto.includes(oferta.url))).toBe(false);
 
-    expect(existsSync(join(distDir, "pagefind"))).toBe(true);
-    expect(pageCountDoPagefind()).toBe(contarHtml(distDir));
+    // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
+    // e os links antigos são redirecionados para a tabela de Aparelhos.
+    esperarSemBuscaAntiga();
+    // As 2.462 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
 
@@ -413,10 +421,10 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2463 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2462 páginas e omite seção, menu e analises.json", () => {
     buildarSite();
 
-    expect(contarHtml(distDir)).toBe(2463);
+    expect(contarHtml(distDir)).toBe(PAGINAS_BASE);
     expect(existsSync(join(distDir, "analises"))).toBe(false);
     expect(existsSync(join(distDir, "analises.json"))).toBe(false);
 
@@ -443,7 +451,10 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(
       existsSync(join(distDir, "aparelhos", aparelho.id, "index.html")),
     ).toBe(true);
-    expect(pageCountDoPagefind()).toBe(2463);
+
+    // O Pagefind e a página /busca/ saíram (ticket 30); o redirecionamento
+    // publicado leva os links antigos para a tabela.
+    esperarSemBuscaAntiga();
 
     // Ficha com Marca de catálogo (ADR-0016): o `<h1>`, o título e a URL seguem
     // com a Marca oficial; só a lista de resultados e o link de volta usam a
