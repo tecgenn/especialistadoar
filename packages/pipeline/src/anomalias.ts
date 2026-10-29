@@ -146,21 +146,3 @@ export function detectarAnomalias(
 
   return anomalias;
 }
-
-/**
- * Linhas sinalizadas por consumo implausível. A consulta pública marca esses
- * Aparelhos como `suspeito` sem excluí-los da base (ADR-0017).
- */
-export function linhasComConsumoImplausivel(
-  anomalias: readonly Anomalia[],
-): Set<number> {
-  return new Set(
-    anomalias
-      .filter(
-        (anomalia) =>
-          anomalia.tipo === "valor_implausivel" &&
-          anomalia.campo === CONSUMO_ANUAL_KWH,
-      )
-      .map((anomalia) => anomalia.linha),
-  );
-}

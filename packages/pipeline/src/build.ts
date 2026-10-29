@@ -6,11 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
-import {
-  type Anomalia,
-  detectarAnomalias,
-  linhasComConsumoImplausivel,
-} from "./anomalias.ts";
+import { type Anomalia, detectarAnomalias } from "./anomalias.ts";
 import { type Aparelho, SCHEMA_APARELHO } from "./aparelho.ts";
 import { type ItemConsulta, projetarConsulta } from "./consulta.ts";
 import { type ClassificacaoRevisao, classificarRevisao } from "./diff.ts";
@@ -116,21 +112,20 @@ function processarLinhas(
   const anomalias: Anomalia[] = [];
   const excecoesAplicadas = new Set<ExcecaoManual>();
 
-  linhas.forEach((linhaCrua, indice) => {
-    const linha = indice + 1;
+  for (const { numero, valores: linhaCrua } of linhas) {
     const excecoesDaLinha = excecoesDaVersao.filter(
-      (excecao) => excecao.linha === linha,
+      (excecao) => excecao.linha === numero,
     );
     excecoesDaLinha.forEach((excecao) => {
       excecoesAplicadas.add(excecao);
     });
     const valoresCorrigidos = aplicarExcecoes(linhaCrua, excecoesDaLinha);
     const { valores, oficial } = normalizarValores(valoresCorrigidos);
-    registros.push({ linha, versao: versao.hash, valores, oficial });
+    registros.push({ linha: numero, versao: versao.hash, valores, oficial });
     anomalias.push(
-      ...detectarAnomalias(valores, { linha, versao: versao.hash }),
+      ...detectarAnomalias(valores, { linha: numero, versao: versao.hash }),
     );
-  });
+  }
 
   return { registros, anomalias, excecoesAplicadas };
 }
@@ -240,7 +235,6 @@ export function runBuild(options: BuildOptions): BuildResult {
       marcasCatalogo,
       todosAparelhos.map((aparelho) => aparelho.marca),
     ),
-    linhasComConsumoImplausivel(anomalias),
   );
 
   const anterior = versaoPrecedente(manifest, versao);

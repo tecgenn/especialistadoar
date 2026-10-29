@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 iniciada** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Próximo ticket: **31** (`pipeline-filtro-excluido-remocao-campos`), sem blockers. Tickets 31–37 criados cobrindo pipeline → API → site (dados) → site (UI) → validação.
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Próximo ticket: **32** (`api-consulta-tipos-filtros-ordenacao`), bloqueado pelo 31 (done). Tickets 32–37 cobrem API → site (dados) → site (UI) → validação.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -221,3 +221,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** a página `/busca/` e o índice Pagefind (~11 MB) deixam de ser gerados — `pnpm build:site` produz **2.462 páginas** (2.460 fichas + `/` + `/aparelhos/`) e o `dist` perde ~11 MB. Os links antigos `/busca/` e `/busca` redirecionam (301) para `/aparelhos/` via `apps/site/public/_redirects` copiado para `dist/`. Nenhuma referência a Pagefind permanece no código ou nos testes (exceto comentários históricos). Lint, typecheck e todos os 343 testes passam.
 - **Ticket:** #30 (local tracker: `30-remover-busca-e-pagefind`)
 - **Checks:** Vitest 343/343 (33 arquivos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas sem `dist/pagefind/` nem `dist/busca/`, com `_redirects` publicado.
+
+### 31 — Pipeline: Filtro "Excluído" e Remoção de Campos Obsoletos (2026-10-27)
+
+- **Changed:** `packages/pipeline/src/{parse,build,group,aparelho,consulta,anomalias,validate,index}.ts` (filtro `Status do Modelo === "Excluido"` no parse; remoção de `rotacao`, `situacao`, `suspeito` dos contratos `Aparelho`, `ItemConsulta`, `DadosDeclarados`; novo tipo `LinhaCrua { numero, valores }` preservando numeração original para proveniência/exceções; `linhasComConsumoImplausivel` removido; `SituacaoSchema`/`Situacao` removidos); `packages/pipeline/test/{parse,build,aparelhos,consulta,anomalias,validate,classe-situacao}.test.ts` + snapshots; `data/excecoes-manuais.jsonl` (exceção da Linha 7428 removida — era `Excluido`); `docs/aceitacao/gabarito.json` (contagens atualizadas: 5867 linhas, 2227 aparelhos, 108 anomalias); `docs/agentes.md`, `docs/agents/architecture.md`, `CONTEXT.md` (documentação dos campos removidos); `packages/api/src/consulta.ts` + tests (ordenação reduzida a `btu`/`consumo`/`idrs`/`classe`, sem `suspeito`).
+- **What works:** `pnpm build` filtra 1607 linhas `Excluido` (7474 → 5867 linhas de dados), base servida cai para **2227 Aparelhos** (era 2460), **108 Anomalias** (eram 170). `consulta.json` e `aparelhos.json` não contêm `rotacao`, `situacao`, `suspeito`. Pipeline tests 166/166, API tests 33/33, typecheck OK, build reproduz `data/build` byte a byte.
+- **Ticket:** #31 (local tracker: `31-pipeline-filtro-excluido-remocao-campos`)
+- **Checks:** Vitest 199/199 (pipeline + api), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `consulta.json` 520 KB sem campos removidos.

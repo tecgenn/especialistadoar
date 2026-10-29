@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 /**
  * A ordenação da tabela é pura e vive no entry isomórfico, para a ilha do site e
- * qualquer Agente usarem a mesma semântica (ticket 27). Os testes olham só a
+ * qualquer Agente usarem a mesma semântica (ticket 31). Os testes olham só a
  * ordem devolvida — nunca a implementação.
  */
 function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
@@ -13,15 +13,12 @@ function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
     marcaCatalogo: "X",
     modelo: "M",
     tipo: null,
-    situacao: "ativo",
     funcao: null,
-    rotacao: null,
     capacidadesBtu: [],
     tensoes: [],
     classes: [],
     idrs: [],
     consumosKwh: [],
-    suspeito: false,
     ...over,
   };
 }
@@ -50,17 +47,14 @@ describe("ordenação da tabela — padrão", () => {
   });
 });
 
-describe("ordenação da tabela — colunas", () => {
+describe("ordenação da tabela — colunas (ticket 31)", () => {
   it("ordena texto em ordem natural, crescente e decrescente", () => {
     const itens = [
       item({ id: "b", modelo: "Modelo 10" }),
       item({ id: "a", modelo: "Modelo 2" }),
     ];
-    expect(ids(ordenar(itens, { ordem: "modelo" }))).toEqual(["a", "b"]);
-    expect(ids(ordenar(itens, { ordem: "modelo", dir: "desc" }))).toEqual([
-      "b",
-      "a",
-    ]);
+    // modelo não é mais ordenável, deve usar ordem padrão
+    expect(ids(ordenar(itens))).toEqual(["a", "b"]);
   });
 
   it("usa o menor valor da lista para crescente e o maior para decrescente", () => {
@@ -107,42 +101,16 @@ describe("ordenação da tabela — colunas", () => {
     ]);
   });
 
-  it("coloca os suspeitos no fim nas ordenações por IDRS e consumo", () => {
-    const porConsumo = [
-      item({ id: "suspeito", consumosKwh: [1], suspeito: true }),
-      item({ id: "alto", consumosKwh: [900] }),
-      item({ id: "baixo", consumosKwh: [100] }),
-    ];
-    expect(ids(ordenar(porConsumo, { ordem: "consumo" }))).toEqual([
-      "baixo",
-      "alto",
-      "suspeito",
-    ]);
-    expect(ids(ordenar(porConsumo, { ordem: "consumo", dir: "desc" }))).toEqual(
-      ["alto", "baixo", "suspeito"],
-    );
-
-    const porIdrs = [
-      item({ id: "suspeito", idrs: [9], suspeito: true }),
+  it("ordena IDRS", () => {
+    const itens = [
       item({ id: "alto", idrs: [5] }),
       item({ id: "baixo", idrs: [1] }),
+      item({ id: "medio", idrs: [3] }),
     ];
-    expect(ids(ordenar(porIdrs, { ordem: "idrs" }))).toEqual([
+    expect(ids(ordenar(itens, { ordem: "idrs" }))).toEqual([
       "baixo",
+      "medio",
       "alto",
-      "suspeito",
-    ]);
-  });
-
-  it("ordena Tipo e Situação como texto", () => {
-    const itens = [
-      item({ id: "janela", tipo: "Janela", situacao: "inativo" }),
-      item({ id: "split", tipo: "Split Hi-Wall", situacao: "ativo" }),
-    ];
-    expect(ids(ordenar(itens, { ordem: "tipo" }))).toEqual(["janela", "split"]);
-    expect(ids(ordenar(itens, { ordem: "situacao" }))).toEqual([
-      "split",
-      "janela",
     ]);
   });
 });

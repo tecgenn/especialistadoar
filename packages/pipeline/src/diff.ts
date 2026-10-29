@@ -17,7 +17,6 @@ const CAMPOS_COMPARADOS = [
   "unidadeExterna",
   "tipo",
   "funcao",
-  "rotacao",
   "fluidoRefrigerante",
   "fluidoEspecificado",
   "registros",
@@ -91,7 +90,6 @@ function comparavel(aparelho: Aparelho): Record<CampoComparado, unknown> {
     unidadeExterna: aparelho.unidadeExterna,
     tipo: aparelho.tipo,
     funcao: aparelho.funcao,
-    rotacao: aparelho.rotacao,
     fluidoRefrigerante: aparelho.fluidoRefrigerante,
     fluidoEspecificado: aparelho.fluidoEspecificado,
     registros: [...aparelho.registros].sort(

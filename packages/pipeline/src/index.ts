@@ -2,7 +2,6 @@ export type {
   Aparelho,
   DadosDeclarados,
   RegistroInmetro,
-  Situacao,
   Tensao,
   Variante,
 } from "./aparelho.ts";

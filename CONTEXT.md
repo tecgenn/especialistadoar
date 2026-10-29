@@ -53,7 +53,7 @@ Faixa de classificação de eficiência (A a F) que o INMETRO declara para uma L
 _Avoid_: Nota, faixa, selo
 
 **Situação**:
-Estado de um Aparelho na consulta: **Ativo** quando ao menos um dos seus Registros INMETRO está Ativo; caso contrário, não está ativo. É derivada dos status dos Registros, não um dado novo.
+Estado de um Aparelho: **Ativo** quando ao menos um dos seus Registros INMETRO está Ativo; caso contrário, não está ativo. É derivada dos status dos Registros, não um dado novo; desde o ticket 31 não é publicada como campo — quem precisa dela deriva dos `registros` do Aparelho.
 _Avoid_: Status (é o nome da coluna do Registro, não do Aparelho)
 
 **Anomalia**:

@@ -4,7 +4,6 @@ import {
   CAPACIDADE_BTU,
   CONSUMO_ANUAL_KWH,
   detectarAnomalias,
-  linhasComConsumoImplausivel,
 } from "../src/anomalias.ts";
 
 const contexto = { linha: 7, versao: "abc123" };
@@ -206,34 +205,5 @@ describe("detectarAnomalias — consumo implausível", () => {
         tipo: "valor_implausivel",
       },
     ]);
-  });
-});
-
-describe("linhasComConsumoImplausivel", () => {
-  it("seleciona só as Linhas sinalizadas por consumo", () => {
-    const anomalias: Anomalia[] = [
-      {
-        linha: 3,
-        versao: "abc123",
-        campo: CONSUMO_ANUAL_KWH,
-        valor: "32,8",
-        tipo: "valor_implausivel",
-      },
-      {
-        linha: 4,
-        versao: "abc123",
-        campo: CAPACIDADE_BTU,
-        valor: "30",
-        tipo: "valor_implausivel",
-      },
-      {
-        linha: 5,
-        versao: "abc123",
-        campo: CONSUMO_ANUAL_KWH,
-        valor: "abc",
-        tipo: "texto_em_campo_numerico",
-      },
-    ];
-    expect(linhasComConsumoImplausivel(anomalias)).toEqual(new Set([3]));
   });
 });

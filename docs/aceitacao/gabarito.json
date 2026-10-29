@@ -3,10 +3,10 @@
   "perguntas": [
     {
       "id": 1,
-      "resposta": "Versão da tabela obtida em 2026-10-12 (arquivo raw/inmetro-export-2026-10-12.csv, origem \"INMETRO — exportação de produtos\"), com 7474 Linhas. É a versão identificada pelo sha256 ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407.",
+      "resposta": "Versão da tabela obtida em 2026-10-12 (arquivo raw/inmetro-export-2026-10-12.csv, origem \"INMETRO — exportação de produtos\"), com 5867 Linhas. É a versão identificada pelo sha256 ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407.",
       "verificacoes": [
         { "tipo": "manifest", "campo": "obtidoEm", "esperado": "2026-10-12" },
-        { "tipo": "manifest", "campo": "contagemLinhas", "esperado": 7474 },
+        { "tipo": "manifest", "campo": "contagemLinhas", "esperado": 5867 },
         {
           "tipo": "manifest",
           "campo": "arquivo",
@@ -26,10 +26,10 @@
     },
     {
       "id": 2,
-      "resposta": "A base servida tem 2460 Aparelhos (só os com Dados declarados) e 170 Anomalias sinalizadas.",
+      "resposta": "A base servida tem 2227 Aparelhos (só os com Dados declarados) e 108 Anomalias sinalizadas.",
       "verificacoes": [
-        { "tipo": "contagem-aparelhos", "esperado": 2460 },
-        { "tipo": "contagem-anomalias", "esperado": 170 }
+        { "tipo": "contagem-aparelhos", "esperado": 2227 },
+        { "tipo": "contagem-anomalias", "esperado": 108 }
       ]
     },
     {
@@ -76,28 +76,28 @@
     },
     {
       "id": 4,
-      "resposta": "Há 316 Aparelhos do tipo Split Cassete na base servida.",
+      "resposta": "Há 309 Aparelhos do tipo Split Cassete na base servida.",
       "verificacoes": [
         {
           "tipo": "contagem-consulta",
           "filtros": { "tipo": "Split Cassete" },
-          "esperado": 316
+          "esperado": 309
         }
       ]
     },
     {
       "id": 5,
-      "resposta": "124 Aparelhos atendem 127 V e 20 são bivolt (aceitam mais de uma tensão, tipicamente 127 e 220 V).",
+      "resposta": "112 Aparelhos atendem 127 V e 17 são bivolt (aceitam mais de uma tensão, tipicamente 127 e 220 V).",
       "verificacoes": [
         {
           "tipo": "contagem-consulta",
           "filtros": { "tensao": 127 },
-          "esperado": 124
+          "esperado": 112
         },
         {
           "tipo": "contagem-consulta",
           "filtros": { "variasTensoes": true },
-          "esperado": 20
+          "esperado": 17
         }
       ]
     },
@@ -114,13 +114,13 @@
     },
     {
       "id": 7,
-      "resposta": "É um só Aparelho: a tensão não faz parte da identidade. O GREE \"GJC07BK-A3NRND2A\" (ap-06e4068d6f8f, tipo Janela) tem 3 Variantes — uma sem tensão declarada, uma a 220 V e uma a 127 V — logo atende 127 e 220 V sem virar dois Aparelhos.",
+      "resposta": "É um só Aparelho: a tensão não faz parte da identidade. O GREE \"GJC07BK-A3NRND2A\" (ap-06e4068d6f8f, tipo Janela) tem 2 Variantes — uma sem tensão declarada e uma a 220 V — logo atende 220 V.",
       "verificacoes": [
         {
           "tipo": "campo-aparelho",
           "id": "ap-06e4068d6f8f",
           "caminho": "variantes.length",
-          "esperado": 3
+          "esperado": 2
         },
         {
           "tipo": "campo-aparelho",
@@ -135,16 +135,10 @@
           "esperado": [220]
         },
         {
-          "tipo": "campo-aparelho",
-          "id": "ap-06e4068d6f8f",
-          "caminho": "variantes.2.tensao.voltagens",
-          "esperado": [127]
-        },
-        {
           "tipo": "campo-consulta",
           "id": "ap-06e4068d6f8f",
           "caminho": "tensoes",
-          "esperado": [127, 220]
+          "esperado": [220]
         }
       ]
     },

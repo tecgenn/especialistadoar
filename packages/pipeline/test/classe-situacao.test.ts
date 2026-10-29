@@ -69,34 +69,14 @@ describe("runBuild — Classe (ADR-0018)", () => {
   });
 });
 
-describe("runBuild — Situação (ADR-0018)", () => {
-  it("é ativo quando ao menos um Registro está Ativo (mesmo com um Inativo)", () => {
-    const alfa = porMarca(build(fixtureClasse), "ALFA");
-    expect(alfa.registros.map((registro) => registro.status)).toEqual([
-      "Ativo",
-      "Inativo",
-    ]);
-    expect(alfa.situacao).toBe("ativo");
-  });
-
-  it("é inativo quando nenhum Registro está Ativo", () => {
-    const aparelhos = build(fixtureClasse);
-    expect(porMarca(aparelhos, "BETA").situacao).toBe("inativo");
-    expect(porMarca(aparelhos, "GAMA").situacao).toBe("ativo");
-  });
-});
-
-describe("runBuild — Classe e Situação na exportação real", () => {
-  it("todo Aparelho servido tem Classe e uma Situação derivada dos Registros", () => {
+describe("runBuild — Classe na exportação real", () => {
+  it("todo Aparelho servido tem Classe (pelo menos uma Variante)", () => {
     const aparelhos = build(exportVersadaPath);
-    expect(aparelhos).toHaveLength(2460);
+    expect(aparelhos).toHaveLength(2227);
     expect(
       aparelhos.filter((aparelho) =>
         aparelho.variantes.every((variante) => variante.dados.classe === null),
       ),
     ).toHaveLength(0);
-    expect(
-      aparelhos.filter((aparelho) => aparelho.situacao === "inativo"),
-    ).toHaveLength(146);
   });
 });

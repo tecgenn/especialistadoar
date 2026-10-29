@@ -9,41 +9,34 @@ function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
     marcaCatalogo: "X",
     modelo: "M",
     tipo: null,
-    situacao: "ativo",
     funcao: null,
-    rotacao: null,
     capacidadesBtu: [],
     tensoes: [],
     classes: [],
     idrs: [],
     consumosKwh: [],
-    suspeito: false,
     ...over,
   };
 }
 
 describe("colunas da tabela de Aparelhos", () => {
-  it("lista as colunas na ordem da tabela, com os mesmos campos da ordenação", () => {
+  it("lista as colunas na ordem da tabela (ticket 31)", () => {
     expect(COLUNAS_TABELA.map((coluna) => coluna.rotulo)).toEqual([
       "Marca",
       "Modelo",
       "BTU/h",
-      "Consumo (kWh/ano)",
+      "Consumo (kWh)",
       "IDRS",
       "Classe",
-      "Tipo",
-      "Situação",
     ]);
   });
 
-  it("mostra a Marca de catálogo e a Situação legível", () => {
+  it("mostra a Marca de catálogo", () => {
     const aparelho = item({
       marca: "SPRINGER MIDEA",
       marcaCatalogo: "MIDEA",
-      situacao: "inativo",
     });
     expect(valorDaColuna(aparelho, "marca")).toBe("MIDEA");
-    expect(valorDaColuna(aparelho, "situacao")).toBe("Inativo");
   });
 
   it("mostra faixa quando a lista tem mais de um valor", () => {
@@ -57,10 +50,13 @@ describe("colunas da tabela de Aparelhos", () => {
     expect(valorDaColuna(aparelho, "idrs")).toBe("3,5");
   });
 
-  it("junta as Classes e marca dado ausente com travessão", () => {
-    expect(valorDaColuna(item({ classes: ["A", "B"] }), "classe")).toBe("A, B");
+  it("junta as Classes com rótulo amigável e marca dado ausente com travessão", () => {
+    expect(valorDaColuna(item({ classes: ["A", "B"] }), "classe")).toBe(
+      "Classe A, Classe B",
+    );
     expect(valorDaColuna(item(), "classe")).toBe("—");
     expect(valorDaColuna(item(), "btu")).toBe("—");
     expect(valorDaColuna(item(), "tipo")).toBe("—");
+    expect(valorDaColuna(item(), "funcao")).toBe("—");
   });
 });

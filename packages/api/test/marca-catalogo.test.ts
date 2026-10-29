@@ -99,17 +99,17 @@ describe("marca de catálogo — base publicada real", () => {
     expect(dataset.every((item) => item.marcaCatalogo !== "")).toBe(true);
   });
 
-  it("filtra MIDEA com Midea e Springer Midea (164)", () => {
-    expect(consulta.filtrar({ marca: "MIDEA" })).toHaveLength(164);
+  it("filtra MIDEA com Midea e Springer Midea (163)", () => {
+    expect(consulta.filtrar({ marca: "MIDEA" })).toHaveLength(163);
   });
 
   it("filtra SPRINGER MIDEA (valor oficial) pelos 67 da família", () => {
     expect(consulta.filtrar({ marca: "SPRINGER MIDEA" })).toHaveLength(67);
   });
 
-  it("filtra e busca FUJITSU com Fujitsu/Airstage e Airstage (27)", () => {
-    expect(consulta.filtrar({ marca: "FUJITSU" })).toHaveLength(27);
-    expect(consulta.filtrar({ q: "fujitsu" })).toHaveLength(27);
+  it("filtra e busca FUJITSU com Fujitsu/Airstage e Airstage (26)", () => {
+    expect(consulta.filtrar({ marca: "FUJITSU" })).toHaveLength(26);
+    expect(consulta.filtrar({ q: "fujitsu" })).toHaveLength(26);
   });
 
   it("intersecta filtro e busca também na família de marca", () => {
