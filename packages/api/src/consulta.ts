@@ -151,8 +151,7 @@ function chaveDe(
  * Ordena os Aparelhos da tabela (ticket 31). Sem `ordem`, aplica o padrão A–Z
  * por Marca de catálogo e modelo. Numa coluna, crescente usa o menor valor da
  * lista de cada Aparelho e decrescente o maior; quem não declara o valor fica no
- * fim. Nas ordenações por IDRS e consumo, os suspeitos (ticket 25) vão para o
- * fim nas duas direções — o dado implausível não domina o topo.
+ * fim.
  */
 export function ordenar(
   itens: readonly ItemConsulta[],

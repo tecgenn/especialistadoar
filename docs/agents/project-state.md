@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Próximo ticket: **32** (`api-consulta-tipos-filtros-ordenacao`), bloqueado pelo 31 (done). Tickets 32–37 cobrem API → site (dados) → site (UI) → validação.
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`) e **32** (`api-consulta-tipos-filtros-ordenacao`) concluídos. Próximo: **33** (`site-dados-filtros-opcoes-tabela`), sem bloqueio. A sequência 33 → 34 → 35 → 36 → 37 cobre site (dados) → site (UI) → estilos → validação.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -228,3 +228,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** `pnpm build` filtra 1607 linhas `Excluido` (7474 → 5867 linhas de dados), base servida cai para **2227 Aparelhos** (era 2460), **108 Anomalias** (eram 170). `consulta.json` e `aparelhos.json` não contêm `rotacao`, `situacao`, `suspeito`. Pipeline tests 166/166, API tests 33/33, typecheck OK, build reproduz `data/build` byte a byte.
 - **Ticket:** #31 (local tracker: `31-pipeline-filtro-excluido-remocao-campos`)
 - **Checks:** Vitest 199/199 (pipeline + api), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `consulta.json` 520 KB sem campos removidos.
+
+### 32 — API isomórfica: tipos, filtros e ordenação (2026-10-29)
+
+- **Changed:** `packages/api/src/consulta.ts` (comentário de `ordenar` corrigido — a lógica de suspeitos saiu no 31); `packages/api/test/consulta.test.ts` (+3 testes: filtro por `funcao`, filtro por `classe` e filtros removidos `rotacao`/`situacao` ignorados).
+- **What works:** o entry isomórfico `@especialista-do-ar/api/consulta` opera com o contrato novo: `FiltrosConsulta` só com `marca`, `tipo`, `btu`, `tensao`, `funcao`, `classe`, `q` e `ordem`/`dir`; `ORDENS_CONSULTA = ["btu","consumo","idrs","classe"]`; `combinaCampos` e `chaveDe`/`ordenar` sem `rotacao`, `situacao` nem `suspeito`; `SITUACOES_CONSULTA` removido. `ItemConsulta` mantém `tensoes` porque o filtro de tensão e as opções do site dependem dele (desvio consciente do checklist). A cobertura agora inclui os filtros de função e Classe e a garantia de que parâmetros antigos não filtram nada. Nada muda em `data/build/` ou `reports/`.
+- **Ticket:** #32 (local tracker: `32-api-consulta-tipos-filtros-ordenacao`)
+- **Checks:** Vitest packages/api 36/36, tsc --noEmit OK, biome check OK.
