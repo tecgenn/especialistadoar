@@ -44,6 +44,19 @@ function textoObrigatorio(valor: unknown, onde: string, campo: string): string {
   return valor.trim();
 }
 
+/** Cor opcional de um chip: ausente é válido; presente precisa ser texto. */
+function corOpcional(valor: unknown, onde: string): string | undefined {
+  if (valor === undefined) {
+    return undefined;
+  }
+  if (typeof valor !== "string" || valor.trim() === "") {
+    throw new Error(
+      `${onde}: \`cor\` precisa ser um texto preenchido quando informada.`,
+    );
+  }
+  return valor.trim();
+}
+
 /**
  * Valida o contrato da curadoria: marca/classe com `valor` e `rotulo` preenchidos,
  * sem valor nem rótulo repetido (indiferente à caixa) e capacidade inteira
@@ -95,7 +108,7 @@ export function validarFiltros(entrada: unknown): FiltrosCurados {
     }
     rotulosVistos.set(chaveRotulo, valorLimpo);
 
-    const cor = (item as Record<string, unknown>).cor as string | undefined;
+    const cor = corOpcional((item as Record<string, unknown>).cor, onde);
     return { valor: valorLimpo, rotulo: rotuloLimpo, cor };
   });
 
@@ -120,7 +133,7 @@ export function validarFiltros(entrada: unknown): FiltrosCurados {
     }
     rotulosVistos.set(chaveRotulo, valorLimpo);
 
-    const cor = (item as Record<string, unknown>).cor as string | undefined;
+    const cor = corOpcional((item as Record<string, unknown>).cor, onde);
     return { valor: valorLimpo, rotulo: rotuloLimpo, cor };
   });
 

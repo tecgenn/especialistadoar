@@ -78,4 +78,26 @@ describe("opções da consulta", () => {
     expect(opcoes.funcoes).toEqual(["Frio", "Quente/Frio"]);
     expect(opcoes.classes).toEqual(["A", "B", "C"]);
   });
+
+  it("separa as classes curadas (com cor) das demais", () => {
+    const opcoes = opcoesDe(
+      [
+        item({ id: "a", classes: ["A", "C"] }),
+        item({ id: "b", classes: ["B"] }),
+      ],
+      {
+        marcas: [],
+        btus: [],
+        classes: [
+          { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+          { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+        ],
+      },
+    );
+    expect(opcoes.classesChip).toEqual([
+      { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+      { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+    ]);
+    expect(opcoes.classes).toEqual(["C"]);
+  });
 });

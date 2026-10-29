@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`) e **32** (`api-consulta-tipos-filtros-ordenacao`) concluídos. Próximo: **33** (`site-dados-filtros-opcoes-tabela`), sem bloqueio. A sequência 33 → 34 → 35 → 36 → 37 cobre site (dados) → site (UI) → estilos → validação.
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`) e **33** (`site-dados-filtros-opcoes-tabela`) concluídos. Próximo: **34** (`site-ui-filtros-redesign-consulta`), sem bloqueio. A suíte do site continua vermelha (40 testes em `consulta.test.tsx`/`analises-build.test.ts`) até o 34 migrar `Consulta.tsx` para o contrato novo — é a dependência esperada, não uma regressão do 33. Restam 34 → 35 → 36 → 37 (UI de filtros → tabela/paginação → estilos → validação).
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -235,3 +235,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** o entry isomórfico `@especialista-do-ar/api/consulta` opera com o contrato novo: `FiltrosConsulta` só com `marca`, `tipo`, `btu`, `tensao`, `funcao`, `classe`, `q` e `ordem`/`dir`; `ORDENS_CONSULTA = ["btu","consumo","idrs","classe"]`; `combinaCampos` e `chaveDe`/`ordenar` sem `rotacao`, `situacao` nem `suspeito`; `SITUACOES_CONSULTA` removido. `ItemConsulta` mantém `tensoes` porque o filtro de tensão e as opções do site dependem dele (desvio consciente do checklist). A cobertura agora inclui os filtros de função e Classe e a garantia de que parâmetros antigos não filtram nada. Nada muda em `data/build/` ou `reports/`.
 - **Ticket:** #32 (local tracker: `32-api-consulta-tipos-filtros-ordenacao`)
 - **Checks:** Vitest packages/api 36/36, tsc --noEmit OK, biome check OK.
+
+### 33 — Site: camada de dados de filtros, opções e tabela (2026-10-29)
+
+- **Changed:** `apps/site/src/lib/filtros.ts` (validação de `cor` opcional nos chips de classe via `corOpcional`); `apps/site/test/filtros.test.ts` (+2 testes: `cor` inválida recusada, `cor` preservada no contrato; +1 de `classesChip` curado); `apps/site/test/opcoes.test.ts` (+1 teste de chips de classe coloridos vs. select); `apps/site/test/filtros-glue.test.ts` (+1 teste do insumo publicado com as 6 classes e suas cores). O restante da camada (`filtros.json` com `classes`, `lib/opcoes.ts` com `classesChip` e sem `rotacoes`/`situacoes`, `lib/tabela.ts` com 6 colunas e "Classe A, Classe B", glue `conteudo/filtros.ts`) já entrara no commit 31.
+- **What works:** a curadoria de classes (A–F com cor) vira chips na ordem curada, filtrando só as classes presentes na base; as demais vão para o `<select>`. `opcoesDe` deriva `marcasChip`/`btusChip`/`classesChip` + o resto, sem `rotacoes`/`situacoes`. A tabela expõe as 6 colunas do redesign e formata Classe como "Classe A, Classe B". Nada muda em `data/build/` ou `reports/`.
+- **Ticket:** #33 (local tracker: `33-site-dados-filtros-opcoes-tabela`)
+- **Checks:** Vitest da camada 27/27 (filtros, opcoes, tabela, filtros-glue), tsc --noEmit OK, biome check OK. **Pendência conhecida:** `pnpm test` da app do site segue vermelho (40 testes) porque `Consulta.tsx` ainda usa `rotuloSituacao`/`opcoes.rotacoes`/`opcoes.situacoes`; resolve no ticket 34.

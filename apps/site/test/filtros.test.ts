@@ -134,6 +134,29 @@ describe("validação da curadoria dos filtros", () => {
       validarFiltros({ marcas: "MIDEA", btus: [], classes: [] } as unknown),
     ).toThrow(/lista/i);
   });
+
+  it("recusa cor que não seja texto preenchido", () => {
+    for (const cor of ["", "   ", 12, null]) {
+      expect(() =>
+        validarFiltros({
+          marcas: [],
+          btus: [],
+          classes: [{ valor: "A", rotulo: "Classe A", cor }],
+        } as unknown),
+      ).toThrow(/cor/i);
+    }
+  });
+
+  it("mantém a cor dos chips de classe no contrato validado", () => {
+    const validada = validarFiltros({
+      marcas: [],
+      btus: [],
+      classes: [{ valor: "A", rotulo: "Classe A", cor: "#16a34a" }],
+    });
+    expect(validada.classes).toEqual([
+      { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+    ]);
+  });
 });
 
 describe("opções com a curadoria dos chips", () => {
@@ -179,5 +202,29 @@ describe("opções com a curadoria dos chips", () => {
       "SAMSUNG",
     ]);
     expect(opcoes.btus).toEqual([7000, 9000, 12000, 18000, 24000, 36000]);
+  });
+
+  it("põe as classes conhecidas como chips coloridos, na ordem curada, e o resto no select", () => {
+    const comClasses = [
+      item({ id: "a", classes: ["A"] }),
+      item({ id: "b", classes: ["B", "C"] }),
+      item({ id: "c", classes: ["D"] }),
+    ];
+    const opcoes = opcoesDe(comClasses, {
+      marcas: [],
+      btus: [],
+      classes: [
+        { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+        { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+        // Curada, mas fora da base: escondida em silêncio.
+        { valor: "F", rotulo: "Classe F", cor: "#dc2626" },
+      ],
+    });
+
+    expect(opcoes.classesChip).toEqual([
+      { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+      { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+    ]);
+    expect(opcoes.classes).toEqual(["C", "D"]);
   });
 });
