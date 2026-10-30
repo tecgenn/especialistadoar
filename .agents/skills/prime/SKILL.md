@@ -1,47 +1,70 @@
 ---
 name: prime
-description: "Load a repo's project docs and codebase, then surface the frontier ticket — the one ready to implement next — without implementing it."
+description: "Resume a ticket-based project in a fresh session: load only the context needed to name the frontier ticket — the one ready to implement next — without implementing it."
 disable-model-invocation: true
 ---
 
 # Prime
 
-Orient to a repo's current state before touching any code. Pairs with `/implement`: `prime` finds and names the next ticket; `/implement` is what actually builds it, run separately once the user confirms.
+Orient a fresh session on a project already running the ticket flow and name its **frontier**: the first open, unblocked, unclaimed ticket in the tracker's order (same sense as `/to-tickets` and `/wayfinder`). Then stop; `/implement` builds it once the user confirms.
+
+Load the minimum that supports a correct answer, and widen only when a check forces you to. What a doc says is **documented**; it becomes **verified** once checked against the tracker, git, or code. Report the two apart.
+
+Read-only: no code, no doc edits (`/update-project-state` owns `project-state.md`), nothing that touches the working tree or uncommitted changes.
 
 ## Process
 
-### 1. Read the project's docs
+### 1. Read the core and confirm the project is in the flow
 
-Read whatever of the following exists; skip in silence what doesn't — don't stall waiting for docs nobody wrote:
+Read in full whichever exist, skipping the rest in silence:
 
-- `AGENTS.md` or `CLAUDE.md` at the repo root — the entry point, usually pointing at `docs/agents/`.
-- `CONTEXT.md` or `CONTEXT-MAP.md` — the domain glossary.
-- Every `.md` file under `docs/agents/`, in particular `project-state.md` (what's shipped, what's mid-flight, what's next), `architecture.md`, `domain.md`, and `issue-tracker.md`.
+- `AGENTS.md` / `CLAUDE.md` at the repo root — only if the harness hasn't loaded it, and once if one points at the other.
+- `docs/agents/project-state.md`
+- `docs/agents/issue-tracker.md`
 
-Done when every doc that exists has been read in full, not skimmed. If none of this exists, explore the repo directly instead and say so in your report.
+No `issue-tracker.md` means `/setup-matt-pocock-skills` never ran: a greenfield repo, or one that hasn't entered the flow. `prime` resumes the flow, it doesn't start it. End here and point to where it begins — `/setup-matt-pocock-skills`, then `/grill-with-docs` (which builds `CONTEXT.md` and `architecture.md` as it explores the code).
 
-### 2. Get the lay of the codebase
+Done when the core docs are read, and you've either confirmed the flow is set up or ended with that pointer.
 
-Skim the source tree, entry points, and manifest (`package.json` or equivalent) far enough to speak concretely about the stack `architecture.md` describes.
+### 2. Verify the frontier candidate
 
-Done when you could describe the stack and top-level structure in three sentences without opening another file.
+Take the first Frontier row of `project-state.md` as the leading candidate — a hint, not an authority. With no state doc, derive it from the tracker.
 
-### 3. Find the frontier
+Check it at the tracker, following `issue-tracker.md`: open, no open blocker, no assignee or claim. Read the candidate and its blockers; list the wider tracker only when the candidate fails. A candidate that is done, blocked, claimed, or missing means the state doc is stale — walk forward in tracker order to the first eligible ticket and flag the mismatch.
 
-The **frontier** is the one ticket ready to be picked up next — open, unblocked, unclaimed, first by order (same sense as in `/to-tickets` and `/wayfinder`).
+When the tracker or its ordering is unclear, report the ambiguity rather than choosing. Status, blocker, and claim checks are never traded for fewer reads.
 
-- If `project-state.md` names a next ticket, treat it as the leading candidate.
-- Verify it against wherever tickets actually live (follow `docs/agents/issue-tracker.md`'s convention, or a local tickets/issues folder) — a status doc goes stale. If the candidate is already done or still blocked, walk forward to the real frontier and flag the mismatch to the user.
-- With no status doc at all, find the frontier from the tracker alone.
+Done when you can name one ticket whose status and blockers you read at the tracker, or state that none is ready (tracker empty, all done, or all blocked).
 
-Done when you can name exactly one ticket, or state plainly that none are ready.
+### 3. Check the working tree
 
-### 4. Report and stop
+Run `git status --short` once and note uncommitted changes that could bear on the candidate. Leave them as they are.
 
-Tell the user, in order:
+Reach for `git log` only when the state doc looks unreliable — the candidate was already done, or a Completed entry has no matching commit (`git log --grep` on its ticket reference, in the format `issue-tracker.md` prescribes). Read just enough history to settle that question.
 
-1. A two- or three-line status of the project — what it is, what's built, where it stands.
-2. The frontier ticket: its title/id, what it delivers end-to-end, and any blockers you had to check.
-3. One line confirming you're ready to start.
+Done when relevant uncommitted changes are noted and any doubt about the state doc is settled or flagged.
 
-Gathering context is the whole job here. Stop the moment you've reported — don't write, edit, or run any code, and don't open `/implement` yourself. The user drives that next step.
+### 4. Load context for this ticket
+
+Read the candidate ticket in full — scope, acceptance criteria, blockers — plus its parent spec only when the ticket alone leaves its scope unclear.
+
+Pull in a supporting doc only when it bears on this ticket:
+
+- `architecture.md` and `domain.md` when the ticket touches the modules or conventions they describe.
+- `CONTEXT.md` (or the relevant context via `CONTEXT-MAP.md`) when the ticket uses domain terms you can't place.
+- Any of them, scoped to the affected area, when core docs are missing, contradictory, or outdated.
+
+Open source files only to verify a claim that matters: a blocker's work exists, a dependency is real, the ticket's premise holds. Scale this to the ticket's risk; a small ticket under consistent docs needs none. When the ticket depends on something the docs call built, confirm it in code or tests.
+
+Done when you can state the ticket's end-to-end outcome, acceptance criteria, and blockers, each marked verified or documented, with material uncertainty noted.
+
+### 5. Report and stop
+
+In order:
+
+1. **Project status** — two or three lines: what the project is, what's documented as built, where it stands.
+2. **Frontier ticket** — id and title, end-to-end outcome, the acceptance criteria that matter, and the blockers you verified. If none is ready, say so and why; with no tickets in the tracker, point to `/to-tickets`.
+3. **Context gaps** — only missing, contradictory, or outdated information that could materially affect implementation. Omit when none.
+4. **Ready** — one line confirming you can start `/implement` once the user says so. Omit when no ticket is ready.
+
+Stop the moment you've reported.
