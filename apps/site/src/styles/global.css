@@ -86,11 +86,43 @@ footer {
   color: #fff;
 }
 
-.consulta .filtros {
+/* Layout da consulta (ticket 34): filtros numa barra lateral sticky, resultados
+   à direita. No celular as duas colunas empilham. */
+.consulta-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 0.75rem 1rem;
-  align-items: end;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.filtros-sidebar {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.consulta-resultados {
+  min-width: 0;
+}
+
+@media (max-width: 64rem) {
+  .consulta-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .filtros-sidebar {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+.consulta .filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   margin-block: 1rem;
 }
 
@@ -113,7 +145,7 @@ footer {
 }
 
 .consulta button {
-  align-self: end;
+  align-self: start;
   padding: 0.45rem 0.75rem;
   border: 1px solid var(--borda);
   border-radius: 0.375rem;
@@ -122,24 +154,53 @@ footer {
   cursor: pointer;
 }
 
-/* O botão da direção fica ao lado do seletor "Ordenar por" e ocupa só o
-   próprio conteúdo (não estica na coluna da grade). */
+/* A busca ocupa a largura toda, acima dos demais filtros. */
+.consulta .filtros .campo-full,
+.consulta .filtros .busca {
+  width: 100%;
+}
+
+/* O botão da direção ocupa só o próprio conteúdo (não estica na coluna). */
 .consulta .filtros .ordem-direcao {
-  justify-self: start;
+  align-self: start;
   white-space: nowrap;
 }
 
-/* Um campo com chips ocupa a linha inteira: os chips quebram linha também no
-   celular e o `<select>` logo abaixo guarda "Todas…" + o resto. */
-.consulta .filtros .campo {
-  grid-column: 1 / -1;
+/* Um campo com chips: legenda, chips que quebram linha e, quando há valores
+   fora da curadoria, o `<select>` "Outras…" logo abaixo. */
+.consulta .campo-chips {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-.consulta .filtros .campo > label {
-  max-width: 18rem;
+.consulta .campo-chips > legend {
+  margin-bottom: 0.35rem;
+  padding: 0;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.consulta .select-outras {
+  width: 100%;
+}
+
+.consulta .select-outras select {
+  width: 100%;
+}
+
+/* O placeholder "Outras Marcas/Capacidades" fica visível, mas as opções do
+   dropdown começam nos valores reais (nada de "Todas…"). */
+.consulta .select-outras select:invalid {
+  color: var(--texto-suave);
+}
+
+.consulta .select-outras option[value=""][disabled][hidden] {
+  display: none;
 }
 
 .consulta .chips {
@@ -147,9 +208,6 @@ footer {
   flex-wrap: wrap;
   gap: 0.4rem;
   min-width: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
 }
 
 .consulta .chips button {
@@ -163,6 +221,45 @@ footer {
   border-color: var(--primaria);
   color: #fff;
   font-weight: 600;
+}
+
+/* Chips de Classe (ticket 34/36): a cor curada (`--cor-classe`) pinta o chip
+   aceso; sem ela, o fallback por `data-classe` mantém A–F legíveis. */
+.consulta .classes-chips button[aria-pressed="true"][data-classe="A"] {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+
+.consulta .classes-chips button[aria-pressed="true"][data-classe="B"] {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.consulta .classes-chips button[aria-pressed="true"][data-classe="C"] {
+  background: #ca8a04;
+  border-color: #ca8a04;
+  color: #fff;
+}
+
+.consulta .classes-chips button[aria-pressed="true"][data-classe="D"] {
+  background: #ea580c;
+  border-color: #ea580c;
+  color: #fff;
+}
+
+.consulta .classes-chips button[aria-pressed="true"][data-classe="E"],
+.consulta .classes-chips button[aria-pressed="true"][data-classe="F"] {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
+}
+
+.consulta .classes-chips button[aria-pressed="true"][data-classe] {
+  background: var(--cor-classe, var(--primaria));
+  border-color: var(--cor-classe, var(--primaria));
+  color: #fff;
 }
 
 .resultados {
@@ -242,10 +339,6 @@ footer {
 
 .consulta .tabela-aparelhos td[data-label="Modelo"] a {
   font-weight: 600;
-}
-
-.consulta .suspeito {
-  color: #b45309;
 }
 
 /* Grupo de analisados (ticket 28): cabeçalho dentro da tabela. */

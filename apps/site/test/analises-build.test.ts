@@ -66,8 +66,13 @@ function lerHtml(...partes: string[]): string {
   return readFileSync(join(distDir, ...partes, "index.html"), "utf8");
 }
 
-/** Páginas do site sem nenhuma Análise: 2.460 fichas + `/` + `/aparelhos/`. */
-const PAGINAS_BASE = 2462;
+/**
+ * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/`.
+ * Caiu de 2.460 fichas quando a pipeline passou a excluir Model Status =
+ * "Excluído" (ticket 31); a curadoria de Análises pode apontar para um id fora
+ * da base, então o número é o que o build realmente gera.
+ */
+const PAGINAS_BASE = 2229;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -392,7 +397,7 @@ describe("build com uma Análise de fixture", () => {
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.462 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As 2.229 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -421,7 +426,7 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2462 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2229 páginas e omite seção, menu e analises.json", () => {
     buildarSite();
 
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE);
@@ -480,9 +485,12 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const htmlTabela = lerHtml("aparelhos");
     expect(htmlTabela).toContain("<h1>Aparelhos de ar-condicionado</h1>");
     expect(htmlTabela).toContain("<span>Ordenar por</span>");
-    for (const filtro of ["Função", "Classe", "Rotação", "Situação"]) {
-      expect(htmlTabela).toContain(`<span>${filtro}</span>`);
+    // Os filtros do redesign (ticket 34): cada um é um fieldset com legenda.
+    for (const filtro of ["Marca", "Capacidade", "Função", "Tipo", "Classe"]) {
+      expect(htmlTabela).toContain(`<legend>${filtro}</legend>`);
     }
+    expect(htmlTabela).not.toContain("<legend>Rotação</legend>");
+    expect(htmlTabela).not.toContain("<legend>Situação</legend>");
 
     // Os metadados da nova página Aparelhos (ticket 29).
     expect(htmlTabela).toContain(
@@ -525,19 +533,19 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlGree).toContain("2,97");
     expect(htmlGree).toContain("15,5 kWh/ano");
     expect(htmlGree.match(/class="variante"/g) ?? []).toHaveLength(1);
-    expect(htmlGree).toContain("Tensão: 127 / 220 V");
+    // O ticket 31 passou a descartar as Linhas da tabela com Model Status =
+    // "Excluído": a Variante de 127 V saiu e só a de 220 V permanece.
+    expect(htmlGree).toContain("Tensão: 220 V · monofásico, bifásico");
     expect(htmlGree).toContain('<th scope="col">Condição</th>');
     expect(htmlGree).toContain('<th scope="col">Carga total</th>');
     expect(htmlGree).not.toContain('<th scope="col">Carga parcial</th>');
     expect(htmlGree).toContain("2.200 / 740 W");
-    // A fase acompanha a voltagem: 127 V é monofásico, 220 V aceita
-    // monofásico e bifásico — as fases não são fundidas numa lista só.
-    expect(htmlGree).toContain(
-      "Tensão: 127 / 220 V · 127 V: monofásico · 220 V: monofásico, bifásico",
-    );
+    // A fase acompanha a voltagem: 220 V aceita monofásico e bifásico — as fases
+    // não são fundidas numa lista só.
+    expect(htmlGree).toContain("Tensão: 220 V · monofásico, bifásico");
     // As 13 linhas repetidas por Variante saíram da ficha.
     expect(htmlGree).not.toContain("Potência — 35 °C total");
-    expect(htmlGree).toContain("Linhas da tabela: 784, 5867");
+    expect(htmlGree).toContain("Linhas da tabela: 784");
 
     // A ficha precisa caber em 360 px sem rolagem horizontal: o resumo vira uma
     // coluna e as células da grade podem quebrar.
