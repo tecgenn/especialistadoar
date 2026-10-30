@@ -55,12 +55,6 @@ export const VarianteSchema = Type.Object({
 });
 export type Variante = Static<typeof VarianteSchema>;
 
-export const SituacaoSchema = Type.Union([
-  Type.Literal("ativo"),
-  Type.Literal("inativo"),
-]);
-export type Situacao = Static<typeof SituacaoSchema>;
-
 export const AparelhoSchema = Type.Object({
   id: Type.String(),
   marca: Type.String(),
@@ -69,12 +63,6 @@ export const AparelhoSchema = Type.Object({
   unidadeExterna: Nullable(Type.String()),
   tipo: Nullable(Type.String()),
   funcao: Nullable(Type.String()),
-  rotacao: Nullable(Type.String()),
-  /**
-   * `ativo` quando ao menos um dos Registros INMETRO está Ativo; derivada dos
-   * status dos Registros, nunca um dado novo (ADR-0018).
-   */
-  situacao: SituacaoSchema,
   fluidoRefrigerante: Nullable(Type.String()),
   fluidoEspecificado: Nullable(Type.String()),
   linhas: Type.Array(Type.Number()),

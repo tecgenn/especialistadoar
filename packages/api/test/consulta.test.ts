@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   criarConsulta,
+  type FiltrosConsulta,
   type ItemConsulta,
 } from "@especialista-do-ar/api/consulta";
 import { runBuild } from "@especialista-do-ar/pipeline";
@@ -73,6 +74,31 @@ describe("módulo de consulta — filtros por campo", () => {
     const consulta = criarConsulta(dataset);
     expect(ids(consulta.filtrar({ marca: "lg" }))).toEqual([LG]);
     expect(ids(consulta.filtrar({ tipo: "Janela" }))).toEqual([KENNEDY]);
+  });
+
+  it("filtra por função", () => {
+    const consulta = criarConsulta(dataset);
+    // No fixture, todos os Aparelhos com Dados declarados são de Frio.
+    expect(ids(consulta.filtrar({ funcao: "Frio" }))).toEqual(
+      [GREE, KENNEDY, LG].sort(),
+    );
+    expect(consulta.filtrar({ funcao: "Quente/Frio" })).toEqual([]);
+  });
+
+  it("filtra por Classe oficial, sem diferenciar caixa", () => {
+    const consulta = criarConsulta(dataset);
+    expect(ids(consulta.filtrar({ classe: "A" }))).toEqual([GREE]);
+    expect(ids(consulta.filtrar({ classe: "b" }))).toEqual([KENNEDY]);
+    expect(consulta.filtrar({ classe: "F" })).toEqual([]);
+  });
+
+  it("ignora os filtros removidos (rotação e situação) de links antigos", () => {
+    const consulta = criarConsulta(dataset);
+    const antigos = {
+      rotacao: "Velocidade Variável",
+      situacao: "ativo",
+    } as unknown as FiltrosConsulta;
+    expect(consulta.filtrar(antigos)).toHaveLength(dataset.length);
   });
 
   it("trata filtro textual em branco como ausência de filtro", () => {

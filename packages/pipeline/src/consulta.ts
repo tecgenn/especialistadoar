@@ -1,12 +1,12 @@
-import type { Aparelho, Situacao } from "./aparelho.ts";
+import type { Aparelho } from "./aparelho.ts";
 import type { ResolverMarcaCatalogo } from "./marcas-catalogo.ts";
 
 /**
  * Contrato do dataset enxuto de consulta (`consulta.json`): uma projeção de cada
- * Aparelho com o que a consulta usa — identidade para exibir e linkar, Situação,
- * Função e Rotação, e os valores sobre os quais filtrar (BTU, tensão, Classe,
- * IDRS e consumo). A base servida completa (`aparelhos.json`, ~3,25 MB) fica para
- * as páginas de detalhe; este é o artefato que a ilha do site baixa (~680 KB).
+ * Aparelho com o que a consulta usa — identidade para exibir e linkar, Função,
+ * e os valores sobre os quais filtrar (BTU, tensão, Classe, IDRS e consumo).
+ * A base servida completa (`aparelhos.json`, ~3,25 MB) fica para as páginas de
+ * detalhe; este é o artefato que a ilha do site baixa (~680 KB).
  * Ver ADR-0008 e ADR-0018.
  *
  * `marca` é a Marca oficial do INMETRO; `marcaCatalogo` é a Marca de catálogo
@@ -19,19 +19,12 @@ export interface ItemConsulta {
   marcaCatalogo: string;
   modelo: string;
   tipo: string | null;
-  situacao: Situacao;
   funcao: string | null;
-  rotacao: string | null;
   capacidadesBtu: number[];
   tensoes: number[];
   classes: string[];
   idrs: number[];
   consumosKwh: number[];
-  /**
-   * Alguma Linha do Aparelho tem consumo implausível por 1.000 BTU/h (ticket
-   * 25). Sinaliza para o usuário sem excluir o Aparelho da base (ADR-0017).
-   */
-  suspeito: boolean;
 }
 
 function numerosUnicos(valores: Array<number | null>): number[] {
@@ -48,7 +41,6 @@ function textosUnicos(valores: Array<string | null>): string[] {
 export function projetarConsulta(
   aparelhos: Aparelho[],
   marcaCatalogo: ResolverMarcaCatalogo,
-  linhasSuspeitas: ReadonlySet<number>,
 ): ItemConsulta[] {
   return aparelhos.map((aparelho) => ({
     id: aparelho.id,
@@ -56,9 +48,7 @@ export function projetarConsulta(
     marcaCatalogo: marcaCatalogo(aparelho.marca),
     modelo: aparelho.modelo,
     tipo: aparelho.tipo,
-    situacao: aparelho.situacao,
     funcao: aparelho.funcao,
-    rotacao: aparelho.rotacao,
     capacidadesBtu: numerosUnicos(
       aparelho.variantes.map((variante) => variante.dados.capacidadeNominalBtu),
     ),
@@ -76,6 +66,5 @@ export function projetarConsulta(
     consumosKwh: numerosUnicos(
       aparelho.variantes.map((variante) => variante.dados.consumoAnualKwh),
     ),
-    suspeito: aparelho.linhas.some((linha) => linhasSuspeitas.has(linha)),
   }));
 }

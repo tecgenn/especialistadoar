@@ -3,7 +3,6 @@ import type {
   Aparelho,
   DadosDeclarados,
   RegistroInmetro,
-  Situacao,
   Tensao,
   Variante,
 } from "./aparelho.ts";
@@ -28,13 +27,11 @@ const COLUNA_UNIDADE_INTERNA = "Modelo Unidade Interna";
 const COLUNA_UNIDADE_EXTERNA = "Modelo Unidade Externa";
 const COLUNA_TIPO = "Tipo";
 const COLUNA_FUNCAO = "Função";
-const COLUNA_ROTACAO = "Rotação";
 const COLUNA_FLUIDO = "Fluido Refrigerante";
 const COLUNA_FLUIDO_ESPECIFICADO = "Se outro fluido refrigerante, especificar";
 const COLUNA_CLASSE = "Faixa de Classificação";
 const COLUNA_REGISTRO = "Número do Registro";
 const COLUNA_STATUS_REGISTRO = "Status do Registro";
-const STATUS_ATIVO = "ativo";
 
 type CampoNumerico = Exclude<keyof DadosDeclarados, "classe">;
 
@@ -134,13 +131,6 @@ export function temDadosDeclarados(dados: DadosDeclarados): boolean {
   return CAMPOS_NUMERICOS.some((campo) => dados[campo] !== null);
 }
 
-function situacaoDosRegistros(registros: RegistroInmetro[]): Situacao {
-  const ativo = registros.some(
-    (registro) => registro.status.trim().toLowerCase() === STATUS_ATIVO,
-  );
-  return ativo ? "ativo" : "inativo";
-}
-
 export function aparelhoTemDadosDeclarados(aparelho: Aparelho): boolean {
   return aparelho.variantes.some((variante) =>
     temDadosDeclarados(variante.dados),
@@ -155,7 +145,6 @@ interface AparelhoEmConstrucao {
   unidadeExterna: string | null;
   tipo: string | null;
   funcao: string | null;
-  rotacao: string | null;
   fluidoRefrigerante: string | null;
   fluidoEspecificado: string | null;
   linhas: number[];
@@ -212,8 +201,6 @@ function finalizar(emConstrucao: AparelhoEmConstrucao): Aparelho {
     unidadeExterna: emConstrucao.unidadeExterna,
     tipo: emConstrucao.tipo,
     funcao: emConstrucao.funcao,
-    rotacao: emConstrucao.rotacao,
-    situacao: situacaoDosRegistros(emConstrucao.registros),
     fluidoRefrigerante: emConstrucao.fluidoRefrigerante,
     fluidoEspecificado: emConstrucao.fluidoEspecificado,
     linhas: emConstrucao.linhas,
@@ -261,7 +248,6 @@ export function agruparAparelhos(
         unidadeExterna,
         tipo: comoTexto(oficial[COLUNA_TIPO]),
         funcao: comoTexto(oficial[COLUNA_FUNCAO]),
-        rotacao: comoTexto(oficial[COLUNA_ROTACAO]),
         fluidoRefrigerante: comoTexto(oficial[COLUNA_FLUIDO]),
         fluidoEspecificado: comoTexto(oficial[COLUNA_FLUIDO_ESPECIFICADO]),
         linhas: [],
@@ -275,10 +261,6 @@ export function agruparAparelhos(
       aparelho.funcao = preencher(
         aparelho.funcao,
         comoTexto(oficial[COLUNA_FUNCAO]),
-      );
-      aparelho.rotacao = preencher(
-        aparelho.rotacao,
-        comoTexto(oficial[COLUNA_ROTACAO]),
       );
       aparelho.fluidoRefrigerante = preencher(
         aparelho.fluidoRefrigerante,

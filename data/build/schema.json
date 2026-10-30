@@ -10,8 +10,6 @@
     "unidadeExterna",
     "tipo",
     "funcao",
-    "rotacao",
-    "situacao",
     "fluidoRefrigerante",
     "fluidoEspecificado",
     "linhas",
@@ -65,28 +63,6 @@
         },
         {
           "type": "null"
-        }
-      ]
-    },
-    "rotacao": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
-    "situacao": {
-      "anyOf": [
-        {
-          "const": "ativo",
-          "type": "string"
-        },
-        {
-          "const": "inativo",
-          "type": "string"
         }
       ]
     },

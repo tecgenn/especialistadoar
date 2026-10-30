@@ -6,9 +6,9 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 7 concluída** — todos os tickets da especificação em `.scratch/especialista-do-ar/spec-fase-7.md` foram entregues (página Aparelhos em tabela, ficha técnica nova, Aparelhos analisados com aviso de afiliado e remoção da busca). Nenhum ticket livre na Fase 7.
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`) e **34** (`site-ui-filtros-redesign-consulta`) concluídos. Próximo: **35** (`site-ui-tabela-paginacao`), sem bloqueio. Restam 35 → 36 → 37 (tabela/paginação numerada → estilos globais → validação completa).
 
-O trabalho operacional continua o mesmo: publicar a primeira Análise (com Ofertas
+O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
 `spec-fase-5.md` › Further Notes.
 
@@ -221,3 +221,31 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** a página `/busca/` e o índice Pagefind (~11 MB) deixam de ser gerados — `pnpm build:site` produz **2.462 páginas** (2.460 fichas + `/` + `/aparelhos/`) e o `dist` perde ~11 MB. Os links antigos `/busca/` e `/busca` redirecionam (301) para `/aparelhos/` via `apps/site/public/_redirects` copiado para `dist/`. Nenhuma referência a Pagefind permanece no código ou nos testes (exceto comentários históricos). Lint, typecheck e todos os 343 testes passam.
 - **Ticket:** #30 (local tracker: `30-remover-busca-e-pagefind`)
 - **Checks:** Vitest 343/343 (33 arquivos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.462 páginas sem `dist/pagefind/` nem `dist/busca/`, com `_redirects` publicado.
+
+### 31 — Pipeline: Filtro "Excluído" e Remoção de Campos Obsoletos (2026-10-27)
+
+- **Changed:** `packages/pipeline/src/{parse,build,group,aparelho,consulta,anomalias,validate,index}.ts` (filtro `Status do Modelo === "Excluido"` no parse; remoção de `rotacao`, `situacao`, `suspeito` dos contratos `Aparelho`, `ItemConsulta`, `DadosDeclarados`; novo tipo `LinhaCrua { numero, valores }` preservando numeração original para proveniência/exceções; `linhasComConsumoImplausivel` removido; `SituacaoSchema`/`Situacao` removidos); `packages/pipeline/test/{parse,build,aparelhos,consulta,anomalias,validate,classe-situacao}.test.ts` + snapshots; `data/excecoes-manuais.jsonl` (exceção da Linha 7428 removida — era `Excluido`); `docs/aceitacao/gabarito.json` (contagens atualizadas: 5867 linhas, 2227 aparelhos, 108 anomalias); `docs/agentes.md`, `docs/agents/architecture.md`, `CONTEXT.md` (documentação dos campos removidos); `packages/api/src/consulta.ts` + tests (ordenação reduzida a `btu`/`consumo`/`idrs`/`classe`, sem `suspeito`).
+- **What works:** `pnpm build` filtra 1607 linhas `Excluido` (7474 → 5867 linhas de dados), base servida cai para **2227 Aparelhos** (era 2460), **108 Anomalias** (eram 170). `consulta.json` e `aparelhos.json` não contêm `rotacao`, `situacao`, `suspeito`. Pipeline tests 166/166, API tests 33/33, typecheck OK, build reproduz `data/build` byte a byte.
+- **Ticket:** #31 (local tracker: `31-pipeline-filtro-excluido-remocao-campos`)
+- **Checks:** Vitest 199/199 (pipeline + api), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `consulta.json` 520 KB sem campos removidos.
+
+### 32 — API isomórfica: tipos, filtros e ordenação (2026-10-29)
+
+- **Changed:** `packages/api/src/consulta.ts` (comentário de `ordenar` corrigido — a lógica de suspeitos saiu no 31); `packages/api/test/consulta.test.ts` (+3 testes: filtro por `funcao`, filtro por `classe` e filtros removidos `rotacao`/`situacao` ignorados).
+- **What works:** o entry isomórfico `@especialista-do-ar/api/consulta` opera com o contrato novo: `FiltrosConsulta` só com `marca`, `tipo`, `btu`, `tensao`, `funcao`, `classe`, `q` e `ordem`/`dir`; `ORDENS_CONSULTA = ["btu","consumo","idrs","classe"]`; `combinaCampos` e `chaveDe`/`ordenar` sem `rotacao`, `situacao` nem `suspeito`; `SITUACOES_CONSULTA` removido. `ItemConsulta` mantém `tensoes` porque o filtro de tensão e as opções do site dependem dele (desvio consciente do checklist). A cobertura agora inclui os filtros de função e Classe e a garantia de que parâmetros antigos não filtram nada. Nada muda em `data/build/` ou `reports/`.
+- **Ticket:** #32 (local tracker: `32-api-consulta-tipos-filtros-ordenacao`)
+- **Checks:** Vitest packages/api 36/36, tsc --noEmit OK, biome check OK.
+
+### 33 — Site: camada de dados de filtros, opções e tabela (2026-10-29)
+
+- **Changed:** `apps/site/src/lib/filtros.ts` (validação de `cor` opcional nos chips de classe via `corOpcional`); `apps/site/test/filtros.test.ts` (+2 testes: `cor` inválida recusada, `cor` preservada no contrato; +1 de `classesChip` curado); `apps/site/test/opcoes.test.ts` (+1 teste de chips de classe coloridos vs. select); `apps/site/test/filtros-glue.test.ts` (+1 teste do insumo publicado com as 6 classes e suas cores). O restante da camada (`filtros.json` com `classes`, `lib/opcoes.ts` com `classesChip` e sem `rotacoes`/`situacoes`, `lib/tabela.ts` com 6 colunas e "Classe A, Classe B", glue `conteudo/filtros.ts`) já entrara no commit 31.
+- **What works:** a curadoria de classes (A–F com cor) vira chips na ordem curada, filtrando só as classes presentes na base; as demais vão para o `<select>`. `opcoesDe` deriva `marcasChip`/`btusChip`/`classesChip` + o resto, sem `rotacoes`/`situacoes`. A tabela expõe as 6 colunas do redesign e formata Classe como "Classe A, Classe B". Nada muda em `data/build/` ou `reports/`.
+- **Ticket:** #33 (local tracker: `33-site-dados-filtros-opcoes-tabela`)
+- **Checks:** Vitest da camada 27/27 (filtros, opcoes, tabela, filtros-glue), tsc --noEmit OK, biome check OK. **Pendência conhecida:** `pnpm test` da app do site segue vermelho (40 testes) porque `Consulta.tsx` ainda usa `rotuloSituacao`/`opcoes.rotacoes`/`opcoes.situacoes`; resolve no ticket 34.
+
+### 34 — Site: UI Filtros Redesign (Consulta.tsx) (2026-10-30)
+
+- **Changed:** `apps/site/src/components/Consulta.tsx` (reescrita completa: grade `.consulta-layout` 280px/1fr + sidebar sticky `.filtros-sidebar`; campo Busca `campo-full` no topo; Marca/Capacidade/Função/Tipo como `<fieldset className="campo-chips">` com `<legend>` + `<Chips>`; Marca e Capacidade ganham `<label className="select-outras">` com select vazio (`<option value="" disabled hidden>`) para valores não-chip; Classe usa `<ChipsClass>` com `data-classe` + `--cor-classe`; Tensão como `<label>` simples com "Todas"; Ordenar select com 4 opções (btu, consumo, idrs, classe) + estado vazio "Padrão"; botão "Limpar filtros" só com filtro ativo mantendo ordenação; estado de paginação reseta ao mudar filtro/ordem via `chaveEstado`; mantido "Mostrar mais" (+50) pois paginação numerada é ticket 35; analisados agrupados com selo/tooltip do ticket 28). `apps/site/src/styles/global.css` (layout grid, sticky sidebar, campo-chips flex-coluna, select-outras width 100%, cores de classe A–F via `data-classe` e inline `--cor-classe`, remoção do `.consulta .suspeito`). `apps/site/src/pages/aparelhos/index.astro` (texto introdutório remove rotação/Situação). `apps/site/test/consulta.test.tsx` (suite reescrita: 41 testes cobrindo chips, selects, URL, ordenação, limpar filtros, paginação, layout CSS, analisados). `apps/site/test/analises-build.test.ts` (assertivas de filtro passam de `<span>` para `<legend>`; remove Rotação/Situação).
+- **What works:** desktop = sidebar de filtros sticky (280px) à esquerda + resultados à direita; mobile (≤64rem) empilhado. Ordem dos filtros: Busca → Marca → Capacidade → Função → Tipo → Classe → Tensão → Ordenar → Limpar filtros. Chips com `aria-pressed` (um valor por vez); selects "Outras…" só listam valores fora dos chips, sem "Todas"; select "Outras Classes" só aparece se `classes` não-curadas não-vazio. Cor de classe via CSS custom property curada ou fallback por `data-classe`. "Limpar filtros" limpa só filtros e mantém ordenação. Mudar filtro/ordem reseta "Mostrar mais" para 50. `pnpm test` (350/350), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm build:site` (2229 páginas) todos verdes.
+- **Ticket:** #34 (local tracker: `34-site-ui-filtros-redesign-consulta`)
+- **Checks:** Vitest site 148/148 (workspace 350/350), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` verdes, `data/build`+`reports` reproduzidos byte a byte.

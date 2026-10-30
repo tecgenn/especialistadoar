@@ -35,7 +35,7 @@ The limit on this is the **[smart zone](https://www.aihero.dev/ai-coding-diction
 
 A starting situation that generates work, then merges onto the main flow.
 
-- **Resuming a ticket-based project in a fresh session** → **`/prime`**. Loads `AGENTS.md`/`CLAUDE.md`, `CONTEXT.md`, and everything under `docs/agents/` (`project-state.md`, `architecture.md`, `domain.md`, `issue-tracker.md`), skims the codebase, then names the **frontier** — the next ticket ready to pick up — and stops. It never implements; run **`/implement`** next, once you confirm. Skip it if you’re already mid-session with fresh context.
+- **Resuming a ticket-based project in a fresh session** → **`/prime`**. Reads `AGENTS.md`/`CLAUDE.md`, `project-state.md`, and `issue-tracker.md`, then verifies the **frontier** — the next ticket ready to pick up — against the tracker, pulling in `architecture.md`, `CONTEXT.md`, and code only where that ticket needs them, and stops. It never implements; run **`/implement`** next, once you confirm. It's not an entry point: on a fresh repo, or one that hasn’t entered the flow yet, start with **`/setup-matt-pocock-skills`**, then **`/grill-with-docs`**. Skip it if you’re already mid-session with fresh context.
 
 - **Bugs and requests piling up** → **`/triage`**. It moves issues through triage roles and produces agent-ready issues, which **`/implement`** later picks up.
 

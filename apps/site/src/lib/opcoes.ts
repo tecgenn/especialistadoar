@@ -10,8 +10,8 @@ import {
  * site. Passá-las prontas evita um `<select>` vazio antes de a ilha baixar o
  * `consulta.json` e mantém a lista de valores coerente com a base publicada.
  *
- * Os chips saem da curadoria do site (ticket 22): `marcasChip`/`btusChip` são os
- * valores conhecidos que **existem** na base, na ordem curada; `marcas`/`btus`
+ * Os chips saem da curadoria do site (ticket 22): `marcasChip`/`btusChip`/`classesChip` são os
+ * valores conhecidos que **existem** na base, na ordem curada; `marcas`/`btus`/`classes`
  * são o resto, para o `<select>` de cada filtro (sem repetir um chip).
  */
 export interface OpcoesConsulta {
@@ -22,9 +22,8 @@ export interface OpcoesConsulta {
   tipos: string[];
   tensoes: number[];
   funcoes: string[];
+  classesChip: MarcaCurada[];
   classes: string[];
-  rotacoes: string[];
-  situacoes: Array<ItemConsulta["situacao"]>;
 }
 
 /**
@@ -43,8 +42,6 @@ export function opcoesDe(
   const tensoes = new Set<number>();
   const funcoes = new Set<string>();
   const classes = new Set<string>();
-  const rotacoes = new Set<string>();
-  const situacoes = new Set<ItemConsulta["situacao"]>();
 
   for (const item of dataset) {
     // O filtro do catálogo é por Marca de catálogo (ADR-0016): as opções não
@@ -58,15 +55,11 @@ export function opcoesDe(
     if (item.funcao !== null && item.funcao !== "") {
       funcoes.add(item.funcao);
     }
-    if (item.rotacao !== null && item.rotacao !== "") {
-      rotacoes.add(item.rotacao);
-    }
     for (const classe of item.classes) {
       if (classe !== "") {
         classes.add(classe);
       }
     }
-    situacoes.add(item.situacao);
     for (const btu of item.capacidadesBtu) {
       btus.add(btu);
     }
@@ -85,6 +78,11 @@ export function opcoesDe(
     .sort((a, b) => a - b);
   const btusChipSet = new Set(btusChip);
 
+  const classesChip = curadoria.classes
+    .filter((classe) => classes.has(classe.valor))
+    .map(({ valor, rotulo, cor }) => ({ valor, rotulo, cor }));
+  const classesChipSet = new Set(classesChip.map((classe) => classe.valor));
+
   return {
     marcasChip,
     marcas: [...marcas].filter((marca) => !valoresChip.has(marca)).sort(),
@@ -95,8 +93,9 @@ export function opcoesDe(
     tipos: [...tipos].sort(),
     tensoes: [...tensoes].sort((a, b) => a - b),
     funcoes: [...funcoes].sort(),
-    classes: [...classes].sort(),
-    rotacoes: [...rotacoes].sort(),
-    situacoes: [...situacoes].sort(),
+    classesChip,
+    classes: [...classes]
+      .filter((classe) => !classesChipSet.has(classe))
+      .sort(),
   };
 }

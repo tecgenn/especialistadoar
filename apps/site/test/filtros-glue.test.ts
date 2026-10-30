@@ -45,6 +45,23 @@ describe("curadoria dos filtros no build", () => {
     expect(filtros.marcas.map((marca) => marca.rotulo)).toContain("Midea");
   });
 
+  it("aceita o insumo publicado: 6 classes com cor", () => {
+    process.env.FILTROS_JSON = filtrosJson;
+    const filtros = carregarFiltros();
+    expect(filtros.classes.map((classe) => classe.valor)).toEqual([
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+    ]);
+    for (const classe of filtros.classes) {
+      expect(classe.rotulo).toBe(`Classe ${classe.valor}`);
+      expect(classe.cor).toMatch(/^#[0-9a-f]{6}$/i);
+    }
+  });
+
   it("falha o build com a mensagem do contrato quando o insumo é inválido", () => {
     process.env.FILTROS_JSON = fixture({
       marcas: [{ valor: "MIDEA", rotulo: "" }],

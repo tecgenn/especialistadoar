@@ -6,6 +6,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Consulta from "../src/components/Consulta.tsx";
@@ -16,6 +17,11 @@ import { opcoesDe } from "../src/lib/opcoes.ts";
  * A **única ilha** do site (ADR-0008) baixa o `consulta.json` publicado e aplica
  * filtros, busca e ordenação **no cliente**, refletindo o estado na URL. Aqui
  * mockamos o `fetch` do dataset e exercitamos a ilha no DOM (jsdom).
+ *
+ * O redesign (ticket 34) troca os `<select>` de marca/capacidade/função/tipo por
+ * chips visíveis e deixa só um `<select>` "Outras…" para os valores fora da
+ * curadoria. Os testes abaixo cobrem o comportamento externo: o que aparece, o
+ * que filtra e o que vai parar na URL.
  */
 const itens: ItemConsulta[] = [
   {
@@ -24,15 +30,12 @@ const itens: ItemConsulta[] = [
     marcaCatalogo: "LG",
     modelo: "Dual Inverter",
     tipo: "Split Hi-Wall",
-    situacao: "ativo",
     funcao: "Frio",
-    rotacao: "Velocidade Variável",
     capacidadesBtu: [9000],
     tensoes: [220],
     classes: ["A"],
     idrs: [5],
     consumosKwh: [300],
-    suspeito: false,
   },
   {
     id: "lg-janela",
@@ -40,15 +43,12 @@ const itens: ItemConsulta[] = [
     marcaCatalogo: "LG",
     modelo: "Janela",
     tipo: "Janela",
-    situacao: "inativo",
     funcao: "Frio",
-    rotacao: "Velocidade Fixa",
     capacidadesBtu: [12000],
     tensoes: [127, 220],
     classes: ["B"],
     idrs: [3],
     consumosKwh: [50],
-    suspeito: true,
   },
   {
     id: "midea-oficial",
@@ -56,15 +56,12 @@ const itens: ItemConsulta[] = [
     marcaCatalogo: "MIDEA",
     modelo: "Xtreme Save",
     tipo: "Split Hi-Wall",
-    situacao: "ativo",
     funcao: "Quente/Frio",
-    rotacao: "Velocidade Variável",
     capacidadesBtu: [12000],
     tensoes: [220],
     classes: ["A"],
     idrs: [4],
     consumosKwh: [200],
-    suspeito: false,
   },
   {
     id: "midea-springer",
@@ -72,15 +69,12 @@ const itens: ItemConsulta[] = [
     marcaCatalogo: "MIDEA",
     modelo: "Springer Inverter",
     tipo: "Split Hi-Wall",
-    situacao: "ativo",
     funcao: "Quente/Frio",
-    rotacao: "Velocidade Variável",
     capacidadesBtu: [18000],
     tensoes: [220],
     classes: ["A"],
     idrs: [4.5],
     consumosKwh: [400],
-    suspeito: false,
   },
   {
     id: "gree-split",
@@ -88,17 +82,72 @@ const itens: ItemConsulta[] = [
     marcaCatalogo: "GREE",
     modelo: "G-Top Inverter",
     tipo: "Split Hi-Wall",
-    situacao: "ativo",
     funcao: "Frio",
-    rotacao: "Velocidade Variável",
     capacidadesBtu: [12000],
     tensoes: [220],
     classes: ["C"],
     idrs: [3.5],
     consumosKwh: [100],
-    suspeito: false,
+  },
+  {
+    id: "elgin-d",
+    marca: "ELGIN",
+    marcaCatalogo: "ELGIN",
+    modelo: "Classe D",
+    tipo: "Split Piso-teto",
+    funcao: "Frio",
+    capacidadesBtu: [30000],
+    tensoes: [220],
+    classes: ["D"],
+    idrs: [2],
+    consumosKwh: [150],
+  },
+  {
+    id: "hitachi-e",
+    marca: "HITACHI",
+    marcaCatalogo: "HITACHI",
+    modelo: "Classe E",
+    tipo: "Split Cassete",
+    funcao: "Frio",
+    capacidadesBtu: [18000],
+    tensoes: [220],
+    classes: ["E"],
+    idrs: [3],
+    consumosKwh: [250],
+  },
+  {
+    id: "daikin-f",
+    marca: "DAIKIN",
+    marcaCatalogo: "DAIKIN",
+    modelo: "Classe F",
+    tipo: "Split Hi-Wall",
+    funcao: "Frio",
+    capacidadesBtu: [30000],
+    tensoes: [220],
+    classes: ["F"],
+    idrs: [2.5],
+    consumosKwh: [350],
   },
 ];
+
+/** Marcas, capacidades e classes conhecidas que viram chips na ilha. */
+const curadoria: FiltrosCurados = {
+  marcas: [
+    { valor: "MIDEA", rotulo: "Midea" },
+    { valor: "LG", rotulo: "LG" },
+    // Curada mas ausente da base: não aparece.
+    { valor: "SAMSUNG", rotulo: "Samsung" },
+  ],
+  btus: [12000, 9000, 24000],
+  classes: [
+    { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+    { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+    { valor: "C", rotulo: "Classe C", cor: "#ca8a04" },
+    { valor: "D", rotulo: "Classe D", cor: "#ea580c" },
+    { valor: "E", rotulo: "Classe E", cor: "#dc2626" },
+    { valor: "F", rotulo: "Classe F", cor: "#dc2626" },
+  ],
+};
 
 /** Serve o dataset no `fetch` da ilha, como o navegador faria com `/consulta.json`. */
 function servirConsulta(dataset: ItemConsulta[] = itens) {
@@ -109,8 +158,8 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
 }
 
 /** Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando"). */
-async function montar(curadoria?: FiltrosCurados) {
-  render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+async function montar(entrada?: FiltrosCurados) {
+  render(<Consulta opcoes={opcoesDe(itens, entrada)} />);
   await screen.findByText(/aparelho\(s\) com Dados declarados/);
 }
 
@@ -124,6 +173,14 @@ function modelosVisiveis(): string[] {
 
 function cabecalho(nome: RegExp): HTMLElement {
   return screen.getByRole("columnheader", { name: nome });
+}
+
+/** Os textos das `<option>` de um `<select>`. */
+function opcoesDoSelect(rotulo: string): string[] {
+  const select = screen.getByLabelText(rotulo) as HTMLSelectElement;
+  return [...select.querySelectorAll("option")].map(
+    (opcao) => opcao.textContent ?? "",
+  );
 }
 
 beforeEach(() => {
@@ -140,7 +197,10 @@ describe("ilha de consulta (ADR-0008)", () => {
   it("carrega o consulta.json e ordena A–Z por Marca de catálogo e modelo", async () => {
     await montar();
     expect(modelosVisiveis()).toEqual([
+      "Classe F",
+      "Classe D",
       "G-Top Inverter",
+      "Classe E",
       "Dual Inverter",
       "Janela",
       "Springer Inverter",
@@ -148,17 +208,15 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
-  it("mostra uma linha por Aparelho com as colunas da tabela", async () => {
+  it("mostra uma linha por Aparelho com as 6 colunas da tabela", async () => {
     await montar();
     const [primeira] = screen.getAllByRole("row").slice(1);
-    expect(primeira?.textContent).toContain("GREE");
-    expect(primeira?.textContent).toContain("G-Top Inverter");
-    expect(primeira?.textContent).toContain("12.000");
-    expect(primeira?.textContent).toContain("100");
-    expect(primeira?.textContent).toContain("3,5");
-    expect(primeira?.textContent).toContain("C");
-    expect(primeira?.textContent).toContain("Split Hi-Wall");
-    expect(primeira?.textContent).toContain("Ativo");
+    expect(primeira?.textContent).toContain("DAIKIN");
+    expect(primeira?.textContent).toContain("Classe F");
+    expect(primeira?.textContent).toContain("30.000");
+    expect(primeira?.textContent).toContain("350");
+    expect(primeira?.textContent).toContain("2,5");
+    expect(primeira?.textContent).toContain("Classe F");
   });
 
   it("marca cada célula com o rótulo da coluna, para o cartão no celular", async () => {
@@ -171,17 +229,15 @@ describe("ilha de consulta (ADR-0008)", () => {
       "Marca",
       "Modelo",
       "BTU/h",
-      "Consumo (kWh/ano)",
+      "Consumo (kWh)",
       "IDRS",
       "Classe",
-      "Tipo",
-      "Situação",
     ]);
   });
 
-  it("filtra por marca", async () => {
+  it("filtra por marca pelo select 'Outras marcas'", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "GREE" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
@@ -196,7 +252,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(screen.getByRole("option", { name: "MIDEA" })).toBeDefined();
     expect(screen.queryByRole("option", { name: "SPRINGER MIDEA" })).toBeNull();
 
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "MIDEA" },
     });
     // O filtro da família traz a marca oficial e o alias, não um só.
@@ -211,24 +267,22 @@ describe("ilha de consulta (ADR-0008)", () => {
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     // O filtro continua valendo (67 na base real) e o `<select>` não mente.
-    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
-      "SPRINGER MIDEA",
-    );
+    expect(
+      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+    ).toBe("SPRINGER MIDEA");
     expect(screen.getByText("Springer Inverter")).toBeDefined();
   });
 
-  it("filtra por tipo", async () => {
+  it("filtra por tipo pelo chip", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Tipo"), {
-      target: { value: "Janela" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Janela" }));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect(screen.getByRole("link", { name: "Janela" })).toBeDefined();
   });
 
-  it("filtra por capacidade (BTU)", async () => {
+  it("filtra por capacidade pelo select 'Outras capacidades'", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Capacidade (BTU/h)"), {
+    fireEvent.change(screen.getByLabelText("Outras capacidades"), {
       target: { value: "9000" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
@@ -244,44 +298,26 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(screen.getByRole("link", { name: "Janela" })).toBeDefined();
   });
 
-  it("filtra por função, Classe, rotação e Situação", async () => {
-    await montar();
+  it("filtra por função e Classe pelos chips", async () => {
+    await montar(curadoria);
 
-    fireEvent.change(screen.getByLabelText("Função"), {
-      target: { value: "Quente/Frio" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Quente/Frio" }));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
 
-    fireEvent.change(screen.getByLabelText("Função"), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByLabelText("Classe"), {
-      target: { value: "B" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "Quente/Frio" }));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+
+    fireEvent.click(screen.getByRole("button", { name: "Classe B" }));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect(screen.getByRole("link", { name: "Janela" })).toBeDefined();
 
-    fireEvent.change(screen.getByLabelText("Classe"), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByLabelText("Rotação"), {
-      target: { value: "Velocidade Fixa" },
-    });
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
-
-    fireEvent.change(screen.getByLabelText("Rotação"), {
-      target: { value: "" },
-    });
-    fireEvent.change(screen.getByLabelText("Situação"), {
-      target: { value: "inativo" },
-    });
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
-    expect(screen.getByRole("link", { name: "Janela" })).toBeDefined();
+    fireEvent.click(screen.getByRole("button", { name: "Classe B" }));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
   });
 
   it("combina filtro por campo com a busca textual (MiniSearch)", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Capacidade (BTU/h)"), {
+    fireEvent.change(screen.getByLabelText("Outras capacidades"), {
       target: { value: "12000" },
     });
     fireEvent.change(screen.getByLabelText("Busca"), {
@@ -294,19 +330,19 @@ describe("ilha de consulta (ADR-0008)", () => {
   it("só mostra 'Limpar filtros' com um filtro ativo", async () => {
     await montar();
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "LG" },
     });
     expect(
       screen.getByRole("button", { name: "Limpar filtros" }),
     ).toBeDefined();
-    fireEvent.change(screen.getByLabelText("Marca"), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
   });
 
   it("reflete o estado na URL ao filtrar", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "LG" },
     });
     await waitFor(() =>
@@ -321,9 +357,9 @@ describe("ilha de consulta (ADR-0008)", () => {
     render(<Consulta opcoes={opcoesDe(itens)} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
-    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
-      "GREE",
-    );
+    expect(
+      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+    ).toBe("GREE");
   });
 });
 
@@ -333,21 +369,22 @@ describe("ordenação da tabela", () => {
     expect(cabecalho(/Consumo/).getAttribute("aria-sort")).toBe("none");
 
     fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
-    // O suspeito (50 kWh, o menor) vai para o fim mesmo em ordem crescente.
     await waitFor(() =>
       expect(modelosVisiveis()).toEqual([
-        "G-Top Inverter",
-        "Xtreme Save",
-        "Dual Inverter",
-        "Springer Inverter",
         "Janela",
+        "G-Top Inverter",
+        "Classe D",
+        "Xtreme Save",
+        "Classe E",
+        "Dual Inverter",
+        "Classe F",
+        "Springer Inverter",
       ]),
     );
     expect(cabecalho(/Consumo/).getAttribute("aria-sort")).toBe("ascending");
     expect(cabecalho(/Consumo/).querySelector("button")?.textContent).toContain(
       "↑",
     );
-    expect(screen.getByText("consumo declarado suspeito")).toBeDefined();
     expect(new URLSearchParams(window.location.search).get("ordem")).toBe(
       "consumo",
     );
@@ -362,8 +399,11 @@ describe("ordenação da tabela", () => {
     await waitFor(() =>
       expect(modelosVisiveis()).toEqual([
         "Springer Inverter",
+        "Classe F",
         "Dual Inverter",
+        "Classe E",
         "Xtreme Save",
+        "Classe D",
         "G-Top Inverter",
         "Janela",
       ]),
@@ -383,14 +423,25 @@ describe("ordenação da tabela", () => {
         "Springer Inverter",
         "Xtreme Save",
         "G-Top Inverter",
+        "Classe E",
         "Janela",
+        "Classe F",
+        "Classe D",
       ]),
     );
     expect(cabecalho(/IDRS/).getAttribute("aria-sort")).toBe("descending");
   });
 
-  it("o seletor 'Ordenar por' repete as colunas", async () => {
+  it("o seletor 'Ordenar por' repete só as 4 colunas ordenáveis", async () => {
     await montar();
+    expect(opcoesDoSelect("Ordenar por")).toEqual([
+      "Padrão (A–Z)",
+      "BTU/h",
+      "Consumo (kWh)",
+      "IDRS",
+      "Classe",
+    ]);
+
     fireEvent.change(screen.getByLabelText("Ordenar por"), {
       target: { value: "idrs" },
     });
@@ -409,7 +460,7 @@ describe("ordenação da tabela", () => {
         new URLSearchParams(window.location.search).get("ordem"),
       ).toBeNull(),
     );
-    expect(modelosVisiveis()[0]).toBe("G-Top Inverter");
+    expect(modelosVisiveis()[0]).toBe("Classe F");
   });
 
   it("inverte a direção pelo botão, sem depender do cabeçalho da tabela", async () => {
@@ -443,14 +494,14 @@ describe("ordenação da tabela", () => {
     fireEvent.change(screen.getByLabelText("Ordenar por"), {
       target: { value: "consumo" },
     });
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "LG" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
 
     fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
 
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
     const busca = new URLSearchParams(window.location.search);
     expect(busca.get("marca")).toBeNull();
     expect(busca.get("ordem")).toBe("consumo");
@@ -480,17 +531,7 @@ describe("paginação", () => {
  * a um clique, com o resto no `<select>`. O chip aceso **é** o valor do filtro —
  * sem dois valores de marca ao mesmo tempo.
  */
-describe("chips de marca e capacidade", () => {
-  const curadoria: FiltrosCurados = {
-    marcas: [
-      { valor: "MIDEA", rotulo: "Midea" },
-      { valor: "LG", rotulo: "LG" },
-      // Curada mas ausente da base: não aparece.
-      { valor: "SAMSUNG", rotulo: "Samsung" },
-    ],
-    btus: [12000, 9000, 24000],
-  };
-
+describe("chips de marca, capacidade, função, tipo e classe", () => {
   function chip(nome: string): HTMLElement {
     return screen.getByRole("button", { name: nome });
   }
@@ -508,13 +549,30 @@ describe("chips de marca e capacidade", () => {
     expect(screen.queryByRole("button", { name: "Samsung" })).toBeNull();
     expect(screen.queryByRole("button", { name: "24.000" })).toBeNull();
 
-    // O `<select>` guarda "Todas…" + o resto, sem duplicar o chip.
-    expect(screen.queryByRole("option", { name: "MIDEA" })).toBeNull();
-    expect(screen.getByRole("option", { name: "GREE" })).toBeDefined();
-    expect(screen.queryByRole("option", { name: "12.000" })).toBeNull();
-    expect(screen.getByRole("option", { name: "18.000" })).toBeDefined();
+    // O `<select>` "Outras…" guarda só o resto, sem duplicar o chip nem "Todas".
+    const marcas = opcoesDoSelect("Outras marcas");
+    expect(marcas).not.toContain("MIDEA");
+    expect(marcas).not.toContain("Todas");
+    expect(marcas).toContain("GREE");
+    const capacidades = opcoesDoSelect("Outras capacidades");
+    expect(capacidades).not.toContain("12.000");
+    expect(capacidades).not.toContain("Todas");
+    expect(capacidades).toContain("18.000");
 
     expect(pressionado("Midea")).toBe("false");
+  });
+
+  it("mostra função, tipo e classe como chips (classe com data-classe)", async () => {
+    await montar(curadoria);
+
+    expect(chip("Frio")).toBeDefined();
+    expect(chip("Quente/Frio")).toBeDefined();
+    expect(chip("Split Hi-Wall")).toBeDefined();
+    expect(chip("Janela")).toBeDefined();
+    for (const classe of ["A", "B", "C", "D", "E", "F"]) {
+      const botao = chip(`Classe ${classe}`);
+      expect(botao.getAttribute("data-classe")).toBe(classe);
+    }
   });
 
   it("filtra ao clicar no chip, acende o chip e escreve a URL", async () => {
@@ -536,7 +594,7 @@ describe("chips de marca e capacidade", () => {
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
 
     fireEvent.click(chip("Midea"));
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
     expect(pressionado("Midea")).toBe("false");
     expect(new URLSearchParams(window.location.search).get("marca")).toBeNull();
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
@@ -547,7 +605,7 @@ describe("chips de marca e capacidade", () => {
     fireEvent.click(chip("Midea"));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
 
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "GREE" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
@@ -577,7 +635,7 @@ describe("chips de marca e capacidade", () => {
     );
 
     fireEvent.click(chip("12.000"));
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(5));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
     expect(pressionado("12.000")).toBe("false");
   });
 
@@ -588,9 +646,9 @@ describe("chips de marca e capacidade", () => {
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
 
     expect(pressionado("Midea")).toBe("false");
-    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
-      "SPRINGER MIDEA",
-    );
+    expect(
+      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+    ).toBe("SPRINGER MIDEA");
   });
 
   it("acende o chip e filtra com a marca em minúsculas na URL", async () => {
@@ -601,9 +659,28 @@ describe("chips de marca e capacidade", () => {
     expect(pressionado("Midea")).toBe("true");
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
     expect(screen.queryByRole("option", { name: "midea" })).toBeNull();
-    expect((screen.getByLabelText("Marca") as HTMLSelectElement).value).toBe(
-      "",
-    );
+    expect(
+      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+    ).toBe("");
+  });
+
+  it("os selects 'Outras…' não têm a opção 'Todas'", async () => {
+    await montar(curadoria);
+    for (const rotulo of ["Outras marcas", "Outras capacidades"]) {
+      const select = screen.getByLabelText(rotulo) as HTMLSelectElement;
+      expect(
+        within(select).queryByRole("option", { name: "Todas" }),
+      ).toBeNull();
+    }
+  });
+});
+
+describe("layout (ticket 34)", () => {
+  it("usa a grade de duas colunas com a barra lateral de filtros", async () => {
+    await montar();
+    expect(document.querySelector(".consulta-layout")).not.toBeNull();
+    expect(document.querySelector(".filtros-sidebar")).not.toBeNull();
+    expect(document.querySelector(".consulta-resultados")).not.toBeNull();
   });
 });
 
@@ -707,7 +784,7 @@ describe("Aparelhos analisados (ticket 28)", () => {
 
   it("filtro por marca mantém analisados no topo dentro do filtro", async () => {
     await montarComAnalisados();
-    fireEvent.change(screen.getByLabelText("Marca"), {
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "LG" },
     });
     // Aguarda a tabela atualizar (2 modelos da marca LG: Dual Inverter e Janela)

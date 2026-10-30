@@ -34,28 +34,38 @@ describe("parseLinhas — Linhas da tabela", () => {
   it("preserva cada Linha, inclusive as sem Dados declarados", () => {
     const { linhas } = parseLinhas(fixture);
     expect(linhas).toHaveLength(3);
-    expect(linhas[1]?.["Capacidade de Refrigeração Nominal (Btu/h)"]).toBe("");
-    expect(linhas[1]?.["Status do Registro"]).toBe("Inativo");
+    expect(
+      linhas[1]?.valores["Capacidade de Refrigeração Nominal (Btu/h)"],
+    ).toBe("");
+    expect(linhas[1]?.valores["Status do Registro"]).toBe("Inativo");
   });
 
   it("mantém o valor como publicado, sem aparar", () => {
     const { linhas } = parseLinhas(fixture);
-    expect(linhas[2]?.["Se outro fluido refrigerante, especificar"]).toBe(
-      " R-32, mistura ",
-    );
+    expect(
+      linhas[2]?.valores["Se outro fluido refrigerante, especificar"],
+    ).toBe(" R-32, mistura ");
   });
 
   it("mapeia os valores pelos nomes de coluna aparados", () => {
     const { linhas } = parseLinhas(fixture);
     expect(linhas[0]).toEqual({
-      Marca: "Samsung",
-      Modelo: "AR09MV",
-      "Se outro fluido refrigerante, especificar": "",
-      "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
-      "Capacidade a 29 ºC e Carga Total (W)": "2637",
-      "Status do Registro": "Ativo",
-      "Número do Registro": "001/2020",
+      numero: 1,
+      valores: {
+        Marca: "Samsung",
+        Modelo: "AR09MV",
+        "Se outro fluido refrigerante, especificar": "",
+        "Capacidade de Refrigeração Nominal (Btu/h)": "9000",
+        "Capacidade a 29 ºC e Carga Total (W)": "2637",
+        "Status do Registro": "Ativo",
+        "Número do Registro": "001/2020",
+      },
     });
+  });
+
+  it("numera cada Linha a partir de 1, sem contar o cabeçalho", () => {
+    const { linhas } = parseLinhas(fixture);
+    expect(linhas.map((linha) => linha.numero)).toEqual([1, 2, 3]);
   });
 
   it("bate com o snapshot golden da amostra", () => {
@@ -63,20 +73,44 @@ describe("parseLinhas — Linhas da tabela", () => {
   });
 });
 
+describe("parseLinhas — filtro de Status do Modelo", () => {
+  it("descarta as Linhas Excluido preservando o número original das demais", () => {
+    const tabela = parseLinhas(
+      [
+        "Marca,Modelo,Status do Modelo",
+        "ALFA,A-09,Incluido",
+        "BETA,B-12,Excluido",
+        "GAMA,G-18,Incluido",
+      ].join("\n"),
+    );
+
+    expect(tabela.linhas.map((linha) => linha.numero)).toEqual([1, 3]);
+    expect(tabela.linhas.map((linha) => linha.valores.Marca)).toEqual([
+      "ALFA",
+      "GAMA",
+    ]);
+  });
+});
+
 describe("parseLinhas — exportação versionada real", () => {
-  it("lê as 29 colunas e as 7474 Linhas da tabela", () => {
+  it("lê as 29 colunas e as 5867 Linhas não excluídas", () => {
     const { cabecalho, linhas } = parseLinhas(exportVersionada);
     expect(cabecalho).toHaveLength(29);
-    expect(linhas).toHaveLength(7474);
+    expect(linhas).toHaveLength(5867);
+    expect(
+      linhas.some((linha) => linha.valores["Status do Modelo"] === "Excluido"),
+    ).toBe(false);
   });
 
   it("preserva as Linhas sem Dados declarados", () => {
     const { linhas } = parseLinhas(exportVersionada);
     const semDados = linhas.filter(
-      (l) =>
-        (l["Capacidade de Refrigeração Nominal (Btu/h)"] ?? "").trim() === "",
+      (linha) =>
+        (
+          linha.valores["Capacidade de Refrigeração Nominal (Btu/h)"] ?? ""
+        ).trim() === "",
     );
-    expect(semDados).toHaveLength(4593);
+    expect(semDados).toHaveLength(3540);
   });
 
   it("não deixa o BOM vazar para nenhum nome de coluna", () => {

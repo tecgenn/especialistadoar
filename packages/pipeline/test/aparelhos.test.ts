@@ -168,15 +168,15 @@ describe("runBuild — espelho aparelhos.json e contrato schema.json", () => {
 });
 
 describe("runBuild — base servida da exportação versionada real", () => {
-  it("agrupa 2460 Aparelhos com proveniência, sem identidade repetida", () => {
+  it("agrupa 2227 Aparelhos com proveniência, sem identidade repetida", () => {
     const { aparelhos } = build(exportVersadaPath);
-    expect(aparelhos).toHaveLength(2460);
+    expect(aparelhos).toHaveLength(2227);
     expect(
       aparelhos.every(
         (aparelho) =>
           aparelho.linhas.length > 0 && aparelho.registros.length > 0,
       ),
     ).toBe(true);
-    expect(new Set(aparelhos.map((aparelho) => aparelho.id)).size).toBe(2460);
+    expect(new Set(aparelhos.map((aparelho) => aparelho.id)).size).toBe(2227);
   });
 });

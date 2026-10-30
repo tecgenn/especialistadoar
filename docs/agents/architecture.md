@@ -66,7 +66,7 @@ data/
   build/
     aparelhos.jsonl                   # base servida (Aparelhos com Dados declarados)
     aparelhos.json                    # espelho em array do acima
-    consulta.json                     # dataset enxuto de consulta (~680 KB, com marcaCatalogo, classe, situação e suspeito)
+    consulta.json                     # dataset enxuto de consulta (~520 KB, com marcaCatalogo, função e classes)
     registros.jsonl                   # Linhas normalizadas (proveniência)
     schema.json                       # contrato JSON Schema
     manifest.json                     # metadados de versão (hash, data, contagens)
@@ -125,7 +125,10 @@ nova exportação CSV
 
 - **ingest** — registra um snapshot bruto (hash, data, origem); idempotente por
   conteúdo.
-- **parse** — CSV em RFC 4180 com `bom: true`; cabeçalho aparado.
+- **parse** — CSV em RFC 4180 com `bom: true`; cabeçalho aparado. Descarta logo
+  as Linhas com `Status do Modelo = "Excluido"` (duplicatas/obsoletas), antes da
+  normalização; o número original das Linhas seguintes é preservado para a
+  proveniência e as Exceções manuais.
 - **normalize** — padronização só de formato (BOM, casing, unidades-no-texto,
   parsing de tensão, coerção numérica, `º`/`°`); o texto de origem é preservado para
   proveniência. A coerção numérica segue a gramática **pt-BR**: ponto entre grupos
@@ -140,8 +143,7 @@ nova exportação CSV
   pode normalizar o valor pela capacidade da Linha (consumo anual por 1.000 BTU/h,
   faixa 10–120); o valor original é preservado, não corrigido. A detecção roda
   depois das Exceções, então uma capacidade corrigida não vira Anomalia. A Anomalia
-  **nunca exclui** o Aparelho (ADR-0017); `linhasComConsumoImplausivel` alimenta o
-  `suspeito` do `consulta.json`.
+  **nunca exclui** o Aparelho (ADR-0017); o sinal fica só em `anomalias.jsonl`.
 - **excecoes** — lê e valida a Exceção manual; aplica-a sobre o Valor original
   *antes* da normalização; recusa correção só-de-formato, campo inexistente e
   exceção órfã (que não casa com nenhuma Linha desta Versão da tabela).
@@ -159,9 +161,8 @@ nova exportação CSV
   da identidade (bivolt é um só Aparelho). Aceita um remapeamento canônico de
   identidade vindo dos Vínculos. Lê a **Classe** da coluna oficial em `dados` de
   cada Variante (aparada, em maiúsculas; `null` quando vazia — uma Classe fora de
-  A–F é preservada, sem falhar o build) e deriva a **Situação** do Aparelho dos
-  status dos Registros (`ativo` com ao menos um Ativo; `inativo` caso contrário).
-  A Classe não conta como Dado declarado. Ver ADR-0018.
+  A–F é preservada, sem falhar o build). A Classe não conta como Dado declarado.
+  Ver ADR-0018.
 - **validate** — JSON Schema (Ajv) + invariantes de domínio; violação é falha dura.
 - **build** — orquestra o pipeline: resolução da versão, leitura da curadoria,
   parse/normalização/anomalias/agrupamento, validação, escrita dos artefatos e das
@@ -184,27 +185,26 @@ nova exportação CSV
   site** (navegador) e por qualquer consumidor que queira a mesma semântica. O
   filtro `marca` casa a
   Marca de catálogo **e** a Marca oficial, e a busca indexa as duas (ADR-0016). O
-  dataset projeta, por Aparelho, `situacao`, `funcao`, `rotacao`, `suspeito` e as
-  listas únicas e ordenadas `classes`, `idrs` e `consumosKwh` (além de
-  `capacidadesBtu` e `tensoes`) — Variantes sem o dado não contribuem. A
-  ordenação (`ordenar`, ticket 27) é pura e vive aqui: A–Z por Marca de catálogo e
-  modelo por padrão; por coluna, o menor valor da lista para crescente e o maior
-  para decrescente, quem não declara o dado no fim e os suspeitos no fim em IDRS
-  e consumo. A leitura de
+  dataset projeta, por Aparelho, `funcao` e as listas únicas e ordenadas
+  `classes`, `idrs` e `consumosKwh` (além de `capacidadesBtu` e `tensoes`) —
+  Variantes sem o dado não contribuem. A ordenação (`ordenar`, ticket 27) é pura
+  e vive aqui: A–Z por Marca de catálogo e modelo por padrão; por coluna, o menor
+  valor da lista para crescente e o maior para decrescente, quem não declara o
+  dado no fim. A leitura de
   arquivo fica de fora desse entry (separar por entry point é o que impede `fs` de
   entrar no bundle). Ver ADR-0008 e ADR-0018.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
   **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
   filtra/busca **no cliente** pelo módulo isomórfico (08), com o estado na URL
-  (`?marca=&tipo=&btu=&tensao=&funcao=&classe=&rotacao=&situacao=&ordem=&dir=&q=`).
+  (`?marca=&tipo=&btu=&tensao=&funcao=&classe=&ordem=&dir=&q=`).
   Em `/aparelhos/` a ilha rende a **tabela** de Aparelhos (ticket 27): uma linha
   por Aparelho, cabeçalhos `<button>` com `aria-sort`, ordenação por `ordenar` do
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
   botão ao lado de "Ordenar por" inverte a direção. A ordem padrão é A–Z por Marca de catálogo e
-  modelo; com busca e sem coluna escolhida, é a relevância. Os suspeitos (ticket
-  25) vão para o fim em IDRS e consumo. `/` é a **home** (ticket 29): texto curto,
+  modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
+  (ticket 29): texto curto,
   Análises em destaque e o botão "Ver todos os aparelhos"; os links antigos
   `/?marca=…` são levados a `/aparelhos/` com a mesma querystring por um script
   curto na home (o `_redirects` não separa a mesma URL por parâmetros), e o menu
@@ -238,7 +238,7 @@ nova exportação CSV
   formato do id e da data, slug único, uma por Aparelho) e constrói os índices; o
   glue `src/conteudo/analises.ts` lê a coleção. A seção é **condicional**: com zero
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
-  e o site segue com as 2.462 páginas (2.460 fichas + `/` + `/aparelhos/`). Com ≥ 1, o índice, o menu, o inventário
+  e o site segue com as 2.229 páginas (2.227 fichas + `/` + `/aparelhos/`). Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
   o JSON-LD aparecem automaticamente; a ficha ganha "Leia a análise",
   a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,

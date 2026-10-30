@@ -11,5 +11,13 @@
     { "valor": "HITACHI", "rotulo": "Hitachi" },
     { "valor": "GREE", "rotulo": "Gree" }
   ],
-  "btus": [9000, 12000, 18000, 24000, 30000, 36000]
+  "btus": [9000, 12000, 18000, 24000, 30000, 36000],
+  "classes": [
+    { "valor": "A", "rotulo": "Classe A", "cor": "#16a34a" },
+    { "valor": "B", "rotulo": "Classe B", "cor": "#2563eb" },
+    { "valor": "C", "rotulo": "Classe C", "cor": "#ca8a04" },
+    { "valor": "D", "rotulo": "Classe D", "cor": "#ea580c" },
+    { "valor": "E", "rotulo": "Classe E", "cor": "#dc2626" },
+    { "valor": "F", "rotulo": "Classe F", "cor": "#dc2626" }
+  ]
 }

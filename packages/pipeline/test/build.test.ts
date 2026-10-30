@@ -171,7 +171,7 @@ describe("runBuild — descoberta do snapshot raw versionado", () => {
 });
 
 describe("runBuild — exportação versionada real", () => {
-  it("constrói as 7474 Linhas da tabela com o hash do CSV versionado", () => {
+  it("constrói as 5867 Linhas da tabela com o hash do CSV versionado", () => {
     const bytes = readFileSync(exportVersadaPath);
     const { versao } = runBuild({
       dataDir,
@@ -181,15 +181,15 @@ describe("runBuild — exportação versionada real", () => {
       reportsDir: join(dataDir, "reports"),
     });
     expect(versao.hash).toBe(sha256Hex(bytes));
-    expect(versao.contagemLinhas).toBe(7474);
+    expect(versao.contagemLinhas).toBe(5867);
 
     const linhas = readFileSync(join(dataDir, "build/registros.jsonl"), "utf8")
       .trimEnd()
       .split("\n")
       .map((linha) => JSON.parse(linha));
-    expect(linhas).toHaveLength(7474);
+    expect(linhas).toHaveLength(5867);
     expect(linhas[0].valores.Marca).toBe("Samsung");
-    expect(linhas[7473]).toBeDefined();
+    expect(linhas[5866]).toBeDefined();
   });
 });
 
@@ -255,10 +255,10 @@ describe("runBuild — Anomalias", () => {
 });
 
 describe("runBuild — Anomalias na exportação versionada real", () => {
-  it("encontra as 170 Anomalias sem abortar o build", () => {
+  it("encontra as 108 Anomalias sem abortar o build", () => {
     const { registros, anomalias } = buildExportacaoRealComCuradoria();
-    expect(registros).toHaveLength(7474);
-    expect(anomalias).toHaveLength(170);
+    expect(registros).toHaveLength(5867);
+    expect(anomalias).toHaveLength(108);
     const multiplas = anomalias.filter(
       (anomalia) => anomalia.tipo === "valor_multiplo",
     );
@@ -276,13 +276,13 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
         anomalia.campo === CAPACIDADE_BTU,
     );
     expect(implausiveis.map((anomalia) => anomalia.linha)).toEqual([
-      5278, 7133, 7200, 7428,
+      5278, 7133, 7200,
     ]);
   });
 
   // O golden é do build com a curadoria publicada: as Exceções corrigem as
-  // capacidades truncadas, sobram 15 multiplicidades e 155 consumos
-  // implausíveis por 1.000 BTU/h.
+  // capacidades truncadas, sobram 15 multiplicidades e 93 consumos
+  // implausíveis por 1.000 BTU/h (as Linhas Excluido não entram).
   it("bate com o snapshot golden de anomalias.jsonl", () => {
     buildExportacaoRealComCuradoria();
     expect(

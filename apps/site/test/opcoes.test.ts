@@ -7,16 +7,13 @@ function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
     id: "x",
     modelo: "M",
     tipo: null,
-    situacao: "ativo",
     funcao: null,
-    rotacao: null,
     capacidadesBtu: [],
     tensoes: [],
     classes: [],
     idrs: [],
     consumosKwh: [],
     ...over,
-    suspeito: over.suspeito ?? false,
     marca: over.marca ?? "X",
     marcaCatalogo: over.marcaCatalogo ?? over.marca ?? "X",
   };
@@ -65,26 +62,42 @@ describe("opções da consulta", () => {
     expect(opcoes.marcas).toEqual(["FUJITSU", "MIDEA"]);
   });
 
-  it("deriva as opções de função, Classe, rotação e Situação", () => {
+  it("deriva as opções de função e Classe", () => {
     const opcoes = opcoesDe([
       item({
         id: "a",
         funcao: "Quente/Frio",
-        rotacao: "Velocidade Variável",
         classes: ["A", "B"],
-        situacao: "ativo",
       }),
       item({
         id: "b",
         funcao: "Frio",
-        rotacao: "Velocidade Fixa",
         classes: ["C"],
-        situacao: "inativo",
       }),
     ]);
     expect(opcoes.funcoes).toEqual(["Frio", "Quente/Frio"]);
     expect(opcoes.classes).toEqual(["A", "B", "C"]);
-    expect(opcoes.rotacoes).toEqual(["Velocidade Fixa", "Velocidade Variável"]);
-    expect(opcoes.situacoes).toEqual(["ativo", "inativo"]);
+  });
+
+  it("separa as classes curadas (com cor) das demais", () => {
+    const opcoes = opcoesDe(
+      [
+        item({ id: "a", classes: ["A", "C"] }),
+        item({ id: "b", classes: ["B"] }),
+      ],
+      {
+        marcas: [],
+        btus: [],
+        classes: [
+          { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+          { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+        ],
+      },
+    );
+    expect(opcoes.classesChip).toEqual([
+      { valor: "A", rotulo: "Classe A", cor: "#16a34a" },
+      { valor: "B", rotulo: "Classe B", cor: "#2563eb" },
+    ]);
+    expect(opcoes.classes).toEqual(["C"]);
   });
 });

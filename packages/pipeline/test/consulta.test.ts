@@ -22,8 +22,6 @@ function aparelho(
     unidadeExterna: null,
     tipo: null,
     funcao: null,
-    rotacao: null,
-    situacao: "ativo",
     fluidoRefrigerante: null,
     fluidoEspecificado: null,
     linhas: [1],
@@ -45,7 +43,6 @@ describe("projetarConsulta — dataset enxuto", () => {
         }),
       ],
       (marca) => marca,
-      new Set(),
     );
     expect(itens).toEqual([
       {
@@ -54,35 +51,27 @@ describe("projetarConsulta — dataset enxuto", () => {
         marcaCatalogo: "GREE",
         modelo: "GREE-09",
         tipo: "Split Hi-Wall",
-        situacao: "ativo",
         funcao: null,
-        rotacao: null,
         capacidadesBtu: [],
         tensoes: [],
         classes: [],
         idrs: [],
         consumosKwh: [],
-        suspeito: false,
       },
     ]);
   });
 
-  it("projeta Situação, Função e Rotação do Aparelho", () => {
+  it("projeta Função do Aparelho", () => {
     const [item] = projetarConsulta(
       [
         aparelho({
           id: "ap-1",
-          situacao: "inativo",
           funcao: "Frio",
-          rotacao: "Velocidade Variável",
         }),
       ],
       (marca) => marca,
-      new Set(),
     );
-    expect(item?.situacao).toBe("inativo");
     expect(item?.funcao).toBe("Frio");
-    expect(item?.rotacao).toBe("Velocidade Variável");
   });
 
   it("deduplica e ordena Classes, IDRS e consumos, ignorando Variantes sem dado", () => {
@@ -127,7 +116,6 @@ describe("projetarConsulta — dataset enxuto", () => {
         }),
       ],
       (marca) => marca,
-      new Set(),
     );
     expect(item?.classes).toEqual(["A", "B"]);
     expect(item?.idrs).toEqual([3.5, 4.5]);
@@ -138,7 +126,6 @@ describe("projetarConsulta — dataset enxuto", () => {
     const itens = projetarConsulta(
       [aparelho({ id: "ap-1", marca: "SPRINGER MIDEA" })],
       (marca) => (marca === "SPRINGER MIDEA" ? "MIDEA" : marca),
-      new Set(),
     );
     expect(itens[0]?.marca).toBe("SPRINGER MIDEA");
     expect(itens[0]?.marcaCatalogo).toBe("MIDEA");
@@ -169,22 +156,9 @@ describe("projetarConsulta — dataset enxuto", () => {
         }),
       ],
       (marca) => marca,
-      new Set(),
     );
     expect(itens[0]?.capacidadesBtu).toEqual([9000, 10000]);
     expect(itens[0]?.tensoes).toEqual([127, 220]);
-  });
-
-  it("marca suspeito quando alguma Linha do Aparelho tem consumo implausível", () => {
-    const itens = projetarConsulta(
-      [
-        aparelho({ id: "ap-1", linhas: [1, 2] }),
-        aparelho({ id: "ap-2", linhas: [3] }),
-      ],
-      (marca) => marca,
-      new Set([2]),
-    );
-    expect(itens.map((item) => item.suspeito)).toEqual([true, false]);
   });
 });
 
@@ -216,7 +190,7 @@ describe("runBuild — artefato consulta.json", () => {
     const conteudo = readFileSync(join(buildDir, "consulta.json"), "utf8");
     expect(consulta).toHaveLength(aparelhos.length);
     expect(conteudo).toBe(
-      `${JSON.stringify(projetarConsulta(aparelhos, (marca) => marca, new Set()))}\n`,
+      `${JSON.stringify(projetarConsulta(aparelhos, (marca) => marca))}\n`,
     );
     expect(conteudo.trimEnd().split("\n")).toHaveLength(1);
   });

@@ -3,13 +3,14 @@ import {
   type FiltrosConsulta,
   type ItemConsulta,
   type Consulta as MotorConsulta,
+  ORDENS_CONSULTA,
   type OrdemConsulta,
   ordenar,
 } from "@especialista-do-ar/api/consulta";
 import { useCallback, useEffect, useState } from "react";
 import { escreverEstado, lerEstado } from "../lib/estado";
 import type { OpcoesConsulta } from "../lib/opcoes";
-import { COLUNAS_TABELA, rotuloSituacao, valorDaColuna } from "../lib/tabela";
+import { COLUNAS_TABELA, valorDaColuna } from "../lib/tabela";
 
 /**
  * A **única ilha** do site (ADR-0008): a tabela de Aparelhos com filtros
@@ -17,6 +18,11 @@ import { COLUNAS_TABELA, rotuloSituacao, valorDaColuna } from "../lib/tabela";
  * `consulta.json` publicado, pelo módulo isomórfico do ticket 08
  * (`criarConsulta`/`ordenar`). O estado vive na URL. A consulta é 100% estática:
  * o dataset é baixado como arquivo.
+ *
+ * O layout (ticket 34) é uma grade de duas colunas no desktop — filtros numa
+ * barra lateral `sticky` à esquerda, resultados à direita — e empilhado no
+ * celular. Cada filtro é um `fieldset.campo-chips` com legenda, chips acima e,
+ * quando sobra valor fora dos chips, um `<select>` "Outras…" abaixo.
  */
 export interface PropsConsulta {
   /** Opções dos filtros, derivadas do dataset no build do site. */
@@ -30,8 +36,11 @@ export interface PropsConsulta {
   >;
 }
 
-/** Quantas linhas aparecem antes de "Mostrar mais". */
+/** Quantas linhas aparecem por vez na tabela. */
 const TAMANHO_PAGINA = 50;
+
+/** Os campos que a tabela sabe ordenar (as colunas ordenáveis do ticket 31). */
+const CAMPOS_ORDENAVEIS = new Set<string>(ORDENS_CONSULTA);
 
 /** Uma marca nos chips: `valor` é o filtro, `rotulo` o que se lê. */
 interface OpcaoChip {
@@ -39,18 +48,17 @@ interface OpcaoChip {
   rotulo: string;
 }
 
+/** Uma classe nos chips: além do rótulo, a cor curada (opcional). */
+interface OpcaoClasseChip extends OpcaoChip {
+  cor?: string;
+}
+
 /** Só os filtros contam para "Limpar filtros"; a ordenação não conta. */
 function temFiltroAtivo(estado: FiltrosConsulta): boolean {
-  const algumTexto = (
-    ["marca", "tipo", "funcao", "classe", "rotacao", "q"] as const
-  ).some((campo) => (estado[campo] ?? "").trim() !== "");
-  const situacao = (estado.situacao ?? "").trim().toLowerCase();
-  return (
-    algumTexto ||
-    estado.btu !== undefined ||
-    estado.tensao !== undefined ||
-    (situacao !== "" && situacao !== "todos")
+  const algumTexto = (["marca", "tipo", "funcao", "classe", "q"] as const).some(
+    (campo) => (estado[campo] ?? "").trim() !== "",
   );
+  return algumTexto || estado.btu !== undefined || estado.tensao !== undefined;
 }
 
 /** Só a ordenação sobrevive a "Limpar filtros". */
@@ -66,12 +74,10 @@ function somenteOrdem(estado: FiltrosConsulta): FiltrosConsulta {
  * linha. Clicar no chip ativo limpa; o chamador decide o que "ativo" significa.
  */
 function Chips({
-  ariaLabel,
   opcoes,
   estaAtivo,
   selecionar,
 }: {
-  ariaLabel: string;
   opcoes: OpcaoChip[];
   estaAtivo: (valor: string) => boolean;
   selecionar: (valor: string) => void;
@@ -80,7 +86,7 @@ function Chips({
     return null;
   }
   return (
-    <fieldset className="chips" aria-label={ariaLabel}>
+    <div className="chips">
       {opcoes.map(({ valor, rotulo }) => (
         <button
           key={valor}
@@ -91,7 +97,45 @@ function Chips({
           {rotulo}
         </button>
       ))}
-    </fieldset>
+    </div>
+  );
+}
+
+/**
+ * Os chips de Classe (ticket 34): como os demais, mas cada botão carrega
+ * `data-classe` para o CSS pintar a classe energética (A–F) e a cor curada.
+ */
+function ChipsClass({
+  opcoes,
+  estaAtivo,
+  selecionar,
+}: {
+  opcoes: OpcaoClasseChip[];
+  estaAtivo: (valor: string) => boolean;
+  selecionar: (valor: string) => void;
+}) {
+  if (opcoes.length === 0) {
+    return null;
+  }
+  return (
+    <div className="chips classes-chips">
+      {opcoes.map(({ valor, rotulo, cor }) => (
+        <button
+          key={valor}
+          type="button"
+          aria-pressed={estaAtivo(valor)}
+          data-classe={valor}
+          style={
+            cor === undefined
+              ? undefined
+              : ({ "--cor-classe": cor } as React.CSSProperties)
+          }
+          onClick={() => selecionar(valor)}
+        >
+          {rotulo}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -254,20 +298,20 @@ export default function Consulta({
     (item) => analisados.get(item.id)?.temLinkAfiliado,
   );
 
-  // Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER MIDEA`). Ela
-  // continua valendo no filtro; sem esta opção extra o `<select>` cairia em
-  // "Todas" enquanto a lista estivesse filtrada (ADR-0016).
+  // O chip aceso **é** o valor do filtro: o `<select>` "Outras…" não repete esse
+  // valor, então mostra o placeholder enquanto o chip estiver ativo (um valor
+  // por vez). Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER
+  // MIDEA`), fora dos chips: ela continua valendo e ganha uma opção própria no
+  // `<select>` (ADR-0016).
   const valoresChip = new Set(opcoes.marcasChip.map((marca) => marca.valor));
-  const marcasDoFiltro =
+  const marcasDoSelect =
     estado.marca !== undefined &&
-    !opcoes.marcas.includes(estado.marca) &&
-    !valoresChip.has(estado.marca)
+    !valoresChip.has(estado.marca) &&
+    !opcoes.marcas.includes(estado.marca)
       ? [...opcoes.marcas, estado.marca].sort()
       : opcoes.marcas;
-  // O chip aceso **é** o valor do filtro: o `<select>` não repete esse valor,
-  // então mostra "Todas" enquanto o chip estiver ativo (um valor por vez).
   const marcaDoSelect =
-    estado.marca !== undefined && marcasDoFiltro.includes(estado.marca)
+    estado.marca !== undefined && marcasDoSelect.includes(estado.marca)
       ? estado.marca
       : "";
   const btuDoSelect =
@@ -275,374 +319,377 @@ export default function Consulta({
       ? String(estado.btu)
       : "";
 
+  const funcoes: OpcaoChip[] = opcoes.funcoes.map((funcao) => ({
+    valor: funcao,
+    rotulo: funcao,
+  }));
+  const tipos: OpcaoChip[] = opcoes.tipos.map((tipo) => ({
+    valor: tipo,
+    rotulo: tipo,
+  }));
+  const classesExtras = opcoes.classes;
+
   return (
     <section className="consulta">
-      <form className="filtros" onSubmit={(evento) => evento.preventDefault()}>
-        <div className="campo">
-          <Chips
-            ariaLabel="Marcas conhecidas"
-            opcoes={opcoes.marcasChip}
-            estaAtivo={(valor) => estado.marca === valor}
-            selecionar={(valor) =>
-              atualizar({ marca: estado.marca === valor ? undefined : valor })
-            }
-          />
-          <label>
-            <span>Marca</span>
-            <select
-              value={marcaDoSelect}
-              onChange={(evento) =>
-                atualizar({ marca: evento.target.value || undefined })
-              }
-            >
-              <option value="">Todas</option>
-              {marcasDoFiltro.map((marca) => (
-                <option key={marca} value={marca}>
-                  {marca}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <label>
-          <span>Tipo</span>
-          <select
-            value={estado.tipo ?? ""}
-            onChange={(evento) =>
-              atualizar({ tipo: evento.target.value || undefined })
-            }
+      <div className="consulta-layout">
+        <aside className="filtros-sidebar">
+          <form
+            className="filtros"
+            onSubmit={(evento) => evento.preventDefault()}
           >
-            <option value="">Todos</option>
-            {opcoes.tipos.map((tipo) => (
-              <option key={tipo} value={tipo}>
-                {tipo}
-              </option>
-            ))}
-          </select>
-        </label>
+            <label className="busca campo-full">
+              <span>Busca</span>
+              <input
+                type="search"
+                value={estado.q ?? ""}
+                placeholder="Marca, modelo ou tipo"
+                onChange={(evento) =>
+                  atualizar({ q: evento.target.value || undefined })
+                }
+              />
+            </label>
 
-        <div className="campo">
-          <Chips
-            ariaLabel="Capacidades comuns"
-            opcoes={opcoes.btusChip.map((btu) => ({
-              valor: String(btu),
-              rotulo: btu.toLocaleString("pt-BR"),
-            }))}
-            estaAtivo={(valor) => estado.btu === Number(valor)}
-            selecionar={(valor) => {
-              const btu = Number(valor);
-              atualizar({ btu: estado.btu === btu ? undefined : btu });
-            }}
-          />
-          <label>
-            <span>Capacidade (BTU/h)</span>
-            <select
-              value={btuDoSelect}
-              onChange={(evento) =>
-                atualizar({
-                  btu:
-                    evento.target.value === ""
-                      ? undefined
-                      : Number(evento.target.value),
-                })
-              }
-            >
-              <option value="">Todas</option>
-              {opcoes.btus.map((btu) => (
-                <option key={btu} value={btu}>
-                  {btu.toLocaleString("pt-BR")}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+            <fieldset className="campo-chips">
+              <legend>Marca</legend>
+              <Chips
+                opcoes={opcoes.marcasChip}
+                estaAtivo={(valor) => estado.marca === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    marca: estado.marca === valor ? undefined : valor,
+                  })
+                }
+              />
+              <label className="select-outras">
+                <select
+                  aria-label="Outras marcas"
+                  value={marcaDoSelect}
+                  onChange={(evento) =>
+                    atualizar({ marca: evento.target.value || undefined })
+                  }
+                >
+                  <option value="" disabled hidden>
+                    Outras Marcas
+                  </option>
+                  {marcasDoSelect.map((marca) => (
+                    <option key={marca} value={marca}>
+                      {marca}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </fieldset>
 
-        <label>
-          <span>Tensão (V)</span>
-          <select
-            value={estado.tensao === undefined ? "" : String(estado.tensao)}
-            onChange={(evento) =>
-              atualizar({
-                tensao:
-                  evento.target.value === ""
-                    ? undefined
-                    : Number(evento.target.value),
-              })
-            }
-          >
-            <option value="">Todas</option>
-            {opcoes.tensoes.map((tensao) => (
-              <option key={tensao} value={tensao}>
-                {tensao}
-              </option>
-            ))}
-          </select>
-        </label>
+            <fieldset className="campo-chips">
+              <legend>Capacidade</legend>
+              <Chips
+                opcoes={opcoes.btusChip.map((btu) => ({
+                  valor: String(btu),
+                  rotulo: btu.toLocaleString("pt-BR"),
+                }))}
+                estaAtivo={(valor) => estado.btu === Number(valor)}
+                selecionar={(valor) => {
+                  const btu = Number(valor);
+                  atualizar({ btu: estado.btu === btu ? undefined : btu });
+                }}
+              />
+              <label className="select-outras">
+                <select
+                  aria-label="Outras capacidades"
+                  value={btuDoSelect}
+                  onChange={(evento) =>
+                    atualizar({
+                      btu:
+                        evento.target.value === ""
+                          ? undefined
+                          : Number(evento.target.value),
+                    })
+                  }
+                >
+                  <option value="" disabled hidden>
+                    Outras Capacidades
+                  </option>
+                  {opcoes.btus.map((btu) => (
+                    <option key={btu} value={btu}>
+                      {btu.toLocaleString("pt-BR")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </fieldset>
 
-        <label>
-          <span>Função</span>
-          <select
-            value={estado.funcao ?? ""}
-            onChange={(evento) =>
-              atualizar({ funcao: evento.target.value || undefined })
-            }
-          >
-            <option value="">Todas</option>
-            {opcoes.funcoes.map((funcao) => (
-              <option key={funcao} value={funcao}>
-                {funcao}
-              </option>
-            ))}
-          </select>
-        </label>
+            <fieldset className="campo-chips">
+              <legend>Função</legend>
+              <Chips
+                opcoes={funcoes}
+                estaAtivo={(valor) => estado.funcao === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    funcao: estado.funcao === valor ? undefined : valor,
+                  })
+                }
+              />
+            </fieldset>
 
-        <label>
-          <span>Classe</span>
-          <select
-            value={estado.classe ?? ""}
-            onChange={(evento) =>
-              atualizar({ classe: evento.target.value || undefined })
-            }
-          >
-            <option value="">Todas</option>
-            {opcoes.classes.map((classe) => (
-              <option key={classe} value={classe}>
-                {classe}
-              </option>
-            ))}
-          </select>
-        </label>
+            <fieldset className="campo-chips">
+              <legend>Tipo</legend>
+              <Chips
+                opcoes={tipos}
+                estaAtivo={(valor) => estado.tipo === valor}
+                selecionar={(valor) =>
+                  atualizar({ tipo: estado.tipo === valor ? undefined : valor })
+                }
+              />
+            </fieldset>
 
-        <label>
-          <span>Rotação</span>
-          <select
-            value={estado.rotacao ?? ""}
-            onChange={(evento) =>
-              atualizar({ rotacao: evento.target.value || undefined })
-            }
-          >
-            <option value="">Todas</option>
-            {opcoes.rotacoes.map((rotacao) => (
-              <option key={rotacao} value={rotacao}>
-                {rotacao}
-              </option>
-            ))}
-          </select>
-        </label>
+            <fieldset className="campo-chips">
+              <legend>Classe</legend>
+              <ChipsClass
+                opcoes={opcoes.classesChip}
+                estaAtivo={(valor) => estado.classe === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    classe: estado.classe === valor ? undefined : valor,
+                  })
+                }
+              />
+              {classesExtras.length > 0 ? (
+                <label className="select-outras">
+                  <select
+                    aria-label="Outras classes"
+                    value={
+                      estado.classe !== undefined &&
+                      classesExtras.includes(estado.classe)
+                        ? estado.classe
+                        : ""
+                    }
+                    onChange={(evento) =>
+                      atualizar({ classe: evento.target.value || undefined })
+                    }
+                  >
+                    <option value="" disabled hidden>
+                      Outras Classes
+                    </option>
+                    {classesExtras.map((classe) => (
+                      <option key={classe} value={classe}>
+                        {classe}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+            </fieldset>
 
-        <label>
-          <span>Situação</span>
-          <select
-            value={estado.situacao === "todos" ? "" : (estado.situacao ?? "")}
-            onChange={(evento) =>
-              atualizar({ situacao: evento.target.value || undefined })
-            }
-          >
-            <option value="">Todos</option>
-            {opcoes.situacoes.map((situacao) => (
-              <option key={situacao} value={situacao}>
-                {rotuloSituacao(situacao)}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          <span>Ordenar por</span>
-          <select
-            value={estado.ordem ?? ""}
-            onChange={(evento) => trocarOrdem(evento.target.value)}
-          >
-            <option value="">
-              {estado.q === undefined || estado.q.trim() === ""
-                ? "Padrão (A–Z)"
-                : "Padrão (relevância)"}
-            </option>
-            {COLUNAS_TABELA.map((coluna) => (
-              <option key={coluna.campo} value={coluna.campo}>
-                {coluna.rotulo}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
-            a direção precisa de um controle próprio — sem ele, o celular só
-            ordenaria crescente. */}
-        {estado.ordem !== undefined ? (
-          <button
-            type="button"
-            className="ordem-direcao"
-            aria-label={
-              estado.dir === "desc"
-                ? "Ordenar de forma crescente"
-                : "Ordenar de forma decrescente"
-            }
-            onClick={alternarDirecao}
-          >
-            {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
-          </button>
-        ) : null}
-
-        <label className="busca">
-          <span>Busca</span>
-          <input
-            type="search"
-            value={estado.q ?? ""}
-            placeholder="Marca, modelo ou tipo"
-            onChange={(evento) =>
-              atualizar({ q: evento.target.value || undefined })
-            }
-          />
-        </label>
-
-        {temFiltro ? (
-          <button type="button" onClick={limpar}>
-            Limpar filtros
-          </button>
-        ) : null}
-      </form>
-
-      {erro !== null ? (
-        <p role="alert">Não foi possível carregar a base: {erro}.</p>
-      ) : motor === null ? (
-        <p role="status">Carregando a base…</p>
-      ) : (
-        <>
-          <p role="status">
-            {resultados.length} aparelho(s) com Dados declarados.
-          </p>
-          <table className="tabela-aparelhos">
-            <caption className="sr-only">
-              Aparelhos de ar-condicionado, uma linha por Aparelho
-            </caption>
-            <thead>
-              <tr>
-                {COLUNAS_TABELA.map((coluna) => (
-                  <Cabecalho
-                    key={coluna.campo}
-                    campo={coluna.campo}
-                    rotulo={coluna.rotulo}
-                    estado={estado}
-                    alternar={alternar}
-                  />
+            <label>
+              <span>Tensão (V)</span>
+              <select
+                value={estado.tensao === undefined ? "" : String(estado.tensao)}
+                onChange={(evento) =>
+                  atualizar({
+                    tensao:
+                      evento.target.value === ""
+                        ? undefined
+                        : Number(evento.target.value),
+                  })
+                }
+              >
+                <option value="">Todas</option>
+                {opcoes.tensoes.map((tensao) => (
+                  <option key={tensao} value={tensao}>
+                    {tensao}
+                  </option>
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {(() => {
-                const linhas: React.ReactNode[] = [];
-                let grupoAtual: "analisados" | "demais" | null = null;
+              </select>
+            </label>
 
-                for (const item of exibidos) {
-                  const ehAnalisado = analisadosIds.has(item.id);
-                  const grupo = ehAnalisado ? "analisados" : "demais";
+            <label>
+              <span>Ordenar por</span>
+              <select
+                value={estado.ordem ?? ""}
+                onChange={(evento) => trocarOrdem(evento.target.value)}
+              >
+                <option value="">
+                  {estado.q === undefined || estado.q.trim() === ""
+                    ? "Padrão (A–Z)"
+                    : "Padrão (relevância)"}
+                </option>
+                {COLUNAS_TABELA.filter((coluna) =>
+                  CAMPOS_ORDENAVEIS.has(coluna.campo),
+                ).map((coluna) => (
+                  <option key={coluna.campo} value={coluna.campo}>
+                    {coluna.rotulo}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-                  // Cabeçalho do grupo quando muda de grupo
-                  if (grupo !== grupoAtual) {
-                    if (grupo === "analisados") {
+            {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
+                a direção precisa de um controle próprio — sem ele, o celular só
+                ordenaria crescente. */}
+            {estado.ordem !== undefined ? (
+              <button
+                type="button"
+                className="ordem-direcao"
+                aria-label={
+                  estado.dir === "desc"
+                    ? "Ordenar de forma crescente"
+                    : "Ordenar de forma decrescente"
+                }
+                onClick={alternarDirecao}
+              >
+                {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
+              </button>
+            ) : null}
+
+            {temFiltro ? (
+              <button type="button" onClick={limpar}>
+                Limpar filtros
+              </button>
+            ) : null}
+          </form>
+        </aside>
+
+        <div className="consulta-resultados">
+          {erro !== null ? (
+            <p role="alert">Não foi possível carregar a base: {erro}.</p>
+          ) : motor === null ? (
+            <p role="status">Carregando a base…</p>
+          ) : (
+            <>
+              <p role="status">
+                {resultados.length} aparelho(s) com Dados declarados.
+              </p>
+              <table className="tabela-aparelhos">
+                <caption className="sr-only">
+                  Aparelhos de ar-condicionado, uma linha por Aparelho
+                </caption>
+                <thead>
+                  <tr>
+                    {COLUNAS_TABELA.map((coluna) =>
+                      CAMPOS_ORDENAVEIS.has(coluna.campo) ? (
+                        <Cabecalho
+                          key={coluna.campo}
+                          campo={coluna.campo as OrdemConsulta}
+                          rotulo={coluna.rotulo}
+                          estado={estado}
+                          alternar={alternar}
+                        />
+                      ) : (
+                        <th key={coluna.campo} scope="col">
+                          {coluna.rotulo}
+                        </th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {(() => {
+                    const linhas: React.ReactNode[] = [];
+                    let grupoAtual: "analisados" | "demais" | null = null;
+
+                    for (const item of exibidos) {
+                      const ehAnalisado = analisadosIds.has(item.id);
+                      const grupo = ehAnalisado ? "analisados" : "demais";
+
+                      // Cabeçalho do grupo quando muda de grupo
+                      if (grupo !== grupoAtual) {
+                        if (grupo === "analisados") {
+                          linhas.push(
+                            <tr
+                              key="grupo-analisados"
+                              className="grupo-cabecalho"
+                            >
+                              <td colSpan={COLUNAS_TABELA.length}>
+                                <strong>Analisados por nós</strong>
+                                {analisadosComLinkAfiliado && (
+                                  <span className="aviso-afiliado">
+                                    {" "}
+                                    · contém links de afiliado
+                                  </span>
+                                )}
+                              </td>
+                            </tr>,
+                          );
+                        } else if (
+                          grupo === "demais" &&
+                          temAnalisadosVisiveis
+                        ) {
+                          linhas.push(
+                            <tr key="grupo-demais" className="grupo-cabecalho">
+                              <td colSpan={COLUNAS_TABELA.length}>
+                                <strong>Demais aparelhos</strong>
+                              </td>
+                            </tr>,
+                          );
+                        }
+                        grupoAtual = grupo;
+                      }
+
+                      const analise = ehAnalisado
+                        ? analisados.get(item.id)
+                        : undefined;
+
                       linhas.push(
-                        <tr key="grupo-analisados" className="grupo-cabecalho">
-                          <td colSpan={COLUNAS_TABELA.length}>
-                            <strong>Analisados por nós</strong>
-                            {analisadosComLinkAfiliado && (
-                              <span className="aviso-afiliado">
-                                {" "}
-                                · contém links de afiliado
-                              </span>
-                            )}
-                          </td>
-                        </tr>,
-                      );
-                    } else if (grupo === "demais" && temAnalisadosVisiveis) {
-                      linhas.push(
-                        <tr key="grupo-demais" className="grupo-cabecalho">
-                          <td colSpan={COLUNAS_TABELA.length}>
-                            <strong>Demais aparelhos</strong>
-                          </td>
+                        <tr key={item.id}>
+                          {COLUNAS_TABELA.map((coluna) => {
+                            const valor = valorDaColuna(item, coluna.campo);
+                            return (
+                              <td key={coluna.campo} data-label={coluna.rotulo}>
+                                {coluna.campo === "marca" && analise ? (
+                                  <>
+                                    {valor}
+                                    <span
+                                      className="analisado-selo"
+                                      id={`analisado-tooltip-${item.id}`}
+                                    >
+                                      <a
+                                        href={analise.url}
+                                        className="analisado-link"
+                                      >
+                                        Analisado
+                                      </a>
+                                      <span
+                                        className="analisado-tooltip"
+                                        role="tooltip"
+                                      >
+                                        Análise completa: {analise.titulo}.
+                                        Contém links de afiliado.
+                                      </span>
+                                    </span>
+                                  </>
+                                ) : coluna.campo === "modelo" ? (
+                                  <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                                ) : (
+                                  valor
+                                )}
+                              </td>
+                            );
+                          })}
                         </tr>,
                       );
                     }
-                    grupoAtual = grupo;
+                    return linhas;
+                  })()}
+                </tbody>
+              </table>
+              {resultados.length > mostrados ? (
+                <button
+                  type="button"
+                  className="mostrar-mais"
+                  onClick={() =>
+                    setPaginacao({
+                      chave: chaveEstado,
+                      quantidade: mostrados + TAMANHO_PAGINA,
+                    })
                   }
-
-                  const analise = ehAnalisado
-                    ? analisados.get(item.id)
-                    : undefined;
-
-                  linhas.push(
-                    <tr key={item.id}>
-                      {COLUNAS_TABELA.map((coluna) => {
-                        const valor = valorDaColuna(item, coluna.campo);
-                        return (
-                          <td key={coluna.campo} data-label={coluna.rotulo}>
-                            {coluna.campo === "marca" && analise ? (
-                              <>
-                                {valor}
-                                <span
-                                  className="analisado-selo"
-                                  id={`analisado-tooltip-${item.id}`}
-                                >
-                                  <a
-                                    href={analise.url}
-                                    className="analisado-link"
-                                  >
-                                    Analisado
-                                  </a>
-                                  <span
-                                    className="analisado-tooltip"
-                                    role="tooltip"
-                                  >
-                                    Análise completa: {analise.titulo}. Contém
-                                    links de afiliado.
-                                  </span>
-                                </span>
-                              </>
-                            ) : coluna.campo === "modelo" ? (
-                              <a href={`/aparelhos/${item.id}`}>{valor}</a>
-                            ) : (
-                              valor
-                            )}
-                            {coluna.campo === "consumo" && item.suspeito ? (
-                              <span
-                                className="suspeito"
-                                title="Consumo declarado fora do padrão"
-                              >
-                                {" "}
-                                ⚠
-                                <span className="sr-only">
-                                  {" "}
-                                  consumo declarado suspeito
-                                </span>
-                              </span>
-                            ) : null}
-                          </td>
-                        );
-                      })}
-                    </tr>,
-                  );
-                }
-                return linhas;
-              })()}
-            </tbody>
-          </table>
-          {resultados.length > mostrados ? (
-            <button
-              type="button"
-              className="mostrar-mais"
-              onClick={() =>
-                setPaginacao({
-                  chave: chaveEstado,
-                  quantidade: mostrados + TAMANHO_PAGINA,
-                })
-              }
-            >
-              Mostrar mais
-            </button>
-          ) : null}
-        </>
-      )}
+                >
+                  Mostrar mais
+                </button>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
     </section>
   );
 }

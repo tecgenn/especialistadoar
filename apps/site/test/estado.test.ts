@@ -55,8 +55,6 @@ describe("estado da consulta na URL", () => {
       tensao: 127,
       funcao: "Frio",
       classe: "A",
-      rotacao: "Velocidade Variável",
-      situacao: "ativo",
       q: "inverter",
       ordem: "idrs",
       dir: "desc",
@@ -67,24 +65,20 @@ describe("estado da consulta na URL", () => {
   it("lê os filtros novos e a ordenação", () => {
     expect(
       lerEstado(
-        new URLSearchParams(
-          "funcao=Frio&classe=a&rotacao=Velocidade+Fixa&situacao=inativo&ordem=consumo&dir=desc",
-        ),
+        new URLSearchParams("funcao=Frio&classe=a&ordem=consumo&dir=desc"),
       ),
     ).toEqual({
       funcao: "Frio",
       classe: "A",
-      rotacao: "Velocidade Fixa",
-      situacao: "inativo",
       ordem: "consumo",
       dir: "desc",
     });
   });
 
-  it("ignora ordenação e Situação inválidas, sem quebrar a consulta", () => {
-    expect(
-      lerEstado(new URLSearchParams("ordem=preco&dir=subindo&situacao=talvez")),
-    ).toEqual({});
+  it("ignora ordenação inválida, sem quebrar a consulta", () => {
+    expect(lerEstado(new URLSearchParams("ordem=preco&dir=subindo"))).toEqual(
+      {},
+    );
   });
 
   it("não escreve filtros novos vazios", () => {
@@ -92,13 +86,7 @@ describe("estado da consulta na URL", () => {
       escreverEstado({
         funcao: " ",
         classe: "",
-        rotacao: "",
-        situacao: undefined,
       }).toString(),
     ).toBe("");
-  });
-
-  it("não escreve a Situação 'todos' (equivale a ausência de filtro)", () => {
-    expect(escreverEstado({ situacao: "todos" }).toString()).toBe("");
   });
 });

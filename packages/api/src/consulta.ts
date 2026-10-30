@@ -3,35 +3,22 @@ import MiniSearch from "minisearch";
 
 export type { ItemConsulta };
 
-/** As colunas ordenáveis da tabela de Aparelhos (ticket 27). */
-export const ORDENS_CONSULTA = [
-  "marca",
-  "modelo",
-  "btu",
-  "consumo",
-  "idrs",
-  "classe",
-  "tipo",
-  "situacao",
-] as const;
+/** As colunas ordenáveis da tabela de Aparelhos (ticket 31). */
+export const ORDENS_CONSULTA = ["btu", "consumo", "idrs", "classe"] as const;
 
 export type OrdemConsulta = (typeof ORDENS_CONSULTA)[number];
+
+/** Colunas de exibição da tabela (inclui as não-ordenáveis). */
+export type ColunaExibicao =
+  | OrdemConsulta
+  | "marca"
+  | "modelo"
+  | "tipo"
+  | "funcao";
 
 export type DirecaoConsulta = "asc" | "desc";
 
 export const DIRECOES_CONSULTA: readonly DirecaoConsulta[] = ["asc", "desc"];
-
-/**
- * A Situação no filtro: `todos` equivale a ausência de filtro (o `<select>`
- * começa em "Todos"). A lista é canônica para validar a URL.
- */
-export type SituacaoConsulta = ItemConsulta["situacao"] | "todos";
-
-export const SITUACOES_CONSULTA: readonly SituacaoConsulta[] = [
-  "ativo",
-  "inativo",
-  "todos",
-];
 
 export interface OrdenacaoConsulta {
   /** Coluna da ordenação; ausente = padrão A–Z (ou relevância, com busca). */
@@ -40,14 +27,6 @@ export interface OrdenacaoConsulta {
   dir?: DirecaoConsulta;
 }
 
-/**
- * O módulo de consulta isomórfico: lógica pura sobre o dataset enxuto
- * (`consulta.json`), **sem** dependências de Node — é importado pela ilha do
- * site (navegador) e pode ser reusado por qualquer consumidor, com uma só
- * definição. A leitura de arquivo fica em `estatica.ts`, que é Node-only;
- * separar por entry point é o que impede `fs` de entrar no bundle do site. Ver
- * ADR-0008.
- */
 export interface FiltrosConsulta extends OrdenacaoConsulta {
   /**
    * Marca do Aparelho, comparada sem diferenciar maiúsculas/minúsculas. Casa a
@@ -65,10 +44,6 @@ export interface FiltrosConsulta extends OrdenacaoConsulta {
   funcao?: string;
   /** Classe oficial (A–F) de qualquer Variante do Aparelho. */
   classe?: string;
-  /** Rotação (ex.: `Velocidade Fixa`, `Velocidade Variável`). */
-  rotacao?: string;
-  /** Situação (`ativo`/`inativo`); `todos` equivale a ausência de filtro. */
-  situacao?: SituacaoConsulta;
   /** Busca textual sobre marca, modelo e tipo (MiniSearch). */
   q?: string;
 }
@@ -114,25 +89,10 @@ function combinaCampos(item: ItemConsulta, filtros: FiltrosConsulta): boolean {
   ) {
     return false;
   }
-  const rotacao = filtroDeTexto(filtros.rotacao);
-  if (
-    rotacao !== undefined &&
-    (item.rotacao ?? "").trim().toLowerCase() !== rotacao
-  ) {
-    return false;
-  }
   const classe = filtroDeTexto(filtros.classe);
   if (
     classe !== undefined &&
     !item.classes.some((valor) => valor.trim().toLowerCase() === classe)
-  ) {
-    return false;
-  }
-  const situacao = filtroDeTexto(filtros.situacao);
-  if (
-    situacao !== undefined &&
-    situacao !== "todos" &&
-    item.situacao.toLowerCase() !== situacao
   ) {
     return false;
   }
@@ -170,14 +130,6 @@ function chaveDe(
 ): string | number | null {
   const ultimo = dir === "desc";
   switch (ordem) {
-    case "marca":
-      return item.marcaCatalogo;
-    case "modelo":
-      return item.modelo;
-    case "tipo":
-      return item.tipo;
-    case "situacao":
-      return item.situacao;
     case "classe":
       return ultimo
         ? (item.classes.at(-1) ?? null)
@@ -196,11 +148,10 @@ function chaveDe(
 }
 
 /**
- * Ordena os Aparelhos da tabela (ticket 27). Sem `ordem`, aplica o padrão A–Z
+ * Ordena os Aparelhos da tabela (ticket 31). Sem `ordem`, aplica o padrão A–Z
  * por Marca de catálogo e modelo. Numa coluna, crescente usa o menor valor da
  * lista de cada Aparelho e decrescente o maior; quem não declara o valor fica no
- * fim. Nas ordenações por IDRS e consumo, os suspeitos (ticket 25) vão para o
- * fim nas duas direções — o dado implausível não domina o topo.
+ * fim.
  */
 export function ordenar(
   itens: readonly ItemConsulta[],
@@ -210,12 +161,6 @@ export function ordenar(
   return [...itens].sort((a, b) => {
     if (ordem === undefined) {
       return ordemPadrao(a, b);
-    }
-    if (
-      (ordem === "consumo" || ordem === "idrs") &&
-      a.suspeito !== b.suspeito
-    ) {
-      return a.suspeito ? 1 : -1;
     }
     const va = chaveDe(a, ordem, dir);
     const vb = chaveDe(b, ordem, dir);

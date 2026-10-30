@@ -22,7 +22,7 @@ Base publicada no Cloudflare Pages: **`https://especialista-do-ar.pages.dev/`**.
 |---|---|---|
 | `manifest.json` | A Versão da tabela atual (hash, data de obtenção, origem, contagem de Linhas) | Citar a **proveniência** de qualquer resposta |
 | `aparelhos.json` | A base servida completa (array de Aparelhos, com Variantes, Dados declarados, `linhas` e `registros`) | Consulta por ID e detalhe técnico |
-| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `situacao`, `funcao`, `rotacao`, `suspeito` e as listas `capacidadesBtu`, `tensoes`, `classes`, `idrs` e `consumosKwh` | Filtrar/buscar antes de buscar o detalhe |
+| `consulta.json` | Dataset enxuto: por Aparelho, `id`, `marca` (oficial), `marcaCatalogo`, `modelo`, `tipo`, `funcao` e as listas `capacidadesBtu`, `tensoes`, `classes`, `idrs` e `consumosKwh` | Filtrar/buscar antes de buscar o detalhe |
 | `schema.json` | JSON Schema do contrato de Aparelho | Validar o formato |
 | `registros.jsonl` | As Linhas da tabela normalizadas (uma por Linha, com o Valor original) | Proveniência: voltar da Linha ao dado cru |
 | `anomalias.jsonl` | Anomalias por Linha da tabela (campo, valor original, tipo) | Sinalizar dados suspeitos — não são erros fatais |
@@ -65,35 +65,33 @@ Cada item traz duas marcas:
 - `marcaCatalogo` — a **Marca de catálogo**: o agrupamento curado sob o nome que
   as pessoas procuram. É igual a `marca` quando não há agrupamento.
 
-Na Versão atual, MIDEA agrupa `MIDEA` e `SPRINGER MIDEA` (164 Aparelhos) e
-FUJITSU agrupa `FUJITSU/AIRSTAGE` e `AIRSTAGE` (27). O filtro `marca` casa a
-`marcaCatalogo` **e** a `marca` oficial, então `marca: "MIDEA"` devolve 164 e
+Na Versão atual, MIDEA agrupa `MIDEA` e `SPRINGER MIDEA` (163 Aparelhos) e
+FUJITSU agrupa `FUJITSU/AIRSTAGE` e `AIRSTAGE` (26). O filtro `marca` casa a
+`marcaCatalogo` **e** a `marca` oficial, então `marca: "MIDEA"` devolve 163 e
 `marca: "SPRINGER MIDEA"` (o valor oficial antigo) devolve os 67 da família;
-`q: "fujitsu"` encontra os 27. Use `marcaCatalogo` para agrupar, e `marca` quando
+`q: "fujitsu"` encontra os 26. Use `marcaCatalogo` para agrupar, e `marca` quando
 precisar citar o Valor oficial. A curadoria exata está em
 `marcas-catalogo.jsonl`.
 
-### Classe e Situação
+### Classe
 
-Dois campos novos acompanham cada Aparelho (ADR-0018):
+A **Classe** (`classe`, dentro do `dados` de cada **Variante**) é a faixa A a F que
+o INMETRO declara na coluna "Faixa de Classificação", por Linha (ADR-0018). É um
+**Valor oficial**, aparado e em maiúsculas; uma célula vazia vira `null`. **Nunca**
+a recalcule a partir do IDRS: classe e IDRS não andam juntos entre tipos de
+aparelho. Variantes podem divergir (a coluna é por Linha); por isso o
+`consulta.json` traz `classes` como lista única e ordenada.
 
-- **Classe** (`classe`, dentro do `dados` de cada **Variante**) — a faixa A a F que
-  o INMETRO declara na coluna "Faixa de Classificação", por Linha. É um **Valor
-  oficial**, aparado e em maiúsculas; uma célula vazia vira `null`. **Nunca** a
-  recalcule a partir do IDRS: classe e IDRS não andam juntos entre tipos de
-  aparelho. Variantes podem divergir (a coluna é por Linha); por isso o
-  `consulta.json` traz `classes` como lista única e ordenada.
-- **Situação** (`situacao`) — `"ativo"` quando ao menos um dos Registros INMETRO do
-  Aparelho tem status Ativo; `"inativo"` caso contrário. É derivada dos `registros`,
-  não um dado novo, e é a mesma definição no `aparelhos.json` e no `consulta.json`:
-  não monte a sua própria regra no cliente.
+A **Situação** não é mais um campo do contrato: derive-a dos `registros` quando
+precisar (Ativo quando ao menos um Registro INMETRO tem status Ativo); ela não
+aparece no `aparelhos.json` nem no `consulta.json`.
 
-O `consulta.json` também carrega `funcao`, `rotacao` e as listas `idrs` e
-`consumosKwh` (únicas, ordenadas, ignorando Variantes sem o dado), para filtrar e
-ordenar a tabela sem baixar a base completa. `classes`, `idrs` e `consumosKwh`
-seguem a mesma regra de `capacidadesBtu`: o valor de qualquer Variante do Aparelho
-conta. `suspeito` é `true` quando alguma Linha do Aparelho tem consumo implausível
-por 1.000 BTU/h (ticket 25) — sinaliza, mas o Aparelho continua na base.
+O `consulta.json` também carrega `funcao` e as listas `idrs` e `consumosKwh`
+(únicas, ordenadas, ignorando Variantes sem o dado), para filtrar e ordenar a
+tabela sem baixar a base completa. `classes`, `idrs` e `consumosKwh` seguem a
+mesma regra de `capacidadesBtu`: o valor de qualquer Variante do Aparelho conta.
+O sinal de consumo implausível continua em `anomalias.jsonl`; o Aparelho não é
+excluído nem ganha um campo `suspeito`.
 
 ## Valor calculado — fórmula documentada
 

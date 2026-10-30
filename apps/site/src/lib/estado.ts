@@ -2,7 +2,6 @@ import {
   DIRECOES_CONSULTA,
   type FiltrosConsulta,
   ORDENS_CONSULTA,
-  SITUACOES_CONSULTA,
 } from "@especialista-do-ar/api/consulta";
 
 /**
@@ -48,8 +47,6 @@ export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
   const tensao = numero(busca.get("tensao"));
   const funcao = texto(busca.get("funcao"));
   const classe = texto(busca.get("classe"))?.toUpperCase();
-  const rotacao = texto(busca.get("rotacao"));
-  const situacao = opcao(busca.get("situacao"), SITUACOES_CONSULTA);
   const q = texto(busca.get("q"));
   const ordem = opcao(busca.get("ordem"), ORDENS_CONSULTA);
   const dir = opcao(busca.get("dir"), DIRECOES_CONSULTA);
@@ -60,8 +57,6 @@ export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
     ...(tensao === undefined ? {} : { tensao }),
     ...(funcao === undefined ? {} : { funcao }),
     ...(classe === undefined ? {} : { classe }),
-    ...(rotacao === undefined ? {} : { rotacao }),
-    ...(situacao === undefined ? {} : { situacao }),
     ...(q === undefined ? {} : { q }),
     ...(ordem === undefined ? {} : { ordem }),
     ...(dir === undefined ? {} : { dir }),
@@ -88,16 +83,6 @@ export function escreverEstado(estado: FiltrosConsulta): URLSearchParams {
   }
   if (estado.classe !== undefined && estado.classe.trim() !== "") {
     busca.set("classe", estado.classe.trim());
-  }
-  if (estado.rotacao !== undefined && estado.rotacao.trim() !== "") {
-    busca.set("rotacao", estado.rotacao.trim());
-  }
-  if (
-    estado.situacao !== undefined &&
-    estado.situacao.trim() !== "" &&
-    estado.situacao.trim().toLowerCase() !== "todos"
-  ) {
-    busca.set("situacao", estado.situacao.trim());
   }
   if (estado.q !== undefined && estado.q.trim() !== "") {
     busca.set("q", estado.q.trim());
