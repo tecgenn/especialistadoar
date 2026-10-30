@@ -17,7 +17,7 @@
 - [x] Campo Tensão: `<label>` simples (select)
 - [x] Campo Ordenar: `<label>` com select de 4 opções (btu, consumo, idrs, classe)
 - [x] Botão "Limpar filtros" só aparece com filtro ativo (mantém ordenação)
-- [x] Estado de paginação resetado ao mudar filtro/ordem
+- [x] Estado "Mostrar mais" resetado ao mudar filtro/ordem
 - [x] Mobile: layout empilhado via CSS (`@media max-width: 64rem`)
 - [x] Testes em `apps/site/test/consulta.test.tsx`:
   - Renderiza chips de marca, capacidade, função, tipo, classe
@@ -30,3 +30,7 @@
   - Mobile: layout empilhado
 - [x] `pnpm test` passa
 - [x] `pnpm typecheck` passa
+
+## Comments
+
+- 2026-10-30: Item 20 alterado — "Estado de paginação resetado" → "Estado 'Mostrar mais' resetado ao mudar filtro/ordem" (decisão de manter 'Mostrar mais' em vez de paginação numerada).

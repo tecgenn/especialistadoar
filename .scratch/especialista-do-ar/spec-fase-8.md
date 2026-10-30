@@ -8,8 +8,8 @@ A interface atual de filtros e tabela na página `/aparelhos/` apresenta problem
 2. **Campos desnecessários**: Filtros de Rotação e Situação ocupam espaço mas têm pouco valor prático.
 3. **Duplicatas na base**: Modelos com status "Excluído" no CSV do INMETRO criam Aparelhos duplicados (ex.: GRATTO ACST9F aparece com duas classes, dois consumos, dois IDRS — um "Incluido" e outro "Excluido").
 4. **Tabela pouco legível**: "Consumo (kWh/ano)" verboso; "Classe" mostra só a letra (A, B) sem cor, dificultando leitura rápida.
-5. **Botão "Mostrar mais"**: Carrega incrementalmente mas não permite navegação direta; performance degrada com muitos itens.
-6. **Mobile**: Filtros ficam em grid horizontal, exigindo scroll; tabela vira cards (ok) mas paginação some.
+5. **Botão "Mostrar mais"**: Carrega incrementalmente (50 itens por clique); mantido como solução de navegação simples e performática.
+6. **Mobile**: Filtros ficam em grid horizontal, exigindo scroll; tabela vira cards (ok).
 
 ## Solution
 
@@ -27,8 +27,8 @@ Redesign completo da página `/aparelhos/` com:
 10. **Ordenação**: Select apenas com 4 opções — Consumo, IDRS, BTU, Classe.
 11. **Removidos**: Filtros de Rotação e Situação.
 12. **Tabela**: Colunas — Marca, Modelo, BTU/h, **Consumo (kWh)**, IDRS, **Classe** (exibe "Classe A", "Classe B"… com cores).
-13. **Paginação**: Botões numerados 1, 2, 3… (50 itens/página), funcionando no desktop e mobile.
-14. **Mobile**: Filtros em accordion ou sempre visíveis empilhados; paginação compacta (anterior/atual/próximo ou scroll horizontal).
+13. **Botão "Mostrar mais"**: Carrega 50 itens por clique, sem paginação numerada; reset ao mudar filtro/ordem.
+14. **Mobile**: Filtros empilhados acima da tabela; botão "Mostrar mais" funcional.
 
 ## User Stories
 
@@ -41,10 +41,8 @@ Redesign completo da página `/aparelhos/` com:
 7. As a **visitante do site**, I want to **filtrar por classe energética via chips coloridos (A=verde… F=vermelho) com rótulo "Classe X"**, so that **a leitura é imediata e a cor reforça a eficiência**.
 8. As a **visitante do site**, I want to **ordenar a tabela apenas por Consumo, IDRS, BTU ou Classe**, so that **o menu de ordenação fica enxuto e relevante**.
 9. As a **visitante do site**, I want to **ver a tabela com colunas: Marca, Modelo, BTU/h, Consumo (kWh), IDRS, Classe (com "Classe A" colorido)**, so that **a informação é legível e padronizada**.
-10. As a **visitante do site**, I want to **navegar por páginas numeradas (1, 2, 3…) com 50 itens cada**, so that **posso ir direto à página desejada e a performance é previsível**.
-11. As a **visitante mobile**, I want to **ver os filtros empilhados acima da tabela**, so that **não preciso rolar horizontalmente e todos os filtros ficam acessíveis**.
-12. As a **visitante mobile**, I want to **usar a paginação numerada ou controles compactos**, so that **a navegação funciona bem em tela estreita**.
-13. As a **sistema (pipeline)**, I want to **excluir linhas com Status do Modelo = "Excluido" no build**, so that **a base servida não tem duplicatas e reflete apenas modelos válidos**.
+10. As a **visitante mobile**, I want to **ver os filtros empilhados acima da tabela**, so that **não preciso rolar horizontalmente e todos os filtros ficam acessíveis**.
+11. As a **sistema (pipeline)**, I want to **excluir linhas com Status do Modelo = "Excluido" no build**, so that **a base servida não tem duplicatas e reflete apenas modelos válidos**.
 14. As a **desenvolvedor**, I want to **remover campos obsoletos (rotacao, situacao, suspeito) do dataset de consulta**, so that **o `consulta.json` fica menor e a ilha carrega mais rápido**.
 
 ## Implementation Decisions
@@ -85,8 +83,7 @@ Redesign completo da página `/aparelhos/` com:
 - **ChipsClass**: Novo componente ou extensão de `Chips` que renderiza `button[data-classe="A"]` etc., com cor via CSS.
 - **Selects "Outras…"**: `<option value="" disabled hidden>Outras Marcas</option>` (placeholder visual vazio); opções só marcas/capacidades não-chip.
 - **Tabela**: Existente, usa `COLUNAS_TABELA` atualizada. Mobile já vira cards via CSS (`@media max-width: 40rem`).
-- **Paginação**: `<nav className="paginacao">` com botões numerados. Lógica: `totalPaginas = Math.ceil(resultados.length / 50)`. Mostra até 7 botões (1, ..., n-1, n, n+1, ..., último) com ellipsis; no mobile mostra anterior/atual/próximo ou scroll horizontal.
-- **Estado**: `paginacao` controla `paginaAtual` (1-based). `mostrados` derivado. Mudança de filtro/ordem reseta para página 1.
+- **Botão "Mostrar mais"**: Aparece quando há > 50 resultados; clique acrescenta 50 itens; desaparece quando todos visíveis. Lógica: `mostrados = paginacao.chave === chaveEstado ? paginacao.quantidade : 50`. Mudança de filtro/ordem reseta para 50 itens iniciais.
 
 ### Site — Estilos (apps/site/src/styles/global.css)
 - **Grid principal**: `.consulta-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }` + mobile breakpoint.
@@ -94,8 +91,7 @@ Redesign completo da página `/aparelhos/` com:
 - **Campo-chips**: `<fieldset>` com gap vertical; chips acima, select abaixo.
 - **Chips de classe**: `.chips.classes-chips button[aria-pressed="true"][data-classe="A"] { background: #16a34a; }` etc. (verde/azul/amarelo/laranja/vermelho).
 - **Select placeholder**: `.select-outras select:invalid { color: var(--texto-suave); }` + `option[value=""][disabled][hidden]`.
-- **Paginação**: `.paginacao { display: flex; gap: 0.25rem; justify-content: center; flex-wrap: wrap; }` + `.paginacao button.atual { background: var(--primaria); color: white; }`.
-- **Mobile paginação**: `@media (max-width: 40rem) { .paginacao { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.5rem; } }`
+- **Botão "Mostrar mais"**: `.mostrar-mais { display: block; width: 100%; max-width: 300px; margin: 1.5rem auto 0; padding: 0.75rem 1rem; }` + mobile `max-width: 100%`.
 
 ### Seams de Teste (existentes, reutilizados)
 1. **Pipeline**: `packages/pipeline/test/{parse,consulta,aparelho,group,validate,build}.test.ts` — golden snapshots de artefatos.
@@ -116,8 +112,8 @@ Redesign completo da página `/aparelhos/` com:
   - Clique em chip altera URL e filtra resultados.
   - Select "Outras…" altera URL e filtra.
   - Ordenação só mostra 4 opções; mudança atualiza URL e reordena.
-  - Paginação: botões 1,2,3… clicáveis; mudam linhas visíveis; reset ao mudar filtro.
-  - Mobile: layout empilhado (CSS), paginação funcional.
+  - **"Mostrar mais"**: botão aparece quando > 50 resultados; clique incrementa 50; some quando todos mostrados; reset ao mudar filtro/ordem.
+  - Mobile: layout empilhado (CSS), "Mostrar mais" funcional.
   - Busca no topo funciona.
   - "Limpar filtros" limpa só filtros, mantém ordenação.
 - **Build do site**: `pnpm build:site` gera páginas sem erro; `grep -r "rotacao|situacao" apps/site/dist` vazio.

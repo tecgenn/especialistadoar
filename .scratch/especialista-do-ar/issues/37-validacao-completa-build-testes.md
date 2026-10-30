@@ -2,7 +2,7 @@
 
 **What to build:** Execução da suíte completa de validação para garantir que toda a Fase 8 integra corretamente: pipeline build reproduz artefatos, API testes passam, site builda páginas estáticas, todos os testes Vitest verdes, typecheck e biome OK. Confirmação dos critérios de aceite da spec.
 
-**Blocked by:** 31 — Pipeline: Filtro "Excluído" e Remoção de Campos Obsoletos; 32 — API Isomórfica: Tipos, Filtros e Ordenação Atualizados; 33 — Site: Camada de Dados (filtros.json, opcoes.ts, tabela.ts, glue); 34 — Site: UI Filtros Redesign (Consulta.tsx); 35 — Site: Tabela e Paginação; 36 — Site: Estilos Globais (global.css)
+**Blocked by:** 31 — Pipeline: Filtro "Excluído" e Remoção de Campos Obsoletos; 32 — API Isomórfica: Tipos, Filtros e Ordenação Atualizados; 33 — Site: Camada de Dados (filtros.json, opcoes.ts, tabela.ts, glue); 34 — Site: UI Filtros Redesign (Consulta.tsx); 35 — Site: Tabela e "Mostrar mais"; 36 — Site: Estilos Globais (global.css)
 
 **Status:** ready-for-agent
 
@@ -20,8 +20,11 @@
   - [ ] Ordenação só mostra 4 opções (btu, consumo, idrs, classe)
   - [ ] Tabela tem 6 colunas: Marca, Modelo, BTU/h, Consumo (kWh), IDRS, Classe
   - [ ] Classe exibe "Classe A" etc. com cores na tabela e nos chips
-  - [ ] Paginação 1, 2, 3… funciona (desktop e mobile)
-  - [ ] Mobile: filtros empilhados, tabela em cards, paginação usável
+  - [ ] Botão "Mostrar mais" aparece quando > 50 resultados
+  - [ ] Clique carrega mais 50 itens (desktop e mobile)
+  - [ ] Botão desaparece quando todos resultados visíveis
+  - [ ] Mudança de filtro/ordem reseta para 50 iniciais
+  - [ ] Mobile: filtros empilhados, tabela em cards
   - [ ] "Limpar filtros" limpa só filtros, mantém ordenação
   - [ ] Duplicata GRATTO ACST9F resolvida (apenas versão Incluído)
   - [ ] `grep -r "rotacao|situacao|suspeito" apps/site/dist` vazio
