@@ -634,7 +634,16 @@ export default function Consulta({
                           {COLUNAS_TABELA.map((coluna) => {
                             const valor = valorDaColuna(item, coluna.campo);
                             return (
-                              <td key={coluna.campo} data-label={coluna.rotulo}>
+                              <td
+                                key={coluna.campo}
+                                data-label={coluna.rotulo}
+                                data-classe={
+                                  coluna.campo === "classe" &&
+                                  item.classes.length > 0
+                                    ? item.classes.join(" ")
+                                    : undefined
+                                }
+                              >
                                 {coluna.campo === "marca" && analise ? (
                                   <>
                                     {valor}

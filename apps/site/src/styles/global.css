@@ -262,6 +262,31 @@ footer {
   color: #fff;
 }
 
+/* Cores da coluna Classe na tabela (ticket 36): reusa as mesmas cores dos
+   chips de classe. `data-classe` pode trazer vários valores separados por
+   espaço; o seletor de atributo com ~ casa cada um como token. */
+.consulta .tabela-aparelhos td[data-classe~="A"] {
+  background: #16a34a;
+  color: #fff;
+}
+.consulta .tabela-aparelhos td[data-classe~="B"] {
+  background: #2563eb;
+  color: #fff;
+}
+.consulta .tabela-aparelhos td[data-classe~="C"] {
+  background: #ca8a04;
+  color: #fff;
+}
+.consulta .tabela-aparelhos td[data-classe~="D"] {
+  background: #ea580c;
+  color: #fff;
+}
+.consulta .tabela-aparelhos td[data-classe~="E"],
+.consulta .tabela-aparelhos td[data-classe~="F"] {
+  background: #dc2626;
+  color: #fff;
+}
+
 .resultados {
   list-style: none;
   margin: 0;

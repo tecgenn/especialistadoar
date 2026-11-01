@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`) e **35** (`site-ui-tabela-paginacao`) concluídos. Próximo: **36** (`site-estilos-global.css`), sem bloqueio. Restam 36 → 37 (estilos globais → validação completa).
+**Fase 8 concluída** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`) e **36** (`site-estilos-global.css`) concluídos. Próximo: **37** (`validacao-completa-build-testes`), sem bloqueio. Resta 37 (validação completa da Fase 8).
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -256,3 +256,11 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** tabela com 6 colunas e Classe formatada com cor; botão "Mostrar mais" aparece > 50 resultados, acrescenta 50 por clique, desaparece quando todos visíveis, e reseta para 50 ao mudar filtro/ordem. Paginação numerada substituída por "Mostrar mais" (escopo do ticket 35). Sem artefatos novos — tudo já estava em `data/build`/`reports`.
 - **Ticket:** #35 (local tracker: `35-site-ui-tabela-paginacao`)
 - **Checks:** Vitest 349/349 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` (2229 páginas) verdes.
+
+### 36 — Site: Estilos Globais (global.css) (2026-10-31)
+
+- **Changed:** `apps/site/src/styles/global.css` (cores da coluna Classe na tabela: `td[data-classe~="A"]` a `td[data-classe~="F"]` com as mesmas cores dos chips — A=#16a34a, B=#2563eb, C=#ca8a04, D=#ea580c, E/F=#dc2626, `color: #fff`; `data-classe` pode trazer vários valores separados por espaço, o seletor `~=` casa cada um como token); `apps/site/src/components/Consulta.tsx` (`data-classe` no `<td>` da coluna Classe, preenchido com `item.classes.join(" ")` quando houver classe). Os demais itens do checklist (#36) já estavam implementados no ticket 34 (`.consulta-layout` grid 280px/1fr + mobile `1fr`, `.filtros-sidebar` sticky, `.campo-chips` flex-coluna, selects "Outras…", cores dos chips de classe, `.mostrar-mais` centralizado com foco e mobile).
+- **What works:** a coluna Classe da tabela `/aparelhos/` pinta cada célula com a cor da classe energética (verde/azul/amarelo/laranja/vermelho), reusando as mesmas cores dos chips de classe. `pnpm build:site` gera 2229 páginas sem erros. Sem regressão em `data/build`/`reports`.
+- **Ticket:** #36 (local tracker: `36-site-estilos-global.css`)
+- **Checks:** Vitest 349/349 (workspace), tsc --noEmit OK, biome check OK, `pnpm build:site` (2229 páginas) verde.
+
