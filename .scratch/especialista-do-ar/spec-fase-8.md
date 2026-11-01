@@ -10,6 +10,9 @@ A interface atual de filtros e tabela na página `/aparelhos/` apresenta problem
 4. **Tabela pouco legível**: "Consumo (kWh/ano)" verboso; "Classe" mostra só a letra (A, B) sem cor, dificultando leitura rápida.
 5. **Botão "Mostrar mais"**: Carrega incrementalmente (50 itens por clique); mantido como solução de navegação simples e performática.
 6. **Mobile**: Filtros ficam em grid horizontal, exigindo scroll; tabela vira cards (ok).
+7. **IDRS corrompido na origem**: a exportação às vezes perde a vírgula decimal do IDRS (55, 62, 33), e esses valores entram como válidos na tabela e na ordenação.
+8. **Aproveitamento de tela e hierarquia**: o teto global de 64 rem espreme a tabela de 6 colunas; a barra de 280 px e os campos pequenos deixam a consulta deselegante no desktop e no celular.
+9. **Estado inicial vazio**: quem abre `/aparelhos/` cai em 2.227 aparelhos sem o recorte mais comum (Split Hi-Wall, 220 V, Classe A), que corresponde a 1.152.
 
 ## Solution
 
@@ -29,6 +32,9 @@ Redesign completo da página `/aparelhos/` com:
 12. **Tabela**: Colunas — Marca, Modelo, BTU/h, **Consumo (kWh)**, IDRS, **Classe** (exibe "Classe A", "Classe B"… com cores).
 13. **Botão "Mostrar mais"**: Carrega 50 itens por clique, sem paginação numerada; reset ao mudar filtro/ordem.
 14. **Mobile**: Filtros empilhados acima da tabela; botão "Mostrar mais" funcional.
+15. **IDRS**: Regra de formato por coluna restaura o ponto decimal ausente (55 → 5,5) e regra de plausibilidade com teto 10 sinaliza o que escapar; 9,71 segue válido.
+16. **Filtros padrão**: Split Hi-Wall, 220 V e Classe A como estado inicial implícito, com URL limpa; "Limpar filtros" volta ao padrão.
+17. **Layout amplo**: `/aparelhos/` ocupa a largura útil da tela, com barra de filtros mais larga, painel recolhível no celular e tabela mais legível.
 
 ## User Stories
 
@@ -44,6 +50,9 @@ Redesign completo da página `/aparelhos/` com:
 10. As a **visitante mobile**, I want to **ver os filtros empilhados acima da tabela**, so that **não preciso rolar horizontalmente e todos os filtros ficam acessíveis**.
 11. As a **sistema (pipeline)**, I want to **excluir linhas com Status do Modelo = "Excluido" no build**, so that **a base servida não tem duplicatas e reflete apenas modelos válidos**.
 14. As a **desenvolvedor**, I want to **remover campos obsoletos (rotacao, situacao, suspeito) do dataset de consulta**, so that **o `consulta.json` fica menor e a ilha carrega mais rápido**.
+15. As a **visitante do site**, I want to **ver o IDRS como 5,5 e não 55**, so that **o índice de eficiência seja legível e ordene corretamente**.
+16. As a **visitante do site**, I want to **abrir a página com o recorte mais comum já aplicado**, so that **a primeira lista seja útil sem cliques extras**.
+17. As a **visitante do site**, I want to **usar a largura útil da tela no desktop e recolher os filtros no celular**, so that **a tabela seja confortável de ler em qualquer tela**.
 
 ## Implementation Decisions
 
@@ -52,6 +61,7 @@ Redesign completo da página `/aparelhos/` com:
 - **Remoção de campos**: `rotacao`, `situacao`, `suspeito` removidos de `ItemConsulta` (consulta.ts), `Aparelho` e `DadosDeclarados` (aparelho.ts), e da derivação em `group.ts`.
 - **Schema/Validação**: `validate.ts` e `schema.json` derivado atualizados para refletir tipos novos.
 - **Tipos exportados**: `packages/pipeline/src/index.ts` exporta contratos atualizados.
+- **IDRS sem separador**: `normalize.ts` ganha leitura específica da coluna IDRS. Inteiro sem `.`/`,` acima de 10 é lido com o ponto após o primeiro dígito (55→5.5, 62→6.2, 33→3.3); decimais legítimos (`9.71`, `6.20`, `3,50`) passam intactos. `anomalias.ts` usa a mesma leitura e ganha a regra `{ campo: IDRS, maximo: 10 }`; o que a regra de formato corrigiu não vira sinal. Nenhuma Exceção manual nova: é formato, não conteúdo (ADR-0017).
 
 ### API Isomórfica (packages/api)
 - **FiltrosConsulta**: Remove `rotacao`, `situacao`. Mantém `marca`, `tipo`, `btu`, `tensao`, `funcao`, `classe`, `q`, `ordem`, `dir`.
@@ -84,6 +94,8 @@ Redesign completo da página `/aparelhos/` com:
 - **Selects "Outras…"**: `<option value="" disabled hidden>Outras Marcas</option>` (placeholder visual vazio); opções só marcas/capacidades não-chip.
 - **Tabela**: Existente, usa `COLUNAS_TABELA` atualizada. Mobile já vira cards via CSS (`@media max-width: 40rem`).
 - **Botão "Mostrar mais"**: Aparece quando há > 50 resultados; clique acrescenta 50 itens; desaparece quando todos visíveis. Lógica: `mostrados = paginacao.chave === chaveEstado ? paginacao.quantidade : 50`. Mudança de filtro/ordem reseta para 50 itens iniciais.
+- **Filtros padrão**: constante `FILTROS_PADRAO = { tipo: "Split Hi-Wall", tensao: 220, classe: "A" }`. `lerEstado` devolve o padrão quando a URL não traz nenhum filtro; `escreverEstado` omite valores iguais ao padrão (URL limpa). `temFiltroAtivo` passa a significar "difere do padrão" e `limpar` volta ao padrão mantendo a ordenação.
+- **Layout amplo e responsivo**: `Base.astro` aceita a variante `ampla`; `/aparelhos/` usa essa variante para remover o teto de 64 rem de header/main/footer. Sidebar `clamp(300px, 22vw, 360px)`, controles com largura total e espaçamento maior. Abaixo de 64 rem os filtros viram painel recolhível acima dos resultados; abaixo de 40 rem a tabela segue em cartões.
 
 ### Site — Estilos (apps/site/src/styles/global.css)
 - **Grid principal**: `.consulta-layout { display: grid; grid-template-columns: 280px 1fr; gap: 2rem; }` + mobile breakpoint.
@@ -117,6 +129,9 @@ Redesign completo da página `/aparelhos/` com:
   - Busca no topo funciona.
   - "Limpar filtros" limpa só filtros, mantém ordenação.
 - **Build do site**: `pnpm build:site` gera páginas sem erro; `grep -r "rotacao|situacao" apps/site/dist` vazio.
+- **IDRS**: `normalize.test.ts` cobre 55→5.5, 62→6.2, 33→3.3, 9.71→9.71, 6.20→6.2 e 3,50→3.5; `anomalias.test.ts` confirma que a regra de formato não gera sinal e que um decimal > 10 sinaliza; `build.test.ts` confirma os 4 registros reais.
+- **Filtros padrão**: `estado.test.ts` cobre URL vazia → padrão, URL com filtro próprio sem injeção do padrão e escrita que omite o padrão; `consulta.test.tsx` cobre a primeira carga, o retorno ao padrão em "Limpar filtros" e o botão só visível fora do padrão.
+- **Layout**: `analises-build.test.ts`/`consulta.test.tsx` confirmam a variante ampla em `/aparelhos/` e o painel de filtros no mobile.
 
 ## Out of Scope
 
@@ -133,5 +148,8 @@ Redesign completo da página `/aparelhos/` com:
 - **Contagem de Aparelhos**: Atual 2.460. Após filtro "Excluído", estimativa ~2.200–2.300 (baseado em ~500 linhas Excluido, mas algumas compartilham identidade com Incluido).
 - **URLs existentes**: Parâmetros `?rotacao=...` e `?situacao=...` em links antigos serão ignorados graciosamente (`filtroDeTexto` retorna `undefined` para vazio/desconhecido).
 - **Curadoria `filtros.json`**: Entrada `classes` é nova e obrigatória no build do site (validada em `index.astro` via `carregarFiltros()`).
-- **ADRs respeitados**: ADR-0008 (consulta isomórfica no cliente), ADR-0016 (Marca de catálogo), ADR-0018 (Classe por Variante, não recalculada).
-- **Ordem de implementação recomendada**: Pipeline → API → Site (dados) → Site (UI) → Testes → Validação completa.
+- **ADRs respeitados**: ADR-0008 (consulta isomórfica no cliente), ADR-0016 (Marca de catálogo), ADR-0017 (formato por regra, conteúdo por Exceção manual), ADR-0018 (Classe por Variante, não recalculada).
+- **Valores corrigidos**: 4 registros hoje exibem 55/62/33/55 (`ap-d328f750e73e`, `ap-8976ca4b3a7e`, `ap-2fac590865fe`, `ap-c827d71a3eb6`); passam a 5,5/6,2/3,3/5,5. O 9,71 permanece, dentro do teto 10.
+- **Impacto dos padrões**: 1.152 de 2.227 aparelhos casam com Split Hi-Wall + 220 V + Classe A.
+- **Artefatos**: `data/build`, `reports` e `apps/site/dist` devem ser regenerados e commitados; `data/build`/`reports` precisam bater byte a byte com `pnpm build`.
+- **Ordem de implementação recomendada**: Pipeline (IDRS) → Site (padrões) → Site (layout) → Testes → Validação completa.

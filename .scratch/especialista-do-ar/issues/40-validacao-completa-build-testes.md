@@ -1,8 +1,8 @@
-# 37 — Validação Completa: Build, Testes, Typecheck, Lint
+# 40 — Validação Completa: Build, Testes, Typecheck, Lint
 
-**What to build:** Execução da suíte completa de validação para garantir que toda a Fase 8 integra corretamente: pipeline build reproduz artefatos, API testes passam, site builda páginas estáticas, todos os testes Vitest verdes, typecheck e biome OK. Confirmação dos critérios de aceite da spec.
+**What to build:** Execução da suíte completa de validação para garantir que toda a Fase 8 integra corretamente: pipeline build reproduz artefatos, API testes passam, site builda páginas estáticas, todos os testes Vitest verdes, typecheck e biome OK. Confirmação dos critérios de aceite da spec, incluindo a correção do IDRS, os filtros padrão e o layout amplo.
 
-**Blocked by:** 31 — Pipeline: Filtro "Excluído" e Remoção de Campos Obsoletos; 32 — API Isomórfica: Tipos, Filtros e Ordenação Atualizados; 33 — Site: Camada de Dados (filtros.json, opcoes.ts, tabela.ts, glue); 34 — Site: UI Filtros Redesign (Consulta.tsx); 35 — Site: Tabela e "Mostrar mais"; 36 — Site: Estilos Globais (global.css)
+**Blocked by:** 37 — IDRS: Restaurar Separador Decimal e Limitar a 10; 38 — Site: /aparelhos/ com Filtros Padrão; 39 — Site: /aparelhos/ em Layout Amplo e Responsivo
 
 **Status:** ready-for-agent
 
@@ -24,9 +24,14 @@
   - [ ] Clique carrega mais 50 itens (desktop e mobile)
   - [ ] Botão desaparece quando todos resultados visíveis
   - [ ] Mudança de filtro/ordem reseta para 50 iniciais
-  - [ ] Mobile: filtros empilhados, tabela em cards
+  - [ ] Mobile: filtros recolhíveis, tabela em cards
   - [ ] "Limpar filtros" limpa só filtros, mantém ordenação
   - [ ] Duplicata GRATTO ACST9F resolvida (apenas versão Incluído)
+  - [ ] IDRS: os 4 registros exibem 5,5 / 6,2 / 3,3; o 9,71 permanece; a regra de formato não cria Anomalia nova
+  - [ ] `/aparelhos/` abre com Split Hi-Wall + 220 V + Classe A e URL limpa
+  - [ ] Link com filtro próprio não recebe o padrão
+  - [ ] `/aparelhos/` usa a largura útil; as demais páginas mantêm o teto de 64 rem
+  - [ ] ≤ 64 rem: filtros em painel recolhível
   - [ ] `grep -r "rotacao|situacao|suspeito" apps/site/dist` vazio
   - [ ] `grep -r "rotacao|situacao" packages/api/dist` vazio (se houver dist)
 - [ ] Commit com artefatos regenerados (`data/build`, `reports`, `apps/site/dist`)

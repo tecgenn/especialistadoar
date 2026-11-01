@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 concluída** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`) e **36** (`site-estilos-global.css`) concluídos. Próximo: **37** (`validacao-completa-build-testes`), sem bloqueio. Resta 37 (validação completa da Fase 8).
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`) e **36** (`site-estilos-global.css`) concluídos. Próximos, sem bloqueio: **37** (`idrs-separador-decimal`) e **38** (`site-filtros-padrao`); depois **39** (`site-layout-amplo`), e **40** (`validacao-completa-build-testes`) como portão final.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver

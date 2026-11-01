@@ -136,14 +136,20 @@ nova exportação CSV
   `1.000,50` = 1000.5), vírgula é decimal, e a parte inteira `0` nunca é milhar
   (`0.351` = 0.351). O formato en-US (milhar com vírgula) não é suportado:
   `1,000.50` vira `null`, mas `1,000` continua sendo lido como `1` (o
-  comportamento anterior à regra).
+  comportamento anterior à regra). A coluna **IDRS** tem leitura própria: quando
+  vem um inteiro sem separador (a exportação perdeu a vírgula), o ponto decimal é
+  recolocado após o primeiro dígito (`55` → `5,5`, `62` → `6,2`, `33` → `3,3`);
+  decimais legítimos passam intactos. É regra de formato aplicada a toda Versão,
+  não Exceção manual (ADR-0017).
 - **anomalias** — sinaliza valores fora do padrão (não-numérico em campo numérico,
   colunas desalinhadas) e valores numericamente válidos, mas implausíveis para a
   coluna, por uma tabela de regras de plausibilidade (`valor_implausivel`). A regra
   pode normalizar o valor pela capacidade da Linha (consumo anual por 1.000 BTU/h,
   faixa 10–120); o valor original é preservado, não corrigido. A detecção roda
-  depois das Exceções, então uma capacidade corrigida não vira Anomalia. A Anomalia
-  **nunca exclui** o Aparelho (ADR-0017); o sinal fica só em `anomalias.jsonl`.
+  depois das Exceções, então uma capacidade corrigida não vira Anomalia. O **IDRS**
+  entra na tabela com teto de `10` Wh/Wh, lido pela mesma regra de formato da
+  coluna — o que a regra já corrigiu não vira Anomalia. A Anomalia **nunca exclui**
+  o Aparelho (ADR-0017); o sinal fica só em `anomalias.jsonl`.
 - **excecoes** — lê e valida a Exceção manual; aplica-a sobre o Valor original
   *antes* da normalização; recusa correção só-de-formato, campo inexistente e
   exceção órfã (que não casa com nenhuma Linha desta Versão da tabela).
@@ -202,7 +208,12 @@ nova exportação CSV
   por Aparelho, cabeçalhos `<button>` com `aria-sort`, ordenação por `ordenar` do
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
-  botão ao lado de "Ordenar por" inverte a direção. A ordem padrão é A–Z por Marca de catálogo e
+  botão ao lado de "Ordenar por" inverte a direção. A página usa a variante
+  **ampla** do layout (sem o teto de 64 rem das páginas de leitura), com a barra de
+  filtros mais larga; no celular, os filtros ficam num painel recolhível. Ao abrir
+  sem querystring, os **filtros padrão** — Tipo Split Hi-Wall, Tensão 220 V e
+  Classe A — valem como estado inicial sem sujar a URL; "Limpar filtros" volta a
+  eles. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
   (ticket 29): texto curto,
   Análises em destaque e o botão "Ver todos os aparelhos"; os links antigos

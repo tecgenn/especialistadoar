@@ -48,6 +48,10 @@ _Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de 
 Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
 _Avoid_: Artigo, ranking, lista
 
+**IDRS**:
+Índice de Desempenho de Refrigeração Sazonal: a razão entre o calor removido e a energia elétrica consumida (Wh/Wh) que o INMETRO declara para uma Variante. É sempre o Valor oficial e nunca é recalculado a partir da Classe.
+_Avoid_: Eficiência, COP, nota (são conceitos diferentes)
+
 **Classe**:
 Faixa de classificação de eficiência (A a F) que o INMETRO declara para uma Linha da tabela, lida da coluna oficial "Faixa de Classificação". É sempre o valor oficial: nunca é recalculada a partir do IDRS, porque classe e IDRS não andam juntos entre tipos de aparelho.
 _Avoid_: Nota, faixa, selo
