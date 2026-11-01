@@ -621,3 +621,34 @@ footer {
     font-size: 0.8rem;
   }
 }
+
+/* Botão "Mostrar mais" (ticket 35): centralizado, largura máxima no desktop, full-width no mobile. */
+.consulta .mostrar-mais {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 1.5rem auto 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  color: var(--texto);
+  cursor: pointer;
+}
+
+.consulta .mostrar-mais:hover {
+  background: var(--fundo);
+  border-color: var(--primaria);
+}
+
+.consulta .mostrar-mais:focus {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+@media (max-width: 40rem) {
+  .consulta .mostrar-mais {
+    max-width: 100%;
+  }
+}

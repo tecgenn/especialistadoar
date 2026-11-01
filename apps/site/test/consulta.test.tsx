@@ -508,7 +508,7 @@ describe("ordenação da tabela", () => {
   });
 });
 
-describe("paginação", () => {
+describe("'Mostrar mais'", () => {
   it("mostra 50 linhas e 'Mostrar mais' acrescenta 50", async () => {
     const muitos: ItemConsulta[] = Array.from({ length: 60 }, (_, indice) => ({
       ...(itens[0] as ItemConsulta),
