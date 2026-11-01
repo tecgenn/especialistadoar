@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`) e **34** (`site-ui-filtros-redesign-consulta`) concluídos. Próximo: **35** (`site-ui-tabela-paginacao`), sem bloqueio. Restam 35 → 36 → 37 (tabela/paginação numerada → estilos globais → validação completa).
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`) e **35** (`site-ui-tabela-paginacao`) concluídos. Próximo: **36** (`site-estilos-global.css`), sem bloqueio. Restam 36 → 37 (estilos globais → validação completa).
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -249,3 +249,10 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** desktop = sidebar de filtros sticky (280px) à esquerda + resultados à direita; mobile (≤64rem) empilhado. Ordem dos filtros: Busca → Marca → Capacidade → Função → Tipo → Classe → Tensão → Ordenar → Limpar filtros. Chips com `aria-pressed` (um valor por vez); selects "Outras…" só listam valores fora dos chips, sem "Todas"; select "Outras Classes" só aparece se `classes` não-curadas não-vazio. Cor de classe via CSS custom property curada ou fallback por `data-classe`. "Limpar filtros" limpa só filtros e mantém ordenação. Mudar filtro/ordem reseta "Mostrar mais" para 50. `pnpm test` (350/350), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm build:site` (2229 páginas) todos verdes.
 - **Ticket:** #34 (local tracker: `34-site-ui-filtros-redesign-consulta`)
 - **Checks:** Vitest site 148/148 (workspace 350/350), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` verdes, `data/build`+`reports` reproduzidos byte a byte.
+
+### 35 — Site: Tabela e "Mostrar mais" (2026-10-31)
+
+- **Changed:** `.scratch/especialista-do-ar/issues/35-site-ui-tabela-paginacao.md` (`Status: done`). Escopo já implementado nos commits 27, 33 e 34: `apps/site/src/lib/tabela.ts` (`COLUNAS_TABELA` com 6 colunas: Marca, Modelo, BTU/h, Consumo (kWh), IDRS, Classe; `valorDaColuna(classe)` retorna `"Classe A, Classe B"`); `apps/site/src/components/Consulta.tsx` (estado `paginacao`, botão "Mostrar mais" `TAMANHO_PAGINA = 50`, reset ao mudar filtro/ordem via `chaveEstado`); `apps/site/src/styles/global.css` (`.mostrar-mais` centralizado); testes `apps/site/test/consulta.test.tsx` (`describe "'Mostrar mais'"`) e `apps/site/test/tabela.test.ts`.
+- **What works:** tabela com 6 colunas e Classe formatada com cor; botão "Mostrar mais" aparece > 50 resultados, acrescenta 50 por clique, desaparece quando todos visíveis, e reseta para 50 ao mudar filtro/ordem. Paginação numerada substituída por "Mostrar mais" (escopo do ticket 35). Sem artefatos novos — tudo já estava em `data/build`/`reports`.
+- **Ticket:** #35 (local tracker: `35-site-ui-tabela-paginacao`)
+- **Checks:** Vitest 349/349 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` (2229 páginas) verdes.
