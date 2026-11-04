@@ -157,8 +157,16 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
   );
 }
 
+/**
+ * Um link que desliga explicitamente os filtros padrão (ticket 38): a URL sem
+ * chaves de filtro aplicaria Split Hi-Wall + 220 V + Classe A. Os testes que
+ * exercitam a tabela inteira partem daqui.
+ */
+const TODOS = "/?tipo=&tensao=&classe=";
+
 /** Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando"). */
-async function montar(entrada?: FiltrosCurados) {
+async function montar(entrada?: FiltrosCurados, url = TODOS) {
+  window.history.replaceState(null, "", url);
   render(<Consulta opcoes={opcoesDe(itens, entrada)} />);
   await screen.findByText(/aparelho\(s\) com Dados declarados/);
 }
@@ -327,16 +335,18 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(screen.getByText("G-Top Inverter")).toBeDefined();
   });
 
-  it("só mostra 'Limpar filtros' com um filtro ativo", async () => {
-    await montar();
+  it("só mostra 'Limpar filtros' fora do padrão", async () => {
+    await montar(undefined, "/");
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
     fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "LG" },
     });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect(
       screen.getByRole("button", { name: "Limpar filtros" }),
     ).toBeDefined();
     fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
   });
 
@@ -413,7 +423,7 @@ describe("ordenação da tabela", () => {
   });
 
   it("restaura a ordem da URL ao abrir o link", async () => {
-    window.history.replaceState(null, "", "/?ordem=idrs&dir=desc");
+    window.history.replaceState(null, "", `${TODOS}&ordem=idrs&dir=desc`);
     render(<Consulta opcoes={opcoesDe(itens)} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
 
@@ -489,22 +499,31 @@ describe("ordenação da tabela", () => {
     ).toBeDefined();
   });
 
-  it("'Limpar filtros' limpa os filtros e mantém a ordenação", async () => {
-    await montar();
+  it("'Limpar filtros' volta ao padrão e mantém a ordenação", async () => {
+    await montar(curadoria);
     fireEvent.change(screen.getByLabelText("Ordenar por"), {
       target: { value: "consumo" },
     });
-    fireEvent.change(screen.getByLabelText("Outras marcas"), {
-      target: { value: "LG" },
-    });
+    fireEvent.click(screen.getByRole("button", { name: "LG" }));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
 
     fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
 
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
     const busca = new URLSearchParams(window.location.search);
     expect(busca.get("marca")).toBeNull();
+    expect(busca.get("tipo")).toBeNull();
+    expect(busca.get("tensao")).toBeNull();
+    expect(busca.get("classe")).toBeNull();
     expect(busca.get("ordem")).toBe("consumo");
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("220");
+    expect(
+      screen
+        .getByRole("button", { name: "Classe A" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
   });
 });
 
@@ -523,6 +542,89 @@ describe("'Mostrar mais'", () => {
     fireEvent.click(screen.getByRole("button", { name: "Mostrar mais" }));
     expect(screen.getAllByRole("link")).toHaveLength(60);
     expect(screen.queryByRole("button", { name: "Mostrar mais" })).toBeNull();
+  });
+});
+
+describe("filtros padrão (ticket 38)", () => {
+  it("aplica Split Hi-Wall, 220 V e Classe A na carga limpa, com URL limpa", async () => {
+    await montar(curadoria, "/");
+
+    expect(
+      screen.getByText("3 aparelho(s) com Dados declarados."),
+    ).toBeDefined();
+    expect(modelosVisiveis()).toEqual([
+      "Dual Inverter",
+      "Springer Inverter",
+      "Xtreme Save",
+    ]);
+    expect(window.location.search).toBe("");
+    expect(
+      screen
+        .getByRole("button", { name: "Split Hi-Wall" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      screen
+        .getByRole("button", { name: "Classe A" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("220");
+    expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
+  });
+
+  it("não sobrepõe o padrão a um link com filtro próprio", async () => {
+    await montar(curadoria, "/?marca=LG");
+
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+    // O link traz só a marca: nada de Split Hi-Wall + 220 V + Classe A por cima.
+    expect(screen.getAllByText("Janela").length).toBeGreaterThan(0);
+    expect(
+      screen
+        .getByRole("button", { name: "Split Hi-Wall" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      screen
+        .getByRole("button", { name: "Classe A" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("");
+    expect(
+      screen.getByRole("button", { name: "Limpar filtros" }),
+    ).toBeDefined();
+  });
+
+  it("compartilha o estado sem filtros quando a pessoa desliga o padrão", async () => {
+    await montar(curadoria, "/");
+    fireEvent.click(screen.getByRole("button", { name: "Classe A" }));
+    fireEvent.click(screen.getByRole("button", { name: "Split Hi-Wall" }));
+    fireEvent.change(screen.getByLabelText("Tensão (V)"), {
+      target: { value: "" },
+    });
+
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    expect(window.location.search).toBe("?tipo=&tensao=&classe=");
+    expect(
+      screen.getByRole("button", { name: "Limpar filtros" }),
+    ).toBeDefined();
+
+    // O link reconstrói o mesmo estado, sem o padrão voltar por cima.
+    cleanup();
+    render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    expect(
+      screen
+        .getByRole("button", { name: "Classe A" })
+        .getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("");
   });
 });
 
@@ -597,7 +699,11 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
     expect(pressionado("Midea")).toBe("false");
     expect(new URLSearchParams(window.location.search).get("marca")).toBeNull();
-    expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
+    // A base do teste é "todos os aparelhos", que difere do padrão — o botão
+    // continua à mão para voltar ao recorte inicial.
+    expect(
+      screen.getByRole("button", { name: "Limpar filtros" }),
+    ).toBeDefined();
   });
 
   it("escolher no select desliga o chip (um valor de marca por vez)", async () => {
@@ -708,6 +814,7 @@ describe("Aparelhos analisados (ticket 28)", () => {
   ]);
 
   async function montarComAnalisados() {
+    window.history.replaceState(null, "", TODOS);
     render(<Consulta opcoes={opcoesDe(itens)} analisados={analisadosMap} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
   }

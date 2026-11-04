@@ -4,11 +4,11 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Carga limpa aplica o padrão e mostra 1.152 de 2.227 aparelhos na Versão atual, com URL sem parâmetros
-- [ ] Link com filtro próprio (ex.: `?marca=LG`) não recebe o padrão
-- [ ] "Limpar filtros" retorna ao padrão e mantém a ordenação
-- [ ] O botão "Limpar filtros" só aparece fora do padrão
-- [ ] Estado segue compartilhável; o padrão não aparece na URL
-- [ ] Testes de estado e da ilha verdes
+- [x] Carga limpa aplica o padrão e mostra 1.152 de 2.227 aparelhos na Versão atual, com URL sem parâmetros
+- [x] Link com filtro próprio (ex.: `?marca=LG`) não recebe o padrão
+- [x] "Limpar filtros" retorna ao padrão e mantém a ordenação
+- [x] O botão "Limpar filtros" só aparece fora do padrão
+- [x] Estado segue compartilhável; o padrão não aparece na URL
+- [x] Testes de estado e da ilha verdes

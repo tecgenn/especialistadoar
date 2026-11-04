@@ -9,7 +9,36 @@ import {
  * isomórfico (ticket 08) aplica. Aqui só convertemos entre esse estado e a
  * querystring, para o resultado ficar na URL (`?marca=&tipo=&btu=&tensao=&q=`)
  * e ser compartilhável/favoritável (ADR-0008). Puro, sem DOM.
+ *
+ * **Filtros padrão (ticket 38).** Abrir `/aparelhos/` sem nenhum filtro na URL
+ * aplica o recorte mais comum — Tipo Split Hi-Wall, Tensão 220 V e Classe A —
+ * sem sujar a URL. O padrão é implícito: uma URL que traga **qualquer** chave de
+ * filtro é o estado completo, e o padrão **não** é somado por cima (um link com
+ * filtro próprio é respeitado). Para representar "nenhum filtro" — a pessoa
+ * desligou os três do padrão —, `escreverEstado` grava as chaves do padrão
+ * vazias; a presença da chave desliga o padrão na leitura e o estado continua
+ * compartilhável.
  */
+
+/** O recorte inicial de `/aparelhos/`, aplicado quando a URL não traz filtro. */
+export const FILTROS_PADRAO: FiltrosConsulta = {
+  tipo: "Split Hi-Wall",
+  tensao: 220,
+  classe: "A",
+};
+
+/** As chaves que são filtro; a ordenação não conta como filtro. */
+const CAMPOS_DE_FILTRO = [
+  "marca",
+  "tipo",
+  "btu",
+  "tensao",
+  "funcao",
+  "classe",
+  "q",
+] as const;
+
+type CampoDeFiltro = (typeof CAMPOS_DE_FILTRO)[number];
 
 /** Um parâmetro textual em branco é ausência de filtro. */
 function texto(valor: string | null): string | undefined {
@@ -36,8 +65,40 @@ function opcao<T extends string>(
   return permitidos.find((permitido) => permitido === limpo);
 }
 
-/** Lê o estado da consulta de uma querystring; entradas vazias ou inválidas caem fora. */
-export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
+/**
+ * A forma normalizada de um valor de filtro. Texto é aparado e comparado sem
+ * caixa; `undefined` e branco contam como ausência.
+ */
+function valorNormalizado(valor: FiltrosConsulta[CampoDeFiltro]): string {
+  if (valor === undefined) {
+    return "";
+  }
+  return typeof valor === "number" ? String(valor) : valor.trim().toLowerCase();
+}
+
+/** A impressão digital dos filtros, ignorando a ordenação. */
+function chaveDosFiltros(estado: FiltrosConsulta): string {
+  return CAMPOS_DE_FILTRO.map((campo) => valorNormalizado(estado[campo])).join(
+    "\u0000",
+  );
+}
+
+function igualAoPadrao(estado: FiltrosConsulta): boolean {
+  return chaveDosFiltros(estado) === chaveDosFiltros(FILTROS_PADRAO);
+}
+
+function semFiltros(estado: FiltrosConsulta): boolean {
+  return CAMPOS_DE_FILTRO.every(
+    (campo) => valorNormalizado(estado[campo]) === "",
+  );
+}
+
+/** "Limpar filtros" só aparece quando o estado difere do padrão. */
+export function temFiltroAtivo(estado: FiltrosConsulta): boolean {
+  return !igualAoPadrao(estado);
+}
+
+function lerFiltros(busca: URLSearchParams): FiltrosConsulta {
   // A marca é comparada sem diferenciar caixa pelo motor de consulta; normalizar
   // aqui mantém o mesmo valor canônico no chip, no `<select>` e na URL (um
   // `?marca=midea` acende o chip "Midea" e não cria uma opção duplicada).
@@ -48,8 +109,6 @@ export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
   const funcao = texto(busca.get("funcao"));
   const classe = texto(busca.get("classe"))?.toUpperCase();
   const q = texto(busca.get("q"));
-  const ordem = opcao(busca.get("ordem"), ORDENS_CONSULTA);
-  const dir = opcao(busca.get("dir"), DIRECOES_CONSULTA);
   return {
     ...(marca === undefined ? {} : { marca }),
     ...(tipo === undefined ? {} : { tipo }),
@@ -58,14 +117,33 @@ export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
     ...(funcao === undefined ? {} : { funcao }),
     ...(classe === undefined ? {} : { classe }),
     ...(q === undefined ? {} : { q }),
+  };
+}
+
+function lerOrdenacao(busca: URLSearchParams): FiltrosConsulta {
+  const ordem = opcao(busca.get("ordem"), ORDENS_CONSULTA);
+  const dir = opcao(busca.get("dir"), DIRECOES_CONSULTA);
+  return {
     ...(ordem === undefined ? {} : { ordem }),
     ...(dir === undefined ? {} : { dir }),
   };
 }
 
-/** Serializa o estado em parâmetros, omitindo os filtros ausentes. */
-export function escreverEstado(estado: FiltrosConsulta): URLSearchParams {
-  const busca = new URLSearchParams();
+/**
+ * Lê o estado da consulta de uma querystring. Sem nenhuma chave de filtro, o
+ * padrão entra como estado inicial; a ordenação é lida em qualquer caso.
+ */
+export function lerEstado(busca: URLSearchParams): FiltrosConsulta {
+  const ordenacao = lerOrdenacao(busca);
+  const trazFiltro = CAMPOS_DE_FILTRO.some((campo) => busca.has(campo));
+  const filtros = trazFiltro ? lerFiltros(busca) : FILTROS_PADRAO;
+  return { ...filtros, ...ordenacao };
+}
+
+function escreverFiltros(
+  busca: URLSearchParams,
+  estado: FiltrosConsulta,
+): void {
   if (estado.marca !== undefined && estado.marca.trim() !== "") {
     busca.set("marca", estado.marca.trim());
   }
@@ -87,6 +165,26 @@ export function escreverEstado(estado: FiltrosConsulta): URLSearchParams {
   if (estado.q !== undefined && estado.q.trim() !== "") {
     busca.set("q", estado.q.trim());
   }
+}
+
+/**
+ * Serializa o estado em parâmetros. O padrão exato fica fora da URL; qualquer
+ * outro estado vai completo, para a URL sozinha reconstruí-lo. O estado sem
+ * filtros grava as chaves do padrão vazias, que o distinguem da URL limpa.
+ */
+export function escreverEstado(estado: FiltrosConsulta): URLSearchParams {
+  const busca = new URLSearchParams();
+
+  if (!igualAoPadrao(estado)) {
+    if (semFiltros(estado)) {
+      for (const campo of Object.keys(FILTROS_PADRAO) as CampoDeFiltro[]) {
+        busca.set(campo, "");
+      }
+    } else {
+      escreverFiltros(busca, estado);
+    }
+  }
+
   if (estado.ordem !== undefined) {
     busca.set("ordem", estado.ordem);
   }

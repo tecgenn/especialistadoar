@@ -8,7 +8,12 @@ import {
   ordenar,
 } from "@especialista-do-ar/api/consulta";
 import { useCallback, useEffect, useState } from "react";
-import { escreverEstado, lerEstado } from "../lib/estado";
+import {
+  escreverEstado,
+  FILTROS_PADRAO,
+  lerEstado,
+  temFiltroAtivo,
+} from "../lib/estado";
 import type { OpcoesConsulta } from "../lib/opcoes";
 import { COLUNAS_TABELA, valorDaColuna } from "../lib/tabela";
 
@@ -51,22 +56,6 @@ interface OpcaoChip {
 /** Uma classe nos chips: além do rótulo, a cor curada (opcional). */
 interface OpcaoClasseChip extends OpcaoChip {
   cor?: string;
-}
-
-/** Só os filtros contam para "Limpar filtros"; a ordenação não conta. */
-function temFiltroAtivo(estado: FiltrosConsulta): boolean {
-  const algumTexto = (["marca", "tipo", "funcao", "classe", "q"] as const).some(
-    (campo) => (estado[campo] ?? "").trim() !== "",
-  );
-  return algumTexto || estado.btu !== undefined || estado.tensao !== undefined;
-}
-
-/** Só a ordenação sobrevive a "Limpar filtros". */
-function somenteOrdem(estado: FiltrosConsulta): FiltrosConsulta {
-  return {
-    ...(estado.ordem === undefined ? {} : { ordem: estado.ordem }),
-    ...(estado.dir === undefined ? {} : { dir: estado.dir }),
-  };
 }
 
 /**
@@ -176,7 +165,7 @@ export default function Consulta({
 }: PropsConsulta) {
   const [motor, setMotor] = useState<MotorConsulta | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-  const [estado, setEstado] = useState<FiltrosConsulta>({});
+  const [estado, setEstado] = useState<FiltrosConsulta>(FILTROS_PADRAO);
   const [paginacao, setPaginacao] = useState({
     chave: "",
     quantidade: TAMANHO_PAGINA,
@@ -226,9 +215,13 @@ export default function Consulta({
   }, []);
 
   const limpar = useCallback(() => {
-    // "Limpar filtros" limpa os filtros e mantém a ordenação — a ordem escolhida
-    // não é um filtro (e o botão só aparece com filtro ativo).
-    const restante = somenteOrdem(estado);
+    // "Limpar filtros" volta ao recorte padrão (ticket 38) e mantém a ordenação
+    // — a ordem escolhida não é um filtro (e o botão só aparece fora do padrão).
+    const restante: FiltrosConsulta = {
+      ...FILTROS_PADRAO,
+      ...(estado.ordem === undefined ? {} : { ordem: estado.ordem }),
+      ...(estado.dir === undefined ? {} : { dir: estado.dir }),
+    };
     const busca = escreverEstado(restante).toString();
     const url = `${window.location.pathname}${busca === "" ? "" : `?${busca}`}`;
     window.history.replaceState(null, "", url);
