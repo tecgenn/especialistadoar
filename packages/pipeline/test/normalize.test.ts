@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  COLUNA_IDRS,
+  lerColunaNumerica,
   normalizarEspacos,
   normalizarGrau,
   normalizarValores,
+  parseIdrs,
   parseNumero,
   parseTensao,
 } from "../src/normalize.ts";
@@ -119,6 +122,40 @@ describe("parseNumero — separador de milhar pt-BR", () => {
   });
 });
 
+describe("parseIdrs — restaurar separador decimal perdido", () => {
+  it("recoloca o ponto após o primeiro dígito de inteiro acima de 10", () => {
+    expect(parseIdrs("55")).toBe(5.5);
+    expect(parseIdrs("62")).toBe(6.2);
+    expect(parseIdrs("33")).toBe(3.3);
+    expect(parseIdrs("971")).toBe(9.71);
+  });
+
+  it("preserva os decimais legítimos", () => {
+    expect(parseIdrs("9.71")).toBe(9.71);
+    expect(parseIdrs("6.20")).toBe(6.2);
+    expect(parseIdrs("3,50")).toBe(3.5);
+  });
+
+  it("preserva inteiros até 10 — não são decimais perdidos", () => {
+    expect(parseIdrs("6")).toBe(6);
+    expect(parseIdrs("7")).toBe(7);
+    expect(parseIdrs("10")).toBe(10);
+  });
+
+  it("devolve null para valor vazio ou sem número", () => {
+    expect(parseIdrs("")).toBeNull();
+    expect(parseIdrs("   ")).toBeNull();
+    expect(parseIdrs("abc")).toBeNull();
+  });
+
+  it("é a leitura usada só na coluna IDRS", () => {
+    expect(lerColunaNumerica(COLUNA_IDRS, "55")).toBe(5.5);
+    expect(
+      lerColunaNumerica("Capacidade de Refrigeração Nominal (Btu/h)", "55"),
+    ).toBe(55);
+  });
+});
+
 describe("parseTensao — parsing de bivolt", () => {
   it("parseia 127-220 como uma só tensão, com duas voltagens", () => {
     expect(parseTensao("127-220 (monofásico/bifásico)")).toEqual({
@@ -190,5 +227,11 @@ describe("normalizarValores — oficial só difere do original por formato", () 
     const coluna = "Capacidade a 29 °C e Carga Total (W)";
     expect(valores[coluna]).toBe("2637");
     expect(oficial[coluna]).toBe(2637);
+  });
+
+  it("restaura o decimal perdido do IDRS preservando o original", () => {
+    const { valores, oficial } = normalizarValores({ [COLUNA_IDRS]: "55" });
+    expect(valores[COLUNA_IDRS]).toBe("55");
+    expect(oficial[COLUNA_IDRS]).toBe(5.5);
   });
 });

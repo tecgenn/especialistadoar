@@ -4,12 +4,12 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Inteiro sem separador e > 10 é lido com o ponto após o 1º dígito: 55→5,5; 62→6,2; 33→3,3; 971→9,71
-- [ ] Valor já decimal (9.71, 6.20, 3,50) passa intacto
-- [ ] Normalização e Anomalias usam a mesma leitura da coluna
-- [ ] Os 4 registros reais (`ap-d328f750e73e`, `ap-8976ca4b3a7e`, `ap-2fac590865fe`, `ap-c827d71a3eb6`) deixam de exibir 55/62/33 e não viram Anomalia
-- [ ] Regra de plausibilidade do IDRS com máximo 10 sinaliza decimal real acima do teto
-- [ ] `data/build` e `reports` regenerados e reproduzíveis byte a byte
-- [ ] Testes de normalização, anomalias e build verdes
+- [x] Inteiro sem separador e > 10 é lido com o ponto após o 1º dígito: 55→5,5; 62→6,2; 33→3,3; 971→9,71
+- [x] Valor já decimal (9.71, 6.20, 3,50) passa intacto
+- [x] Normalização e Anomalias usam a mesma leitura da coluna
+- [x] Os 4 registros reais (`ap-d328f750e73e`, `ap-8976ca4b3a7e`, `ap-2fac590865fe`, `ap-c827d71a3eb6`) deixam de exibir 55/62/33 e não viram Anomalia
+- [x] Regra de plausibilidade do IDRS com máximo 10 sinaliza decimal real acima do teto
+- [x] `data/build` e `reports` regenerados e reproduzíveis byte a byte
+- [x] Testes de normalização, anomalias e build verdes

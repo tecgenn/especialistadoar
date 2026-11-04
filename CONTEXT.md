@@ -49,7 +49,7 @@ Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potênci
 _Avoid_: Artigo, ranking, lista
 
 **IDRS**:
-Índice de Desempenho de Refrigeração Sazonal: a razão entre o calor removido e a energia elétrica consumida (Wh/Wh) que o INMETRO declara para uma Variante. É sempre o Valor oficial e nunca é recalculado a partir da Classe.
+Índice de Desempenho de Refrigeração Sazonal: a razão entre o calor removido e a energia elétrica consumida (Wh/Wh) que o INMETRO declara para uma Variante. É sempre o Valor oficial e nunca é recalculado a partir da Classe. A exportação às vezes perde a vírgula decimal; a regra de formato a recoloca após o primeiro dígito (`55` → `5,5`) — é formato, não Exceção manual.
 _Avoid_: Eficiência, COP, nota (são conceitos diferentes)
 
 **Classe**:
@@ -61,7 +61,7 @@ Estado de um Aparelho: **Ativo** quando ao menos um dos seus Registros INMETRO e
 _Avoid_: Status (é o nome da coluna do Registro, não do Aparelho)
 
 **Anomalia**:
-Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto, ou um número válido mas implausível para a coluna (capacidade nominal abaixo de 6.000 BTU/h, consumo fora de 10–120 kWh por 1.000 BTU/h). O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
+Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto, ou um número válido mas implausível para a coluna (capacidade nominal abaixo de 6.000 BTU/h, consumo fora de 10–120 kWh por 1.000 BTU/h, IDRS acima de 10 Wh/Wh). O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
 _Avoid_: Erro, defeito (não temos como saber se o dado está de fato errado)
 
 **Exceção manual**:

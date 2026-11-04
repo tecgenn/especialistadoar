@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`) e **36** (`site-estilos-global.css`) concluídos. Próximos, sem bloqueio: **37** (`idrs-separador-decimal`) e **38** (`site-filtros-padrao`); depois **39** (`site-layout-amplo`), e **40** (`validacao-completa-build-testes`) como portão final.
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`) e **36** (`site-estilos-global.css`) concluídos, e **37** (`idrs-separador-decimal`) concluído. Próximo, sem bloqueio: **38** (`site-filtros-padrao`); depois **39** (`site-layout-amplo`), bloqueado por 38, e **40** (`validacao-completa-build-testes`) como portão final, bloqueado por 38 e 39.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -263,4 +263,11 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** a coluna Classe da tabela `/aparelhos/` pinta cada célula com a cor da classe energética (verde/azul/amarelo/laranja/vermelho), reusando as mesmas cores dos chips de classe. `pnpm build:site` gera 2229 páginas sem erros. Sem regressão em `data/build`/`reports`.
 - **Ticket:** #36 (local tracker: `36-site-estilos-global.css`)
 - **Checks:** Vitest 349/349 (workspace), tsc --noEmit OK, biome check OK, `pnpm build:site` (2229 páginas) verde.
+
+### 37 — IDRS: Restaurar Separador Decimal e Limitar a 10 (2026-11-01)
+
+- **Changed:** `packages/pipeline/src/normalize.ts` (novo `COLUNA_IDRS`, `parseIdrs` e `lerColunaNumerica`; `normalizarCampo` usa `lerColunaNumerica`); `packages/pipeline/src/anomalias.ts` (usa `lerColunaNumerica`; regra `{ campo: COLUNA_IDRS, maximo: 10 }` na tabela `REGRAS_PLAUSIBILIDADE`); testes `packages/pipeline/test/{normalize,anomalias,build}.test.ts`; `data/build/{aparelhos.jsonl,aparelhos.json,consulta.json,registros.jsonl}` regenerados; `docs/agentes.md` e `CONTEXT.md` (IDRS acima de 10 Wh/Wh; formato 55 → 5,5).
+- **What works:** o inteiro sem separador acima de 10 é lido com o ponto após o 1º dígito (55→5,5; 62→6,2; 33→3,3; 971→9,71); decimais legítimos (9.71, 6.20, 3,50) e inteiros até 10 passam intactos; normalização e detector de Anomalias usam a mesma leitura da coluna; os 4 registros reais (`ap-d328f750e73e`, `ap-8976ca4b3a7e`, `ap-2fac590865fe`, `ap-c827d71a3eb6`) exibem 5,5 / 6,2 / 3,3 / 5,5 e não viram Anomalia; a regra de plausibilidade do IDRS com teto 10 sinaliza apenas decimais realmente acima do teto; `data/build` e `reports` regenerados e reproduzíveis byte a byte; nenhuma Exceção manual nova (formato, não conteúdo — ADR-0017).
+- **Ticket:** #37 (local tracker: `37-idrs-separador-decimal`)
+- **Checks:** Vitest 361/361 (workspace), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte.
 

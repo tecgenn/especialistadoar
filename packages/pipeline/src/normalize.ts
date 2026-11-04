@@ -24,6 +24,7 @@ const NUMERO_PT_BR_MILHAR = /^(-?\d{1,3})((?:\.\d{3})+)(?:,(\d+))?$/;
 const TOKEN_NUMERO = /\d+(?:[.,]\d+)?/g;
 
 export const COLUNA_TENSAO = "Tensão (V)";
+export const COLUNA_IDRS = "IDRS (Wh/Wh)";
 export const COLUNAS_CASING: ReadonlySet<string> = new Set(["Marca"]);
 
 export function normalizarGrau(texto: string): string {
@@ -63,6 +64,34 @@ export function parseNumero(texto: string): number | null {
 
   const decimal = limpo.replace(",", ".");
   return NUMERO.test(decimal) ? Number(decimal) : null;
+}
+
+const INTEIRO_SEM_SEPARADOR = /^\d+$/;
+
+/**
+ * Leitura da coluna IDRS. A exportação às vezes perde a vírgula decimal e deixa
+ * um inteiro (`55`, `62`, `33`); nesses casos o ponto é recolocado após o
+ * primeiro dígito (`5,5`, `6,2`, `3,3`, `971` → `9,71`). Decimais legítimos
+ * (`9.71`, `6.20`, `3,50`) e inteiros até 10 (`6`, `7`) passam intactos. É regra
+ * de formato, aplicada a toda Versão — não Exceção manual (ADR-0017).
+ */
+export function parseIdrs(texto: string): number | null {
+  const limpo = texto.trim().replace(/\s+/g, "").replace(SUFIXO_UNIDADE, "");
+
+  if (INTEIRO_SEM_SEPARADOR.test(limpo) && Number(limpo) > 10) {
+    return Number(`${limpo[0]}.${limpo.slice(1)}`);
+  }
+
+  return parseNumero(texto);
+}
+
+/**
+ * Leitura canônica de uma coluna numérica. A coluna IDRS tem regra própria
+ * (`parseIdrs`), compartilhada pela normalização e pelo detector de Anomalias;
+ * as demais usam `parseNumero`.
+ */
+export function lerColunaNumerica(nome: string, valor: string): number | null {
+  return nome === COLUNA_IDRS ? parseIdrs(valor) : parseNumero(valor);
 }
 
 export function parseTensao(texto: string): TensaoNormalizada | null {
@@ -111,7 +140,7 @@ function normalizarCampo(nome: string, valor: string): ValorOficial {
     return parseTensao(valor);
   }
   if (colunaNumerica(nome)) {
-    return parseNumero(valor);
+    return lerColunaNumerica(nome, valor);
   }
   return normalizarTexto(nome, valor);
 }

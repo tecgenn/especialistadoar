@@ -1,6 +1,8 @@
 import {
+  COLUNA_IDRS,
   colunaNumerica,
   contarValoresNumericos,
+  lerColunaNumerica,
   parseNumero,
 } from "./normalize.ts";
 import type { ValoresDaLinha } from "./parse.ts";
@@ -64,6 +66,11 @@ const REGRAS_PLAUSIBILIDADE: readonly RegraPlausibilidade[] = [
     minimo: 10,
     maximo: 120,
   },
+  // IDRS (Wh/Wh). A coluna tem leitura própria (ticket 37): o inteiro sem
+  // separador é lido com o ponto após o primeiro dígito, então `55` vira 5,5 e
+  // não é Anomalia. O teto de 10 sinaliza só o decimal que a regra de formato
+  // não corrigiu (ex.: `55.5`). Só sinaliza; o Aparelho continua na base.
+  { campo: COLUNA_IDRS, maximo: 10 },
 ];
 
 export function classificarAnomalia(valor: string): TipoAnomalia {
@@ -115,7 +122,7 @@ export function detectarAnomalias(
       continue;
     }
 
-    const numero = parseNumero(valor);
+    const numero = lerColunaNumerica(campo, valor);
     if (numero === null) {
       anomalias.push({
         linha,
