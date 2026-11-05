@@ -5,6 +5,7 @@ import {
   CONSUMO_ANUAL_KWH,
   detectarAnomalias,
 } from "../src/anomalias.ts";
+import { COLUNA_IDRS } from "../src/normalize.ts";
 
 const contexto = { linha: 7, versao: "abc123" };
 
@@ -205,5 +206,37 @@ describe("detectarAnomalias — consumo implausível", () => {
         tipo: "valor_implausivel",
       },
     ]);
+  });
+});
+
+describe("detectarAnomalias — IDRS implausível", () => {
+  it("não sinaliza o inteiro sem separador — a regra de formato o corrige", () => {
+    expect(detectarAnomalias({ [COLUNA_IDRS]: "55" }, contexto)).toEqual([]);
+    expect(detectarAnomalias({ [COLUNA_IDRS]: "62" }, contexto)).toEqual([]);
+    expect(detectarAnomalias({ [COLUNA_IDRS]: "33" }, contexto)).toEqual([]);
+  });
+
+  it("sinaliza um decimal realmente acima do teto de 10", () => {
+    expect(detectarAnomalias({ [COLUNA_IDRS]: "55.5" }, contexto)).toEqual<
+      Anomalia[]
+    >([
+      {
+        linha: 7,
+        versao: "abc123",
+        campo: COLUNA_IDRS,
+        valor: "55.5",
+        tipo: "valor_implausivel",
+      },
+    ]);
+  });
+
+  it("aceita o teto de 10 e o decimal legítimo 9,71", () => {
+    expect(detectarAnomalias({ [COLUNA_IDRS]: "10" }, contexto)).toEqual([]);
+    expect(detectarAnomalias({ [COLUNA_IDRS]: "9.71" }, contexto)).toEqual([]);
+  });
+
+  it("continua sinalizando texto na coluna IDRS como texto", () => {
+    const anomalias = detectarAnomalias({ [COLUNA_IDRS]: "abc" }, contexto);
+    expect(anomalias[0]?.tipo).toBe("texto_em_campo_numerico");
   });
 });

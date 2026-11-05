@@ -6,11 +6,12 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`) e **35** (`site-ui-tabela-paginacao`) concluídos. Próximo: **36** (`site-estilos-global.css`), sem bloqueio. Restam 36 → 37 (estilos globais → validação completa).
+**Fase 8 concluída** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Todos os tickets **31**–**40** estão `done` no tracker local, incluindo o portão final **40** (`validacao-completa-build-testes`). Não há ticket aberto, bloqueado ou reivindicado: o tracker está vazio de trabalho pendente.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
-`spec-fase-5.md` › Further Notes.
+`spec-fase-5.md` › Further Notes. Para abrir a próxima fase, usar `/to-tickets`
+sobre a spec correspondente.
 
 ## Completed
 
@@ -256,3 +257,39 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** tabela com 6 colunas e Classe formatada com cor; botão "Mostrar mais" aparece > 50 resultados, acrescenta 50 por clique, desaparece quando todos visíveis, e reseta para 50 ao mudar filtro/ordem. Paginação numerada substituída por "Mostrar mais" (escopo do ticket 35). Sem artefatos novos — tudo já estava em `data/build`/`reports`.
 - **Ticket:** #35 (local tracker: `35-site-ui-tabela-paginacao`)
 - **Checks:** Vitest 349/349 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` (2229 páginas) verdes.
+
+### 36 — Site: Estilos Globais (global.css) (2026-10-31)
+
+- **Changed:** `apps/site/src/styles/global.css` (cores da coluna Classe na tabela: `td[data-classe~="A"]` a `td[data-classe~="F"]` com as mesmas cores dos chips — A=#16a34a, B=#2563eb, C=#ca8a04, D=#ea580c, E/F=#dc2626, `color: #fff`; `data-classe` pode trazer vários valores separados por espaço, o seletor `~=` casa cada um como token); `apps/site/src/components/Consulta.tsx` (`data-classe` no `<td>` da coluna Classe, preenchido com `item.classes.join(" ")` quando houver classe). Os demais itens do checklist (#36) já estavam implementados no ticket 34 (`.consulta-layout` grid 280px/1fr + mobile `1fr`, `.filtros-sidebar` sticky, `.campo-chips` flex-coluna, selects "Outras…", cores dos chips de classe, `.mostrar-mais` centralizado com foco e mobile).
+- **What works:** a coluna Classe da tabela `/aparelhos/` pinta cada célula com a cor da classe energética (verde/azul/amarelo/laranja/vermelho), reusando as mesmas cores dos chips de classe. `pnpm build:site` gera 2229 páginas sem erros. Sem regressão em `data/build`/`reports`.
+- **Ticket:** #36 (local tracker: `36-site-estilos-global.css`)
+- **Checks:** Vitest 349/349 (workspace), tsc --noEmit OK, biome check OK, `pnpm build:site` (2229 páginas) verde.
+
+### 37 — IDRS: Restaurar Separador Decimal e Limitar a 10 (2026-11-01)
+
+- **Changed:** `packages/pipeline/src/normalize.ts` (novo `COLUNA_IDRS`, `parseIdrs` e `lerColunaNumerica`; `normalizarCampo` usa `lerColunaNumerica`); `packages/pipeline/src/anomalias.ts` (usa `lerColunaNumerica`; regra `{ campo: COLUNA_IDRS, maximo: 10 }` na tabela `REGRAS_PLAUSIBILIDADE`); testes `packages/pipeline/test/{normalize,anomalias,build}.test.ts`; `data/build/{aparelhos.jsonl,aparelhos.json,consulta.json,registros.jsonl}` regenerados; `docs/agentes.md` e `CONTEXT.md` (IDRS acima de 10 Wh/Wh; formato 55 → 5,5).
+- **What works:** o inteiro sem separador acima de 10 é lido com o ponto após o 1º dígito (55→5,5; 62→6,2; 33→3,3; 971→9,71); decimais legítimos (9.71, 6.20, 3,50) e inteiros até 10 passam intactos; normalização e detector de Anomalias usam a mesma leitura da coluna; os 4 registros reais (`ap-d328f750e73e`, `ap-8976ca4b3a7e`, `ap-2fac590865fe`, `ap-c827d71a3eb6`) exibem 5,5 / 6,2 / 3,3 / 5,5 e não viram Anomalia; a regra de plausibilidade do IDRS com teto 10 sinaliza apenas decimais realmente acima do teto; `data/build` e `reports` regenerados e reproduzíveis byte a byte; nenhuma Exceção manual nova (formato, não conteúdo — ADR-0017).
+- **Ticket:** #37 (local tracker: `37-idrs-separador-decimal`)
+- **Checks:** Vitest 361/361 (workspace), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte.
+
+### 38 — Site: /aparelhos/ com Filtros Padrão (2026-11-02)
+
+- **Changed:** `apps/site/src/lib/estado.ts` (novo `FILTROS_PADRAO = { tipo: "Split Hi-Wall", tensao: 220, classe: "A" }`, `temFiltroAtivo` movido da ilha e agora ignora ordenação, `lerEstado` aplica o padrão só quando a URL não traz chave de filtro e `escreverEstado` omite o padrão exato da URL, grava `tipo=&tensao=&classe=` para o estado sem filtros e escreve todos os filtros explícitos dos demais estados — URL reconstruível); `apps/site/src/components/Consulta.tsx` (importa `FILTROS_PADRAO`/`temFiltroAtivo` de `../lib/estado`, `useState(FILTROS_PADRAO)`, `limpar` volta ao padrão preservando a ordenação; removida a `temFiltroAtivo`/`somenteOrdem` locais); `apps/site/test/estado.test.ts` (20 testes: round-trip, padrão, `temFiltroAtivo`); `apps/site/test/consulta.test.tsx` (base `TODOS = "/?tipo=&tensao=&classe="`, carga limpa com URL limpa, link com filtro próprio não recebe o padrão, "Limpar filtros" volta ao padrão mantendo a ordenação); `docs/adr/0019-filtros-padrao-na-consulta.md` (novo — contrato de URL com o padrão); `CONTEXT.md` (glossário "Filtros padrão").
+- **What works:** abrir `/aparelhos/` sem querystring aplica Split Hi-Wall + 220 V + Classe A (1.152 de 2.227 aparelhos) com URL limpa e sem o botão "Limpar filtros"; um link com filtro próprio (ex. `?marca=LG`) não recebe o padrão; "Limpar filtros" volta ao padrão preservando a ordenação e só aparece fora do padrão; o estado segue compartilhável e o padrão nunca aparece na URL (exceto quando já presente no estado explícito). Verificado contra o dataset real: `data/build/consulta.json` com 2.227 itens, exatamente 1.152 batendo no recorte padrão.
+- **Ticket:** #38 (local tracker: `38-site-filtros-padrao`)
+- **Checks:** Vitest 63/63 (estado + ilha) e 373/373 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` (2229 páginas) verdes, `data/build`+`reports` reproduzidos byte a byte.
+
+### 39 — Site: /aparelhos/ em Layout Amplo e Responsivo (2026-11-04)
+
+- **Changed:** `apps/site/src/layouts/Base.astro` (variante `ampla` que remove o teto de 64 rem de header/main/footer), `apps/site/src/styles/global.css` (sidebar `clamp(300px, 22vw, 360px)`, `.botao-filtros`, painel `.filtros-fechado` ≤ 64 rem, cartões já existentes ≤ 40 rem), `apps/site/src/components/Consulta.tsx` (estado `filtrosAberto`, botão "Ocultar/Exibir filtros", classe `filtros-fechado`), `apps/site/src/pages/aparelhos/index.astro` (`ampla`); testes `apps/site/test/{consulta,analises-build}.test.ts(x)`.
+- **What works:** `/aparelhos/` ocupa a largura útil com header, main e footer alinhados; abaixo de 64 rem os filtros viram um painel recolhível acima dos resultados (aberto por padrão, toggle acessível com `aria-expanded`/`aria-controls`); abaixo de 40 rem a tabela segue em cartões e o "Mostrar mais" funciona; as demais páginas mantêm o teto de 64 rem. `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.229 páginas.
+- **Ticket:** #39 (local tracker: `39-site-layout-amplo`)
+- **Checks:** Vitest 375/375 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` verdes.
+
+### 40 — Validação Completa: Build, Testes, Typecheck, Lint (2026-11-04)
+
+- **Changed:** `apps/site/src/pages/aparelhos/[id].astro` (removida a linha `["Rotação", aparelho.rotacao]` da ficha — `rotacao` saiu do contrato `Aparelho` no ticket 31 e a ficha renderizava `<dt>Rotação</dt><dd></dd>` vazio em todas as 2.227 páginas); `apps/site/test/analises-build.test.ts` (+1 assertiva no build real: a ficha do GREE não contém "Rotação"). Sem mudanças em `data/build/` ou `reports/`.
+- **What works:** o portão final da Fase 8 fechou com a suíte inteira verde: `pnpm build` reproduz `data/build` + `reports` byte a byte (5867 Linhas, 108 Anomalias, 5 Exceções manuais, 2227 Aparelhos); `pnpm build:site` gera **2229 páginas**; `pnpm test` 375/375 (33 arquivos); `pnpm typecheck` e `pnpm lint` OK. Checklist de aceite conferido no build publicado: `/aparelhos/` usa `<body class="ampla">` (as demais mantêm o teto de 64 rem); chips SSR com 10 marcas, 6 capacidades, 2 funções, 4 tipos e 6 classes; selects "Outras Marcas"/"Outras Capacidades" sem "Todas"; ordenação com 4 valores + "Padrão (A–Z)"; tabela com as 6 colunas (Marca, Modelo, BTU/h, Consumo (kWh), IDRS, Classe) e "Classe A" formatada; coluna Classe com cores via `data-classe`; filtros padrão valem 1.152 de 2.227 itens com URL limpa; abaixo de 64 rem o painel de filtros recolhe (`aria-expanded`/`aria-controls`) e abaixo de 40 rem a tabela vira cartões; `grep -rE "rotacao|situacao|suspeito" apps/site/dist` retorna 0 (o único "Rotação" restante em `dist/registros.jsonl` é o nome da coluna oficial na proveniência); GRATTO ACST9F mantém só as Linhas `Incluido` (uma Classe/consumo/IDRS por Aparelho); IDRS dos 4 registros exibe 5,5 / 6,2 / 3,3 / 5,5 e o 9,71 permanece. `apps/site/dist` é artefato ignorado pelo git (`.gitignore`), regenerado localmente no build.
+- **Ticket:** #40 (local tracker: `40-validacao-completa-build-testes`)
+- **Checks:** Vitest 375/375 (workspace), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2229 páginas; greps de campos removidos e verificações de dados (GRATTO, IDRS, filtros padrão) conferidos.
+

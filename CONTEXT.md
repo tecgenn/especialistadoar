@@ -48,6 +48,14 @@ _Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de 
 Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
 _Avoid_: Artigo, ranking, lista
 
+**Filtros padrão (ticket 38)**:
+O recorte aplicado implicitamente quando `/aparelhos/` é aberto sem querystring — Tipo `Split Hi-Wall`, Tensão `220` V e Classe `A`. É o `FILTROS_PADRAO` de `apps/site/src/lib/estado.ts`: aplicado na leitura (`lerEstado`) mas nunca escrito na URL, a menos que o estado diferente do padrão já contenha esses valores. Um link com qualquer chave de filtro é respeitado e não recebe o padrão por cima; desligar o padrão grava as chaves vazias (`tipo=&tensao=&classe=`). "Limpar filtros" volta ao padrão preservando a ordenação.
+_Avoid_: Filtros iniciais, recorte fixo (o padrão é implícito e compartilhável, não um parâmetro da URL)
+
+**IDRS**:
+Índice de Desempenho de Refrigeração Sazonal: a razão entre o calor removido e a energia elétrica consumida (Wh/Wh) que o INMETRO declara para uma Variante. É sempre o Valor oficial e nunca é recalculado a partir da Classe. A exportação às vezes perde a vírgula decimal; a regra de formato a recoloca após o primeiro dígito (`55` → `5,5`) — é formato, não Exceção manual.
+_Avoid_: Eficiência, COP, nota (são conceitos diferentes)
+
 **Classe**:
 Faixa de classificação de eficiência (A a F) que o INMETRO declara para uma Linha da tabela, lida da coluna oficial "Faixa de Classificação". É sempre o valor oficial: nunca é recalculada a partir do IDRS, porque classe e IDRS não andam juntos entre tipos de aparelho.
 _Avoid_: Nota, faixa, selo
@@ -57,7 +65,7 @@ Estado de um Aparelho: **Ativo** quando ao menos um dos seus Registros INMETRO e
 _Avoid_: Status (é o nome da coluna do Registro, não do Aparelho)
 
 **Anomalia**:
-Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto, ou um número válido mas implausível para a coluna (capacidade nominal abaixo de 6.000 BTU/h, consumo fora de 10–120 kWh por 1.000 BTU/h). O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
+Sinal de que uma Linha da tabela traz um valor suspeito ou fora do padrão — por exemplo, um campo que deveria ser numérico e vem com texto, ou um número válido mas implausível para a coluna (capacidade nominal abaixo de 6.000 BTU/h, consumo fora de 10–120 kWh por 1.000 BTU/h, IDRS acima de 10 Wh/Wh). O valor original é preservado e a Anomalia fica visível junto ao Aparelho, para quem consulta decidir como tratá-la.
 _Avoid_: Erro, defeito (não temos como saber se o dado está de fato errado)
 
 **Exceção manual**:

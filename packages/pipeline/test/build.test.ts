@@ -14,6 +14,7 @@ import { CAPACIDADE_BTU } from "../src/anomalias.ts";
 import { runBuild } from "../src/build.ts";
 import { type Manifest, sha256Hex } from "../src/ingest.ts";
 import { escreverJsonl } from "../src/jsonl.ts";
+import { COLUNA_IDRS } from "../src/normalize.ts";
 
 const fixturePath = fileURLToPath(
   new URL("./fixtures/amostra.csv", import.meta.url),
@@ -288,6 +289,33 @@ describe("runBuild — Anomalias na exportação versionada real", () => {
     expect(
       readFileSync(join(dataDir, "build/anomalias.jsonl"), "utf8"),
     ).toMatchSnapshot();
+  });
+});
+
+describe("runBuild — IDRS na exportação real", () => {
+  // Linhas cuja exportação perdeu a vírgula decimal do IDRS.
+  const REGISTROS_IDRS = [
+    { linha: 2458, original: "55", oficial: 5.5 },
+    { linha: 3673, original: "62", oficial: 6.2 },
+    { linha: 5245, original: "33", oficial: 3.3 },
+    { linha: 5386, original: "55", oficial: 5.5 },
+  ];
+
+  it("restaura o decimal perdido e preserva o Valor original", () => {
+    const { registros } = buildCom(exportVersadaPath);
+    for (const esperado of REGISTROS_IDRS) {
+      const registro = registros.find((item) => item.linha === esperado.linha);
+      expect(registro?.valores[COLUNA_IDRS]).toBe(esperado.original);
+      expect(registro?.oficial[COLUNA_IDRS]).toBe(esperado.oficial);
+    }
+  });
+
+  it("não cria Anomalia de IDRS para os inteiros corrigidos", () => {
+    const { anomalias } = buildExportacaoRealComCuradoria();
+    expect(anomalias.some((anomalia) => anomalia.campo === COLUNA_IDRS)).toBe(
+      false,
+    );
+    expect(anomalias).toHaveLength(108);
   });
 });
 

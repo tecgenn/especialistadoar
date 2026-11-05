@@ -34363,7 +34363,7 @@
           "potencia29ParcialW": 24.4,
           "capacidade29TotalW": null,
           "potencia29TotalW": null,
-          "idrs": 55,
+          "idrs": 5.5,
           "consumoAnualKwh": 39.6,
           "classe": "A"
         },
@@ -54408,7 +54408,7 @@
           "potencia29ParcialW": 369.5,
           "capacidade29TotalW": null,
           "potencia29TotalW": null,
-          "idrs": 62,
+          "idrs": 6.2,
           "consumoAnualKwh": 703,
           "classe": "B"
         },
@@ -80509,7 +80509,7 @@
           "potencia29ParcialW": null,
           "capacidade29TotalW": null,
           "potencia29TotalW": null,
-          "idrs": 33,
+          "idrs": 3.3,
           "consumoAnualKwh": 700,
           "classe": "A"
         },
@@ -87246,7 +87246,7 @@
           "potencia29ParcialW": 31.4,
           "capacidade29TotalW": null,
           "potencia29TotalW": null,
-          "idrs": 55,
+          "idrs": 5.5,
           "consumoAnualKwh": 52.9,
           "classe": "A"
         },
