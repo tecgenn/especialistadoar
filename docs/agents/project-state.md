@@ -6,7 +6,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`) e **36** (`site-estilos-global.css`) concluídos, e **37** (`idrs-separador-decimal`) concluído. **38** (`site-filtros-padrao`) concluído. Próximo, sem bloqueio: **39** (`site-layout-amplo`), desbloqueado por 38; depois **40** (`validacao-completa-build-testes`) como portão final, bloqueado por 39.
+**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`), **36** (`site-estilos-global.css`) e **37** (`idrs-separador-decimal`) concluídos; **38** (`site-filtros-padrao`) e **39** (`site-layout-amplo`) concluídos. Próximo, sem bloqueio: **40** (`validacao-completa-build-testes`) como portão final, desbloqueado por 39.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
@@ -277,4 +277,11 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** abrir `/aparelhos/` sem querystring aplica Split Hi-Wall + 220 V + Classe A (1.152 de 2.227 aparelhos) com URL limpa e sem o botão "Limpar filtros"; um link com filtro próprio (ex. `?marca=LG`) não recebe o padrão; "Limpar filtros" volta ao padrão preservando a ordenação e só aparece fora do padrão; o estado segue compartilhável e o padrão nunca aparece na URL (exceto quando já presente no estado explícito). Verificado contra o dataset real: `data/build/consulta.json` com 2.227 itens, exatamente 1.152 batendo no recorte padrão.
 - **Ticket:** #38 (local tracker: `38-site-filtros-padrao`)
 - **Checks:** Vitest 63/63 (estado + ilha) e 373/373 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` (2229 páginas) verdes, `data/build`+`reports` reproduzidos byte a byte.
+
+### 39 — Site: /aparelhos/ em Layout Amplo e Responsivo (2026-11-04)
+
+- **Changed:** `apps/site/src/layouts/Base.astro` (variante `ampla` que remove o teto de 64 rem de header/main/footer), `apps/site/src/styles/global.css` (sidebar `clamp(300px, 22vw, 360px)`, `.botao-filtros`, painel `.filtros-fechado` ≤ 64 rem, cartões já existentes ≤ 40 rem), `apps/site/src/components/Consulta.tsx` (estado `filtrosAberto`, botão "Ocultar/Exibir filtros", classe `filtros-fechado`), `apps/site/src/pages/aparelhos/index.astro` (`ampla`); testes `apps/site/test/{consulta,analises-build}.test.ts(x)`.
+- **What works:** `/aparelhos/` ocupa a largura útil com header, main e footer alinhados; abaixo de 64 rem os filtros viram um painel recolhível acima dos resultados (aberto por padrão, toggle acessível com `aria-expanded`/`aria-controls`); abaixo de 40 rem a tabela segue em cartões e o "Mostrar mais" funciona; as demais páginas mantêm o teto de 64 rem. `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.229 páginas.
+- **Ticket:** #39 (local tracker: `39-site-layout-amplo`)
+- **Checks:** Vitest 375/375 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` verdes.
 

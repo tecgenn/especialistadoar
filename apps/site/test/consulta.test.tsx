@@ -790,6 +790,35 @@ describe("layout (ticket 34)", () => {
   });
 });
 
+describe("painel de filtros recolhível (ticket 39)", () => {
+  it("começa com o painel aberto e o botão 'Ocultar filtros'", async () => {
+    await montar(curadoria);
+    const consulta = document.querySelector(".consulta");
+    expect(consulta).not.toBeNull();
+    expect(consulta?.classList.contains("filtros-fechado")).toBe(false);
+    expect(
+      screen.getByRole("button", { name: "Ocultar filtros" }),
+    ).toBeDefined();
+  });
+
+  it("fecha e reabre o painel ao clicar no botão", async () => {
+    await montar(curadoria);
+    const consulta = document.querySelector(".consulta");
+
+    fireEvent.click(screen.getByRole("button", { name: "Ocultar filtros" }));
+    expect(consulta?.classList.contains("filtros-fechado")).toBe(true);
+    expect(
+      screen.getByRole("button", { name: "Exibir filtros" }),
+    ).toBeDefined();
+
+    fireEvent.click(screen.getByRole("button", { name: "Exibir filtros" }));
+    expect(consulta?.classList.contains("filtros-fechado")).toBe(false);
+    expect(
+      screen.getByRole("button", { name: "Ocultar filtros" }),
+    ).toBeDefined();
+  });
+});
+
 describe("Aparelhos analisados (ticket 28)", () => {
   const analisadosMap = new Map<
     string,

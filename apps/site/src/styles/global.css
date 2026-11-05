@@ -67,6 +67,14 @@ footer {
   font-size: 0.9rem;
 }
 
+/* ticket 39: layout amplo — /aparelhos/ ocupa a largura útil; header, main e
+   footer alinham sem o teto de 64 rem das páginas de leitura. */
+body.ampla header,
+body.ampla main,
+body.ampla footer {
+  max-width: none;
+}
+
 .intro {
   color: var(--texto-suave);
 }
@@ -90,7 +98,7 @@ footer {
    à direita. No celular as duas colunas empilham. */
 .consulta-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: clamp(300px, 22vw, 360px) 1fr;
   gap: 2rem;
   align-items: start;
 }
@@ -106,6 +114,19 @@ footer {
   min-width: 0;
 }
 
+/* ticket 39: botão que abre/fecha o painel de filtros no celular. */
+.botao-filtros {
+  display: none;
+  align-self: start;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 @media (max-width: 64rem) {
   .consulta-layout {
     grid-template-columns: 1fr;
@@ -116,6 +137,17 @@ footer {
     position: static;
     max-height: none;
     overflow-y: visible;
+  }
+
+  /* O painel de filtros fecha com o botão; quando fechado, some e a tabela
+     ocupa a largura toda acima dos resultados. */
+  .consulta.filtros-fechado .filtros-sidebar {
+    display: none;
+  }
+
+  .botao-filtros {
+    display: inline-block;
+    margin-bottom: 0.5rem;
   }
 }
 

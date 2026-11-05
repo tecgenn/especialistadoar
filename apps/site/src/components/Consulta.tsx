@@ -170,6 +170,9 @@ export default function Consulta({
     chave: "",
     quantidade: TAMANHO_PAGINA,
   });
+  /** No celular (≤ 64 rem) os filtros vivem num painel recolhível acima dos
+   *  resultados; começa aberto para não esconder o recorte inicial. */
+  const [filtrosAberto, setFiltrosAberto] = useState(true);
 
   useEffect(() => {
     let cancelado = false;
@@ -323,9 +326,9 @@ export default function Consulta({
   const classesExtras = opcoes.classes;
 
   return (
-    <section className="consulta">
+    <section className={`consulta${filtrosAberto ? "" : " filtros-fechado"}`}>
       <div className="consulta-layout">
-        <aside className="filtros-sidebar">
+        <aside id="filtros-sidebar" className="filtros-sidebar">
           <form
             className="filtros"
             onSubmit={(evento) => evento.preventDefault()}
@@ -543,6 +546,15 @@ export default function Consulta({
         </aside>
 
         <div className="consulta-resultados">
+          <button
+            type="button"
+            className="botao-filtros"
+            aria-expanded={filtrosAberto}
+            aria-controls="filtros-sidebar"
+            onClick={() => setFiltrosAberto((aberta) => !aberta)}
+          >
+            {filtrosAberto ? "Ocultar filtros" : "Exibir filtros"}
+          </button>
           {erro !== null ? (
             <p role="alert">Não foi possível carregar a base: {erro}.</p>
           ) : motor === null ? (

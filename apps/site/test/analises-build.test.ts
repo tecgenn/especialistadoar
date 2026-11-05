@@ -447,6 +447,8 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");
     expect(htmlHome).not.toContain('class="tabela-aparelhos"');
+    // A home (e as demais páginas de leitura) mantém o teto de 64 rem.
+    expect(htmlHome).not.toContain('<body class="ampla">');
     const jsonLdHome = jsonLdDaPagina(htmlHome);
     expect(jsonLdHome["@type"]).toBe("WebSite");
 
@@ -496,6 +498,8 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlTabela).toContain(
       "<title>Aparelhos de ar-condicionado — Especialista do Ar</title>",
     );
+    // A página de Aparelhos usa o layout amplo; as demais páginas mantêm o teto.
+    expect(htmlTabela).toContain('<body class="ampla">');
     expect(htmlTabela).toContain(
       'rel="canonical" href="https://especialista-do-ar.pages.dev/aparelhos/"',
     );

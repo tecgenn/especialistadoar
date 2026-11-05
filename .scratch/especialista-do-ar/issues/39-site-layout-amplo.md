@@ -4,11 +4,11 @@
 
 **Blocked by:** 38 — Site: /aparelhos/ com Filtros Padrão.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `/aparelhos/` ocupa a largura útil; header, main e footer alinhados
-- [ ] Barra de filtros mais larga e campos com largura total, sem quebras estranhas
-- [ ] ≤ 64 rem: filtros em painel recolhível
-- [ ] ≤ 40 rem: tabela em cartões e "Mostrar mais" funcional
-- [ ] Demais páginas mantêm o teto de 64 rem
-- [ ] Testes e build do site verdes
+- [x] `/aparelhos/` ocupa a largura útil; header, main e footer alinhados
+- [x] Barra de filtros mais larga e campos com largura total, sem quebras estranhas
+- [x] ≤ 64 rem: filtros em painel recolhível
+- [x] ≤ 40 rem: tabela em cartões e "Mostrar mais" funcional
+- [x] Demais páginas mantêm o teto de 64 rem
+- [x] Testes e build do site verdes
