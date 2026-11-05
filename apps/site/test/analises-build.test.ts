@@ -550,6 +550,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // As 13 linhas repetidas por Variante saíram da ficha.
     expect(htmlGree).not.toContain("Potência — 35 °C total");
     expect(htmlGree).toContain("Linhas da tabela: 784");
+    // `rotacao` saiu do contrato do Aparelho no ticket 31: a ficha não pode
+    // renderizar uma linha de Rotação vazia.
+    expect(htmlGree).not.toContain("Rotação");
 
     // A ficha precisa caber em 360 px sem rolagem horizontal: o resumo vira uma
     // coluna e as células da grade podem quebrar.

@@ -6,11 +6,12 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 ## Frontier
 
-**Fase 8 em andamento** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Tickets **31** (`pipeline-filtro-excluido-remocao-campos`), **32** (`api-consulta-tipos-filtros-ordenacao`), **33** (`site-dados-filtros-opcoes-tabela`), **34** (`site-ui-filtros-redesign-consulta`), **35** (`site-ui-tabela-paginacao`), **36** (`site-estilos-global.css`) e **37** (`idrs-separador-decimal`) concluídos; **38** (`site-filtros-padrao`) e **39** (`site-layout-amplo`) concluídos. Próximo, sem bloqueio: **40** (`validacao-completa-build-testes`) como portão final, desbloqueado por 39.
+**Fase 8 concluída** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Todos os tickets **31**–**40** estão `done` no tracker local, incluindo o portão final **40** (`validacao-completa-build-testes`). Não há ticket aberto, bloqueado ou reivindicado: o tracker está vazio de trabalho pendente.
 
 O trabalho operacional continua: publicar a primeira Análise (com Ofertas
 reais) e, quando fizer sentido, a migração para domínio próprio — ver
-`spec-fase-5.md` › Further Notes.
+`spec-fase-5.md` › Further Notes. Para abrir a próxima fase, usar `/to-tickets`
+sobre a spec correspondente.
 
 ## Completed
 
@@ -284,4 +285,11 @@ reais) e, quando fizer sentido, a migração para domínio próprio — ver
 - **What works:** `/aparelhos/` ocupa a largura útil com header, main e footer alinhados; abaixo de 64 rem os filtros viram um painel recolhível acima dos resultados (aberto por padrão, toggle acessível com `aria-expanded`/`aria-controls`); abaixo de 40 rem a tabela segue em cartões e o "Mostrar mais" funciona; as demais páginas mantêm o teto de 64 rem. `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.229 páginas.
 - **Ticket:** #39 (local tracker: `39-site-layout-amplo`)
 - **Checks:** Vitest 375/375 (workspace), tsc --noEmit OK, biome check OK, `pnpm build` e `pnpm build:site` verdes.
+
+### 40 — Validação Completa: Build, Testes, Typecheck, Lint (2026-11-04)
+
+- **Changed:** `apps/site/src/pages/aparelhos/[id].astro` (removida a linha `["Rotação", aparelho.rotacao]` da ficha — `rotacao` saiu do contrato `Aparelho` no ticket 31 e a ficha renderizava `<dt>Rotação</dt><dd></dd>` vazio em todas as 2.227 páginas); `apps/site/test/analises-build.test.ts` (+1 assertiva no build real: a ficha do GREE não contém "Rotação"). Sem mudanças em `data/build/` ou `reports/`.
+- **What works:** o portão final da Fase 8 fechou com a suíte inteira verde: `pnpm build` reproduz `data/build` + `reports` byte a byte (5867 Linhas, 108 Anomalias, 5 Exceções manuais, 2227 Aparelhos); `pnpm build:site` gera **2229 páginas**; `pnpm test` 375/375 (33 arquivos); `pnpm typecheck` e `pnpm lint` OK. Checklist de aceite conferido no build publicado: `/aparelhos/` usa `<body class="ampla">` (as demais mantêm o teto de 64 rem); chips SSR com 10 marcas, 6 capacidades, 2 funções, 4 tipos e 6 classes; selects "Outras Marcas"/"Outras Capacidades" sem "Todas"; ordenação com 4 valores + "Padrão (A–Z)"; tabela com as 6 colunas (Marca, Modelo, BTU/h, Consumo (kWh), IDRS, Classe) e "Classe A" formatada; coluna Classe com cores via `data-classe`; filtros padrão valem 1.152 de 2.227 itens com URL limpa; abaixo de 64 rem o painel de filtros recolhe (`aria-expanded`/`aria-controls`) e abaixo de 40 rem a tabela vira cartões; `grep -rE "rotacao|situacao|suspeito" apps/site/dist` retorna 0 (o único "Rotação" restante em `dist/registros.jsonl` é o nome da coluna oficial na proveniência); GRATTO ACST9F mantém só as Linhas `Incluido` (uma Classe/consumo/IDRS por Aparelho); IDRS dos 4 registros exibe 5,5 / 6,2 / 3,3 / 5,5 e o 9,71 permanece. `apps/site/dist` é artefato ignorado pelo git (`.gitignore`), regenerado localmente no build.
+- **Ticket:** #40 (local tracker: `40-validacao-completa-build-testes`)
+- **Checks:** Vitest 375/375 (workspace), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2229 páginas; greps de campos removidos e verificações de dados (GRATTO, IDRS, filtros padrão) conferidos.
 
