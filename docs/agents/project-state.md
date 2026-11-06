@@ -8,10 +8,7 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 **Fase 8 concluída** — spec em `.scratch/especialista-do-ar/spec-fase-8.md`. Todos os tickets **31**–**40** estão `done` no tracker local, incluindo o portão final **40** (`validacao-completa-build-testes`). Não há ticket aberto, bloqueado ou reivindicado: o tracker está vazio de trabalho pendente.
 
-O trabalho operacional continua: publicar a primeira Análise (com Ofertas
-reais) e, quando fizer sentido, a migração para domínio próprio — ver
-`spec-fase-5.md` › Further Notes. Para abrir a próxima fase, usar `/to-tickets`
-sobre a spec correspondente.
+A **primeira Análise editorial** foi publicada: `samsung-windfree-ai-pro-12000-analise`, sobre o Samsung WindFree AI Pro 12.000 BTUs (`ap-adc70ca55429`), com Oferta real do Mercado Livre. O site passa a gerar **2.231 páginas**. O trabalho operacional segue com as próximas Análises e, quando fizer sentido, a migração para domínio próprio — ver `spec-fase-5.md` › Further Notes. Para abrir a próxima fase, usar `/to-tickets` sobre a spec correspondente.
 
 ## Completed
 
@@ -293,3 +290,10 @@ sobre a spec correspondente.
 - **Ticket:** #40 (local tracker: `40-validacao-completa-build-testes`)
 - **Checks:** Vitest 375/375 (workspace), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2229 páginas; greps de campos removidos e verificações de dados (GRATTO, IDRS, filtros padrão) conferidos.
 
+
+### Primeira Análise — Samsung WindFree AI Pro 12.000 BTUs (2026-11-06)
+
+- **Changed:** `apps/site/src/content/analises/samsung-windfree-ai-pro-12000-analise.mdx` (nova Análise em MDX: resumo, tabela INMETRO × Samsung, divergência de fase, consumo, WindFree, IA, SmartThings, durabilidade, pontos de atenção, FAQ, veredito e fontes); `apps/site/src/assets/analises/samsung-windfree-ai-pro-12000/` (6 imagens convertidas para webp: abertura, windfree, conectividade, durabilidade, energia e controle); `apps/site/src/styles/global.css` (figuras/legendas, tabelas, espaçamento de h2/h3 e `figcaption p`); `apps/site/ofertas.json` (Oferta real do Mercado Livre para `ap-adc70ca55429`); `apps/site/test/analises-build.test.ts` (o estado zero passa a apontar para um diretório vazio explícito, já que o conteúdo publicado agora tem uma Análise); `docs/agents/project-state.md`.
+- **What works:** a primeira Análise editorial vai ao ar em `/analises/samsung-windfree-ai-pro-12000-analise/`, ligada à ficha `ap-adc70ca55429` ("Leia a análise") e ao índice `/analises/`, com JSON-LD de `Article`, link bidirecional, `analises.json`, sitemap e CTA de Oferta ("Onde comprar") no fim e no meio do texto. O MDX usa o código comercial `F-AR60H12D1AW` e aponta o registro INMETRO `AR60H12D1CWNAZ + AR60H12D1CWXAZ` como o mesmo produto; a divergência monofásico/bifásico e a ausência de Dry Comfort/Freeze Wash neste SKU ficam explícitas. As 6 imagens usam `astro:assets` com `widths`/`sizes` responsivos. O site passa de 2.229 para **2.231 páginas**. Nada entra em `data/build/` nem em `reports/`.
+- **Ticket:** nenhum (trabalho operacional, sem ticket no tracker local)
+- **Checks:** Vitest 375/375 (33 arquivos), tsc --noEmit OK, biome check OK; `pnpm build` reproduz `data/build`+`reports` byte a byte; `pnpm build:site` gera 2.231 páginas.

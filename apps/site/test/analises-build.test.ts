@@ -427,7 +427,8 @@ describe("build com Análise inválida", () => {
 
 describe("build sem nenhuma Análise (estado zero)", () => {
   it("mantém as 2229 páginas e omite seção, menu e analises.json", () => {
-    buildarSite();
+    // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
+    buildarSite(criarDiretorioTemporario());
 
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE);
     expect(existsSync(join(distDir, "analises"))).toBe(false);
