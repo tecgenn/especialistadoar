@@ -359,6 +359,29 @@ body.ampla footer {
   border-bottom: 1px solid var(--borda);
 }
 
+/* Tabela de dados da Análise: mesma leitura da tabela de Aparelhos, sem
+   depender do layout da consulta. */
+.analise-corpo table {
+  display: block;
+  width: 100%;
+  margin: 1rem 0;
+  border-collapse: collapse;
+  overflow-x: auto;
+  font-size: 0.95rem;
+}
+
+.analise-corpo th,
+.analise-corpo td {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+.analise-corpo thead th {
+  background: var(--fundo);
+}
+
 /* Tabela de Aparelhos (ticket 27): uma linha por Aparelho, cabeçalhos
    ordenáveis e cartões no celular. */
 .consulta .tabela-aparelhos {
@@ -550,6 +573,37 @@ body.ampla footer {
 
 .analise-corpo {
   margin-block: 1.5rem;
+}
+
+/* Corpo editorial: figuras, legendas e tabelas de dados. As imagens vêm do
+   `astro:assets` já com largura/altura; o CSS só as encaixa na coluna. */
+.analise-corpo h2 {
+  margin-top: 2rem;
+}
+
+.analise-corpo h3 {
+  margin-top: 1.5rem;
+}
+
+.analise-figura {
+  margin: 1.5rem 0;
+}
+
+.analise-figura img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+.analise-figura figcaption {
+  margin-top: 0.5rem;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.analise-figura figcaption p {
+  margin: 0;
 }
 
 .analise-aviso,
