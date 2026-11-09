@@ -763,3 +763,340 @@ body.ampla footer {
     max-width: 100%;
   }
 }
+
+/* Assistente de dimensionamento (ticket 41): progresso, telas de escolha,
+   contadores e o resultado com os fatores da conta. */
+.assistente {
+  margin-block: 1.5rem 2rem;
+}
+
+.assistente-progresso {
+  margin-bottom: 1rem;
+}
+
+.assistente-progresso-trilha {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--borda);
+  overflow: hidden;
+}
+
+.assistente-progresso-trilha span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primaria);
+  transition: width 0.2s ease;
+}
+
+.assistente-progresso-texto {
+  margin: 0.35rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.assistente-titulo {
+  margin-block: 1rem 0.75rem;
+  font-size: 1.4rem;
+}
+
+.assistente-titulo:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 4px;
+}
+
+.assistente-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+}
+
+.assistente-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistente-cartao:hover {
+  border-color: var(--primaria);
+}
+
+.assistente-cartao[aria-pressed="true"] {
+  border-color: var(--primaria);
+  outline: 2px solid var(--primaria);
+  outline-offset: 1px;
+}
+
+.assistente-cartao-titulo {
+  font-weight: 600;
+}
+
+.assistente-cartao-descricao {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.assistente-formas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+
+.assistente-formas button {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: var(--superficie);
+  font: inherit;
+  cursor: pointer;
+}
+
+.assistente-formas button[aria-pressed="true"] {
+  border-color: var(--primaria);
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 600;
+}
+
+.assistente-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 16rem;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.assistente-campo input {
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  color: var(--texto);
+}
+
+.assistente-dimensoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+.assistente-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.assistente-acoes button {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  cursor: pointer;
+}
+
+.assistente-avancar {
+  border-color: var(--primaria);
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 600;
+}
+
+.assistente-erro {
+  color: #b91c1c;
+}
+
+.assistente-ajuda {
+  color: var(--texto-suave);
+}
+
+.assistente-equipamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.assistente-contador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.assistente-contador-botoes {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assistente-contador-botoes button {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--borda);
+  border-radius: 50%;
+  background: var(--fundo);
+  font: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.assistente-contador-valor {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.assistente-resultado {
+  margin-top: 1.5rem;
+}
+
+.assistente-capacidade {
+  margin: 0;
+  color: var(--primaria);
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.assistente-capacidade-rotulo {
+  margin-top: 0.25rem;
+  color: var(--texto-suave);
+}
+
+.assistente-confianca {
+  display: inline-block;
+  margin-block: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.assistente-confianca-alta {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.assistente-confianca-media {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.assistente-confianca-baixa {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.assistente-explicacao {
+  max-width: 60rem;
+}
+
+.assistente-fatores-bloco,
+.assistente-suposicoes,
+.assistente-orientacoes {
+  margin-block: 1.25rem;
+}
+
+.assistente-fatores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--borda);
+}
+
+.assistente-fatores li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) 1fr auto;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--borda);
+  font-size: 0.9rem;
+}
+
+.assistente-fator-rotulo {
+  font-weight: 600;
+}
+
+.assistente-fator-detalhe {
+  color: var(--texto-suave);
+}
+
+.assistente-fator-btu {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.assistente-soma {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.assistente-alternativa {
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.assistente-orientacoes dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+}
+
+.assistente-orientacoes dt {
+  color: var(--texto-suave);
+}
+
+.assistente-orientacoes dd {
+  margin: 0;
+}
+
+.assistente-aviso {
+  margin-block: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--primaria);
+  background: var(--superficie);
+  font-size: 0.9rem;
+}
+
+.assistente button:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+@media (max-width: 40rem) {
+  .assistente-fatores li {
+    grid-template-columns: 1fr;
+  }
+
+  .assistente-fator-btu {
+    text-align: left;
+  }
+
+  .assistente-orientacoes dl {
+    grid-template-columns: 1fr;
+  }
+
+  .assistente-orientacoes dt {
+    margin-top: 0.5rem;
+  }
+}

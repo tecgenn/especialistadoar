@@ -219,7 +219,7 @@ nova exportação CSV
   Análises em destaque e o botão "Ver todos os aparelhos"; os links antigos
   `/?marca=…` são levados a `/aparelhos/` com a mesma querystring por um script
   curto na home (o `_redirects` não separa a mesma URL por parâmetros), e o menu
-  tem Aparelhos e, com ≥ 1 Análise, Análises.
+  tem Aparelhos, Assistente e, com ≥ 1 Análise, Análises.
   Uma integração copia `data/build/*` para
   `dist/`, então a API estática continua servida nas mesmas URLs
   (`/aparelhos.json`, `/consulta.json`, …). A página de busca do site saiu
@@ -249,7 +249,7 @@ nova exportação CSV
   formato do id e da data, slug único, uma por Aparelho) e constrói os índices; o
   glue `src/conteudo/analises.ts` lê a coleção. A seção é **condicional**: com zero
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
-  e o site segue com as 2.229 páginas (2.227 fichas + `/` + `/aparelhos/`). Com ≥ 1, o índice, o menu, o inventário
+  e o site segue com as 2.230 páginas (2.227 fichas + `/` + `/aparelhos/` + `/assistente/`). Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
   o JSON-LD aparecem automaticamente; a ficha ganha "Leia a análise",
   a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
@@ -317,8 +317,9 @@ Ver ADR-0003 e ADR-0011.
 - **Testes:** Vitest, incluindo snapshots golden dos JSONL e do relatório.
 - **Lint/format:** Biome.
 - **Site:** Astro, **build estático**: páginas de detalhe pré-renderizadas para
-  cada Aparelho + **uma ilha React** de consulta (filtros combináveis e busca
-  textual rodam no cliente, com o estado na URL). O
+  cada Aparelho + **duas ilhas React** — `Consulta.tsx` (filtros combináveis e
+  busca textual no cliente, estado na URL) e `Assistente.tsx` (wizard de 5
+  telas do Assistente, estado na URL, sem cálculo). O
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda

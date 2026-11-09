@@ -67,12 +67,12 @@ function lerHtml(...partes: string[]): string {
 }
 
 /**
- * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/`.
- * Caiu de 2.460 fichas quando a pipeline passou a excluir Model Status =
- * "Excluído" (ticket 31); a curadoria de Análises pode apontar para um id fora
- * da base, então o número é o que o build realmente gera.
+ * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/` +
+ * `/assistente/` (ticket 41). Caiu de 2.460 fichas quando a pipeline passou a
+ * excluir Model Status = "Excluído" (ticket 31); a curadoria de Análises pode
+ * apontar para um id fora da base, então o número é o que o build realmente gera.
  */
-const PAGINAS_BASE = 2229;
+const PAGINAS_BASE = 2230;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -397,7 +397,7 @@ describe("build com uma Análise de fixture", () => {
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.229 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As 2.230 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -426,7 +426,7 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2229 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2.230 páginas e omite seção, menu e analises.json", () => {
     // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
     buildarSite(criarDiretorioTemporario());
 
@@ -455,6 +455,24 @@ describe("build sem nenhuma Análise (estado zero)", () => {
 
     const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
     expect(sitemap).not.toContain("/analises/");
+    expect(sitemap).toContain("/assistente/");
+
+    // O Assistente (ticket 41) tem página própria, entra no menu e publica o
+    // JSON-LD de aplicação. A ilha renderiza no servidor antes de hidratar: a
+    // primeira pergunta e o progresso já vêm no HTML, sem depender de JS.
+    const htmlAssistente = lerHtml("assistente");
+    expect(htmlAssistente).toContain(
+      "<title>Calculadora de BTUs: quantos BTUs preciso? — Especialista do Ar</title>",
+    );
+    expect(htmlAssistente).toContain(
+      "<h1>Descubra a capacidade ideal para o seu ambiente</h1>",
+    );
+    expect(htmlAssistente).toContain("Onde você vai usar o ar-condicionado?");
+    expect(htmlAssistente).toContain("Etapa 1 de 5");
+    const jsonLdAssistente = jsonLdDaPagina(htmlAssistente);
+    expect(jsonLdAssistente["@type"]).toBe("WebApplication");
+    expect(jsonLdAssistente.name).toBe("Calculadora de BTUs");
+    expect(htmlHome).toContain(">Assistente</a>");
 
     expect(
       existsSync(join(distDir, "aparelhos", aparelho.id, "index.html")),

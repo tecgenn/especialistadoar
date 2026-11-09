@@ -44,6 +44,14 @@ _Avoid_: Artigo, review, resenha
 Aparelho que tem uma Análise publicada. Ganha o selo "Analisado" com link para a Análise e aparece antes dos demais na tabela de Aparelhos, dentro dos filtros ativos. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Como a Análise existe para levar a uma Oferta, sempre que há Oferta o aviso de link de afiliado aparece de forma visível no grupo da tabela, na Análise e em cada Oferta; o selo tem um tooltip com o mesmo aviso.
 _Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de qualidade ou escondem a relação comercial)
 
+**Assistente**:
+O configurador determinístico do site (`/assistente/`) que traduz cinco perguntas sobre o ambiente — tipo de ambiente, área, incidência de sol, pessoas e equipamentos/lâmpadas/janelas — numa capacidade comercial de ar-condicionado. Não usa IA em runtime, LLM nem Worker: a inteligência está na árvore de perguntas e nos coeficientes fixos e auditáveis. O estado inteiro vive na URL, então o resultado é compartilhável.
+_Avoid_: Chat, robô, calculadora de carga térmica (não é cálculo de engenharia)
+
+**Recomendação do Assistente**:
+O resultado do Assistente: uma capacidade comercial (9.000 a 60.000 BTU/h), os fatores usados, o nível de confiança e orientações. É sempre um **Valor calculado** por uma heurística de mercado, nunca um Valor oficial do INMETRO nem promessa de economia; acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica.
+_Avoid_: Resultado oficial, dimensionamento definitivo, recomendação de compra
+
 **Guia**:
 Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
 _Avoid_: Artigo, ranking, lista
