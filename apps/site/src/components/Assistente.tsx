@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { AnalisadoNaCapacidade } from "../lib/analises.ts";
 import {
   AMBIENTES,
   AREA_POR_REFERENCIA,
@@ -107,6 +108,67 @@ function Contador({
   );
 }
 
+/**
+ * Os CTAs do resultado (ticket 42): os Aparelhos analisados com a capacidade
+ * exata — cards montados no build — e o caminho para a tabela já filtrada por
+ * `?btu=X`, que desliga os filtros padrão (ADR-0019). Sem analisado na
+ * capacidade, o bloco fica só com o botão da tabela, nunca vazio.
+ */
+function CartoesAnalisados({
+  capacidadeBtu,
+  analisados,
+  alternativa = false,
+}: {
+  capacidadeBtu: number;
+  analisados: readonly AnalisadoNaCapacidade[];
+  alternativa?: boolean;
+}) {
+  const capacidade = formatarBtu(capacidadeBtu);
+
+  return (
+    <section
+      className={`assistente-analisados${alternativa ? " assistente-alternativa" : ""}`}
+    >
+      {alternativa || analisados.length > 0 ? (
+        <h3 className="assistente-analisados-titulo">
+          {alternativa
+            ? `Duas unidades de ${capacidade} BTU/h`
+            : `Aparelhos analisados de ${capacidade} BTU/h`}
+        </h3>
+      ) : null}
+      {alternativa ? (
+        <p className="assistente-analisados-texto">
+          Alternativa prática: dividir o ambiente em duas unidades de{" "}
+          {capacidade} BTU/h.
+        </p>
+      ) : null}
+      {analisados.length === 0 ? null : (
+        <ul className="assistente-analisados-lista">
+          {analisados.map((item) => (
+            <li key={item.aparelhoId}>
+              <a className="assistente-analisado" href={item.url}>
+                <span className="assistente-analisado-selo">Análise</span>
+                <span className="assistente-analisado-titulo">
+                  {item.titulo}
+                </span>
+                <span className="assistente-analisado-modelo">
+                  {item.marca} {item.modelo}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+      <a
+        className="botao assistente-analisados-tabela"
+        href={`/aparelhos/?btu=${capacidadeBtu}`}
+      >
+        Ver todos os aparelhos de {capacidade} BTU/h
+      </a>
+    </section>
+  );
+}
+
 function numeroDoTexto(texto: string): number | undefined {
   const limpo = texto.trim().replace(",", ".");
   if (limpo === "") {
@@ -116,7 +178,14 @@ function numeroDoTexto(texto: string): number | undefined {
   return Number.isFinite(valor) ? valor : undefined;
 }
 
-export default function Assistente() {
+/** Mapa build-time de analisados por capacidade, vindo da página Astro. */
+interface AssistenteProps {
+  analisados?: ReadonlyMap<number, readonly AnalisadoNaCapacidade[]>;
+}
+
+export default function Assistente({
+  analisados = new Map<number, readonly AnalisadoNaCapacidade[]>(),
+}: AssistenteProps) {
   const [estado, setEstado] = useState<EstadoAssistente>({});
   const [tela, setTela] = useState(0);
   const [formArea, setFormArea] = useState<FormaAreaNome>("metros");
@@ -558,12 +627,29 @@ export default function Assistente() {
                 </p>
               </div>
 
-              {recomendacao.alternativaDividida === null ? null : (
-                <p className="assistente-alternativa">
-                  Alternativa prática: duas unidades de{" "}
-                  {formatarBtu(recomendacao.alternativaDividida.capacidadeBtu)}{" "}
-                  BTU/h.
-                </p>
+              {recomendacao.capacidadeRecomendadaBtu === null ? null : (
+                <>
+                  <CartoesAnalisados
+                    capacidadeBtu={recomendacao.capacidadeRecomendadaBtu}
+                    analisados={
+                      analisados.get(recomendacao.capacidadeRecomendadaBtu) ??
+                      []
+                    }
+                  />
+                  {recomendacao.alternativaDividida === null ? null : (
+                    <CartoesAnalisados
+                      capacidadeBtu={
+                        recomendacao.alternativaDividida.capacidadeBtu
+                      }
+                      analisados={
+                        analisados.get(
+                          recomendacao.alternativaDividida.capacidadeBtu,
+                        ) ?? []
+                      }
+                      alternativa
+                    />
+                  )}
+                </>
               )}
 
               {recomendacao.suposicoes.length === 0 ? null : (

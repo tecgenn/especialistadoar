@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import Assistente from "../src/components/Assistente.tsx";
+import type { AnalisadoNaCapacidade } from "../src/lib/analises.ts";
 
 /**
  * A ilha do Assistente (ticket 41) conduz cinco telas e guarda o estado na URL.
@@ -256,6 +257,126 @@ describe("resultado do Assistente", () => {
     fireEvent.click(botao("Recomeçar"));
     await screen.findByText("Onde você vai usar o ar-condicionado?");
     expect(window.location.search).toBe("");
+  });
+});
+
+describe("CTAs do resultado com Aparelhos analisados (ticket 42)", () => {
+  const analisado = (
+    capacidadeBtu: number,
+    over: Partial<AnalisadoNaCapacidade> = {},
+  ): AnalisadoNaCapacidade => ({
+    aparelhoId: "ap-aaaaaaaaaaaa",
+    titulo: "Vale a pena o modelo analisado?",
+    url: "/analises/modelo-analisado/",
+    marca: "SAMSUNG",
+    modelo: "AR60H12D1CWNAZ",
+    capacidadeBtu,
+    ...over,
+  });
+
+  function mapa(
+    entradas: Array<[number, AnalisadoNaCapacidade[]]> = [],
+  ): Map<number, AnalisadoNaCapacidade[]> {
+    return new Map(entradas);
+  }
+
+  // O caminho do `verResultado`: sala, 24 m², sol à tarde, 1 pessoa e zero
+  // equipamentos — 18.000 BTU/h, com alternativa de 2 × 9.000 BTU/h.
+  it("mostra os cards da capacidade exata com o selo e o link da Análise", async () => {
+    window.history.replaceState(null, "", "/assistente/");
+    render(<Assistente analisados={mapa([[18000, [analisado(18000)]]])} />);
+    await verResultado();
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Aparelhos analisados de 18.000 BTU/h",
+      }),
+    ).toBeDefined();
+    const card = screen.getByRole("link", {
+      name: /Vale a pena o modelo analisado/,
+    });
+    expect(card.getAttribute("href")).toBe("/analises/modelo-analisado/");
+    expect(card.textContent).toContain("Análise");
+    expect(card.textContent).toContain("SAMSUNG AR60H12D1CWNAZ");
+    expect(
+      screen
+        .getByRole("link", { name: "Ver todos os aparelhos de 18.000 BTU/h" })
+        .getAttribute("href"),
+    ).toBe("/aparelhos/?btu=18000");
+  });
+
+  it("sem analisado na capacidade exata, mantém o botão da tabela e não deixa bloco vazio", async () => {
+    window.history.replaceState(null, "", "/assistente/");
+    render(<Assistente analisados={mapa([[12000, [analisado(12000)]]])} />);
+    await verResultado();
+
+    expect(
+      screen.queryByRole("heading", {
+        name: /Aparelhos analisados de 18\.000/,
+      }),
+    ).toBeNull();
+    expect(screen.queryByRole("link", { name: /modelo analisado/ })).toBeNull();
+    expect(
+      screen
+        .getByRole("link", { name: "Ver todos os aparelhos de 18.000 BTU/h" })
+        .getAttribute("href"),
+    ).toBe("/aparelhos/?btu=18000");
+  });
+
+  it("oferece a alternativa dividida com os analisados e a tabela de 9.000 BTU/h", async () => {
+    window.history.replaceState(null, "", "/assistente/");
+    render(
+      <Assistente
+        analisados={mapa([
+          [18000, [analisado(18000)]],
+          [9000, [analisado(9000, { aparelhoId: "ap-bbbbbbbbbbbb" })]],
+        ])}
+      />,
+    );
+    await verResultado();
+
+    expect(
+      screen.getByRole("heading", { name: "Duas unidades de 9.000 BTU/h" }),
+    ).toBeDefined();
+    expect(
+      screen
+        .getByRole("link", { name: "Ver todos os aparelhos de 9.000 BTU/h" })
+        .getAttribute("href"),
+    ).toBe("/aparelhos/?btu=9000");
+    // A alternativa aparece mesmo com analisado na capacidade exata.
+    expect(
+      screen.getByRole("heading", {
+        name: "Aparelhos analisados de 18.000 BTU/h",
+      }),
+    ).toBeDefined();
+    // Cada capacidade tem o seu card, sem misturar os analisados.
+    expect(
+      screen.getAllByRole("link", { name: /Vale a pena o modelo/ }),
+    ).toHaveLength(2);
+  });
+
+  it("sem nenhuma Análise, mantém o caminho para a tabela e não cria cards órfãos", async () => {
+    window.history.replaceState(null, "", "/assistente/");
+    render(<Assistente />);
+    await verResultado();
+
+    expect(screen.queryByText("Análise")).toBeNull();
+    expect(screen.queryByRole("link", { name: /modelo analisado/ })).toBeNull();
+    expect(
+      screen
+        .getByRole("link", { name: "Ver todos os aparelhos de 18.000 BTU/h" })
+        .getAttribute("href"),
+    ).toBe("/aparelhos/?btu=18000");
+    expect(
+      screen
+        .getByRole("link", { name: "Ver todos os aparelhos de 9.000 BTU/h" })
+        .getAttribute("href"),
+    ).toBe("/aparelhos/?btu=9000");
+    for (const link of screen.getAllByRole("link")) {
+      expect(link.getAttribute("href")?.startsWith("/analises/")).not.toBe(
+        true,
+      );
+    }
   });
 });
 

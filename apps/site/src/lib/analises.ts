@@ -163,3 +163,60 @@ export function listaAnalisesJson(analises: readonly Analise[]): Array<{
 export function secaoVisivel(analises: readonly Analise[]): boolean {
   return analises.length > 0;
 }
+
+/**
+ * O mínimo que o mapa de analisados precisa de um Aparelho da base servida: a
+ * identidade e as capacidades declaradas (`capacidadesBtu` de `consulta.json`).
+ */
+export interface AparelhoComCapacidades {
+  id: string;
+  marca: string;
+  modelo: string;
+  capacidadesBtu: readonly number[];
+}
+
+/** Um Aparelho analisado, com a capacidade exata que o Assistente recomenda. */
+export interface AnalisadoNaCapacidade {
+  aparelhoId: string;
+  titulo: string;
+  url: string;
+  marca: string;
+  modelo: string;
+  capacidadeBtu: number;
+}
+
+/**
+ * Mapa build-time de Aparelhos analisados por capacidade (ticket 42): cada
+ * Análise publicada entra sob **todas as capacidades** do seu Aparelho, como
+ * declaradas na base servida. Um Aparelho ausente da Versão atual (Ausente) não
+ * entra — nunca há card para um Aparelho que não está na tabela. A ordem é a das
+ * Análises recebidas (da mais recente para a mais antiga).
+ */
+export function agruparAnalisadosPorCapacidade(
+  analises: readonly Analise[],
+  aparelhos: readonly AparelhoComCapacidades[],
+): Map<number, AnalisadoNaCapacidade[]> {
+  const porId = new Map(aparelhos.map((aparelho) => [aparelho.id, aparelho]));
+  const mapa = new Map<number, AnalisadoNaCapacidade[]>();
+
+  for (const analise of analises) {
+    const aparelho = porId.get(analise.aparelhoId);
+    if (aparelho === undefined) {
+      continue; // Aparelho Ausente: fora da tabela, fora dos cards
+    }
+    for (const capacidadeBtu of new Set(aparelho.capacidadesBtu)) {
+      const lista = mapa.get(capacidadeBtu) ?? [];
+      lista.push({
+        aparelhoId: aparelho.id,
+        titulo: analise.titulo,
+        url: analise.url,
+        marca: aparelho.marca,
+        modelo: aparelho.modelo,
+        capacidadeBtu,
+      });
+      mapa.set(capacidadeBtu, lista);
+    }
+  }
+
+  return mapa;
+}

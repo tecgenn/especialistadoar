@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   type Analise,
   type AnaliseFrontmatter,
+  type AparelhoComCapacidades,
+  agruparAnalisadosPorCapacidade,
   indexarAnalises,
   listaAnalisesJson,
   mapaPorAparelho,
@@ -181,5 +183,77 @@ describe("secaoVisivel", () => {
   it("só é visível com pelo menos uma Análise", () => {
     expect(secaoVisivel([])).toBe(false);
     expect(secaoVisivel(montarAnalises([analise()]))).toBe(true);
+  });
+});
+
+describe("agruparAnalisadosPorCapacidade", () => {
+  function aparelho(
+    over: Partial<AparelhoComCapacidades> = {},
+  ): AparelhoComCapacidades {
+    return {
+      id: "ap-aaaaaaaaaaaa",
+      marca: "SAMSUNG",
+      modelo: "AR60H12D1CWNAZ",
+      capacidadesBtu: [12000],
+      ...over,
+    };
+  }
+
+  it("indexa o analisado pela capacidade exata da base servida", () => {
+    const mapa = agruparAnalisadosPorCapacidade([montada()], [aparelho()]);
+
+    expect(mapa.get(12000)).toEqual([
+      {
+        aparelhoId: "ap-aaaaaaaaaaaa",
+        titulo: "Vale a pena o modelo?",
+        url: "/analises/marca-modelo-decisao/",
+        marca: "SAMSUNG",
+        modelo: "AR60H12D1CWNAZ",
+        capacidadeBtu: 12000,
+      },
+    ]);
+    expect(mapa.get(9000)).toBeUndefined();
+  });
+
+  it("entra em todas as capacidades declaradas pelo Aparelho, sem repetir", () => {
+    const mapa = agruparAnalisadosPorCapacidade(
+      [montada()],
+      [aparelho({ capacidadesBtu: [12000, 18000, 12000] })],
+    );
+
+    expect(mapa.get(12000)).toHaveLength(1);
+    expect(mapa.get(18000)).toHaveLength(1);
+    expect(mapa.size).toBe(2);
+  });
+
+  it("ignora Análise de Aparelho ausente da Versão atual", () => {
+    const mapa = agruparAnalisadosPorCapacidade([montada()], []);
+    expect(mapa.size).toBe(0);
+  });
+
+  it("com zero Análises devolve mapa vazio", () => {
+    expect(agruparAnalisadosPorCapacidade([], [aparelho()]).size).toBe(0);
+  });
+
+  it("mantém a ordem das Análises na mesma capacidade", () => {
+    const recente = montada({ slug: "recente", data: "2026-10-20" });
+    const antiga = montada({
+      slug: "antiga",
+      data: "2026-10-18",
+      aparelhoId: "ap-bbbbbbbbbbbb",
+    });
+    const mapa = agruparAnalisadosPorCapacidade(
+      [recente, antiga],
+      [aparelho(), aparelho({ id: "ap-bbbbbbbbbbbb", modelo: "Outro modelo" })],
+    );
+
+    expect(mapa.get(12000)?.map((item) => item.titulo)).toEqual([
+      "Vale a pena o modelo?",
+      "Vale a pena o modelo?",
+    ]);
+    expect(mapa.get(12000)?.map((item) => item.url)).toEqual([
+      "/analises/recente/",
+      "/analises/antiga/",
+    ]);
   });
 });

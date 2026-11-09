@@ -1056,6 +1056,81 @@ body.ampla footer {
   background: var(--superficie);
 }
 
+/* CTAs do resultado (ticket 42): cards dos Aparelhos analisados na capacidade
+   recomendada (e na alternativa dividida) e o botão da tabela já filtrada. */
+.assistente-analisados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-block: 1.25rem;
+}
+
+.assistente-analisados-titulo {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.assistente-analisados-texto {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.assistente-analisados-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assistente-analisado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  height: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  color: inherit;
+  text-decoration: none;
+}
+
+.assistente-analisado:hover {
+  border-color: var(--primaria);
+}
+
+.assistente-analisado:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+.assistente-analisado-selo {
+  align-self: flex-start;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--primaria);
+  border-radius: 999px;
+  color: var(--primaria);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.assistente-analisado-titulo {
+  font-weight: 600;
+}
+
+.assistente-analisado-modelo {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.assistente-analisados-tabela {
+  align-self: flex-start;
+}
+
 .assistente-orientacoes dl {
   display: grid;
   grid-template-columns: max-content 1fr;

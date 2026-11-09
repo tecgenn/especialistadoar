@@ -115,6 +115,14 @@ describe("filtros padrão (ticket 38)", () => {
     expect(lerEstado(new URLSearchParams("marca=LG"))).toEqual({ marca: "LG" });
   });
 
+  it("o link do Assistente (?btu=X) desliga os filtros padrão", () => {
+    // ADR-0019: a presença de qualquer chave de filtro desliga o padrão, então
+    // a tabela mostra todos os aparelhos da capacidade recomendada.
+    expect(lerEstado(new URLSearchParams("btu=12000"))).toEqual({
+      btu: 12000,
+    });
+  });
+
   it("respeita uma URL que esvaziou os filtros do padrão", () => {
     expect(lerEstado(new URLSearchParams("tipo=&tensao=&classe="))).toEqual({});
   });

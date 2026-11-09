@@ -4,17 +4,17 @@
 
 **Blocked by:** 41 — Assistente: Motor Determinístico e Wizard
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Mapa build-time de Aparelhos analisados por capacidade, derivado do conteúdo publicado
-- [ ] Cartões dos analisados com a capacidade exata recomendada, com selo "Análise" e link para a página da Análise
-- [ ] Botão "Ver todos os aparelhos de X BTU/h" para `/aparelhos/?btu=X`
-- [ ] O link `?btu=X` desliga os filtros padrão (ADR-0019), então a tabela mostra todos os aparelhos da capacidade
-- [ ] Quando a alternativa dividida existe: CTA "Duas unidades de Y BTU/h" com link para os analisados de Y e para a tabela filtrada em Y
-- [ ] A alternativa dividida aparece mesmo quando existe analisado na capacidade exata
-- [ ] Com zero analisados na capacidade: mantém o botão da tabela e a alternativa aplicável, sem bloco vazio
-- [ ] Sem nenhuma Análise publicada: o resultado continua com o caminho para a tabela, sem cards órfãos
-- [ ] Nenhuma chamada de rede no cliente para montar os cards; tudo gerado no build
-- [ ] Testes: capacidade com analisado exato, capacidade sem analisado, alternativa dividida, zero Análises
-- [ ] Testes de build conferem os links e a presença/ausência dos cards
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Mapa build-time de Aparelhos analisados por capacidade, derivado do conteúdo publicado
+- [x] Cartões dos analisados com a capacidade exata recomendada, com selo "Análise" e link para a página da Análise
+- [x] Botão "Ver todos os aparelhos de X BTU/h" para `/aparelhos/?btu=X`
+- [x] O link `?btu=X` desliga os filtros padrão (ADR-0019), então a tabela mostra todos os aparelhos da capacidade
+- [x] Quando a alternativa dividida existe: CTA "Duas unidades de Y BTU/h" com link para os analisados de Y e para a tabela filtrada em Y
+- [x] A alternativa dividida aparece mesmo quando existe analisado na capacidade exata
+- [x] Com zero analisados na capacidade: mantém o botão da tabela e a alternativa aplicável, sem bloco vazio
+- [x] Sem nenhuma Análise publicada: o resultado continua com o caminho para a tabela, sem cards órfãos
+- [x] Nenhuma chamada de rede no cliente para montar os cards; tudo gerado no build
+- [x] Testes: capacidade com analisado exato, capacidade sem analisado, alternativa dividida, zero Análises
+- [x] Testes de build conferem os links e a presença/ausência dos cards
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes

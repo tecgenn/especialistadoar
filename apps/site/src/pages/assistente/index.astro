@@ -1,6 +1,19 @@
 ---
+import consultaJson from "@dados/consulta.json";
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import Assistente from "../../components/Assistente.tsx";
+import { carregarAnalises } from "../../conteudo/analises.ts";
 import Base from "../../layouts/Base.astro";
+import { agruparAnalisadosPorCapacidade } from "../../lib/analises.ts";
+
+// Os cards de Aparelhos analisados (ticket 42) são montados no build: a ilha
+// recebe o mapa capacidade → analisados pronto e só consulta pelo valor
+// recomendado, sem nenhuma chamada de rede no cliente.
+const { analises } = await carregarAnalises();
+const analisados = agruparAnalisadosPorCapacidade(
+  analises,
+  consultaJson as ItemConsulta[],
+);
 
 const descricao =
   "Descubra quantos BTUs o seu ambiente pede em cinco perguntas: metragem, incidência de sol, pessoas, eletrônicos e janelas. O resultado mostra os fatores, a confiança e orientações.";
@@ -35,5 +48,5 @@ const jsonLd: Record<string, unknown> = {
     por heurística, não um Valor oficial do INMETRO.
   </p>
 
-  <Assistente client:load />
+  <Assistente client:load analisados={analisados} />
 </Base>

@@ -310,6 +310,17 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlHome).toContain(analise.descricao);
     }
 
+    // Os cards de Aparelhos analisados do Assistente (ticket 42) são montados
+    // no build: o mapa capacidade → analisados viaja nas props da ilha, então a
+    // página traz a Análise sem baixar analises.json no cliente. O Aparelho
+    // Ausente não gera card.
+    const htmlAssistente = lerHtml("assistente");
+    expect(htmlAssistente).toContain(`/analises/${valida.slug}/`);
+    expect(htmlAssistente).toContain(valida.titulo);
+    expect(htmlAssistente).not.toContain(`/analises/${ausente.slug}/`);
+    expect(htmlAssistente).not.toContain("analises.json");
+    expect(htmlAssistente).not.toContain("ofertas.json");
+
     // A página Aparelhos (ticket 27) mantém o menu e ganha o JSON-LD próprio.
     const htmlTabela = lerHtml("aparelhos");
     expect(htmlTabela).toContain(">Aparelhos</a>");
@@ -473,6 +484,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(jsonLdAssistente["@type"]).toBe("WebApplication");
     expect(jsonLdAssistente.name).toBe("Calculadora de BTUs");
     expect(htmlHome).toContain(">Assistente</a>");
+    // Sem nenhuma Análise publicada, o Assistente não tem cards: o resultado
+    // continua oferecendo só o caminho para a tabela.
+    expect(htmlAssistente).not.toContain("/analises/");
 
     expect(
       existsSync(join(distDir, "aparelhos", aparelho.id, "index.html")),
