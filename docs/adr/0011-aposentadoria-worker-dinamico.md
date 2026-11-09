@@ -30,7 +30,7 @@ publicados pelo site). O site já não usava o Worker (ADR-0008).
 ## Consequences
 
 - A rota `valor-calculado` deixa de existir: a **fórmula** e as **entradas** são
-  documentadas em `docs/agentes.md` (e ficam candidatas a uma ilha no site depois,
+  documentadas em `docs/base-consumer-guide.md` (e ficam candidatas a uma ilha no site depois,
   fora desta fase). O gabarito do portão (`docs/aceitacao/`) passa a referenciar a
   fórmula, não o endpoint.
 - O **acesso do Agente** passa a ser o acesso aos `.json` — imensurável pela

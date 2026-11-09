@@ -75,7 +75,7 @@ no git, editado por PR comum (ADR-0013):
 - ADRs: 0011 (Worker), 0012 (trilha dupla), 0013 (observabilidade), 0014
   (verificação de links manual).
 - Docs atualizadas: `CONTEXT.md`, `docs/prd.md`, `docs/agents/architecture.md`,
-  `docs/agents/ci-cd-setup.md`, `docs/agentes.md`, `README.md`.
+  `docs/agents/ci-cd-setup.md`, `docs/base-consumer-guide.md`, `README.md`.
 
 ## Origin
 

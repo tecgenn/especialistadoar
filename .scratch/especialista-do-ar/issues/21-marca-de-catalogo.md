@@ -29,7 +29,7 @@ idênticos e a base servida completa não muda.
 - [x] A lista de resultados do catálogo e o link "Ver outros aparelhos da marca" usam a
       marca de catálogo; a ficha segue com a Marca oficial no `<h1>`, no título e na
       descrição, e a URL não mudou.
-- [x] `docs/agentes.md` documenta o campo e a semântica; `CONTEXT.md` ganha **Marca de
+- [x] `docs/base-consumer-guide.md` documenta o campo e a semântica; `CONTEXT.md` ganha **Marca de
       catálogo**; o ADR-0016 registra a escolha (campo derivado, não reescrita da Marca
       oficial).
 - [x] `pnpm build` reproduz `data/build` e `reports` byte a byte.

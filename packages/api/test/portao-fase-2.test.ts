@@ -191,7 +191,7 @@ describe("Portão da Fase 2 — gabarito do teste de aceitação", () => {
             break;
           }
           case "valor-calculado": {
-            // A fórmula do Valor calculado é documentada em `docs/agentes.md`
+            // A fórmula do Valor calculado é documentada em `docs/base-consumer-guide.md`
             // (o Worker dinâmico foi aposentado no ADR-0011). A suíte é
             // offline: este teste garante que o **dado de entrada** do cálculo
             // (o consumo anual oficial) e a fórmula citada no gabarito estão

@@ -42,7 +42,7 @@ depois quebra quem já lê. É por isso que a decisão merece registro.
   URLs das fichas não mudam.
 - O portão de reprodutibilidade do CI exige que `data/build` seja regenerado e
   commitado junto com o código.
-- `docs/agentes.md` documenta os dois campos e a semântica de `situacao`.
+- `docs/base-consumer-guide.md` documenta os dois campos e a semântica de `situacao`.
 - Uma Classe fora de A a F não falha o build: o valor é guardado normalizado
   (aparado, em maiúsculas), porque o dado é do INMETRO e a Anomalia é o lugar de
   sinalizar o que parecer estranho (ADR-0017).

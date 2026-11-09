@@ -64,7 +64,7 @@ falso: há **uma** ocorrência em coluna numérica —
       (`1.16` → `1160`); `aparelhos.json*`, `consulta.json`, `anomalias.jsonl` e
       `reports/` ficam idênticos.
 - [x] Piso de `valor_implausivel` passa a `< 6.000` BTU/h, sem Anomalia nova na
-      Versão atual e com `docs/agentes.md` atualizado.
+      Versão atual e com `docs/base-consumer-guide.md` atualizado.
 - [x] Nenhum Aparelho excluído (seguem 2.460) e nenhum tipo de Anomalia novo.
 - [x] Regra de formato registrada em `docs/agents/architecture.md` (módulo
       `normalize`).

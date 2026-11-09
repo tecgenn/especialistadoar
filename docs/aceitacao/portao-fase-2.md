@@ -2,7 +2,7 @@
 
 > **Nota (2026-10-19):** este é o **registro histórico** da rodada de 2026-10-17.
 > O Worker dinâmico citado abaixo foi **aposentado** (ADR-0011): hoje a base é só
-> estática e o Valor calculado é uma **fórmula documentada** em `docs/agentes.md`.
+> estática e o Valor calculado é uma **fórmula documentada** em `docs/base-consumer-guide.md`.
 > As referências à API dinâmica ficam como parte da evidência daquela rodada.
 
 Portão de decisão da Fase 2 (PRD, "Teste de aceitação com agente"): **um Agente
@@ -15,7 +15,7 @@ projeto segue para o site (ticket #11) ou se a API é reavaliada antes.
 - **Versão da tabela servida:** `ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407`
   (exportação de 2026-10-12, 7474 Linhas).
 - **Agente:** uma sessão nova, **sem acesso ao gabarito** e sem o código-fonte do
-  pipeline. Recebeu só `docs/agentes.md` (como consumir a base) e
+  pipeline. Recebeu só `docs/base-consumer-guide.md` (como consumir a base) e
   `docs/aceitacao/perguntas.md` (as 10 perguntas).
 - **Acesso:** a base **publicada** em `https://especialista-do-ar.pages.dev/`. Na
   época também existia a API dinâmica (removida no ADR-0011). Regra: começar pelo
@@ -51,7 +51,7 @@ conferidos contra a base e batem.
   `/valor-calculado` era a única que devolvia **fórmula, entradas e o aviso** de
   que não é Valor oficial (o cálculo `818 × 0,95` seria reproduzível à mão, mas a
   resposta correta inclui esses metadados). Hoje a mesma saída vem da fórmula
-  documentada em `docs/agentes.md`.
+  documentada em `docs/base-consumer-guide.md`.
 - Houve **1 chamada dinâmica extra** apenas como *confirmação* (pergunta 6).
 - As rotas `/search` e `/comparar` **não foram necessárias** para nenhuma
   resposta: o `consulta.json` (estático) cobre filtros e busca.

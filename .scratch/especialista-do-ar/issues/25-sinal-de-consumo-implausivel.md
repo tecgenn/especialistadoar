@@ -66,7 +66,7 @@ consulta.
 - [x] A regra vive em `REGRAS_PLAUSIBILIDADE`, roda depois das Exceções e não altera
       nenhum valor; nenhum Aparelho é excluído (seguem 2.460).
 - [x] `anomalias.jsonl` passa a mostrar as novas Anomalias; o Relatório de revisão
-      não muda porque esta é a primeira Versão. `docs/agentes.md` documenta o que
+      não muda porque esta é a primeira Versão. `docs/base-consumer-guide.md` documenta o que
       `valor_implausivel` cobre agora.
 - [x] `ItemConsulta.suspeito` é `true` só para Aparelhos com Linha sinalizada.
 - [x] A conclusão sobre a métrica dos Janela fica registrada (no ticket e, se virar

@@ -30,7 +30,7 @@ Entregue em fases — ver `docs/prd.md` para o detalhamento completo. **MVP = Fa
 > revisão só em nova Versão da tabela (ADR-0012) e **observabilidade por
 > dashboards** (ADR-0013), com verificação de links manual (ADR-0014). Este
 > documento já reflete os tickets 13, 14 e 15; o Valor calculado virou fórmula
-> documentada em `docs/agentes.md`.
+> documentada em `docs/base-consumer-guide.md`.
 
 ## Fonte de verdade
 
@@ -277,7 +277,7 @@ nova exportação CSV
   `consulta.json` (ADR-0008); o módulo isomórfico de `packages/api` é a definição
   única da semântica.
 - **Valor calculado:** não há endpoint. A fórmula (`consumoAnualKwh × tarifa`) e
-  as entradas são **documentadas** em `docs/agentes.md`; o Agente calcula a partir
+  as entradas são **documentadas** em `docs/base-consumer-guide.md`; o Agente calcula a partir
   de Valores oficiais e sempre apresenta a fórmula, as entradas e o aviso de que
   **não** é um Valor oficial.
 - **Acesso:** aberto e ilimitado — são arquivos estáticos no Cloudflare Pages.
