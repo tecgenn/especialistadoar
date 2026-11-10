@@ -5,6 +5,7 @@ import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import type { Manifest } from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
+import HomePopulares from "../components/HomePopulares.astro";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
 import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
@@ -101,53 +102,39 @@ const jsonLd: Record<string, unknown>[] = [
       {
         versao ? (
           <>
-            Versão da tabela: {versao.obtidoEm}.
+            Versão da tabela: {versao.hash.slice(0, 12)} (obtida em {versao.obtidoEm}).
           </>
         ) : null
       }
     </p>
   </section>
 
-  <section class="home-populares">
-    <h2>Capacidades populares</h2>
-    <p class="intro">
-      Vá direto para os aparelhos da capacidade que você procura.
-    </p>
-    <ul class="home-links">
-      {
-        capacidades.map((capacidade) => (
-          <li>
-            <a href={linkDaTabela({ btu: capacidade })}>
-              {formatarCapacidade(capacidade)}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
+  <HomePopulares
+    titulo="Capacidades populares"
+    intro="Vá direto para os aparelhos da capacidade que você procura."
+    itens={capacidades.map((capacidade) => ({
+      href: linkDaTabela({ btu: capacidade }),
+      texto: formatarCapacidade(capacidade),
+    }))}
+  />
 
-  <section class="home-populares">
-    <h2>Marcas populares</h2>
-    <p class="intro">Compare os modelos das marcas mais procuradas.</p>
-    <ul class="home-links">
-      {
-        marcas.map((marca) => (
-          <li>
-            <a href={linkDaTabela({ marca: marca.valor })}>{marca.rotulo}</a>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
+  <HomePopulares
+    titulo="Marcas populares"
+    intro="Compare os modelos das marcas mais procuradas."
+    itens={marcas.map((marca) => ({
+      href: linkDaTabela({ marca: marca.valor }),
+      texto: marca.rotulo,
+    }))}
+  />
 
   <AnalisesDestaque destaques={destaques} />
 
   <section class="home-assistente">
     <h2>Descubra quantos BTUs você precisa</h2>
     <p class="intro">
-      O Assistente calcula a capacidade comercial mais próxima a partir da área,
-      do sol, das pessoas e dos equipamentos do ambiente. É uma estimativa
-      determinística, com a conta aberta.
+      Como funciona em 3 passos: o Assistente calcula a capacidade comercial mais
+      próxima a partir da área, do sol, das pessoas e dos equipamentos do
+      ambiente. É uma estimativa determinística, com a conta aberta.
     </p>
     <ol class="home-passos">
       {

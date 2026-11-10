@@ -77,7 +77,7 @@ describe("capacidades e marcas populares", () => {
       item({ id: "b", capacidadesBtu: [36000] }),
     ];
     expect(capacidadesPopulares(dataset, curadoria)).toEqual([
-      9000, 12000, 36000,
+      36000, 9000, 12000,
     ]);
   });
 

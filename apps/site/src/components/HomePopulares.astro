@@ -1,0 +1,21 @@
+---
+interface Props {
+  titulo: string;
+  intro: string;
+  itens: Array<{ href: string; texto: string }>;
+}
+
+const { titulo, intro, itens } = Astro.props;
+---
+
+<section class="home-populares">
+  <h2>{titulo}</h2>
+  <p class="intro">{intro}</p>
+  <ul class="home-links">
+    {itens.map(({ href, texto }) => (
+      <li>
+        <a href={href}>{texto}</a>
+      </li>
+    ))}
+  </ul>
+</section>

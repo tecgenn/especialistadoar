@@ -133,9 +133,7 @@ export function capacidadesPopulares(
   curadoria: FiltrosCurados,
 ): number[] {
   const presentes = new Set(dataset.flatMap((item) => item.capacidadesBtu));
-  return curadoria.btus
-    .filter((capacidade) => presentes.has(capacidade))
-    .sort((a, b) => a - b);
+  return curadoria.btus.filter((capacidade) => presentes.has(capacidade));
 }
 
 /** As marcas populares que existem na base, na ordem curada. */

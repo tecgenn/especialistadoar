@@ -166,7 +166,7 @@ function curadoriaPresente(): {
   };
 }
 
-/** O `obtidoEm` da Versão da tabela atual, como a home publica. */
+/** O hash (12 primeiros caracteres) da Versão da tabela atual, como a home publica. */
 function versaoDaTabela(): string | undefined {
   const manifest = JSON.parse(
     readFileSync(join(dataBuildDir, "manifest.json"), "utf8"),
@@ -174,8 +174,9 @@ function versaoDaTabela(): string | undefined {
     versaoAtual: string | null;
     versoes: Array<{ hash: string; obtidoEm: string }>;
   };
-  return manifest.versoes.find((versao) => versao.hash === manifest.versaoAtual)
-    ?.obtidoEm;
+  return manifest.versoes
+    .find((versao) => versao.hash === manifest.versaoAtual)
+    ?.hash.slice(0, 12);
 }
 
 /**
