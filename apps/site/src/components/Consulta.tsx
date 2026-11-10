@@ -128,7 +128,11 @@ function ChipsClass({
   );
 }
 
-/** Um cabeçalho ordenável: o botão alterna a direção; `aria-sort` fica no `th`. */
+/**
+ * Um cabeçalho ordenável (ticket 43): as duas setas ficam **sempre visíveis**,
+ * a direção ativa em destaque e a outra apagada — assim se descobre que o
+ * cabeçalho é clicável. O botão alterna a direção; `aria-sort` fica no `th`.
+ */
 function Cabecalho({
   campo,
   rotulo,
@@ -149,10 +153,21 @@ function Cabecalho({
         ? "descending"
         : "none";
   return (
-    <th scope="col" aria-sort={ariaSort}>
+    <th scope="col" aria-sort={ariaSort} data-campo={campo}>
       <button type="button" onClick={() => alternar(campo)}>
         {rotulo}
-        {direcao === "asc" ? " ↑" : direcao === "desc" ? " ↓" : null}
+        <span className="setas" aria-hidden="true">
+          <span
+            className={`seta seta-asc${direcao === "asc" ? " seta-ativa" : ""}`}
+          >
+            ↑
+          </span>
+          <span
+            className={`seta seta-desc${direcao === "desc" ? " seta-ativa" : ""}`}
+          >
+            ↓
+          </span>
+        </span>
       </button>
     </th>
   );
@@ -568,6 +583,11 @@ export default function Consulta({
                 <caption className="sr-only">
                   Aparelhos de ar-condicionado, uma linha por Aparelho
                 </caption>
+                <colgroup>
+                  {COLUNAS_TABELA.map((coluna) => (
+                    <col key={coluna.campo} className={`col-${coluna.campo}`} />
+                  ))}
+                </colgroup>
                 <thead>
                   <tr>
                     {COLUNAS_TABELA.map((coluna) =>
@@ -580,7 +600,11 @@ export default function Consulta({
                           alternar={alternar}
                         />
                       ) : (
-                        <th key={coluna.campo} scope="col">
+                        <th
+                          key={coluna.campo}
+                          scope="col"
+                          data-campo={coluna.campo}
+                        >
                           {coluna.rotulo}
                         </th>
                       ),
@@ -642,6 +666,7 @@ export default function Consulta({
                               <td
                                 key={coluna.campo}
                                 data-label={coluna.rotulo}
+                                data-campo={coluna.campo}
                                 data-classe={
                                   coluna.campo === "classe" &&
                                   item.classes.length > 0

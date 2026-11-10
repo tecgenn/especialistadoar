@@ -216,11 +216,12 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
-  it("mostra uma linha por Aparelho com as 6 colunas da tabela", async () => {
+  it("mostra uma linha por Aparelho com as 7 colunas da tabela", async () => {
     await montar();
     const [primeira] = screen.getAllByRole("row").slice(1);
     expect(primeira?.textContent).toContain("DAIKIN");
     expect(primeira?.textContent).toContain("Classe F");
+    expect(primeira?.textContent).toContain("Split Hi-Wall");
     expect(primeira?.textContent).toContain("30.000");
     expect(primeira?.textContent).toContain("350");
     expect(primeira?.textContent).toContain("2,5");
@@ -236,6 +237,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(rotulos).toEqual([
       "Marca",
       "Modelo",
+      "Tipo",
       "BTU/h",
       "Consumo (kWh)",
       "IDRS",
@@ -524,6 +526,73 @@ describe("ordenação da tabela", () => {
         .getByRole("button", { name: "Classe A" })
         .getAttribute("aria-pressed"),
     ).toBe("true");
+  });
+
+  it("o seletor 'Ordenar por' não oferece a coluna Tipo", async () => {
+    await montar();
+    expect(opcoesDoSelect("Ordenar por")).not.toContain("Tipo");
+  });
+});
+
+/**
+ * Ticket 43: a coluna Tipo é somente leitura e todo cabeçalho ordenável anuncia
+ * as duas direções de uma vez — não só a ativa.
+ */
+describe("colunas e setas de ordenação (ticket 43)", () => {
+  const ORDENAVEIS = ["BTU/h", "Consumo (kWh)", "IDRS", "Classe"];
+
+  it("mostra Tipo após Modelo, sem botão, setas nem aria-sort", async () => {
+    await montar();
+
+    expect(
+      screen
+        .getAllByRole("columnheader")
+        .map((th) => th.getAttribute("data-campo")),
+    ).toEqual(["marca", "modelo", "tipo", "btu", "consumo", "idrs", "classe"]);
+
+    const tipo = cabecalho(/^Tipo$/);
+    expect(tipo.querySelector("button")).toBeNull();
+    expect(tipo.querySelector(".seta")).toBeNull();
+    expect(tipo.hasAttribute("aria-sort")).toBe(false);
+    expect(tipo.textContent).toBe("Tipo");
+  });
+
+  it("mostra ↑ e ↓ em todo cabeçalho ordenável, apagadas sem ordem ativa", async () => {
+    await montar();
+
+    for (const rotulo of ORDENAVEIS) {
+      const th = screen.getByRole("columnheader", { name: rotulo });
+      expect(
+        [...th.querySelectorAll(".seta")].map((seta) => seta.textContent),
+      ).toEqual(["↑", "↓"]);
+      expect(th.getAttribute("aria-sort")).toBe("none");
+      expect(th.querySelector(".seta-ativa")).toBeNull();
+    }
+  });
+
+  it("destaca só a direção ativa e alterna a cada clique", async () => {
+    await montar();
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+
+    const th = cabecalho(/Consumo/);
+    expect(th.getAttribute("aria-sort")).toBe("ascending");
+    expect(
+      th.querySelector(".seta-asc")?.classList.contains("seta-ativa"),
+    ).toBe(true);
+    expect(
+      th.querySelector(".seta-desc")?.classList.contains("seta-ativa"),
+    ).toBe(false);
+    // As demais ordenáveis seguem com as duas setas apagadas.
+    expect(cabecalho(/IDRS/).querySelector(".seta-ativa")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+    expect(th.getAttribute("aria-sort")).toBe("descending");
+    expect(
+      th.querySelector(".seta-desc")?.classList.contains("seta-ativa"),
+    ).toBe(true);
+    expect(
+      th.querySelector(".seta-asc")?.classList.contains("seta-ativa"),
+    ).toBe(false);
   });
 });
 

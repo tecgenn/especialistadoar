@@ -383,11 +383,38 @@ body.ampla footer {
 }
 
 /* Tabela de Aparelhos (ticket 27): uma linha por Aparelho, cabeçalhos
-   ordenáveis e cartões no celular. */
+   ordenáveis e cartões no celular.
+
+   Ticket 43: larguras fixas que somam 100% da área útil, cabeçalho preso no
+   topo ao rolar, números à direita, Classe ao centro e modelos quebrando linha.
+   `table-layout: fixed` mantém a grade estável independentemente do conteúdo. */
 .consulta .tabela-aparelhos {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.9rem;
+}
+
+.consulta .tabela-aparelhos col.col-marca {
+  width: 12%;
+}
+.consulta .tabela-aparelhos col.col-modelo {
+  width: 30%;
+}
+.consulta .tabela-aparelhos col.col-tipo {
+  width: 14%;
+}
+.consulta .tabela-aparelhos col.col-btu {
+  width: 10%;
+}
+.consulta .tabela-aparelhos col.col-consumo {
+  width: 12%;
+}
+.consulta .tabela-aparelhos col.col-idrs {
+  width: 8%;
+}
+.consulta .tabela-aparelhos col.col-classe {
+  width: 8%;
 }
 
 .consulta .tabela-aparelhos th,
@@ -399,8 +426,34 @@ body.ampla footer {
 }
 
 .consulta .tabela-aparelhos thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--fundo);
   color: var(--texto-suave);
   font-size: 0.8rem;
+  box-shadow: inset 0 -1px 0 var(--borda);
+}
+
+/* Marca/Modelo/Tipo à esquerda; BTU/Consumo/IDRS à direita; Classe ao centro. */
+.consulta .tabela-aparelhos th[data-campo="btu"],
+.consulta .tabela-aparelhos td[data-campo="btu"],
+.consulta .tabela-aparelhos th[data-campo="consumo"],
+.consulta .tabela-aparelhos td[data-campo="consumo"],
+.consulta .tabela-aparelhos th[data-campo="idrs"],
+.consulta .tabela-aparelhos td[data-campo="idrs"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.consulta .tabela-aparelhos th[data-campo="classe"],
+.consulta .tabela-aparelhos td[data-campo="classe"] {
+  text-align: center;
+}
+
+/* Modelos longos quebram linha dentro da coluna, sem estourar a grade. */
+.consulta .tabela-aparelhos td[data-campo="modelo"] {
+  overflow-wrap: anywhere;
 }
 
 .consulta .tabela-aparelhos thead button {
@@ -409,12 +462,29 @@ body.ampla footer {
   background: transparent;
   font: inherit;
   color: inherit;
+  text-align: inherit;
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .consulta .tabela-aparelhos thead button:hover {
   color: var(--primaria);
+}
+
+/* As duas setas de ordenação ficam sempre visíveis (ticket 43): a ativa em cor
+   primária e negrito, a outra em cinza claro. */
+.consulta .tabela-aparelhos .setas {
+  display: inline-flex;
+  gap: 0.1rem;
+  margin-left: 0.25rem;
+}
+
+.consulta .tabela-aparelhos .seta {
+  color: #cbd5e1;
+}
+
+.consulta .tabela-aparelhos .seta-ativa {
+  color: var(--primaria);
+  font-weight: 700;
 }
 
 .consulta .tabela-aparelhos td[data-label="Modelo"] a {
