@@ -101,12 +101,173 @@ function cssDaPagina(html: string): string {
   return embutido + arquivos;
 }
 
+function jsonLdsDaPagina(html: string): Array<Record<string, unknown>> {
+  return [
+    ...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+    ),
+  ].map((achado) => JSON.parse(achado[1] ?? "{}") as Record<string, unknown>);
+}
+
+/** O primeiro bloco JSON-LD da página (o `WebSite` da home, o da própria rota nas demais). */
 function jsonLdDaPagina(html: string): Record<string, unknown> {
-  const encontrado = html.match(
-    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+  const [primeiro] = jsonLdsDaPagina(html);
+  expect(primeiro).toBeDefined();
+  return primeiro as Record<string, unknown>;
+}
+
+/**
+ * As contagens que a home precisa mostrar, calculadas aqui de forma
+ * independente a partir do `consulta.json` publicado — se a página escrevesse um
+ * número à mão, este teste falharia assim que a base mudasse.
+ */
+function contagensDoBuild(): {
+  aparelhos: string;
+  marcas: string;
+  capacidades: string;
+} {
+  const itens = JSON.parse(
+    readFileSync(join(distDir, "consulta.json"), "utf8"),
+  ) as Array<{ marcaCatalogo: string; capacidadesBtu: number[] }>;
+  const numero = new Intl.NumberFormat("pt-BR");
+  return {
+    aparelhos: numero.format(itens.length),
+    marcas: numero.format(
+      new Set(itens.map((item) => item.marcaCatalogo).filter((m) => m !== ""))
+        .size,
+    ),
+    capacidades: numero.format(
+      new Set(itens.flatMap((item) => item.capacidadesBtu)).size,
+    ),
+  };
+}
+
+/** As capacidades e marcas curadas que existem na base publicada. */
+function curadoriaPresente(): {
+  btus: number[];
+  marcas: Array<{ valor: string; rotulo: string }>;
+} {
+  const curadoria = JSON.parse(
+    readFileSync(join(siteDir, "filtros.json"), "utf8"),
+  ) as {
+    btus: number[];
+    marcas: Array<{ valor: string; rotulo: string }>;
+  };
+  const itens = JSON.parse(
+    readFileSync(join(distDir, "consulta.json"), "utf8"),
+  ) as Array<{ marcaCatalogo: string; capacidadesBtu: number[] }>;
+  const capacidades = new Set(itens.flatMap((item) => item.capacidadesBtu));
+  const marcas = new Set(itens.map((item) => item.marcaCatalogo));
+  return {
+    btus: curadoria.btus
+      .filter((btu) => capacidades.has(btu))
+      .sort((a, b) => a - b),
+    marcas: curadoria.marcas.filter((marca) => marcas.has(marca.valor)),
+  };
+}
+
+/** O `obtidoEm` da Versão da tabela atual, como a home publica. */
+function versaoDaTabela(): string | undefined {
+  const manifest = JSON.parse(
+    readFileSync(join(dataBuildDir, "manifest.json"), "utf8"),
+  ) as {
+    versaoAtual: string | null;
+    versoes: Array<{ hash: string; obtidoEm: string }>;
+  };
+  return manifest.versoes.find((versao) => versao.hash === manifest.versaoAtual)
+    ?.obtidoEm;
+}
+
+/**
+ * A home é um hub (ticket 46) com os nove blocos, e tudo nela é derivado da
+ * base publicada: contagens, capacidades e marcas populares, Versão da tabela.
+ */
+function conferirHomeHub(html: string): void {
+  const contagens = contagensDoBuild();
+  const curadoria = curadoriaPresente();
+  const numero = new Intl.NumberFormat("pt-BR");
+
+  // 1. Hero com H1 e subtítulo de ar-condicionado + INMETRO + comparação.
+  expect(html).toContain("<h1>Ar-condicionado com dados do INMETRO</h1>");
+  expect(html).toContain("capacidade, consumo e eficiência");
+
+  // 2. Dois cartões grandes, o do Assistente com destaque de cor.
+  expect(html).toContain('class="home-cartoes"');
+  expect(html).toContain("<strong>Ver aparelhos</strong>");
+  expect(html).toContain('href="/aparelhos/"');
+  expect(html).toContain("<strong>Usar assistente</strong>");
+  expect(html).toContain('href="/assistente/"');
+  expect(html).toContain("home-cartao home-cartao-destaque");
+
+  // 3. Faixa de confiança com contagens reais e a Versão da tabela.
+  expect(html).toContain(`<strong>${contagens.aparelhos}</strong> aparelhos`);
+  expect(html).toContain(`<strong>${contagens.marcas}</strong> marcas`);
+  expect(html).toContain(
+    `<strong>${contagens.capacidades}</strong> capacidades`,
   );
-  expect(encontrado).not.toBeNull();
-  return JSON.parse(encontrado?.[1] ?? "{}") as Record<string, unknown>;
+  const versao = versaoDaTabela();
+  expect(versao).toBeDefined();
+  expect(html).toContain(`Versão da tabela: ${versao}`);
+
+  // 4. Capacidades populares ligadas à tabela filtrada (9.000 a 36.000).
+  expect(html).toContain("Capacidades populares");
+  expect(curadoria.btus.length).toBeGreaterThan(0);
+  for (const btu of curadoria.btus) {
+    expect(html).toContain(`href="/aparelhos/?btu=${btu}"`);
+    expect(html).toContain(`${numero.format(btu)} BTU/h`);
+  }
+
+  // 5. Marcas populares (as curadas em filtros.json) ligadas à tabela.
+  expect(html).toContain("Marcas populares");
+  expect(curadoria.marcas.length).toBeGreaterThan(0);
+  for (const marca of curadoria.marcas) {
+    expect(html).toContain(`href="/aparelhos/?marca=${marca.valor}"`);
+    expect(html).toContain(`>${marca.rotulo}</a>`);
+  }
+
+  // 7. Chamada do Assistente com "como funciona em 3 passos".
+  expect(html).toContain("Descubra quantos BTUs você precisa");
+  expect(html.match(/class="home-passos"/g) ?? []).toHaveLength(1);
+  for (const passo of [
+    "Responda cinco perguntas",
+    "Veja a conta aberta",
+    "Compare antes de comprar",
+  ]) {
+    expect(html).toContain(passo);
+  }
+
+  // 8. FAQ visível e o mesmo conteúdo no JSON-LD FAQPage.
+  expect(html).toContain("Perguntas frequentes");
+  const blocos = jsonLdsDaPagina(html);
+  const faq = blocos.find((bloco) => bloco["@type"] === "FAQPage");
+  expect(faq).toBeDefined();
+  const entidades = (faq as Record<string, unknown>).mainEntity as Array<{
+    "@type": string;
+    name: string;
+    acceptedAnswer: { "@type": string; text: string };
+  }>;
+  expect(entidades.length).toBeGreaterThanOrEqual(5);
+  expect(entidades.length).toBeLessThanOrEqual(6);
+  for (const entidade of entidades) {
+    expect(entidade["@type"]).toBe("Question");
+    expect(entidade.name.length).toBeGreaterThan(0);
+    expect(entidade.acceptedAnswer["@type"]).toBe("Answer");
+    expect(entidade.acceptedAnswer.text.length).toBeGreaterThan(0);
+    expect(html).toContain(entidade.name);
+    expect(html).toContain(entidade.acceptedAnswer.text);
+  }
+
+  // 9. Metodologia/INMETRO: origem, IDRS/Classe e caráter oficial dos valores.
+  expect(html).toContain("Metodologia e INMETRO");
+  expect(html).toContain("exportação oficial de produtos do INMETRO");
+  expect(html).toContain("IDRS");
+  expect(html).toContain("Classe");
+  expect(html).toContain("estimat");
+
+  // A home continua sem baixar JSON no cliente.
+  expect(html).not.toContain("consulta.json");
+  expect(html).not.toContain("analises.json");
+  expect(html).not.toContain("ofertas.json");
 }
 
 function mdx(analise: AnaliseFixture, corpo: string): string {
@@ -280,21 +441,18 @@ describe("build com uma Análise de fixture", () => {
     // A home exibe o bloco estático de Análises em destaque: título, descrição e
     // link de cada Análise publicada.
     const htmlHome = lerHtml("");
-    // A home (ticket 29) é uma home de verdade: H1, texto curto, o botão para a
-    // tabela e o menu com Aparelhos/Análises — sem a ilha e sem a busca do site.
-    expect(htmlHome).toContain("<h1>Especialista do Ar</h1>");
-    expect(htmlHome).toContain("Ver todos os aparelhos");
-    expect(htmlHome).toContain('href="/aparelhos/"');
+    // A home virou um hub (ticket 46): os nove blocos são gerados no build.
+    conferirHomeHub(htmlHome);
     expect(htmlHome).toContain(">Aparelhos</a>");
     expect(htmlHome).toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");
     expect(htmlHome).not.toContain('href="/busca/"');
     expect(htmlHome).not.toContain('class="tabela-aparelhos"');
     expect(htmlHome).toContain(
-      "<title>Especialista do Ar — aparelhos de ar-condicionado com dados do INMETRO</title>",
+      "<title>Ar-condicionado e BTUs: compare aparelhos com dados do INMETRO — Especialista do Ar</title>",
     );
     expect(htmlHome).toContain(
-      '<meta name="description" content="Base estruturada dos aparelhos de ar-condicionado',
+      '<meta name="description" content="Ar-condicionado e BTUs com os dados oficiais do INMETRO',
     );
     expect(htmlHome).toContain(
       'rel="canonical" href="https://especialista-do-ar.pages.dev/"',
@@ -450,11 +608,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain("Análises em destaque");
     expect(htmlHome).not.toContain('rel="sponsored');
 
-    // A home (ticket 29): H1, texto curto e botão para a tabela; o menu tem só
-    // Aparelhos (Análises é condicional) e a busca do site saiu.
-    expect(htmlHome).toContain("<h1>Especialista do Ar</h1>");
-    expect(htmlHome).toContain("Ver todos os aparelhos");
-    expect(htmlHome).toContain('href="/aparelhos/"');
+    // A home (ticket 46) continua o hub com os nove blocos; só o de Análises em
+    // destaque some quando não há nenhuma Análise publicada.
+    conferirHomeHub(htmlHome);
     expect(htmlHome).toContain(">Aparelhos</a>");
     expect(htmlHome).not.toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");

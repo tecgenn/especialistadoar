@@ -1,9 +1,37 @@
 ---
+import consultaJson from "@dados/consulta.json";
+import manifestJson from "@dados/manifest.json";
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import type { Manifest } from "@especialista-do-ar/pipeline";
+import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import { carregarAnalises } from "../conteudo/analises.ts";
+import { carregarFiltros } from "../conteudo/filtros.ts";
 import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
+import {
+  capacidadesPopulares,
+  contarBase,
+  formatarCapacidade,
+  formatarNumero,
+  jsonLdPerguntasFrequentes,
+  linkDaTabela,
+  marcasPopulares,
+  PASSOS_ASSISTENTE,
+  PERGUNTAS_FREQUENTES,
+} from "../lib/home.ts";
+
+// A home é um hub (ticket 46) montado inteiro no build: as contagens saem do
+// dataset de consulta publicado, as capacidades/marcas populares da curadoria
+// do site e o FAQ da mesma lista que alimenta o JSON-LD. Nada de JSON baixado
+// no cliente.
+const dataset = consultaJson as ItemConsulta[];
+const curadoria = carregarFiltros();
+const contagens = contarBase(dataset);
+const capacidades = capacidadesPopulares(dataset, curadoria);
+const marcas = marcasPopulares(dataset, curadoria);
+const versao = versaoAtualDo(manifestJson as Manifest);
 
 // Os destaques são montados no build: cada Análise publicada, na ordem da mais
 // recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um
@@ -15,36 +43,160 @@ const destaques: DestaqueAnalise[] = analises.map((analise) => ({
   ofertas: ofertasDoAparelho(analise.aparelhoId),
 }));
 
-const descricao =
-  "Base estruturada dos aparelhos de ar-condicionado da exportação oficial do INMETRO: compare capacidade, consumo, IDRS e Classe, e leia as análises.";
+const descricao = `Ar-condicionado e BTUs com os dados oficiais do INMETRO: compare capacidade, consumo, IDRS e Classe de ${formatarNumero(contagens.aparelhos)} aparelhos e descubra quantos BTUs o seu ambiente precisa.`;
 
-const jsonLd: Record<string, unknown> = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Especialista do Ar",
-  url: Astro.site?.href,
-  inLanguage: "pt-BR",
-  description: descricao,
-};
+// `WebSite` continua; o `FAQPage` é somado ao mesmo `<head>` (ticket 46).
+const jsonLd: Record<string, unknown>[] = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Especialista do Ar",
+    url: Astro.site?.href,
+    inLanguage: "pt-BR",
+    description: descricao,
+  },
+  jsonLdPerguntasFrequentes(),
+];
 ---
 
 <Base
-  titulo="Especialista do Ar — aparelhos de ar-condicionado com dados do INMETRO"
+  titulo="Ar-condicionado e BTUs: compare aparelhos com dados do INMETRO — Especialista do Ar"
   descricao={descricao}
   jsonLd={jsonLd}
 >
-  <h1>Especialista do Ar</h1>
-  <p class="intro">
-    A base dos aparelhos de ar-condicionado da exportação oficial do INMETRO,
-    organizada para comparar capacidade, consumo, IDRS e Classe sem abrir a
-    planilha bruta.
-  </p>
+  <section class="home-hero">
+    <h1>Ar-condicionado com dados do INMETRO</h1>
+    <p class="intro">
+      Compare capacidade, consumo e eficiência de aparelhos de ar-condicionado
+      com os dados oficiais do INMETRO — e descubra quantos BTUs o seu ambiente
+      pede antes de escolher o modelo.
+    </p>
+  </section>
+
+  <div class="home-cartoes">
+    <a class="home-cartao" href="/aparelhos/">
+      <strong>Ver aparelhos</strong>
+      <span>
+        A tabela completa, com filtros por marca, capacidade, Tipo e Classe.
+      </span>
+    </a>
+    <a class="home-cartao home-cartao-destaque" href="/assistente/">
+      <strong>Usar assistente</strong>
+      <span>
+        Responda cinco perguntas e veja quantos BTUs o seu ambiente precisa.
+      </span>
+    </a>
+  </div>
+
+  <section class="home-confianca" aria-label="Cobertura da base">
+    <p>
+      <strong>{formatarNumero(contagens.aparelhos)}</strong> aparelhos
+      <span aria-hidden="true">·</span>
+      <strong>{formatarNumero(contagens.marcas)}</strong> marcas
+      <span aria-hidden="true">·</span>
+      <strong>{formatarNumero(contagens.capacidades)}</strong> capacidades
+    </p>
+    <p class="intro">
+      Tudo a partir da exportação oficial de produtos do INMETRO.
+      {
+        versao ? (
+          <>
+            Versão da tabela: {versao.obtidoEm}.
+          </>
+        ) : null
+      }
+    </p>
+  </section>
+
+  <section class="home-populares">
+    <h2>Capacidades populares</h2>
+    <p class="intro">
+      Vá direto para os aparelhos da capacidade que você procura.
+    </p>
+    <ul class="home-links">
+      {
+        capacidades.map((capacidade) => (
+          <li>
+            <a href={linkDaTabela({ btu: capacidade })}>
+              {formatarCapacidade(capacidade)}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="home-populares">
+    <h2>Marcas populares</h2>
+    <p class="intro">Compare os modelos das marcas mais procuradas.</p>
+    <ul class="home-links">
+      {
+        marcas.map((marca) => (
+          <li>
+            <a href={linkDaTabela({ marca: marca.valor })}>{marca.rotulo}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
 
   <AnalisesDestaque destaques={destaques} />
 
-  <p>
-    <a class="botao" href="/aparelhos/">Ver todos os aparelhos</a>
-  </p>
+  <section class="home-assistente">
+    <h2>Descubra quantos BTUs você precisa</h2>
+    <p class="intro">
+      O Assistente calcula a capacidade comercial mais próxima a partir da área,
+      do sol, das pessoas e dos equipamentos do ambiente. É uma estimativa
+      determinística, com a conta aberta.
+    </p>
+    <ol class="home-passos">
+      {
+        PASSOS_ASSISTENTE.map((passo) => (
+          <li>
+            <strong>{passo.titulo}</strong>
+            <span>{passo.texto}</span>
+          </li>
+        ))
+      }
+    </ol>
+    <p>
+      <a class="botao" href="/assistente/">Usar o Assistente</a>
+    </p>
+  </section>
+
+  <section class="home-faq">
+    <h2>Perguntas frequentes</h2>
+    {
+      PERGUNTAS_FREQUENTES.map(({ pergunta, resposta }) => (
+        <div class="home-pergunta">
+          <h3>{pergunta}</h3>
+          <p>{resposta}</p>
+        </div>
+      ))
+    }
+  </section>
+
+  <section class="home-metodologia">
+    <h2>Metodologia e INMETRO</h2>
+    <p>
+      Os dados técnicos — capacidade, consumo, IDRS e Classe — vêm da exportação
+      oficial de produtos do INMETRO e são reproduzidos como Valores oficiais,
+      sem correção editorial.
+    </p>
+    <p>
+      O <strong>IDRS</strong> (Índice de Desempenho de Refrigeração Sazonal) é a
+      razão entre o calor removido e a energia elétrica consumida, em Wh/Wh:
+      quanto maior, mais eficiente. A <strong>Classe</strong> é a faixa de
+      eficiência (A a F) declarada na coluna “Faixa de Classificação” do
+      INMETRO. Nenhuma das duas é recalculada pelo site.
+    </p>
+    <p>
+      A recomendação do Assistente é uma <strong>estimativa</strong> calculada
+      por heurística de mercado: não é um Valor oficial nem um cálculo de carga
+      térmica. Para ambientes complexos ou acima de 60.000 BTU/h, procure uma
+      avaliação técnica.
+    </p>
+  </section>
 
   <script>
     import { redirecionarFiltrosAntigos } from "../lib/redirect.ts";

@@ -1426,3 +1426,148 @@ body.ampla footer {
     margin-top: 0.5rem;
   }
 }
+
+/* Home como hub (ticket 46): hero, dois cartões de entrada, faixa de confiança,
+   capacidades e marcas populares, Análises em destaque, chamada do Assistente,
+   FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente. */
+.home-hero {
+  margin-bottom: 2rem;
+}
+
+.home-cartoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.home-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.home-cartao strong {
+  font-size: 1.2rem;
+}
+
+.home-cartao span {
+  color: var(--texto-suave);
+}
+
+.home-cartao:hover {
+  border-color: var(--primaria);
+}
+
+.home-cartao-destaque {
+  border-color: var(--primaria);
+  background: #e0f2fe;
+}
+
+.home-cartao-destaque strong {
+  color: var(--primaria);
+}
+
+.home-confianca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  padding-block: 0.75rem;
+  margin-bottom: 2rem;
+  border-block: 1px solid var(--borda);
+}
+
+.home-confianca p {
+  margin: 0;
+}
+
+.home-populares {
+  margin-bottom: 2rem;
+}
+
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.home-links a {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: var(--superficie);
+  text-decoration: none;
+}
+
+.home-links a:hover {
+  border-color: var(--primaria);
+  background: #e0f2fe;
+}
+
+.home-assistente {
+  margin-block: 2.5rem;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+}
+
+.home-passos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 0;
+  margin: 1.25rem 0;
+  list-style: none;
+}
+
+.home-passos li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--primaria);
+}
+
+.home-passos span {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.home-faq,
+.home-metodologia {
+  margin-bottom: 2rem;
+}
+
+.home-pergunta {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.home-pergunta h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.home-pergunta p {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 40rem) {
+  .home-cartoes,
+  .home-passos {
+    grid-template-columns: 1fr;
+  }
+}

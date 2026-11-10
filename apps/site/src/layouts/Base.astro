@@ -11,14 +11,17 @@ interface Props {
   descricao?: string;
   /** Canonical da página; por padrão, a própria URL servida. */
   canonical?: string;
-  /** Dados estruturados (JSON-LD) da página, quando houver. */
-  jsonLd?: Record<string, unknown>;
+  /** Dados estruturados (JSON-LD) da página, quando houver. Uma lista gera um
+   *  `<script>` por bloco — a home publica `WebSite` + `FAQPage` (ticket 46). */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
   /** Quando verdadeiro (página de Aparelhos), header/main/footer ocupam a
    *  largura útil, sem o teto de 64 rem das páginas de leitura. */
   ampla?: boolean;
 }
 
 const { titulo, descricao, canonical, jsonLd, ampla = false } = Astro.props;
+const blocosJsonLd =
+  jsonLd === undefined ? [] : Array.isArray(jsonLd) ? jsonLd : [jsonLd];
 const versao = versaoAtualDo(manifestJson as Manifest);
 const { analises } = await carregarAnalises();
 ---
@@ -32,12 +35,9 @@ const { analises } = await carregarAnalises();
     {descricao ? <meta name="description" content={descricao} /> : null}
     <link rel="canonical" href={canonical ?? Astro.url.href} />
     {
-      jsonLd ? (
-        <script
-          type="application/ld+json"
-          set:html={JSON.stringify(jsonLd)}
-        />
-      ) : null
+      blocosJsonLd.map((bloco) => (
+        <script type="application/ld+json" set:html={JSON.stringify(bloco)} />
+      ))
     }
   </head>
   <body class={ampla ? "ampla" : undefined}>

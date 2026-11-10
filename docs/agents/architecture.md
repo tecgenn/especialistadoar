@@ -221,8 +221,13 @@ nova exportação CSV
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
-  (ticket 29): texto curto,
-  Análises em destaque e o botão "Ver todos os aparelhos"; os links antigos
+  (ticket 46): um hub gerado no build com hero, dois cartões de entrada (tabela e
+  Assistente, este em destaque de cor), faixa de confiança com contagens
+  derivadas do `consulta.json` (Aparelhos, marcas, capacidades) e a Versão da
+  tabela, capacidades e marcas populares ligadas à tabela filtrada, Análises em
+  destaque (condicional), chamada do Assistente em três passos, FAQ e
+  metodologia/INMETRO. O `<head>` publica `WebSite` e `FAQPage`; a home não baixa
+  JSON no cliente. Os links antigos
   `/?marca=…` são levados a `/aparelhos/` com a mesma querystring por um script
   curto na home (o `_redirects` não separa a mesma URL por parâmetros), e o menu
   tem Aparelhos, Assistente e, com ≥ 1 Análise, Análises.
