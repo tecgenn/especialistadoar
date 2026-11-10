@@ -255,7 +255,15 @@ nova exportação CSV
   a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
   ou com o Aparelho Ausente, nada é renderizado) e a home ganha um bloco estático
   de Análises em destaque (`AnalisesDestaque`, montado no build — o cliente não
-  baixa `analises.json` nem `ofertas.json`).
+  baixa `analises.json` nem `ofertas.json`). A ilha da tabela recebe no build o
+  mapa `aparelhoId → { titulo, url }`; o selo "Análise" (etiqueta de contorno)
+  linka a Análise, as linhas analisadas ganham destaque e os analisados viram o
+  bloco "Aparelhos com análise" **fora** da `<table>`, com cartões que mostram a
+  Marca e o título da Análise — todos no recorte inicial, só os que ficam de
+  fora quando há filtro ativo —, sem entrar na contagem, na ordenação nem no
+  "Mostrar mais". O `/assistente/`
+  recebe no build o mapa capacidade → analisados e só consulta o valor
+  recomendado, sem busca no cliente (ticket 42).
   Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada
   com aviso, sem bloco de dados e sem CTA. Nada disso entra em `data/build/`, na
   API ou na consulta. Ver ADR-0015.

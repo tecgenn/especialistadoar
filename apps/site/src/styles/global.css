@@ -294,29 +294,41 @@ body.ampla footer {
   color: #fff;
 }
 
-/* Cores da coluna Classe na tabela (ticket 36): reusa as mesmas cores dos
-   chips de classe. `data-classe` pode trazer vários valores separados por
-   espaço; o seletor de atributo com ~ casa cada um como token. */
-.consulta .tabela-aparelhos td[data-classe~="A"] {
+/* Selo de Classe na tabela (ticket 36, revisão do 44): a cor fica numa pílula
+   dentro da célula, não no fundo da célula inteira — a linha permanece
+   uniforme e a classe continua legível à direita do IDRS. */
+.consulta .classe-selos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.consulta .classe-selo {
+  display: inline-block;
+  min-width: 5.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
   background: #16a34a;
   color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
 }
-.consulta .tabela-aparelhos td[data-classe~="B"] {
+
+.consulta .classe-selo[data-classe="B"] {
   background: #2563eb;
-  color: #fff;
 }
-.consulta .tabela-aparelhos td[data-classe~="C"] {
+.consulta .classe-selo[data-classe="C"] {
   background: #ca8a04;
-  color: #fff;
 }
-.consulta .tabela-aparelhos td[data-classe~="D"] {
+.consulta .classe-selo[data-classe="D"] {
   background: #ea580c;
-  color: #fff;
 }
-.consulta .tabela-aparelhos td[data-classe~="E"],
-.consulta .tabela-aparelhos td[data-classe~="F"] {
+.consulta .classe-selo[data-classe="E"],
+.consulta .classe-selo[data-classe="F"] {
   background: #dc2626;
-  color: #fff;
 }
 
 .resultados {
@@ -382,46 +394,32 @@ body.ampla footer {
   background: var(--fundo);
 }
 
-/* Tabela de Aparelhos (ticket 27): uma linha por Aparelho, cabeçalhos
-   ordenáveis e cartões no celular.
+/* Tabela de Aparelhos (ticket 27, revisão do 44): uma linha por Aparelho,
+   cabeçalhos ordenáveis e cartões no celular.
 
-   Ticket 43: larguras fixas que somam 100% da área útil, cabeçalho preso no
-   topo ao rolar, números à direita, Classe ao centro e modelos quebrando linha.
-   `table-layout: fixed` mantém a grade estável independentemente do conteúdo. */
+   A grade tem **colunas de largura igual** e todo o conteúdo centralizado: a
+   leitura desce em colunas regulares, sem valores encostados na vizinha. O
+   recuo horizontal é o mesmo em todas as células (`0.75rem`) e o vertical
+   (`0.8rem`) dá ar entre as linhas. `table-layout: fixed` mantém a grade
+   estável independentemente do conteúdo. */
 .consulta .tabela-aparelhos {
   width: 100%;
   table-layout: fixed;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.9rem;
 }
 
-.consulta .tabela-aparelhos col.col-marca {
-  width: 12%;
-}
-.consulta .tabela-aparelhos col.col-modelo {
-  width: 30%;
-}
-.consulta .tabela-aparelhos col.col-tipo {
-  width: 14%;
-}
-.consulta .tabela-aparelhos col.col-btu {
-  width: 10%;
-}
-.consulta .tabela-aparelhos col.col-consumo {
-  width: 12%;
-}
-.consulta .tabela-aparelhos col.col-idrs {
-  width: 8%;
-}
-.consulta .tabela-aparelhos col.col-classe {
-  width: 8%;
+/* 7 colunas iguais: a grade fica regular em qualquer largura. */
+.consulta .tabela-aparelhos col {
+  width: 14.2857%;
 }
 
 .consulta .tabela-aparelhos th,
 .consulta .tabela-aparelhos td {
-  padding: 0.5rem 0.4rem;
-  text-align: left;
-  vertical-align: top;
+  padding: 0.6rem 0.75rem;
+  text-align: center;
+  vertical-align: middle;
   border-bottom: 1px solid var(--borda);
 }
 
@@ -429,26 +427,22 @@ body.ampla footer {
   position: sticky;
   top: 0;
   z-index: 1;
+  padding-block: 0.65rem;
   background: var(--fundo);
   color: var(--texto-suave);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
   box-shadow: inset 0 -1px 0 var(--borda);
 }
 
-/* Marca/Modelo/Tipo à esquerda; BTU/Consumo/IDRS à direita; Classe ao centro. */
-.consulta .tabela-aparelhos th[data-campo="btu"],
+/* Números alinhados na vírgula, sem perder a centralização da coluna. */
 .consulta .tabela-aparelhos td[data-campo="btu"],
-.consulta .tabela-aparelhos th[data-campo="consumo"],
 .consulta .tabela-aparelhos td[data-campo="consumo"],
-.consulta .tabela-aparelhos th[data-campo="idrs"],
 .consulta .tabela-aparelhos td[data-campo="idrs"] {
-  text-align: right;
   font-variant-numeric: tabular-nums;
-}
-
-.consulta .tabela-aparelhos th[data-campo="classe"],
-.consulta .tabela-aparelhos td[data-campo="classe"] {
-  text-align: center;
 }
 
 /* Modelos longos quebram linha dentro da coluna, sem estourar a grade. */
@@ -456,13 +450,24 @@ body.ampla footer {
   overflow-wrap: anywhere;
 }
 
+.consulta .tabela-aparelhos tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--fundo) 55%, var(--superficie));
+}
+
+.consulta .tabela-aparelhos tbody tr:hover td {
+  background: color-mix(in srgb, var(--primaria) 5%, var(--superficie));
+}
+
 .consulta .tabela-aparelhos thead button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
   padding: 0;
   border: 0;
   background: transparent;
   font: inherit;
   color: inherit;
-  text-align: inherit;
   cursor: pointer;
 }
 
@@ -475,7 +480,6 @@ body.ampla footer {
 .consulta .tabela-aparelhos .setas {
   display: inline-flex;
   gap: 0.1rem;
-  margin-left: 0.25rem;
 }
 
 .consulta .tabela-aparelhos .seta {
@@ -491,20 +495,18 @@ body.ampla footer {
   font-weight: 600;
 }
 
-/* Grupo de analisados (ticket 28): cabeçalho dentro da tabela. */
-.consulta .tabela-aparelhos .grupo-cabecalho td {
-  padding: 0.75rem 0.4rem;
-  border-bottom: 2px solid var(--primaria);
-  font-size: 0.9rem;
+/* Linha do analisado (ticket 44): fundo levemente destacado e borda de acento
+   à esquerda, para a linha se distinguir sem virar um grupo à parte. */
+.consulta .tabela-aparelhos tbody tr.linha-analisado td {
+  background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
 }
 
-.consulta .aviso-afiliado {
-  color: var(--texto-suave);
-  font-weight: 400;
-  font-size: 0.85rem;
+.consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
+  border-left: 3px solid var(--primaria);
 }
 
-/* Selo "Analisado" na coluna Marca (ticket 28). */
+/* Selo "Análise" na coluna Marca (ticket 44): etiqueta de contorno, distinta
+   da pílula azul dos chips de filtro. O tooltip traz só o título da Análise. */
 .consulta .analisado-selo {
   position: relative;
   display: inline-flex;
@@ -512,27 +514,122 @@ body.ampla footer {
   margin-left: 0.5rem;
 }
 
-.consulta .analisado-link {
+.consulta .analisado-etiqueta {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: var(--primaria);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--primaria);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--primaria);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-decoration: none;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.consulta .analisado-link:hover {
-  background: #0284c7;
-  color: #fff;
+.consulta a.analisado-etiqueta:hover {
+  background: color-mix(in srgb, var(--primaria) 12%, transparent);
+  color: var(--primaria);
 }
 
-.consulta .analisado-link:focus {
+.consulta a.analisado-etiqueta:focus-visible {
   outline: 2px solid var(--primaria);
   outline-offset: 2px;
+}
+
+/* Bloco "Aparelhos com análise" (ticket 44, revisto): um destaque **fora** da
+   tabela, acima dela, com cartões próprios — outro material, outra leitura. No
+   recorte inicial mostra todos os analisados; com um filtro ativo, só os que
+   ficam de fora. Nunca mexe em contagem, paginação nem ordenação. */
+.consulta .com-analise {
+  margin-block: 0 1.25rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+.com-analise h2 {
+  margin: 0 0 0.75rem;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.com-analise ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consulta .com-analise-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  height: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  color: inherit;
+  text-decoration: none;
+}
+
+.consulta .com-analise-item:hover {
+  border-color: var(--primaria);
+}
+
+.consulta .com-analise-item:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+.consulta .com-analise-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.consulta .com-analise-marca {
+  color: var(--texto-suave);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.consulta .com-analise-titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.consulta .com-analise-item:hover .com-analise-titulo {
+  color: var(--primaria);
+}
+
+@media (max-width: 40rem) {
+  .consulta .tabela-aparelhos tbody tr.linha-analisado {
+    border-left: 3px solid var(--primaria);
+    background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
+  }
+
+  .consulta .tabela-aparelhos tbody tr.linha-analisado td {
+    background: transparent;
+  }
+
+  .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
+    border-left: 0;
+  }
 }
 
 /* Tooltip do selo: aparece no hover, foco e toque. */
@@ -794,6 +891,7 @@ body.ampla footer {
     gap: 0.5rem;
     padding: 0.15rem 0;
     border: 0;
+    text-align: left;
   }
 
   .consulta .tabela-aparelhos td::before {

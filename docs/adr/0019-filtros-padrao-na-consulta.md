@@ -35,6 +35,13 @@ O padrão `FILTROS_PADRAO = { tipo: "Split Hi-Wall", tensao: 220, classe: "A" }`
 "Limpar filtros" volta ao padrão preservando a ordenação; o botão só aparece
 quando o estado difere do padrão (`temFiltroAtivo`, ignorando a ordenação).
 
+> **Nota (revisão do ticket 44, 2026-11-10):** o padrão encolheu para **só a
+> Tensão `220` V** (`FILTROS_PADRAO = { tensao: 220 }`). Tipo `Split Hi-Wall` e
+> Classe `A` deixam de ser aplicados implicitamente: quem abre `/aparelhos/` vê
+> todos os 220 V. O mecanismo descrito aqui (padrão implícito, URL limpa, chave
+> vazia `tensao=` para desligar, "Limpar filtros" preservando a ordenação)
+> permanece o mesmo.
+
 ## Consequências
 
 - Aditivo ao ADR-0008 (estado da consulta na URL): o padrão é aplicado implicitamente

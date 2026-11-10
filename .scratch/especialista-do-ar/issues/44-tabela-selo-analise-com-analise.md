@@ -4,22 +4,35 @@
 
 **Blocked by:** 43 — Tabela: Setas, Coluna Tipo e Layout
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O rótulo visível passa de "Analisado" para "Análise"
-- [ ] O selo é uma etiqueta de contorno, visualmente diferente da pílula azul dos chips de filtro
-- [ ] Tooltip do selo contém apenas o título da Análise
-- [ ] Linha do analisado com fundo levemente destacado e borda de acento à esquerda
-- [ ] Removidas as linhas de cabeçalho de grupo ("Analisados por nós · contém links de afiliado", "Demais aparelhos")
-- [ ] Nenhum aviso de afiliado na tabela
-- [ ] Analisados que passam nos filtros aparecem antes dos demais, qualquer que seja a ordenação
-- [ ] Bloco "Com análise" acima da tabela lista até 3 analisados que **não** passam nos filtros atuais, com selo e link para a Análise
-- [ ] O bloco deixa explícito que está fora dos filtros atuais
-- [ ] Analisado que passa nos filtros não é duplicado no bloco "Com análise"
-- [ ] Com zero analisados fora do filtro, o bloco não é renderizado
-- [ ] Contagem de resultados segue refletindo só o que passou nos filtros
-- [ ] "Mostrar mais" continua paginando o resultado filtrado, sem os itens do bloco
-- [ ] Ordenação não é afetada pelo bloco "Com análise"
-- [ ] Testes: selo e tooltip, destaque de linha, ausência dos textos removidos, bloco com/sem analisados fora do filtro, contagem e paginação intactas
-- [ ] Testes em jsdom conferem que o bloco fica fora do elemento `<table>` e não interfere na contagem
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] O rótulo visível passa de "Analisado" para "Análise"
+- [x] O selo é uma etiqueta de contorno, visualmente diferente da pílula azul dos chips de filtro
+- [x] Tooltip do selo contém apenas o título da Análise
+- [x] Linha do analisado com fundo levemente destacado e borda de acento à esquerda
+- [x] Removidas as linhas de cabeçalho de grupo ("Analisados por nós · contém links de afiliado", "Demais aparelhos")
+- [x] Nenhum aviso de afiliado na tabela
+- [x] Analisados que passam nos filtros aparecem antes dos demais, qualquer que seja a ordenação
+- [x] Bloco "Com análise" acima da tabela lista até 3 analisados que **não** passam nos filtros atuais, com selo e link para a Análise
+- [x] O bloco deixa explícito que está fora dos filtros atuais
+- [x] Analisado que passa nos filtros não é duplicado no bloco "Com análise"
+- [x] Com zero analisados fora do filtro, o bloco não é renderizado
+- [x] Contagem de resultados segue refletindo só o que passou nos filtros
+- [x] "Mostrar mais" continua paginando o resultado filtrado, sem os itens do bloco
+- [x] Ordenação não é afetada pelo bloco "Com análise"
+- [x] Testes: selo e tooltip, destaque de linha, ausência dos textos removidos, bloco com/sem analisados fora do filtro, contagem e paginação intactas
+- [x] Testes em jsdom conferem que o bloco fica fora do elemento `<table>` e não interfere na contagem
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+
+## Revisão (2026-11-10)
+
+Ajustes pedidos depois de olhar a tela — entram neste mesmo ticket.
+
+- [x] Tabela com colunas de largura igual, conteúdo centralizado e recuo regular (fim do IDRS encostado na Classe); grade mais harmoniosa, cabeçalho em caixa alta discreta e linhas com respiro
+- [x] Classe vira pílula colorida dentro da célula (o fundo da célula não é mais pintado)
+- [x] Filtros padrão reduzidos a **apenas Tensão 220 V** — sem Tipo `Split Hi-Wall`, Classe `A` nem ordenação padrão
+- [x] Bloco de analisados vira **"Aparelhos com análise"**: cartões próprios, acima e visualmente distintos da tabela
+- [x] No recorte inicial o bloco mostra todos os analisados; com filtro ativo, só os que ficam fora do resultado
+- [x] Sai a linha explicativa repetida; o bloco fica só com o título
+- [x] Cada item do bloco mostra a Marca e o **título da Análise** (como no tooltip), não o nome do modelo
+- [x] Testes e docs (`CONTEXT.md`, `architecture.md`, nota no ADR-0019) atualizados
