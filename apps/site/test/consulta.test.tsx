@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import {
   cleanup,
@@ -188,6 +190,14 @@ function opcoesDoSelect(rotulo: string): string[] {
   const select = screen.getByLabelText(rotulo) as HTMLSelectElement;
   return [...select.querySelectorAll("option")].map(
     (opcao) => opcao.textContent ?? "",
+  );
+}
+
+/** O CSS do site, para conferir regras de layout que o jsdom não calcula. */
+function cssDaConsulta(): string {
+  return readFileSync(
+    join(process.cwd(), "apps/site/src/styles/global.css"),
+    "utf8",
   );
 }
 
@@ -857,6 +867,71 @@ describe("painel de filtros recolhível (ticket 39)", () => {
     expect(
       screen.getByRole("button", { name: "Ocultar filtros" }),
     ).toBeDefined();
+  });
+});
+
+describe("layout compacto dos filtros (ticket 45)", () => {
+  it("mostra só a letra nos chips de Classe, com aria-label e cor curada", async () => {
+    await montar(curadoria);
+
+    // As cores vêm da curadoria (mesma fonte da ilha), não são redeclaradas.
+    const cores = Object.fromEntries(
+      curadoria.classes.map((classe) => [classe.valor, classe.cor ?? ""]),
+    );
+    for (const [classe, cor] of Object.entries(cores)) {
+      const botao = screen.getByRole("button", { name: `Classe ${classe}` });
+      expect(botao.textContent).toBe(classe);
+      expect(botao.getAttribute("aria-label")).toBe(`Classe ${classe}`);
+      expect(botao.getAttribute("data-classe")).toBe(classe);
+      expect(botao.style.getPropertyValue("--cor-classe")).toBe(cor);
+    }
+  });
+
+  it("mantém os seis chips de Classe numa única fileira (grade de 6)", async () => {
+    await montar(curadoria);
+
+    const grupo = screen.getByRole("group", { name: "Classe" });
+    expect(within(grupo).getAllByRole("button")).toHaveLength(6);
+    expect(cssDaConsulta()).toMatch(
+      /\.consulta \.campo-classe \.chips\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/,
+    );
+  });
+
+  it("não usa rolagem interna na barra lateral", () => {
+    const css = cssDaConsulta();
+    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*overflow-y/);
+    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*max-height/);
+    // Sticky por padrão; estática quando o componente mede o painel e ele não cabe.
+    expect(css).toMatch(/\.filtros-sidebar\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(
+      /\.filtros-sidebar-estatica\s*\{[^}]*position:\s*static/,
+    );
+  });
+
+  it("fica estática quando o painel é mais alto que a janela", async () => {
+    const alturaOriginal = window.innerHeight;
+    const alturaPainel = vi
+      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+      .mockReturnValue(900);
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 600,
+    });
+
+    try {
+      await montar(curadoria);
+      expect(
+        document
+          .querySelector(".filtros-sidebar")
+          ?.classList.contains("filtros-sidebar-estatica"),
+      ).toBe(true);
+    } finally {
+      alturaPainel.mockRestore();
+      Object.defineProperty(window, "innerHeight", {
+        configurable: true,
+        value: alturaOriginal,
+      });
+    }
   });
 });
 

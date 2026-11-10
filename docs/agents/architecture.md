@@ -210,10 +210,16 @@ nova exportação CSV
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
   botão ao lado de "Ordenar por" inverte a direção. A página usa a variante
   **ampla** do layout (sem o teto de 64 rem das páginas de leitura), com a barra de
-  filtros mais larga; no celular, os filtros ficam num painel recolhível. Ao abrir
-  sem querystring, os **filtros padrão** — Tipo Split Hi-Wall, Tensão 220 V e
-  Classe A — valem como estado inicial sem sujar a URL; "Limpar filtros" volta a
-  eles. A ordem padrão é A–Z por Marca de catálogo e
+  filtros em blocos compactos (ticket 45): busca em largura total, Marca em duas
+  colunas de chips, Capacidade em três, Função e Tensão lado a lado, Tipo em duas,
+  Classe numa fileira de seis letras (com `aria-label` "Classe A"…), Ordenar em
+  largura total e "Limpar filtros" no rodapé. A barra não tem rolagem interna: é
+  `sticky` quando o painel cabe na janela e vira estática quando não cabe, para o
+  rodapé nunca ficar inalcançável; no celular, os filtros ficam num painel
+  recolhível. Ao abrir
+  sem querystring, o **filtro padrão** — Tensão 220 V — vale como estado inicial
+  sem sujar a URL; "Limpar filtros" volta a
+  ele. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
   (ticket 29): texto curto,
   Análises em destaque e o botão "Ver todos os aparelhos"; os links antigos

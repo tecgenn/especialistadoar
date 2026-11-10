@@ -7,7 +7,7 @@ import {
   type OrdemConsulta,
   ordenar,
 } from "@especialista-do-ar/api/consulta";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   escreverEstado,
   FILTROS_PADRAO,
@@ -88,8 +88,10 @@ function Chips({
 }
 
 /**
- * Os chips de Classe (ticket 34): como os demais, mas cada botão carrega
- * `data-classe` para o CSS pintar a classe energética (A–F) e a cor curada.
+ * Os chips de Classe (ticket 34, compactados no 45): como os demais, mas cada
+ * botão carrega `data-classe` para o CSS pintar a classe energética (A–F) e a
+ * cor curada. O rótulo visível é só a letra — a legenda do grupo já diz que é
+ * Classe —, e o `aria-label` mantém o nome completo para leitores de tela.
  */
 function ChipsClass({
   opcoes,
@@ -105,10 +107,11 @@ function ChipsClass({
   }
   return (
     <div className="chips classes-chips">
-      {opcoes.map(({ valor, rotulo, cor }) => (
+      {opcoes.map(({ valor, cor }) => (
         <button
           key={valor}
           type="button"
+          aria-label={`Classe ${valor}`}
           aria-pressed={estaAtivo(valor)}
           data-classe={valor}
           style={
@@ -118,7 +121,7 @@ function ChipsClass({
           }
           onClick={() => selecionar(valor)}
         >
-          {rotulo}
+          {valor}
         </button>
       ))}
     </div>
@@ -216,7 +219,33 @@ export default function Consulta({
   /** No celular (≤ 64 rem) os filtros vivem num painel recolhível acima dos
    *  resultados; começa aberto para não esconder o recorte inicial. */
   const [filtrosAberto, setFiltrosAberto] = useState(true);
+  /** A barra lateral só fica `sticky` quando cabe na janela (ticket 45); numa
+   *  tela baixa ela vira estática e rola com a página, sem esconder o rodapé. */
+  const sidebarRef = useRef<HTMLElement | null>(null);
+  const [sidebarEstatica, setSidebarEstatica] = useState(false);
 
+  // `top: 1rem` do `.filtros-sidebar` mais 1 rem de folga (≈ 32 px na raiz 16 px).
+  const FOLGA_SIDEBAR_PX = 32;
+
+  useEffect(() => {
+    const elemento = sidebarRef.current;
+    if (elemento === null) {
+      return;
+    }
+    const medir = () => {
+      const disponivel = window.innerHeight - FOLGA_SIDEBAR_PX;
+      setSidebarEstatica(elemento.offsetHeight > disponivel);
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    const observador =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(medir);
+    observador?.observe(elemento);
+    return () => {
+      window.removeEventListener("resize", medir);
+      observador?.disconnect();
+    };
+  }, []);
   useEffect(() => {
     let cancelado = false;
     fetch(consultaUrl)
@@ -386,7 +415,11 @@ export default function Consulta({
   return (
     <section className={`consulta${filtrosAberto ? "" : " filtros-fechado"}`}>
       <div className="consulta-layout">
-        <aside id="filtros-sidebar" className="filtros-sidebar">
+        <aside
+          id="filtros-sidebar"
+          ref={sidebarRef}
+          className={`filtros-sidebar${sidebarEstatica ? " filtros-sidebar-estatica" : ""}`}
+        >
           <form
             className="filtros"
             onSubmit={(evento) => evento.preventDefault()}
@@ -403,7 +436,7 @@ export default function Consulta({
               />
             </label>
 
-            <fieldset className="campo-chips">
+            <fieldset className="campo-chips campo-marca">
               <legend>Marca</legend>
               <Chips
                 opcoes={opcoes.marcasChip}
@@ -434,7 +467,7 @@ export default function Consulta({
               </label>
             </fieldset>
 
-            <fieldset className="campo-chips">
+            <fieldset className="campo-chips campo-capacidade">
               <legend>Capacidade</legend>
               <Chips
                 opcoes={opcoes.btusChip.map((btu) => ({
@@ -472,20 +505,47 @@ export default function Consulta({
               </label>
             </fieldset>
 
-            <fieldset className="campo-chips">
-              <legend>Função</legend>
-              <Chips
-                opcoes={funcoes}
-                estaAtivo={(valor) => estado.funcao === valor}
-                selecionar={(valor) =>
-                  atualizar({
-                    funcao: estado.funcao === valor ? undefined : valor,
-                  })
-                }
-              />
-            </fieldset>
+            {/* Ticket 45: Função e Tensão dividem a mesma linha da grade. */}
+            <div className="filtros-par">
+              <fieldset className="campo-chips campo-funcao">
+                <legend>Função</legend>
+                <Chips
+                  opcoes={funcoes}
+                  estaAtivo={(valor) => estado.funcao === valor}
+                  selecionar={(valor) =>
+                    atualizar({
+                      funcao: estado.funcao === valor ? undefined : valor,
+                    })
+                  }
+                />
+              </fieldset>
 
-            <fieldset className="campo-chips">
+              <label className="campo-tensao">
+                <span>Tensão (V)</span>
+                <select
+                  value={
+                    estado.tensao === undefined ? "" : String(estado.tensao)
+                  }
+                  onChange={(evento) =>
+                    atualizar({
+                      tensao:
+                        evento.target.value === ""
+                          ? undefined
+                          : Number(evento.target.value),
+                    })
+                  }
+                >
+                  <option value="">Todas</option>
+                  {opcoes.tensoes.map((tensao) => (
+                    <option key={tensao} value={tensao}>
+                      {tensao}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <fieldset className="campo-chips campo-tipo">
               <legend>Tipo</legend>
               <Chips
                 opcoes={tipos}
@@ -496,7 +556,7 @@ export default function Consulta({
               />
             </fieldset>
 
-            <fieldset className="campo-chips">
+            <fieldset className="campo-chips campo-classe">
               <legend>Classe</legend>
               <ChipsClass
                 opcoes={opcoes.classesChip}
@@ -534,71 +594,53 @@ export default function Consulta({
               ) : null}
             </fieldset>
 
-            <label>
-              <span>Tensão (V)</span>
-              <select
-                value={estado.tensao === undefined ? "" : String(estado.tensao)}
-                onChange={(evento) =>
-                  atualizar({
-                    tensao:
-                      evento.target.value === ""
-                        ? undefined
-                        : Number(evento.target.value),
-                  })
-                }
-              >
-                <option value="">Todas</option>
-                {opcoes.tensoes.map((tensao) => (
-                  <option key={tensao} value={tensao}>
-                    {tensao}
+            <div className="filtros-ordenar">
+              <label className="campo-ordenar">
+                <span>Ordenar por</span>
+                <select
+                  value={estado.ordem ?? ""}
+                  onChange={(evento) => trocarOrdem(evento.target.value)}
+                >
+                  <option value="">
+                    {estado.q === undefined || estado.q.trim() === ""
+                      ? "Padrão (A–Z)"
+                      : "Padrão (relevância)"}
                   </option>
-                ))}
-              </select>
-            </label>
+                  {COLUNAS_TABELA.filter((coluna) =>
+                    CAMPOS_ORDENAVEIS.has(coluna.campo),
+                  ).map((coluna) => (
+                    <option key={coluna.campo} value={coluna.campo}>
+                      {coluna.rotulo}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label>
-              <span>Ordenar por</span>
-              <select
-                value={estado.ordem ?? ""}
-                onChange={(evento) => trocarOrdem(evento.target.value)}
-              >
-                <option value="">
-                  {estado.q === undefined || estado.q.trim() === ""
-                    ? "Padrão (A–Z)"
-                    : "Padrão (relevância)"}
-                </option>
-                {COLUNAS_TABELA.filter((coluna) =>
-                  CAMPOS_ORDENAVEIS.has(coluna.campo),
-                ).map((coluna) => (
-                  <option key={coluna.campo} value={coluna.campo}>
-                    {coluna.rotulo}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
-                a direção precisa de um controle próprio — sem ele, o celular só
-                ordenaria crescente. */}
-            {estado.ordem !== undefined ? (
-              <button
-                type="button"
-                className="ordem-direcao"
-                aria-label={
-                  estado.dir === "desc"
-                    ? "Ordenar de forma crescente"
-                    : "Ordenar de forma decrescente"
-                }
-                onClick={alternarDirecao}
-              >
-                {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
-              </button>
-            ) : null}
+              {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
+                  a direção precisa de um controle próprio — sem ele, o celular só
+                  ordenaria crescente. */}
+              {estado.ordem !== undefined ? (
+                <button
+                  type="button"
+                  className="ordem-direcao"
+                  aria-label={
+                    estado.dir === "desc"
+                      ? "Ordenar de forma crescente"
+                      : "Ordenar de forma decrescente"
+                  }
+                  onClick={alternarDirecao}
+                >
+                  {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
+                </button>
+              ) : null}
+            </div>
 
             {temFiltro ? (
-              <button type="button" onClick={limpar}>
-                Limpar filtros
-              </button>
+              <div className="filtros-rodape">
+                <button type="button" onClick={limpar}>
+                  Limpar filtros
+                </button>
+              </div>
             ) : null}
           </form>
         </aside>
