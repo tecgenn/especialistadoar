@@ -41,7 +41,7 @@ Texto editorial sobre um único Aparelho, publicado no site numa seção própri
 _Avoid_: Artigo, review, resenha
 
 **Aparelho analisado**:
-Aparelho que tem uma Análise publicada. Na tabela de Aparelhos, ganha o selo "Análise" — etiqueta de contorno, com link para a Análise e tooltip com o título dela — e a linha destacada. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Acima da tabela, fora dela e com cartões próprios, o bloco **"Aparelhos com análise"** destaca até 3 analisados: no recorte inicial aparecem todos; com um filtro ativo, só os que ficam de fora do resultado, e cada item mostra a Marca e o **título da Análise** (não o modelo). O bloco não altera contagem, ordenação nem paginação. Os analisados que passam nos filtros aparecem antes dos demais na tabela. A tabela não exibe aviso de afiliado: o aviso de transparência fica no topo da Análise e em cada Oferta.
+Aparelho que tem uma Análise publicada. Na tabela de Aparelhos, ganha o selo "Análise" — etiqueta de contorno, com link para a Análise e tooltip com o título dela — e a linha destacada. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Acima da tabela, fora dela e com cartões próprios, a vitrine **"Aparelhos com análise"** acompanha os filtros ativos (inclusive o padrão de Tensão 220 V): mostra até **6** analisados que passam no recorte — as capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) abrem a lista e as demais completam, na ordem das Análises, da mais recente para a mais antiga. Cada item mostra a Marca e o **título da Análise** (não o modelo). Os cartões repetem aparelhos que também aparecem, destacados, na tabela; o bloco não altera contagem, ordenação nem paginação. Sem analisado no recorte, a vitrine não aparece. Os analisados que passam nos filtros aparecem antes dos demais na tabela. A tabela não exibe aviso de afiliado: o aviso de transparência fica no topo da Análise e em cada Oferta.
 _Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de qualidade ou escondem a relação comercial); selo "Analisado" (nome antigo)
 
 **Assistente**:
@@ -54,6 +54,7 @@ _Avoid_: Resultado oficial, dimensionamento definitivo, recomendação de compra
 
 **Guia**:
 Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
+_Ainda não implementado: nenhum Guia existe no site; o formato entra numa fase futura._
 _Avoid_: Artigo, ranking, lista
 
 **Filtros padrão (ticket 38, revisto no 44)**:
@@ -103,6 +104,7 @@ _Avoid_: Valor original (o original é o que o Registro INMETRO guarda, sem padr
 **Valor calculado**:
 Dado derivado por conta determinística a partir de Valores oficiais e de entradas informadas por quem consulta, como o custo anual estimado com uma tarifa dada na consulta. Sempre acompanha a fórmula e as entradas usadas, para nunca ser confundido com um Valor oficial.
 _Avoid_: Estimativa, recomendação
+
 **Dados declarados**:
 Valores de capacidade e consumo informados para quatro condições (carga total e
 parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais

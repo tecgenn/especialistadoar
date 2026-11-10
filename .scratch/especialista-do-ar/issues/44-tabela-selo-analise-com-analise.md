@@ -36,3 +36,14 @@ Ajustes pedidos depois de olhar a tela — entram neste mesmo ticket.
 - [x] Sai a linha explicativa repetida; o bloco fica só com o título
 - [x] Cada item do bloco mostra a Marca e o **título da Análise** (como no tooltip), não o nome do modelo
 - [x] Testes e docs (`CONTEXT.md`, `architecture.md`, nota no ADR-0019) atualizados
+
+## Revisão da vitrine (2026-11-10)
+
+O bloco "Aparelhos com análise" deixa de avisar o que ficou de fora e vira
+vitrine que acompanha os filtros.
+
+- [x] O bloco mostra os analisados que **passam** no recorte (inclusive o padrão de Tensão 220 V)
+- [x] Limite de 3 → **6** cartões
+- [x] As capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) abrem a lista; as demais completam na ordem das Análises
+- [x] Os cartões podem repetir um analisado que também aparece destacado na tabela
+- [x] `CONTEXT.md` e `architecture.md` atualizados; testes da ilha reescritos

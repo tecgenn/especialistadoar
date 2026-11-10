@@ -18,7 +18,7 @@ import type { OpcoesConsulta } from "../lib/opcoes";
 import { COLUNAS_TABELA, valorDaColuna } from "../lib/tabela";
 
 /**
- * A **única ilha** do site (ADR-0008): a tabela de Aparelhos com filtros
+ * A ilha de consulta do site (ADR-0008): a tabela de Aparelhos com filtros
  * combináveis, busca textual e ordenação rodam **no cliente**, sobre o
  * `consulta.json` publicado, pelo módulo isomórfico do ticket 08
  * (`criarConsulta`/`ordenar`). O estado vive na URL. A consulta é 100% estática:
@@ -40,6 +40,12 @@ export interface PropsConsulta {
 
 /** Quantas linhas aparecem por vez na tabela. */
 const TAMANHO_PAGINA = 50;
+
+/** Quantos cartões a vitrine "Aparelhos com análise" exibe no máximo. */
+const VITRINE_MAXIMO = 6;
+
+/** Capacidades mais compradas: os analisados delas abrem a vitrine. */
+const CAPACIDADES_DESTAQUE = [9000, 12000, 18000];
 
 /** Os campos que a tabela sabe ordenar (as colunas ordenáveis do ticket 31). */
 const CAMPOS_ORDENAVEIS = new Set<string>(ORDENS_CONSULTA);
@@ -355,24 +361,31 @@ export default function Consulta({
   }
   const resultados = [...grupoAnalisados, ...grupoDemais];
 
-  // O bloco "Aparelhos com análise" (ticket 44, revisto) fica **fora** da
+  // A vitrine "Aparelhos com análise" (ticket 44, revisto) fica **fora** da
   // tabela, acima dela, e não entra na contagem, na paginação nem na ordenação.
-  // A ordem é a das Análises (da mais recente para a mais antiga). No recorte
-  // inicial ele destaca **todos** os analisados; com um filtro ativo, só os que
-  // ficam de fora do resultado (os que passam já estão na tabela).
+  // Ela acompanha os filtros ativos: mostra os analisados que passam no recorte
+  // (os mesmos que aparecem destacados na tabela). As capacidades mais
+  // compradas abrem a lista e as demais completam, na ordem das Análises (da
+  // mais recente para a mais antiga), até VITRINE_MAXIMO cartões.
   const temFiltro = temFiltroAtivo(estado);
   const filtradosIds = new Set(filtrados.map((item) => item.id));
   const itensPorId = new Map((itens ?? []).map((item) => [item.id, item]));
-  const comAnalise: ItemConsulta[] = [];
+  const analisadosFiltrados: ItemConsulta[] = [];
   for (const id of analisados.keys()) {
-    if (comAnalise.length === 3) {
-      break;
-    }
     const item = itensPorId.get(id);
-    if (item !== undefined && (!temFiltro || !filtradosIds.has(id))) {
-      comAnalise.push(item);
+    if (item !== undefined && filtradosIds.has(id)) {
+      analisadosFiltrados.push(item);
     }
   }
+  const emDestaque = analisadosFiltrados.filter((item) =>
+    item.capacidadesBtu.some((capacidade) =>
+      CAPACIDADES_DESTAQUE.includes(capacidade),
+    ),
+  );
+  const demais = analisadosFiltrados.filter(
+    (item) => !emDestaque.includes(item),
+  );
+  const comAnalise = [...emDestaque, ...demais].slice(0, VITRINE_MAXIMO);
 
   // Mudar filtro ou ordem volta para o início; "Mostrar mais" só cresce a
   // quantidade dentro do mesmo estado.

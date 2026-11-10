@@ -84,6 +84,7 @@ apps/site/                            # catálogo Astro estático (fase 3)
   src/content.config.ts               # coleção `analises` (frontmatter obrigatório)
   src/conteudo/                       # glue do site (astro:content), fora de src/lib
   scripts/verificar-links.ts          # verificação manual: imprime o relatório de links
+  scripts/buscar-aparelho.ts          # busca o id de um Aparelho para o frontmatter
 ```
 
 1. **Bruto (versionado).** Cada exportação nova é guardada intacta em `data/raw/`,
@@ -201,9 +202,10 @@ nova exportação CSV
   entrar no bundle). Ver ADR-0008 e ADR-0018.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
-  **uma ilha React** de consulta (`Consulta.tsx`) que baixa `consulta.json` e
+  **duas ilhas React**: a de consulta (`Consulta.tsx`) baixa `consulta.json` e
   filtra/busca **no cliente** pelo módulo isomórfico (08), com o estado na URL
-  (`?marca=&tipo=&btu=&tensao=&funcao=&classe=&ordem=&dir=&q=`).
+  (`?marca=&tipo=&btu=&tensao=&funcao=&classe=&ordem=&dir=&q=`); a do Assistente
+  está no bullet próprio mais abaixo.
   Em `/aparelhos/` a ilha rende a **tabela** de Aparelhos (ticket 27): uma linha
   por Aparelho, cabeçalhos `<button>` com `aria-sort`, ordenação por `ordenar` do
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
@@ -221,7 +223,9 @@ nova exportação CSV
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
-  (ticket 46): um hub gerado no build com hero, dois cartões de entrada (tabela e
+  (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`; o bloco de
+  capacidades e marcas populares vem de `HomePopulares.astro`) com hero, dois
+  cartões de entrada (tabela e
   Assistente, este em destaque de cor), faixa de confiança com contagens
   derivadas do `consulta.json` (Aparelhos, marcas, capacidades) e a Versão da
   tabela, capacidades e marcas populares ligadas à tabela filtrada, Análises em
@@ -249,8 +253,9 @@ nova exportação CSV
   validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por
   componentes reutilizáveis (`OfertaCartao`/`OfertaFaixa`, que recebem `Oferta[]`
   ou um `aparelhoId`) na ficha do Aparelho, na Análise e nos destaques da home —
-  separadas dos dados técnicos. A faixa aceita um `nivelTitulo` para acompanhar a
-  hierarquia da página que a recebe. `pnpm verificar-links` confere os links sob demanda e imprime
+  separadas dos dados técnicos; os cartões de CTA da Análise vêm de `CtaCartao`
+  e, quando há Oferta, de `OfertaCta` (ticket 47). A faixa aceita um
+  `nivelTitulo` para acompanhar a hierarquia da página que a recebe. `pnpm verificar-links` confere os links sob demanda e imprime
   URL/loja/motivo dos quebrados, sem falhar. Ver ADR-0010 e ADR-0014.
 - **Análises (conteúdo editorial)** — também em `apps/site`, uma coleção de
   conteúdo MDX (`src/content/analises/`, com `ANALISES_BASE` para o teste apontar
@@ -263,16 +268,22 @@ nova exportação CSV
   e o site segue com as 2.230 páginas (2.227 fichas + `/` + `/aparelhos/` + `/assistente/`). Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
   o JSON-LD aparecem automaticamente; a ficha ganha "Leia a análise",
-  a Análise ganha o CTA da Oferta quando há Oferta para o Aparelho (sem Oferta,
-  ou com o Aparelho Ausente, nada é renderizado) e a home ganha um bloco estático
+  a Análise abre com o banner de transparência e ganha **3 cartões de CTA**
+  (ficha técnica no topo, Assistente depois do corpo e "Continue a pesquisa" no
+  fim) ou **4** quando há Oferta ("Ver oferta" no topo e "Onde comprar" no fim);
+  sem Oferta, os cartões levam à ficha, ao Assistente e à tabela, e com o
+  Aparelho Ausente, à tabela e ao índice de Análises — e a home ganha um bloco
+  estático
   de Análises em destaque (`AnalisesDestaque`, montado no build — o cliente não
   baixa `analises.json` nem `ofertas.json`). A ilha da tabela recebe no build o
   mapa `aparelhoId → { titulo, url }`; o selo "Análise" (etiqueta de contorno)
-  linka a Análise, as linhas analisadas ganham destaque e os analisados viram o
-  bloco "Aparelhos com análise" **fora** da `<table>`, com cartões que mostram a
-  Marca e o título da Análise — todos no recorte inicial, só os que ficam de
-  fora quando há filtro ativo —, sem entrar na contagem, na ordenação nem no
-  "Mostrar mais". O `/assistente/`
+  linka a Análise, as linhas analisadas ganham destaque e os analisados que
+  passam nos filtros viram a vitrine "Aparelhos com análise" **fora** da
+  `<table>`, com cartões que mostram a Marca e o título da Análise — até 6, as
+  capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) primeiro e as demais
+  completando na ordem das Análises —, sem entrar na contagem, na ordenação nem
+  no "Mostrar mais". Os cartões repetem os analisados que também aparecem,
+  destacados, na tabela. O `/assistente/`
   recebe no build o mapa capacidade → analisados e só consulta o valor
   recomendado, sem busca no cliente (ticket 42).
   Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada
@@ -280,6 +291,8 @@ nova exportação CSV
   API ou na consulta. Ver ADR-0015.
 
 - **assistente** — em `apps/site/src/lib/assistente.ts`, o motor puro do Assistente de dimensionamento (ticket 41): recebe as respostas das cinco telas do wizard (`/assistente/`) e devolve a Recomendação do Assistente — capacidade comercial recomendada, fatores usados, nível de confiança, explicação curta e orientações. Coeficientes fixos e auditáveis: base por m² conforme incidência solar (600/650/750/800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima (9.000 a 60.000 BTU/h), teto de 60.000 com alternativa dividida (2 × metade da capacidade quando for comercial e ≥ 9.000). A ilha React `Assistente.tsx` apenas coleta respostas e renderiza; não calcula. Todo o estado vive na URL, então recarregar e compartilhar preservam o resultado. No build, o mapa capacidade → analisados (ticket 42) é montado a partir das Análises publicadas e das `capacidadesBtu` do `consulta.json`, e só o valor recomendado é consultado — sem busca no cliente. ADR-0020 registra a decisão (heurística de mercado, sem LLM/Worker, Valor calculado nunca oficial, acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica).
+
+- **aparelho:buscar** — `apps/site/src/lib/buscar-aparelho.ts` (busca pura) + `apps/site/scripts/buscar-aparelho.ts` (CLI, `pnpm aparelho:buscar`): procura na base servida por marca ou modelo (trecho, sem caixa nem acento) ou por potência exata em BTU e imprime marca, modelo, potência e `id` — o valor do `aparelhoId` de uma Análise (ticket 16). Só leitura: não cria artefato nem toca no pipeline.
 
 ## Interfaces
 
@@ -345,11 +358,12 @@ Ver ADR-0003 e ADR-0011.
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
   (ADR-0010 e ADR-0014); os componentes `OfertaCartao`/`OfertaFaixa` renderizam o
-  CTA na ficha, na Análise e nos destaques da home sem tocar na ilha.
+  CTA na ficha, na Análise e nos destaques da home sem tocar na ilha, e os
+  cartões de CTA da Análise vêm de `CtaCartao`/`OfertaCta` (ticket 47).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
-  Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**; o
-  repositório é público, então minutos de runner não são cobrados (a regra foi
-  mantida por decisão do ticket #06). O CI roda lint, typecheck, build
+  Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**,
+  porque falhas específicas de plataforma não devem travar o merge (decisão do
+  ticket #06). O CI roda lint, typecheck, build
   (validação Ajv + invariantes) e Vitest, e inclui um gate de reprodutibilidade
   que falha se `data/build`/`reports` divergirem de um `pnpm build` novo. O
   Relatório de revisão só é anexado ao PR quando ele **adiciona** uma nova Versão

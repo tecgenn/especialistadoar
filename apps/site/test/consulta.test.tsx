@@ -16,7 +16,7 @@ import type { FiltrosCurados } from "../src/lib/filtros.ts";
 import { opcoesDe } from "../src/lib/opcoes.ts";
 
 /**
- * A **única ilha** do site (ADR-0008) baixa o `consulta.json` publicado e aplica
+ * A ilha de consulta do site (ADR-0008) baixa o `consulta.json` publicado e aplica
  * filtros, busca e ordenação **no cliente**, refletindo o estado na URL. Aqui
  * mockamos o `fetch` do dataset e exercitamos a ilha no DOM (jsdom).
  *
@@ -1012,7 +1012,7 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     });
   });
 
-  it("no recorte inicial, destaca todos os analisados num bloco fora da tabela", async () => {
+  it("no recorte inicial, a vitrine mostra os analisados do recorte, fora da tabela", async () => {
     // A carga limpa ("/") é o padrão (só Tensão 220 V), sem filtro "ativo".
     await montarComAnalisados("/");
 
@@ -1036,54 +1036,67 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(links[1]?.textContent).toContain("Análise do Midea Xtreme Save");
   });
 
-  it("com filtro ativo, o bloco só traz os analisados que ficam de fora", async () => {
-    await montarComAnalisados("/?marca=GREE");
+  it("com filtro ativo, a vitrine acompanha o recorte e repete o analisado da tabela", async () => {
+    await montarComAnalisados("/?marca=LG");
 
+    // O bloco mostra o analisado que passa no filtro...
     const bloco = document.querySelector(".com-analise") as HTMLElement;
     expect(bloco).not.toBeNull();
     const links = within(bloco).getAllByRole("link");
-    expect(links).toHaveLength(2);
-    expect(
-      within(bloco).queryByText(/Análise do LG Dual Inverter/),
-    ).toBeDefined();
-    expect(
-      within(bloco).queryByText(/Análise do Midea Xtreme Save/),
-    ).toBeDefined();
-    // Nenhum dos dois aparece na tabela: o filtro é GREE.
+    expect(links).toHaveLength(1);
+    expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
+
+    // ...e ele também aparece, destacado, na tabela: a repetição é intencional.
+    const linha = screen
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes("Dual Inverter"));
+    expect(linha?.classList.contains("linha-analisado")).toBe(true);
+  });
+
+  it("esconde a vitrine quando nenhum analisado passa no filtro", async () => {
+    await montarComAnalisados("/?marca=GREE");
+
+    // O filtro é GREE e os analisados são LG e MIDEA: não há o que vitrinear.
+    expect(document.querySelector(".com-analise")).toBeNull();
+    expect(screen.queryByText("Aparelhos com análise")).toBeNull();
+    // O bloco não entra na contagem: só o GREE passou nos filtros.
     expect(
       screen.getByText("1 aparelho(s) com Dados declarados."),
     ).toBeDefined();
   });
 
-  it("mostra até 3 analisados fora dos filtros num bloco fora da tabela", async () => {
+  it("limita a vitrine a 6 e abre com as capacidades mais compradas", async () => {
     const mapaAmplo = new Map<string, { titulo: string; url: string }>([
+      ["elgin-d", { titulo: "Análise Elgin", url: "/analises/elgin/" }],
+      ["daikin-f", { titulo: "Análise Daikin", url: "/analises/daikin/" }],
       ["lg-split", { titulo: "Análise LG", url: "/analises/lg/" }],
       ["midea-oficial", { titulo: "Análise Midea", url: "/analises/midea/" }],
+      [
+        "midea-springer",
+        { titulo: "Análise Springer", url: "/analises/springer/" },
+      ],
       ["gree-split", { titulo: "Análise Gree", url: "/analises/gree/" }],
-      ["elgin-d", { titulo: "Análise Elgin", url: "/analises/elgin/" }],
+      ["hitachi-e", { titulo: "Análise Hitachi", url: "/analises/hitachi/" }],
     ]);
-    // Só a Janela (LG, 127 V) passa; os quatro analisados ficam fora.
-    window.history.replaceState(null, "", "/?tensao=127");
+    // TODOS desliga o filtro padrão: os sete analisados passam no recorte.
+    window.history.replaceState(null, "", TODOS);
     render(<Consulta opcoes={opcoesDe(itens)} analisados={mapaAmplo} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
 
     const bloco = document.querySelector(".com-analise") as HTMLElement;
     expect(bloco).not.toBeNull();
-    expect(bloco.closest("table")).toBeNull();
-    expect(within(bloco).getAllByRole("link")).toHaveLength(3);
-    // O bloco não entra na contagem: só a Janela passou nos filtros.
+    const links = within(bloco).getAllByRole("link");
+    expect(links).toHaveLength(6);
+    // O primeiro analisado do mapa é o Elgin (30.000 BTU/h), mas as capacidades
+    // mais compradas abrem a vitrine: o LG (9.000) vem primeiro.
+    expect(links[0]?.textContent).toContain("Análise LG");
+    // O 6º slot é o primeiro "demais" na ordem das Análises: o Elgin.
+    expect(links[5]?.textContent).toContain("Análise Elgin");
+    // O corte de 6 deixa o Daikin de fora.
+    expect(within(bloco).queryByText(/Análise Daikin/)).toBeNull();
+    // A tabela continua com os oito Aparelhos do dataset.
     expect(
-      screen.getByText("1 aparelho(s) com Dados declarados."),
-    ).toBeDefined();
-  });
-
-  it("não duplica no bloco o analisado que passa nos filtros", async () => {
-    await montarComAnalisados("/?marca=LG");
-    const bloco = document.querySelector(".com-analise") as HTMLElement;
-    expect(bloco).not.toBeNull();
-    expect(within(bloco).queryByText(/Análise do LG Dual Inverter/)).toBeNull();
-    expect(
-      within(bloco).getByText(/Análise do Midea Xtreme Save/),
+      screen.getByText("8 aparelho(s) com Dados declarados."),
     ).toBeDefined();
   });
 
@@ -1121,10 +1134,7 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
         opcoes={opcoesDe(muitos)}
         analisados={
           new Map([
-            [
-              "fora-do-filtro",
-              { titulo: "Análise fora", url: "/analises/fora/" },
-            ],
+            ["lg-0", { titulo: "Análise LG 0", url: "/analises/lg-0/" }],
           ])
         }
       />,
