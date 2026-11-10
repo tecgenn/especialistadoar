@@ -153,11 +153,13 @@ Texto editorial, com números próprios...
 - `slug` vira a URL e precisa ser único, sem `/`.
 - `data` pode ficar sem aspas; o build normaliza para `YYYY-MM-DD`.
 - Imagens entram pelo componente de imagem do Astro (`astro:assets`), com `alt`.
-- O **CTA da Oferta** aparece sozinho no fim da Análise quando o Aparelho tem
-  Oferta em `apps/site/ofertas.json`; sem Oferta (ou com o Aparelho fora da
-  tabela), nada é renderizado. No meio do texto, use o mesmo componente:
-  importe `../../components/OfertaFaixa.astro` no MDX e passe
-  `<OfertaFaixa aparelhoId="ap-..." />` — sem estilo inline.
+- O **template da Análise monta os CTAs** — o MDX não repete Oferta nem CTA.
+  Toda Análise abre com o **banner de transparência** e ganha **3 cartões**
+  (ficha técnica no topo, Assistente depois do corpo e "Continue a pesquisa" no
+  fim) ou **4** quando o Aparelho tem Oferta em `apps/site/ofertas.json` ("Ver
+  oferta" no topo e "Onde comprar" no fim). Sem Oferta, os cartões levam à ficha,
+  ao Assistente e à tabela; com o Aparelho fora da tabela, à tabela e ao índice
+  de Análises.
 - Com **zero** Análises o site fica exatamente como hoje: sem `/analises/`, sem
   menu, sem `analises.json` e sem entrada no sitemap. A primeira Análise liga
   tudo automaticamente, inclusive o "Leia a análise" na ficha do Aparelho.

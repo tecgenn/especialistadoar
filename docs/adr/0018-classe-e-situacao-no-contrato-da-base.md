@@ -2,6 +2,13 @@
 
 **Status:** aceito
 
+> **Nota (2026-11-10):** a **Situação** saiu do contrato no **ticket 31**, junto de
+> `rotacao` e `suspeito`. `aparelhos.jsonl`, `aparelhos.json`, `schema.json` e
+> `consulta.json` não trazem `situacao`; quem precisa dela deriva dos `registros`
+> do Aparelho (ver `CONTEXT.md` e `docs/base-consumer-guide.md`). A **Classe**
+> continua como descrito abaixo. O texto original fica como histórico — a
+> remoção e o filtro de Linhas `Excluido` estão no ticket 31.
+
 A tabela de Aparelhos do site precisa de duas informações que a base servida não
 carrega: a **Classe** (faixa A a F que o INMETRO declara) e a **Situação** (se o
 Aparelho tem Registro INMETRO ativo). A Classe existe no CSV bruto, na coluna

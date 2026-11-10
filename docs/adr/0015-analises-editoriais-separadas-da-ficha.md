@@ -9,6 +9,11 @@
 > Análise leva a uma Oferta de afiliado, o selo, o grupo na tabela e cada Oferta
 > trazem aviso visível de link de afiliado. Ver `spec-fase-7.md`.
 
+> **Nota (2026-11-10):** o "grupo na tabela" e o aviso de afiliado no selo
+> saíram no **ticket 44**; a transparência ficou no banner de toda Análise e em
+> cada Oferta. Os CTAs da Análise viraram cartões (tickets 44 e 47). O resto da
+> nota de 2026-10-23 continua valendo.
+
 A partir da Fase 5 o site passa a ter **Análises** (ver `CONTEXT.md`): textos
 editoriais sobre um único Aparelho, com objetivo de aquisição (SEO e marketing),
 publicados numa seção própria (`/analises/<slug>`) e ligados ao Aparelho por

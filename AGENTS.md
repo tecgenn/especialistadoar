@@ -41,6 +41,10 @@ Single-context — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/ag
 - **Repo convention:** `data/build` and `reports` are *committed* artifacts and must
   match a fresh `pnpm build` — CI fails otherwise, so a change to the raw snapshot or
   the curated layer must be committed together with the regenerated artifacts.
+- **Never hand-edit `data/build/` or `reports/`** — they are derived. Content changes
+  go through the curated layer (`data/excecoes-manuais.jsonl`,
+  `data/vinculos-confirmados.jsonl`, `data/marcas-catalogo.jsonl`) or through a format
+  rule in the pipeline.
 - **Before pushing:** run
   `pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test`
   and commit the regenerated artifacts. See the README.
