@@ -1,20 +1,34 @@
 ---
 import { render } from "astro:content";
 import aparelhosJson from "@dados/aparelhos.json";
+import consultaJson from "@dados/consulta.json";
 import manifestJson from "@dados/manifest.json";
-import type { Aparelho, Manifest } from "@especialista-do-ar/pipeline";
+import type {
+  Aparelho,
+  ItemConsulta,
+  Manifest,
+} from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
-import OfertaFaixa from "../../components/OfertaFaixa.astro";
+import CtaCartao from "../../components/CtaCartao.astro";
+import OfertaCartao from "../../components/OfertaCartao.astro";
 import {
   carregarAnalises,
   type EntradaAnalise,
 } from "../../conteudo/analises.ts";
+import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
 import Base from "../../layouts/Base.astro";
 import type { Analise } from "../../lib/analises.ts";
+import type { Oferta } from "../../lib/ofertas.ts";
 
 export async function getStaticPaths() {
   const aparelhos = aparelhosJson as Aparelho[];
   const porId = new Map(aparelhos.map((aparelho) => [aparelho.id, aparelho]));
+  const capacidadesPorId = new Map(
+    (consultaJson as ItemConsulta[]).map((item) => [
+      item.id,
+      item.capacidadesBtu,
+    ]),
+  );
   const { analises, entradas } = await carregarAnalises();
   return analises.map((analise) => ({
     params: { slug: analise.slug },
@@ -22,6 +36,7 @@ export async function getStaticPaths() {
       analise,
       entrada: entradas.get(analise.slug),
       aparelho: porId.get(analise.aparelhoId),
+      capacidadesBtu: capacidadesPorId.get(analise.aparelhoId) ?? [],
     },
   }));
 }
@@ -30,17 +45,28 @@ interface Props {
   analise: Analise;
   entrada: EntradaAnalise;
   aparelho: Aparelho | undefined;
+  capacidadesBtu: number[];
 }
 
-const { analise, entrada, aparelho } = Astro.props;
+const { analise, entrada, aparelho, capacidadesBtu } = Astro.props;
 const { Content } = await render(entrada);
 const versao = versaoAtualDo(manifestJson as Manifest);
 
-const url = new URL(analise.url, Astro.site).href;
+// Toda Análise publicada no build tem, no mínimo, três CTAs em cartão: o do
+// topo, o do meio (Assistente) e o do fim (Oferta quando houver + ficha +
+// tabela filtrada). Com Oferta são quatro cartões (topo e fim comerciais).
+const ofertas: Oferta[] =
+  aparelho === undefined ? [] : ofertasDoAparelho(aparelho.id);
+const capacidadeBtu = capacidadesBtu[0];
+const numero = new Intl.NumberFormat("pt-BR");
+const urlTabela =
+  capacidadeBtu === undefined
+    ? "/aparelhos/"
+    : `/aparelhos/?btu=${capacidadeBtu}`;
 const urlFicha =
-  aparelho === undefined
-    ? undefined
-    : new URL(`/aparelhos/${aparelho.id}/`, Astro.site).href;
+  aparelho === undefined ? undefined : `/aparelhos/${aparelho.id}/`;
+
+const url = new URL(analise.url, Astro.site).href;
 
 const jsonLd: Record<string, unknown> = {
   "@context": "https://schema.org",
@@ -72,7 +98,7 @@ const jsonLd: Record<string, unknown> = {
         about: {
           "@type": "Product",
           name: `${aparelho.marca} ${aparelho.modelo}`,
-          url: urlFicha,
+          url: new URL(urlFicha ?? "/", Astro.site).href,
         },
       }),
 };
@@ -91,9 +117,72 @@ const jsonLd: Record<string, unknown> = {
       <time datetime={analise.data}>{analise.data}</time>
     </p>
 
+    <aside
+      class="analise-transparencia"
+      role="note"
+      aria-label="Aviso de transparência"
+    >
+      <p><strong>Aviso de transparência</strong></p>
+      <p>
+        Este artigo contém links de afiliados. Podemos receber uma comissão
+        pelas compras realizadas através desses links, sem custo adicional para
+        você.
+      </p>
+    </aside>
+
+    {
+      // CTA 1 (topo, após o lead): a Oferta quando há; senão a ficha técnica.
+      // Um Aparelho Ausente não tem ficha: o cartão leva à tabela.
+      aparelho === undefined ? (
+        <CtaCartao
+          titulo="Ver todos os aparelhos"
+          descricao="O modelo desta análise não consta na Versão atual, mas a tabela traz os aparelhos comparáveis."
+        >
+          <a class="cta-acao" href="/aparelhos/">
+            Ver todos os aparelhos
+          </a>
+        </CtaCartao>
+      ) : ofertas.length > 0 ? (
+        <CtaCartao
+          titulo="Ver oferta"
+          descricao="Onde encontrar este modelo — o preço é o do dia."
+          comercial
+        >
+          <ul class="cta-ofertas">
+            {ofertas.map((oferta) => (
+              <li>
+                <OfertaCartao oferta={oferta} />
+              </li>
+            ))}
+          </ul>
+        </CtaCartao>
+      ) : (
+        <CtaCartao
+          titulo="Ver ficha técnica"
+          descricao="Capacidade, consumo, IDRS, Classe e tensão nos dados oficiais do INMETRO."
+        >
+          <a class="cta-acao" href={urlFicha}>
+            Ver ficha técnica
+          </a>
+        </CtaCartao>
+      )
+    }
+
     <div class="analise-corpo">
       <Content />
     </div>
+
+    {
+      // CTA 2 (meio): o Assistente, após o corpo do artigo.
+      <CtaCartao
+        titulo="Calcular os BTUs do meu ambiente"
+        descricao="Responda cinco perguntas e veja a capacidade ideal, com a conta aberta."
+      >
+        <a class="cta-acao" href="/assistente/">
+          Calcular os BTUs do meu ambiente
+        </a>
+      </CtaCartao>
+    }
 
     {
       aparelho === undefined ? (
@@ -114,18 +203,62 @@ const jsonLd: Record<string, unknown> = {
             Valores oficiais — capacidade, consumo, IDRS e tensão.
           </p>
           <p>
-            <a href={`/aparelhos/${aparelho.id}/`}>Ver ficha técnica</a>
+            <a href={urlFicha}>Ver ficha técnica</a>
           </p>
         </section>
       )
     }
 
     {
-      // O CTA da Oferta só existe quando o Aparelho está na Versão atual e há
-      // Oferta para ele; o componente não renderiza nada quando a lista é vazia
-      // (nada de link vazio, ADR-0010).
-      aparelho === undefined ? null : (
-        <OfertaFaixa aparelhoId={aparelho.id} titulo="Onde comprar" />
+      // CTA 3 (fim): a Oferta, quando houver.
+      ofertas.length > 0 ? (
+        <CtaCartao
+          titulo="Onde comprar"
+          descricao="O preço é o do dia; confira a tensão e a instalação antes."
+          comercial
+        >
+          <ul class="cta-ofertas">
+            {ofertas.map((oferta) => (
+              <li>
+                <OfertaCartao oferta={oferta} />
+              </li>
+            ))}
+          </ul>
+        </CtaCartao>
+      ) : null
+    }
+
+    {
+      // CTA 4 (fim): ficha técnica e tabela filtrada pela capacidade. Sem
+      // Oferta, este é o terceiro cartão; sem Aparelho na Versão atual, ele se
+      // resolve na tabela.
+      aparelho === undefined ? (
+        <CtaCartao
+          titulo="Continue a pesquisa"
+          descricao="Compare outros aparelhos pelos dados oficiais do INMETRO."
+        >
+          <a class="cta-acao" href="/aparelhos/">
+            Ver todos os aparelhos
+          </a>
+        </CtaCartao>
+      ) : (
+        <CtaCartao
+          titulo="Continue a pesquisa"
+          descricao="Confira os números oficiais e compare com aparelhos da mesma capacidade."
+        >
+          <a class="cta-acao" href={urlFicha}>
+            Ver ficha técnica
+          </a>
+          {capacidadeBtu === undefined ? (
+            <a class="cta-acao" href={urlTabela}>
+              Ver todos os aparelhos
+            </a>
+          ) : (
+            <a class="cta-acao" href={urlTabela}>
+              Ver outros de {numero.format(capacidadeBtu)} BTU/h
+            </a>
+          )}
+        </CtaCartao>
       )
     }
   </article>

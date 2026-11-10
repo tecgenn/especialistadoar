@@ -856,6 +856,86 @@ body.ampla footer {
   margin: 0;
 }
 
+/* Banner de transparência de afiliados (ticket 47): fica no topo do conteúdo,
+   antes do corpo do artigo. */
+.analise-transparencia {
+  margin-block: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--primaria);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+/* CTAs da Análise (ticket 47): sempre um cartão destacado, nunca um link solto
+   no meio do texto. As ações dentro do cartão são botões. */
+.cta-cartao {
+  margin-block: 1.5rem;
+  padding: 1.25rem;
+  border: 2px solid var(--primaria);
+  border-radius: 0.75rem;
+  background: #e0f2fe;
+}
+
+.cta-cartao-titulo {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.cta-cartao-descricao {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--texto-suave);
+}
+
+.cta-cartao-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cta-acao {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--primaria);
+  color: var(--superficie);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cta-acao:hover {
+  background: #075985;
+}
+
+.cta-ofertas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cta-ofertas .oferta-cartao {
+  display: inline-block;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primaria);
+  border-radius: 999px;
+  background: var(--superficie);
+  text-decoration: none;
+}
+
+.cta-ofertas .oferta-cartao:hover {
+  border-color: #075985;
+}
+
+.cta-cartao-nota {
+  margin: 0.75rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
 .analise-aviso,
 .analise-destaque {
   margin-block: 1.5rem 1rem;

@@ -86,6 +86,12 @@ function esperarSemBuscaAntiga(): void {
   expect(redirects).toContain("/busca /aparelhos/ 301");
 }
 
+/** O texto da página com os espaços colapsados, para comparar frases que o
+ *  Astro quebra em linhas no HTML. */
+function textoDaPagina(html: string): string {
+  return html.replace(/\s+/g, " ");
+}
+
 /**
  * O CSS que o build serve: as folhas em `_astro/` (o Astro deixa de embutir a
  * folha quando ela cresce) mais qualquer `<style>` embutido na página.
@@ -320,6 +326,14 @@ function primeiroAparelho(): AparelhoDaBase {
   return primeiro;
 }
 
+/** A capacidade que a Análise usa no CTA da tabela filtrada. */
+function capacidadeDoAparelho(id: string): number | undefined {
+  const itens = JSON.parse(
+    readFileSync(join(dataBuildDir, "consulta.json"), "utf8"),
+  ) as Array<{ id: string; capacidadesBtu: number[] }>;
+  return itens.find((item) => item.id === id)?.capacidadesBtu[0];
+}
+
 function aparelhoDiferente(id: string): AparelhoDaBase {
   const encontrado = aparelhosDaBase().find((item) => item.id !== id);
   if (encontrado === undefined) {
@@ -388,11 +402,9 @@ describe("build com uma Análise de fixture", () => {
       mdx(
         valida,
         [
-          'import OfertaFaixa from "../src/components/OfertaFaixa.astro";',
-          "",
+          // O MDX não repete o CTA de Oferta: os cartões são garantidos pelo
+          // template da Análise (ticket 47).
           "Corpo editorial da fixture, com números próprios.",
-          "",
-          `<OfertaFaixa aparelhoId="${aparelho.id}" titulo="Oferta no meio do texto" />`,
         ].join("\n"),
       ),
     );
@@ -421,14 +433,39 @@ describe("build com uma Análise de fixture", () => {
     expect(jsonLd.description).toBe(valida.descricao);
     expect(jsonLd.url).toContain(`/analises/${valida.slug}/`);
 
-    // O CTA da Oferta do Aparelho entra na Análise e o mesmo componente pode
-    // ser usado no meio do MDX (sem estilo inline).
+    // Banner de transparência no topo, antes do corpo do artigo, com o texto
+    // exato aprovado (ticket 47).
+    const textoValida = textoDaPagina(htmlValida);
+    expect(textoValida).toContain("Aviso de transparência");
+    expect(textoValida).toContain(
+      "Este artigo contém links de afiliados. Podemos receber uma comissão pelas compras realizadas através desses links, sem custo adicional para você.",
+    );
+    expect(htmlValida.indexOf("Aviso de transparência")).toBeLessThan(
+      htmlValida.indexOf("analise-corpo"),
+    );
+
+    // Com Oferta: quatro CTAs em cartão (topo, meio e dois no fim). Cada CTA é
+    // um cartão, nunca um link solto.
+    expect(htmlValida.match(/<aside class="cta-cartao/g) ?? []).toHaveLength(4);
+    expect(htmlValida).toContain("Ver oferta");
+    expect(htmlValida).toContain("Calcular os BTUs do meu ambiente");
+    expect(htmlValida).toContain('href="/assistente/"');
     expect(htmlValida).toContain("Onde comprar");
-    expect(htmlValida).toContain("Oferta no meio do texto");
     expect(htmlValida).toContain(`href="${oferta.url}"`);
     expect(htmlValida).toContain('rel="sponsored nofollow noopener"');
     expect(htmlValida).toContain('target="_blank"');
-    expect(htmlValida).toContain("Links comerciais");
+    // O cartão comercial se identifica como link de afiliado (ADR-0010).
+    expect(htmlValida).toContain("Link de afiliado");
+    // O MDX não repete a Oferta: só os dois cartões do template a exibem.
+    expect(htmlValida.match(/rel="sponsored/g) ?? []).toHaveLength(2);
+    expect(htmlValida).not.toContain("Oferta no meio do texto");
+    // A tabela filtrada pela capacidade do Aparelho.
+    const capacidade = capacidadeDoAparelho(aparelho.id);
+    expect(capacidade).toBeDefined();
+    expect(htmlValida).toContain(
+      `Ver outros de ${new Intl.NumberFormat("pt-BR").format(capacidade as number)} BTU/h`,
+    );
+    expect(htmlValida).toContain(`href="/aparelhos/?btu=${capacidade}"`);
 
     const htmlFicha = lerHtml("aparelhos", aparelho.id);
     expect(htmlFicha).toContain("Leia a análise");
@@ -551,12 +588,27 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlAusente).not.toContain("Ver ficha técnica");
     expect(htmlAusente).not.toContain("Onde comprar");
     expect(htmlAusente).not.toContain('rel="sponsored');
+    // O banner de transparência aparece em toda Análise e o Aparelho Ausente
+    // não tem ficha: os CTAs levam à tabela e ao Assistente.
+    expect(textoDaPagina(htmlAusente)).toContain("Aviso de transparência");
+    expect(htmlAusente.match(/<aside class="cta-cartao/g) ?? []).toHaveLength(
+      3,
+    );
+    expect(htmlAusente).toContain("Calcular os BTUs do meu ambiente");
+    expect(htmlAusente).toContain('href="/aparelhos/"');
 
-    // Sem Oferta para o Aparelho, não há CTA — nem link comercial vazio.
+    // Sem Oferta para o Aparelho, não há link comercial — mas continuam os
+    // três CTAs em cartão (ficha, Assistente e ficha + tabela).
     const htmlSemOferta = lerHtml("analises", semOferta.slug);
     expect(htmlSemOferta).toContain(
       `href="/aparelhos/${semOferta.aparelhoId}/"`,
     );
+    expect(htmlSemOferta.match(/<aside class="cta-cartao/g) ?? []).toHaveLength(
+      3,
+    );
+    expect(htmlSemOferta).toContain("Ver ficha técnica");
+    expect(htmlSemOferta).toContain("Calcular os BTUs do meu ambiente");
+    expect(htmlSemOferta).toContain("Ver outros de ");
     expect(htmlSemOferta).not.toContain("Onde comprar");
     expect(htmlSemOferta).not.toContain('rel="sponsored');
 
