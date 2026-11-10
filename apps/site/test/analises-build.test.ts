@@ -446,7 +446,9 @@ describe("build com uma Análise de fixture", () => {
 
     // Com Oferta: quatro CTAs em cartão (topo, meio e dois no fim). Cada CTA é
     // um cartão, nunca um link solto.
-    expect(htmlValida.match(/<aside class="cta-cartao/g) ?? []).toHaveLength(4);
+    expect(htmlValida.match(/<section class="cta-cartao/g) ?? []).toHaveLength(
+      4,
+    );
     expect(htmlValida).toContain("Ver oferta");
     expect(htmlValida).toContain("Calcular os BTUs do meu ambiente");
     expect(htmlValida).toContain('href="/assistente/"');
@@ -591,7 +593,7 @@ describe("build com uma Análise de fixture", () => {
     // O banner de transparência aparece em toda Análise e o Aparelho Ausente
     // não tem ficha: os CTAs levam à tabela e ao Assistente.
     expect(textoDaPagina(htmlAusente)).toContain("Aviso de transparência");
-    expect(htmlAusente.match(/<aside class="cta-cartao/g) ?? []).toHaveLength(
+    expect(htmlAusente.match(/<section class="cta-cartao/g) ?? []).toHaveLength(
       3,
     );
     expect(htmlAusente).toContain("Calcular os BTUs do meu ambiente");
@@ -603,12 +605,19 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlSemOferta).toContain(
       `href="/aparelhos/${semOferta.aparelhoId}/"`,
     );
-    expect(htmlSemOferta.match(/<aside class="cta-cartao/g) ?? []).toHaveLength(
-      3,
-    );
+    expect(
+      htmlSemOferta.match(/<section class="cta-cartao/g) ?? [],
+    ).toHaveLength(3);
     expect(htmlSemOferta).toContain("Ver ficha técnica");
     expect(htmlSemOferta).toContain("Calcular os BTUs do meu ambiente");
-    expect(htmlSemOferta).toContain("Ver outros de ");
+    const capacidadeSemOferta = capacidadeDoAparelho(semOferta.aparelhoId);
+    expect(capacidadeSemOferta).toBeDefined();
+    expect(htmlSemOferta).toContain(
+      `Ver outros de ${new Intl.NumberFormat("pt-BR").format(capacidadeSemOferta as number)} BTU/h`,
+    );
+    expect(htmlSemOferta).toContain(
+      `href="/aparelhos/?btu=${capacidadeSemOferta}"`,
+    );
     expect(htmlSemOferta).not.toContain("Onde comprar");
     expect(htmlSemOferta).not.toContain('rel="sponsored');
 

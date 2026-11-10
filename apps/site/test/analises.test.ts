@@ -5,6 +5,7 @@ import {
   type AparelhoComCapacidades,
   agruparAnalisadosPorCapacidade,
   indexarAnalises,
+  linksDaTabelaPorCapacidade,
   listaAnalisesJson,
   mapaPorAparelho,
   montarAnalises,
@@ -30,6 +31,27 @@ function montada(over: Partial<AnaliseFrontmatter> = {}): Analise {
   }
   return primeira;
 }
+
+describe("linksDaTabelaPorCapacidade", () => {
+  it("liga uma capacidade à tabela filtrada, com separador de milhar", () => {
+    expect(linksDaTabelaPorCapacidade([12000])).toEqual([
+      { rotulo: "Ver outros de 12.000 BTU/h", href: "/aparelhos/?btu=12000" },
+    ]);
+  });
+
+  it("devolve uma ação por capacidade distinta, em ordem crescente", () => {
+    expect(linksDaTabelaPorCapacidade([12000, 9000, 12000])).toEqual([
+      { rotulo: "Ver outros de 9.000 BTU/h", href: "/aparelhos/?btu=9000" },
+      { rotulo: "Ver outros de 12.000 BTU/h", href: "/aparelhos/?btu=12000" },
+    ]);
+  });
+
+  it("sem capacidade, manda para a tabela inteira", () => {
+    expect(linksDaTabelaPorCapacidade([])).toEqual([
+      { rotulo: "Ver todos os aparelhos", href: "/aparelhos/" },
+    ]);
+  });
+});
 
 describe("validarAnalises", () => {
   it("aceita Análises bem formadas", () => {

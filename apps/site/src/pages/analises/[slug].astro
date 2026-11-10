@@ -10,7 +10,7 @@ import type {
 } from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import CtaCartao from "../../components/CtaCartao.astro";
-import OfertaCartao from "../../components/OfertaCartao.astro";
+import OfertaCta from "../../components/OfertaCta.astro";
 import {
   carregarAnalises,
   type EntradaAnalise,
@@ -18,6 +18,7 @@ import {
 import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
 import Base from "../../layouts/Base.astro";
 import type { Analise } from "../../lib/analises.ts";
+import { linksDaTabelaPorCapacidade } from "../../lib/analises.ts";
 import type { Oferta } from "../../lib/ofertas.ts";
 
 export async function getStaticPaths() {
@@ -53,18 +54,11 @@ const { Content } = await render(entrada);
 const versao = versaoAtualDo(manifestJson as Manifest);
 
 // Toda Análise publicada no build tem, no mínimo, três CTAs em cartão: o do
-// topo, o do meio (Assistente) e o do fim (Oferta quando houver + ficha +
-// tabela filtrada). Com Oferta são quatro cartões (topo e fim comerciais).
+// topo, o seguinte ao corpo (Assistente) e o do fim (Oferta quando houver +
+// ficha + tabela). Com Oferta são quatro cartões (topo e fim comerciais).
 const ofertas: Oferta[] =
   aparelho === undefined ? [] : ofertasDoAparelho(aparelho.id);
-const capacidadeBtu = capacidadesBtu[0];
-const numero = new Intl.NumberFormat("pt-BR");
-const urlTabela =
-  capacidadeBtu === undefined
-    ? "/aparelhos/"
-    : `/aparelhos/?btu=${capacidadeBtu}`;
-const urlFicha =
-  aparelho === undefined ? undefined : `/aparelhos/${aparelho.id}/`;
+const linksTabela = linksDaTabelaPorCapacidade(capacidadesBtu);
 
 const url = new URL(analise.url, Astro.site).href;
 
@@ -98,7 +92,7 @@ const jsonLd: Record<string, unknown> = {
         about: {
           "@type": "Product",
           name: `${aparelho.marca} ${aparelho.modelo}`,
-          url: new URL(urlFicha ?? "/", Astro.site).href,
+          url: new URL(`/aparelhos/${aparelho.id}/`, Astro.site).href,
         },
       }),
 };
@@ -139,30 +133,22 @@ const jsonLd: Record<string, unknown> = {
           descricao="O modelo desta análise não consta na Versão atual, mas a tabela traz os aparelhos comparáveis."
         >
           <a class="cta-acao" href="/aparelhos/">
-            Ver todos os aparelhos
+            Abrir a tabela
           </a>
         </CtaCartao>
       ) : ofertas.length > 0 ? (
-        <CtaCartao
+        <OfertaCta
           titulo="Ver oferta"
           descricao="Onde encontrar este modelo — o preço é o do dia."
-          comercial
-        >
-          <ul class="cta-ofertas">
-            {ofertas.map((oferta) => (
-              <li>
-                <OfertaCartao oferta={oferta} />
-              </li>
-            ))}
-          </ul>
-        </CtaCartao>
+          ofertas={ofertas}
+        />
       ) : (
         <CtaCartao
           titulo="Ver ficha técnica"
           descricao="Capacidade, consumo, IDRS, Classe e tensão nos dados oficiais do INMETRO."
         >
-          <a class="cta-acao" href={urlFicha}>
-            Ver ficha técnica
+          <a class="cta-acao" href={`/aparelhos/${aparelho.id}/`}>
+            Abrir ficha técnica
           </a>
         </CtaCartao>
       )
@@ -173,13 +159,14 @@ const jsonLd: Record<string, unknown> = {
     </div>
 
     {
-      // CTA 2 (meio): o Assistente, após o corpo do artigo.
+      // CTA 2: o Assistente, logo depois do corpo do artigo. O MDX pode ser
+      // longo, então o cartão funciona como a pausa natural antes dos dados.
       <CtaCartao
         titulo="Calcular os BTUs do meu ambiente"
         descricao="Responda cinco perguntas e veja a capacidade ideal, com a conta aberta."
       >
         <a class="cta-acao" href="/assistente/">
-          Calcular os BTUs do meu ambiente
+          Abrir o Assistente
         </a>
       </CtaCartao>
     }
@@ -203,7 +190,7 @@ const jsonLd: Record<string, unknown> = {
             Valores oficiais — capacidade, consumo, IDRS e tensão.
           </p>
           <p>
-            <a href={urlFicha}>Ver ficha técnica</a>
+            <a href={`/aparelhos/${aparelho.id}/`}>Ver ficha técnica</a>
           </p>
         </section>
       )
@@ -212,26 +199,18 @@ const jsonLd: Record<string, unknown> = {
     {
       // CTA 3 (fim): a Oferta, quando houver.
       ofertas.length > 0 ? (
-        <CtaCartao
+        <OfertaCta
           titulo="Onde comprar"
           descricao="O preço é o do dia; confira a tensão e a instalação antes."
-          comercial
-        >
-          <ul class="cta-ofertas">
-            {ofertas.map((oferta) => (
-              <li>
-                <OfertaCartao oferta={oferta} />
-              </li>
-            ))}
-          </ul>
-        </CtaCartao>
+          ofertas={ofertas}
+        />
       ) : null
     }
 
     {
       // CTA 4 (fim): ficha técnica e tabela filtrada pela capacidade. Sem
       // Oferta, este é o terceiro cartão; sem Aparelho na Versão atual, ele se
-      // resolve na tabela.
+      // resolve na tabela e no índice de Análises.
       aparelho === undefined ? (
         <CtaCartao
           titulo="Continue a pesquisa"
@@ -240,24 +219,23 @@ const jsonLd: Record<string, unknown> = {
           <a class="cta-acao" href="/aparelhos/">
             Ver todos os aparelhos
           </a>
+          <a class="cta-acao" href="/analises/">
+            Ver todas as análises
+          </a>
         </CtaCartao>
       ) : (
         <CtaCartao
           titulo="Continue a pesquisa"
           descricao="Confira os números oficiais e compare com aparelhos da mesma capacidade."
         >
-          <a class="cta-acao" href={urlFicha}>
+          <a class="cta-acao" href={`/aparelhos/${aparelho.id}/`}>
             Ver ficha técnica
           </a>
-          {capacidadeBtu === undefined ? (
-            <a class="cta-acao" href={urlTabela}>
-              Ver todos os aparelhos
+          {linksTabela.map((link) => (
+            <a class="cta-acao" href={link.href}>
+              {link.rotulo}
             </a>
-          ) : (
-            <a class="cta-acao" href={urlTabela}>
-              Ver outros de {numero.format(capacidadeBtu)} BTU/h
-            </a>
-          )}
+          ))}
         </CtaCartao>
       )
     }

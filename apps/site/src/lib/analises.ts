@@ -186,6 +186,27 @@ export interface AnalisadoNaCapacidade {
 }
 
 /**
+ * Os links do CTA da tabela filtrada pela capacidade da Análise: uma ação por
+ * capacidade distinta do Aparelho (as do `consulta.json`), em ordem crescente.
+ * Um Aparelho pode registrar mais de uma capacidade (ticket 47) — nesse caso o
+ * leitor recebe uma ação por capacidade, em vez de um palpite sobre qual é a
+ * do artigo. Sem capacidade, sobra a tabela inteira.
+ */
+export function linksDaTabelaPorCapacidade(
+  capacidades: readonly number[],
+): Array<{ rotulo: string; href: string }> {
+  const unicas = [...new Set(capacidades)].sort((a, b) => a - b);
+  if (unicas.length === 0) {
+    return [{ rotulo: "Ver todos os aparelhos", href: "/aparelhos/" }];
+  }
+  const numero = new Intl.NumberFormat("pt-BR");
+  return unicas.map((capacidadeBtu) => ({
+    rotulo: `Ver outros de ${numero.format(capacidadeBtu)} BTU/h`,
+    href: `/aparelhos/?btu=${capacidadeBtu}`,
+  }));
+}
+
+/**
  * Mapa build-time de Aparelhos analisados por capacidade (ticket 42): cada
  * Análise publicada entra sob **todas as capacidades** do seu Aparelho, como
  * declaradas na base servida. Um Aparelho ausente da Versão atual (Ausente) não

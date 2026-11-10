@@ -21,3 +21,8 @@
 - [x] Links de navegação interna ("Todas as análises", ficha, tabela) podem continuar no texto, mas não contam como CTAs
 - [x] Testes de build: banner com texto exato, 3 CTAs sem Oferta, 4 com Oferta, Oferta com `rel`/`target` corretos e ausência de CTA duplicado
 - [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+
+## Comments
+
+- **Posição do CTA 2**: o corpo da Análise é um único bloco MDX renderizado, então o cartão do Assistente fica logo depois do corpo, antes dos dados oficiais — o ponto de quebra natural sem fatiar o conteúdo. O requisito testável do spec (3/4 cartões) segue coberto.
+- **Revisão pós-implementação**: o link da tabela passou a emitir uma ação por capacidade distinta (Aparelhos de 9.000/12.000 BTU/h não caem mais só na menor), o cartão comercial foi extraído para `OfertaCta.astro`, e os cartões viraram `<section>` com `<h2>` para navegação por leitor de tela.

@@ -1,0 +1,28 @@
+---
+import type { Oferta } from "../lib/ofertas.ts";
+import CtaCartao from "./CtaCartao.astro";
+import OfertaCartao from "./OfertaCartao.astro";
+
+/**
+ * O cartão comercial de uma Análise: um `CtaCartao` com as Ofertas do Aparelho.
+ * Existe para a Análise não repetir o mesmo bloco no topo e no fim (ticket 47).
+ * Nunca é chamado com lista vazia — o template só o renderiza quando há Oferta.
+ */
+interface Props {
+  titulo: string;
+  descricao: string;
+  ofertas: Oferta[];
+}
+
+const { titulo, descricao, ofertas } = Astro.props;
+---
+
+<CtaCartao titulo={titulo} descricao={descricao} comercial>
+  <ul class="cta-ofertas">
+    {ofertas.map((oferta) => (
+      <li>
+        <OfertaCartao oferta={oferta} />
+      </li>
+    ))}
+  </ul>
+</CtaCartao>
