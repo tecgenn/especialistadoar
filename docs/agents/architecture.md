@@ -279,6 +279,8 @@ nova exportação CSV
   com aviso, sem bloco de dados e sem CTA. Nada disso entra em `data/build/`, na
   API ou na consulta. Ver ADR-0015.
 
+- **assistente** — em `apps/site/src/lib/assistente.ts`, o motor puro do Assistente de dimensionamento (ticket 41): recebe as respostas das cinco telas do wizard (`/assistente/`) e devolve a Recomendação do Assistente — capacidade comercial recomendada, fatores usados, nível de confiança, explicação curta e orientações. Coeficientes fixos e auditáveis: base por m² conforme incidência solar (600/650/750/800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima (9.000 a 60.000 BTU/h), teto de 60.000 com alternativa dividida (2 × metade da capacidade quando for comercial e ≥ 9.000). A ilha React `Assistente.tsx` apenas coleta respostas e renderiza; não calcula. Todo o estado vive na URL, então recarregar e compartilhar preservam o resultado. No build, o mapa capacidade → analisados (ticket 42) é montado a partir das Análises publicadas e das `capacidadesBtu` do `consulta.json`, e só o valor recomendado é consultado — sem busca no cliente. ADR-0020 registra a decisão (heurística de mercado, sem LLM/Worker, Valor calculado nunca oficial, acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica).
+
 ## Interfaces
 
 - **Entrada:** um caminho para uma exportação CSV nova do INMETRO.

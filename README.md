@@ -123,6 +123,12 @@ As marcas e capacidades que aparecem como **botões** no topo dos filtros vêm d
   rótulo repetido, ou capacidade que não seja inteira e positiva.
 - Nada disso entra em `data/build/`, na API ou na consulta: é apresentação.
 
+## Assistente de dimensionamento
+
+O Assistente (`/assistente/`) é um configurador interativo, determinístico e sem IA em runtime que traduz cinco perguntas sobre o ambiente — tipo de ambiente, área, incidência de sol, pessoas e equipamentos/lâmpadas/janelas — numa capacidade comercial de ar-condicionado (9.000 a 60.000 BTU/h). O motor é puro (`apps/site/src/lib/assistente.ts`) e a ilha React apenas coleta respostas e renderiza; todo o estado vive na URL, então o resultado é compartilhável. Acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica. O resultado leva aos Aparelhos analisados daquela capacidade e à tabela filtrada por BTU/h.
+
+Coeficientes fixos: base por m² conforme incidência solar (sem sol 600, manhã 650, tarde 750, dia todo 800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima e alternativa dividida (ex.: 24.000 → 2 × 12.000). É um Valor calculado, nunca um Valor oficial do INMETRO.
+
 ## Escrever uma Análise
 
 Uma **Análise** é uma peça editorial em MDX sobre **um** Aparelho, publicada em
@@ -167,6 +173,8 @@ Rode a suíte completa **e** o build antes de enviar qualquer mudança:
 ```bash
 pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 ```
+
+No fechamento de cada fase, confirme também: `pnpm build` reproduz `data/build` + `reports` byte a byte, `pnpm build:site` gera o número esperado de páginas (2.232 com a Fase 9) e `pnpm test` está verde.
 
 E **commite os artefatos gerados junto com a mudança** sempre que ela tocar o CSV
 bruto (`data/raw/`) ou a camada curada (`data/excecoes-manuais.jsonl`,
