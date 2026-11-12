@@ -219,13 +219,6 @@ O que isso garante:
 > sem encontrar segredos. A proteção de branch de `main` (§1.2) foi **reaplicada**
 > a partir de `.github/branch-protection.json` — ela estava ausente no GitHub.
 > Este passo só volta a valer se a visibilidade for revertida para privada.
->
-> Os controles `secret_scanning_non_provider_patterns` (generic patterns) e
-> `secret_scanning_validity_checks` **não** puderam ser ligados: em repositório
-> público de **usuário** o GitHub ignora a mudança (retorna 200 e mantém
-> `disabled`). Eles fazem parte do **GitHub Secret Protection**, disponível para
-> repositórios de organização (ou EMU). O scanning padrão de provedores e a push
-> protection, que são gratuitos em repo público, estão ativos.
 
 Nenhum valor de segredo é versionado: o CI lê `secrets.CLOUDFLARE_API_TOKEN` e
 `secrets.CLOUDFLARE_ACCOUNT_ID` do GitHub (§1.1). A URL de afiliado em
