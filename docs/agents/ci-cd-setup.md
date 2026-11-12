@@ -164,8 +164,10 @@ vez:
 
 ```bash
 # tornar público (irreversível na prática: forks e clones persistem)
-gh repo edit tecgenn/especialistadoar \
-  --visibility public --accept-visibility-change-consequences
+gh api -X PATCH repos/tecgenn/especialistadoar -f visibility=public
+# Alternativa em versões do gh que já têm o comando de alto nível:
+# gh repo edit tecgenn/especialistadoar \
+#   --visibility public --accept-visibility-change-consequences
 
 # conferir
 gh repo view tecgenn/especialistadoar --json visibility -q .visibility
@@ -205,10 +207,18 @@ O que isso garante:
   antes de ele entrar no histórico.
 
 > **Antes de tornar público**, rode uma varredura local do histórico com
-> `gitleaks detect --source . --log-opts="--all"` (ou `trufflehog git file://.`)
-> — o histórico passa a ser legível por qualquer pessoa e um segredo commitado
-> antes continua exposto mesmo depois de removido do HEAD. Se aparecer algo,
-> **revogue o segredo**; reescrever o histórico não basta se ele já vazou.
+> `gitleaks git . --log-opts="--all"` (no gitleaks 8; `gitleaks detect --source .`
+> nas versões antigas) ou `trufflehog git file://.` — o histórico passa a ser
+> legível por qualquer pessoa e um segredo commitado antes continua exposto mesmo
+> depois de removido do HEAD. Se aparecer algo, **revogue o segredo**; reescrever
+> o histórico não basta se ele já vazou.
+
+> **Executado em 2026-11-12:** repositório tornado público; `secret_scanning` e
+> `secret_scanning_push_protection` em `enabled` (0 alertas no histórico); a
+> varredura com `gitleaks git . --log-opts="--all"` cobriu 102 commits (~44 MB)
+> sem encontrar segredos. A proteção de branch de `main` (§1.2) foi **reaplicada**
+> a partir de `.github/branch-protection.json` — ela estava ausente no GitHub.
+> Este passo só volta a valer se a visibilidade for revertida para privada.
 
 Nenhum valor de segredo é versionado: o CI lê `secrets.CLOUDFLARE_API_TOKEN` e
 `secrets.CLOUDFLARE_ACCOUNT_ID` do GitHub (§1.1). A URL de afiliado em
@@ -394,4 +404,4 @@ publicada e confira no HTML o beacon `static.cloudflareinsights.com/beacon.min.j
 | 2026-10-19 | Removido o Worker `especialista-do-ar-api` no dashboard da Cloudflare e dispensada a permissão `Workers Scripts: Edit` do token (§2.6). | ticket #13 |
 | 2026-10-19 | Trilha dupla de CI/CD (ADR-0012): o job `report` só anexa o Relatório de revisão quando o PR adiciona `data/raw/*.csv` (novo job `changes`); nova §1.4. | ticket #14 |
 | 2026-10-19 | Verificação de links passa a ser **manual** (`pnpm verificar-links`, ADR-0014): removido o workflow agendado `verificar-links.yml` (criado no ticket #12). Nova §2.7 habilita o Web Analytics (tráfego humano); acesso do Agente segue adiado. | ticket #15 |
-| 2026-11-12 | Repositório torna-se **público**; nova §1.5 documenta a visibilidade, o **secret scanning** e a **push protection** (gratuitos só em repo público) e a varredura do histórico antes de publicar. | — |
+| 2026-11-12 | Repositório torna-se **público**; nova §1.5 documenta a visibilidade, o **secret scanning** e a **push protection** (gratuitos só em repo público) e a varredura do histórico antes de publicar. **Executado no mesmo dia:** repo público, os dois controles em `enabled`, histórico limpo no `gitleaks` (102 commits, 0 segredos) e proteção de branch de `main` reaplicada (§1.2). | — |
