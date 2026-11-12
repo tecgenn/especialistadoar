@@ -28,7 +28,12 @@ testamos numa matrix de CI.
 
 ## Notas
 
-- **2026-10-15:** o repositório é **público**, então minutos de runner no GitHub
-  Actions não são cobrados — a premissa de custo 2× do Windows (acima) deixou de
-  valer. A regra de Windows não-bloqueante foi mantida por decisão do ticket #06.
-  O setup manual de CI/publicação está em `docs/agents/ci-cd-setup.md`.
+- **2026-10-15 (corrigido em 2026-11-12):** a nota original afirmava que o
+  repositório era público, mas ele seguia **privado**; a premissa de custo 2× do
+  Windows (acima) ainda valia. O setup manual de CI/publicação está em
+  `docs/agents/ci-cd-setup.md`.
+- **2026-11-12:** o repositório passa a ser **público**. Minutos de runner padrão
+  (Linux e Windows) deixam de ser cobrados, então a premissa de custo 2× do
+  Windows deixa de valer de fato. A regra de Windows não-bloqueante foi mantida
+  por decisão do ticket #06. A licença é dividida: **MIT** para o código
+  (`LICENSE`) e **CC BY-NC 4.0** para o conteúdo editorial (`LICENSE-CONTENT`).

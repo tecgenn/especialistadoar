@@ -189,6 +189,19 @@ passam só pela camada curada (Exceção manual, Vínculo confirmado; a Marca de
 catálogo agrupa marcas na consulta sem alterar conteúdo); o resto é regra de
 formato no pipeline.
 
+## Licença
+
+O repositório usa **duas licenças**, separadas por tipo de material:
+
+- **Código** (pipeline, pacotes, site, scripts e testes) — [MIT](LICENSE).
+  Use, modifique e redistribua livremente, mantendo o aviso de copyright.
+- **Conteúdo editorial** (textos, Análises em MDX, descrições e textos do site) —
+  [CC BY-NC 4.0](LICENSE-CONTENT). Compartilhe e adapte com atribuição a
+  **TecGenn**, apenas para fins não comerciais.
+
+Os dados brutos do INMETRO mantêm a origem e as condições do órgão publicador;
+a proveniência de cada Versão está em `data/build/manifest.json`.
+
 ## Contribuição
 
 Trabalhe em uma branch e abra um Pull Request para `main` (a branch é protegida por

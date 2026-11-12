@@ -156,6 +156,64 @@ Para disparar a trilha Tabela: adicione o CSV bruto em `data/raw/`, rode
 `pnpm build` e commite `data/build/` + `reports/revisao-<data>.md` no mesmo PR
 (ver README, "Antes de dar push").
 
+### 1.5 Segurança do repositório público
+
+O repositório `tecgenn/especialistadoar` é **público desde 2026-11-12**. A
+visibilidade não é versionada em arquivo — é uma configuração do repo, feita uma
+vez:
+
+```bash
+# tornar público (irreversível na prática: forks e clones persistem)
+gh repo edit tecgenn/especialistadoar \
+  --visibility public --accept-visibility-change-consequences
+
+# conferir
+gh repo view tecgenn/especialistadoar --json visibility -q .visibility
+```
+
+Com o repositório público, o **secret scanning** e a **push protection** do
+GitHub são gratuitos (em repo privado exigiriam GitHub Advanced Security, pago).
+Ligue os dois:
+
+```bash
+cat > /tmp/security.json <<'EOF'
+{
+  "security_and_analysis": {
+    "secret_scanning": { "status": "enabled" },
+    "secret_scanning_push_protection": { "status": "enabled" }
+  }
+}
+EOF
+
+gh api -X PATCH repos/tecgenn/especialistadoar --input /tmp/security.json
+```
+
+Confira o estado (os dois devem vir `enabled`):
+
+```bash
+gh api repos/tecgenn/especialistadoar -q '.security_and_analysis'
+```
+
+Pela UI: **Settings → Code security and analysis** → habilite **Secret scanning**
+e **Push protection**.
+
+O que isso garante:
+
+- **Secret scanning** varre o histórico inteiro do repositório (inclusive commits
+  antigos) em busca de tokens conhecidos e alerta em **Security → Secret scanning**.
+- **Push protection** bloqueia o `git push` que contenha um segredo reconhecido,
+  antes de ele entrar no histórico.
+
+> **Antes de tornar público**, rode uma varredura local do histórico com
+> `gitleaks detect --source . --log-opts="--all"` (ou `trufflehog git file://.`)
+> — o histórico passa a ser legível por qualquer pessoa e um segredo commitado
+> antes continua exposto mesmo depois de removido do HEAD. Se aparecer algo,
+> **revogue o segredo**; reescrever o histórico não basta se ele já vazou.
+
+Nenhum valor de segredo é versionado: o CI lê `secrets.CLOUDFLARE_API_TOKEN` e
+`secrets.CLOUDFLARE_ACCOUNT_ID` do GitHub (§1.1). A URL de afiliado em
+`apps/site/ofertas.json` é pública por natureza (já aparece no HTML renderizado).
+
 ---
 
 ## Parte 2 — Cloudflare (Pages)
@@ -336,3 +394,4 @@ publicada e confira no HTML o beacon `static.cloudflareinsights.com/beacon.min.j
 | 2026-10-19 | Removido o Worker `especialista-do-ar-api` no dashboard da Cloudflare e dispensada a permissão `Workers Scripts: Edit` do token (§2.6). | ticket #13 |
 | 2026-10-19 | Trilha dupla de CI/CD (ADR-0012): o job `report` só anexa o Relatório de revisão quando o PR adiciona `data/raw/*.csv` (novo job `changes`); nova §1.4. | ticket #14 |
 | 2026-10-19 | Verificação de links passa a ser **manual** (`pnpm verificar-links`, ADR-0014): removido o workflow agendado `verificar-links.yml` (criado no ticket #12). Nova §2.7 habilita o Web Analytics (tráfego humano); acesso do Agente segue adiado. | ticket #15 |
+| 2026-11-12 | Repositório torna-se **público**; nova §1.5 documenta a visibilidade, o **secret scanning** e a **push protection** (gratuitos só em repo público) e a varredura do histórico antes de publicar. | — |

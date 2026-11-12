@@ -8,6 +8,8 @@ The issue tracker is the source of truth for ticket status. The Frontier table i
 
 **Fase 9 concluída** — spec em `.scratch/especialista-do-ar/spec-fase-9.md`. Todos os tickets da fase estão `done`: **#41** (`41-assistente-motor-e-wizard`), **#42** (`42-assistente-ctas-analisados`), **#43** (`43-tabela-setas-coluna-tipo-layout`), **#44** (`44-tabela-selo-analise-com-analise`), **#45** (`45-filtros-classe-layout-compacto`), **#46** (`46-home-nova`), **#47** (`47-analise-banner-ctas`) e **#48** (`48-validacao-completa-fase-9`). A **primeira Análise editorial** está publicada: `samsung-windfree-ai-pro-12000-analise`, sobre o Samsung WindFree AI Pro 12.000 BTUs (`ap-adc70ca55429`), com Oferta real do Mercado Livre, e a home e a tabela já a destacam. O site gera **2.232 páginas**. Não há próximo ticket na fase; o trabalho operacional segue com as próximas Análises e, quando fizer sentido, a migração para domínio próprio — ver `spec-fase-5.md` › Further Notes.
 
+**Repositório público (2026-11-12):** o repositório passou a ser público, com licença dividida — MIT para o código e CC BY-NC 4.0 para o conteúdo editorial — e secret scanning/push protection ligados. Ver `docs/agents/ci-cd-setup.md` §1.5.
+
 ## Completed
 
 ### 01 — Fundação e primeira fatia do pipeline (ingest + parse) (2026-10-14)

@@ -335,6 +335,9 @@ Ver ADR-0003 e ADR-0011.
   publicada, o build também emite `/analises.json` na raiz do site (o inventário
   editorial, separado da base servida). Setup manual em `docs/agents/ci-cd-setup.md`;
   ver ADR-0004.
+- **Repositório público:** desde 2026-11-12, com licença dividida — **MIT** para o
+  código (`LICENSE`) e **CC BY-NC 4.0** para o conteúdo editorial
+  (`LICENSE-CONTENT`). Secret scanning e push protection ligados (§1.5 do runbook).
 - **D1 (SQLite)** é só plano B, derivado do JSONL — nunca fonte de verdade.
 - **R2** guarda blobs grandes se os assets estáticos passarem do bundle do site.
 - **Caveats do free tier:** o plano gratuito do Cloudflare Pages tem limites de
