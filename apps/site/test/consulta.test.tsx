@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import {
   cleanup,
@@ -14,7 +16,7 @@ import type { FiltrosCurados } from "../src/lib/filtros.ts";
 import { opcoesDe } from "../src/lib/opcoes.ts";
 
 /**
- * A **única ilha** do site (ADR-0008) baixa o `consulta.json` publicado e aplica
+ * A ilha de consulta do site (ADR-0008) baixa o `consulta.json` publicado e aplica
  * filtros, busca e ordenação **no cliente**, refletindo o estado na URL. Aqui
  * mockamos o `fetch` do dataset e exercitamos a ilha no DOM (jsdom).
  *
@@ -158,11 +160,11 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
 }
 
 /**
- * Um link que desliga explicitamente os filtros padrão (ticket 38): a URL sem
- * chaves de filtro aplicaria Split Hi-Wall + 220 V + Classe A. Os testes que
- * exercitam a tabela inteira partem daqui.
+ * Um link que desliga explicitamente o filtro padrão (ticket 38, revisto no 44):
+ * a URL sem chaves de filtro aplicaria Tensão 220 V. Os testes que exercitam a
+ * tabela inteira partem daqui.
  */
-const TODOS = "/?tipo=&tensao=&classe=";
+const TODOS = "/?tensao=";
 
 /** Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando"). */
 async function montar(entrada?: FiltrosCurados, url = TODOS) {
@@ -191,6 +193,14 @@ function opcoesDoSelect(rotulo: string): string[] {
   );
 }
 
+/** O CSS do site, para conferir regras de layout que o jsdom não calcula. */
+function cssDaConsulta(): string {
+  return readFileSync(
+    join(process.cwd(), "apps/site/src/styles/global.css"),
+    "utf8",
+  );
+}
+
 beforeEach(() => {
   servirConsulta();
   window.history.replaceState(null, "", "/");
@@ -216,11 +226,12 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
-  it("mostra uma linha por Aparelho com as 6 colunas da tabela", async () => {
+  it("mostra uma linha por Aparelho com as 7 colunas da tabela", async () => {
     await montar();
     const [primeira] = screen.getAllByRole("row").slice(1);
     expect(primeira?.textContent).toContain("DAIKIN");
     expect(primeira?.textContent).toContain("Classe F");
+    expect(primeira?.textContent).toContain("Split Hi-Wall");
     expect(primeira?.textContent).toContain("30.000");
     expect(primeira?.textContent).toContain("350");
     expect(primeira?.textContent).toContain("2,5");
@@ -236,6 +247,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(rotulos).toEqual([
       "Marca",
       "Modelo",
+      "Tipo",
       "BTU/h",
       "Consumo (kWh)",
       "IDRS",
@@ -341,12 +353,12 @@ describe("ilha de consulta (ADR-0008)", () => {
     fireEvent.change(screen.getByLabelText("Outras marcas"), {
       target: { value: "LG" },
     });
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
     expect(
       screen.getByRole("button", { name: "Limpar filtros" }),
     ).toBeDefined();
     fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
   });
 
@@ -509,21 +521,82 @@ describe("ordenação da tabela", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
 
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
     const busca = new URLSearchParams(window.location.search);
     expect(busca.get("marca")).toBeNull();
     expect(busca.get("tipo")).toBeNull();
-    expect(busca.get("tensao")).toBeNull();
     expect(busca.get("classe")).toBeNull();
     expect(busca.get("ordem")).toBe("consumo");
     expect(
       (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
     ).toBe("220");
+  });
+
+  it("o seletor 'Ordenar por' não oferece a coluna Tipo", async () => {
+    await montar();
+    expect(opcoesDoSelect("Ordenar por")).not.toContain("Tipo");
+  });
+});
+
+/**
+ * Ticket 43: a coluna Tipo é somente leitura e todo cabeçalho ordenável anuncia
+ * as duas direções de uma vez — não só a ativa.
+ */
+describe("colunas e setas de ordenação (ticket 43)", () => {
+  const ORDENAVEIS = ["BTU/h", "Consumo (kWh)", "IDRS", "Classe"];
+
+  it("mostra Tipo após Modelo, sem botão, setas nem aria-sort", async () => {
+    await montar();
+
     expect(
       screen
-        .getByRole("button", { name: "Classe A" })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
+        .getAllByRole("columnheader")
+        .map((th) => th.getAttribute("data-campo")),
+    ).toEqual(["marca", "modelo", "tipo", "btu", "consumo", "idrs", "classe"]);
+
+    const tipo = cabecalho(/^Tipo$/);
+    expect(tipo.querySelector("button")).toBeNull();
+    expect(tipo.querySelector(".seta")).toBeNull();
+    expect(tipo.hasAttribute("aria-sort")).toBe(false);
+    expect(tipo.textContent).toBe("Tipo");
+  });
+
+  it("mostra ↑ e ↓ em todo cabeçalho ordenável, apagadas sem ordem ativa", async () => {
+    await montar();
+
+    for (const rotulo of ORDENAVEIS) {
+      const th = screen.getByRole("columnheader", { name: rotulo });
+      expect(
+        [...th.querySelectorAll(".seta")].map((seta) => seta.textContent),
+      ).toEqual(["↑", "↓"]);
+      expect(th.getAttribute("aria-sort")).toBe("none");
+      expect(th.querySelector(".seta-ativa")).toBeNull();
+    }
+  });
+
+  it("destaca só a direção ativa e alterna a cada clique", async () => {
+    await montar();
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+
+    const th = cabecalho(/Consumo/);
+    expect(th.getAttribute("aria-sort")).toBe("ascending");
+    expect(
+      th.querySelector(".seta-asc")?.classList.contains("seta-ativa"),
+    ).toBe(true);
+    expect(
+      th.querySelector(".seta-desc")?.classList.contains("seta-ativa"),
+    ).toBe(false);
+    // As demais ordenáveis seguem com as duas setas apagadas.
+    expect(cabecalho(/IDRS/).querySelector(".seta-ativa")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+    expect(th.getAttribute("aria-sort")).toBe("descending");
+    expect(
+      th.querySelector(".seta-desc")?.classList.contains("seta-ativa"),
+    ).toBe(true);
+    expect(
+      th.querySelector(".seta-asc")?.classList.contains("seta-ativa"),
+    ).toBe(false);
   });
 });
 
@@ -545,32 +618,28 @@ describe("'Mostrar mais'", () => {
   });
 });
 
-describe("filtros padrão (ticket 38)", () => {
-  it("aplica Split Hi-Wall, 220 V e Classe A na carga limpa, com URL limpa", async () => {
+describe("filtro padrão (ticket 38, revisto no 44)", () => {
+  it("aplica só a Tensão 220 V na carga limpa, com URL limpa", async () => {
     await montar(curadoria, "/");
 
     expect(
-      screen.getByText("3 aparelho(s) com Dados declarados."),
+      screen.getByText("8 aparelho(s) com Dados declarados."),
     ).toBeDefined();
-    expect(modelosVisiveis()).toEqual([
-      "Dual Inverter",
-      "Springer Inverter",
-      "Xtreme Save",
-    ]);
     expect(window.location.search).toBe("");
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("220");
+    // Tipo e Classe não entram mais no padrão: só a tensão restringe.
     expect(
       screen
         .getByRole("button", { name: "Split Hi-Wall" })
         .getAttribute("aria-pressed"),
-    ).toBe("true");
+    ).toBe("false");
     expect(
       screen
         .getByRole("button", { name: "Classe A" })
         .getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(
-      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
-    ).toBe("220");
+    ).toBe("false");
     expect(screen.queryByRole("button", { name: "Limpar filtros" })).toBeNull();
   });
 
@@ -578,18 +647,8 @@ describe("filtros padrão (ticket 38)", () => {
     await montar(curadoria, "/?marca=LG");
 
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
-    // O link traz só a marca: nada de Split Hi-Wall + 220 V + Classe A por cima.
+    // O link traz só a marca: nada de 220 V por cima.
     expect(screen.getAllByText("Janela").length).toBeGreaterThan(0);
-    expect(
-      screen
-        .getByRole("button", { name: "Split Hi-Wall" })
-        .getAttribute("aria-pressed"),
-    ).toBe("false");
-    expect(
-      screen
-        .getByRole("button", { name: "Classe A" })
-        .getAttribute("aria-pressed"),
-    ).toBe("false");
     expect(
       (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
     ).toBe("");
@@ -600,14 +659,11 @@ describe("filtros padrão (ticket 38)", () => {
 
   it("compartilha o estado sem filtros quando a pessoa desliga o padrão", async () => {
     await montar(curadoria, "/");
-    fireEvent.click(screen.getByRole("button", { name: "Classe A" }));
-    fireEvent.click(screen.getByRole("button", { name: "Split Hi-Wall" }));
     fireEvent.change(screen.getByLabelText("Tensão (V)"), {
       target: { value: "" },
     });
 
-    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
-    expect(window.location.search).toBe("?tipo=&tensao=&classe=");
+    await waitFor(() => expect(window.location.search).toBe("?tensao="));
     expect(
       screen.getByRole("button", { name: "Limpar filtros" }),
     ).toBeDefined();
@@ -617,11 +673,6 @@ describe("filtros padrão (ticket 38)", () => {
     render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
-    expect(
-      screen
-        .getByRole("button", { name: "Classe A" })
-        .getAttribute("aria-pressed"),
-    ).toBe("false");
     expect(
       (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
     ).toBe("");
@@ -819,17 +870,78 @@ describe("painel de filtros recolhível (ticket 39)", () => {
   });
 });
 
-describe("Aparelhos analisados (ticket 28)", () => {
-  const analisadosMap = new Map<
-    string,
-    { titulo: string; url: string; temLinkAfiliado: boolean }
-  >([
+describe("layout compacto dos filtros (ticket 45)", () => {
+  it("mostra só a letra nos chips de Classe, com aria-label e cor curada", async () => {
+    await montar(curadoria);
+
+    // As cores vêm da curadoria (mesma fonte da ilha), não são redeclaradas.
+    const cores = Object.fromEntries(
+      curadoria.classes.map((classe) => [classe.valor, classe.cor ?? ""]),
+    );
+    for (const [classe, cor] of Object.entries(cores)) {
+      const botao = screen.getByRole("button", { name: `Classe ${classe}` });
+      expect(botao.textContent).toBe(classe);
+      expect(botao.getAttribute("aria-label")).toBe(`Classe ${classe}`);
+      expect(botao.getAttribute("data-classe")).toBe(classe);
+      expect(botao.style.getPropertyValue("--cor-classe")).toBe(cor);
+    }
+  });
+
+  it("mantém os seis chips de Classe numa única fileira (grade de 6)", async () => {
+    await montar(curadoria);
+
+    const grupo = screen.getByRole("group", { name: "Classe" });
+    expect(within(grupo).getAllByRole("button")).toHaveLength(6);
+    expect(cssDaConsulta()).toMatch(
+      /\.consulta \.campo-classe \.chips\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/,
+    );
+  });
+
+  it("não usa rolagem interna na barra lateral", () => {
+    const css = cssDaConsulta();
+    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*overflow-y/);
+    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*max-height/);
+    // Sticky por padrão; estática quando o componente mede o painel e ele não cabe.
+    expect(css).toMatch(/\.filtros-sidebar\s*\{[^}]*position:\s*sticky/);
+    expect(css).toMatch(
+      /\.filtros-sidebar-estatica\s*\{[^}]*position:\s*static/,
+    );
+  });
+
+  it("fica estática quando o painel é mais alto que a janela", async () => {
+    const alturaOriginal = window.innerHeight;
+    const alturaPainel = vi
+      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+      .mockReturnValue(900);
+    Object.defineProperty(window, "innerHeight", {
+      configurable: true,
+      value: 600,
+    });
+
+    try {
+      await montar(curadoria);
+      expect(
+        document
+          .querySelector(".filtros-sidebar")
+          ?.classList.contains("filtros-sidebar-estatica"),
+      ).toBe(true);
+    } finally {
+      alturaPainel.mockRestore();
+      Object.defineProperty(window, "innerHeight", {
+        configurable: true,
+        value: alturaOriginal,
+      });
+    }
+  });
+});
+
+describe("Aparelhos analisados na tabela (ticket 44)", () => {
+  const analisadosMap = new Map<string, { titulo: string; url: string }>([
     [
       "lg-split",
       {
         titulo: "Análise do LG Dual Inverter",
         url: "/analises/lg-dual-inverter/",
-        temLinkAfiliado: true,
       },
     ],
     [
@@ -837,107 +949,216 @@ describe("Aparelhos analisados (ticket 28)", () => {
       {
         titulo: "Análise do Midea Xtreme Save",
         url: "/analises/midea-xtreme-save/",
-        temLinkAfiliado: false,
       },
     ],
   ]);
 
-  async function montarComAnalisados() {
-    window.history.replaceState(null, "", TODOS);
+  async function montarComAnalisados(url = TODOS) {
+    window.history.replaceState(null, "", url);
     render(<Consulta opcoes={opcoesDe(itens)} analisados={analisadosMap} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
   }
 
-  it("mostra grupo 'Analisados por nós' com aviso de afiliado quando há analisados com link", async () => {
+  it("mostra o selo 'Análise' com link para a Análise na coluna Marca", async () => {
     await montarComAnalisados();
-    expect(screen.getByText("Analisados por nós")).toBeDefined();
-    expect(screen.getByText(/contém links de afiliado/)).toBeDefined();
-  });
-
-  it("mostra grupo 'Demais aparelhos' quando há analisados", async () => {
-    await montarComAnalisados();
-    expect(screen.getByText("Demais aparelhos")).toBeDefined();
-  });
-
-  it("analisados aparecem antes dos demais na tabela", async () => {
-    await montarComAnalisados();
-    const linhas = screen.getAllByRole("row").slice(1); // pula cabeçalho da tabela
-    // Primeira linha é o cabeçalho do grupo "Analisados por nós"
-    expect(linhas[0]?.textContent).toContain("Analisados por nós");
-    // Segunda linha é o primeiro analisado (LG Dual Inverter)
-    expect(linhas[1]?.textContent).toContain("Dual Inverter");
-    // Terceira linha é o segundo analisado (Midea Xtreme Save)
-    expect(linhas[2]?.textContent).toContain("Xtreme Save");
-    // Quarta linha é o cabeçalho "Demais aparelhos"
-    expect(linhas[3]?.textContent).toContain("Demais aparelhos");
-  });
-
-  it("renderiza selo 'Analisado' com link para a Análise na coluna Marca", async () => {
-    await montarComAnalisados();
-    const selos = screen.getAllByText("Analisado");
-    expect(selos.length).toBeGreaterThan(0);
+    const tabela = screen.getByRole("table");
+    const selos = within(tabela).getAllByText("Análise");
+    expect(selos).toHaveLength(2);
+    // O texto "Análise" está dentro do <a> da etiqueta de contorno.
     const link = selos[0].closest("a");
-    expect(link).not.toBeNull();
     expect(link?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
+    expect(link?.classList.contains("analisado-etiqueta")).toBe(true);
   });
 
-  it("tooltip do selo mostra título da Análise e aviso de afiliado", async () => {
+  it("o tooltip do selo traz apenas o título da Análise", async () => {
     await montarComAnalisados();
-    const selos = screen.getAllByText("Analisado");
-    expect(selos.length).toBeGreaterThan(0);
-    // O texto "Analisado" está dentro do <a>, cujo pai é .analisado-selo
-    const selo = selos[0].closest(".analisado-selo");
+    const tabela = screen.getByRole("table");
+    const selo = within(tabela)
+      .getAllByText("Análise")[0]
+      ?.closest(".analisado-selo");
     expect(selo).not.toBeNull();
     const tooltip = selo?.querySelector('[role="tooltip"]');
-    expect(tooltip).not.toBeNull();
-    expect(tooltip?.textContent).toContain(
-      "Análise completa: Análise do LG Dual Inverter",
-    );
-    expect(tooltip?.textContent).toContain("Contém links de afiliado");
+    expect(tooltip?.textContent).toBe("Análise do LG Dual Inverter");
+    expect(tooltip?.textContent).not.toContain("afiliado");
+    const link = selo?.querySelector("a");
+    expect(link?.getAttribute("aria-describedby")).toBe(tooltip?.id);
   });
 
-  it("ordenação por coluna funciona dentro de cada grupo", async () => {
+  it("destaca as linhas dos analisados", async () => {
     await montarComAnalisados();
-    // Ordena por consumo
+    const linhas = screen.getAllByRole("row").slice(1);
+    // Sem filtros, os dois analisados são as primeiras linhas de dados.
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(true);
+    expect(linhas[1]?.classList.contains("linha-analisado")).toBe(true);
+    expect(linhas[2]?.classList.contains("linha-analisado")).toBe(false);
+  });
+
+  it("não mostra mais os cabeçalhos de grupo nem o aviso de afiliado", async () => {
+    await montarComAnalisados();
+    expect(screen.queryByText("Analisados por nós")).toBeNull();
+    expect(screen.queryByText("Demais aparelhos")).toBeNull();
+    expect(screen.queryByText(/links de afiliado/)).toBeNull();
+  });
+
+  it("analisados aparecem antes dos demais, qualquer que seja a ordenação", async () => {
+    await montarComAnalisados();
+    // Ordena por consumo: dentro dos analisados, o Xtreme Save (200)
+    // vem antes do Dual Inverter (300).
     fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
     await waitFor(() => {
       const linhas = screen.getAllByRole("row").slice(1);
-      // Primeira linha é o cabeçalho do grupo "Analisados por nós"
-      expect(linhas[0]?.textContent).toContain("Analisados por nós");
-      // Dentro do grupo analisados, o de menor consumo (Xtreme Save = 200) vem primeiro
-      expect(linhas[1]?.textContent).toContain("Xtreme Save");
-      expect(linhas[2]?.textContent).toContain("Dual Inverter");
+      expect(linhas[0]?.textContent).toContain("Xtreme Save");
+      expect(linhas[1]?.textContent).toContain("Dual Inverter");
     });
   });
 
-  it("sem analisados, a tabela é idêntica ao ticket 27 (sem grupos)", async () => {
+  it("no recorte inicial, a vitrine mostra os analisados do recorte, fora da tabela", async () => {
+    // A carga limpa ("/") é o padrão (só Tensão 220 V), sem filtro "ativo".
+    await montarComAnalisados("/");
+
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    expect(bloco.closest("table")).toBeNull();
+    const tabela = screen.getByRole("table");
+    expect(
+      bloco.compareDocumentPosition(tabela) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    // Título único e direto — sem a linha explicativa repetida.
+    expect(within(bloco).getByText("Aparelhos com análise")).toBeDefined();
+    expect(bloco.textContent).not.toMatch(/não passam nos filtros atuais/);
+
+    // O item mostra a Marca e o **título da Análise**, como no tooltip.
+    const links = within(bloco).getAllByRole("link");
+    expect(links).toHaveLength(2);
+    expect(links[0]?.textContent).toContain("LG");
+    expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
+    expect(links[1]?.textContent).toContain("Análise do Midea Xtreme Save");
+  });
+
+  it("com filtro ativo, a vitrine acompanha o recorte e repete o analisado da tabela", async () => {
+    await montarComAnalisados("/?marca=LG");
+
+    // O bloco mostra o analisado que passa no filtro...
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    const links = within(bloco).getAllByRole("link");
+    expect(links).toHaveLength(1);
+    expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
+
+    // ...e ele também aparece, destacado, na tabela: a repetição é intencional.
+    const linha = screen
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes("Dual Inverter"));
+    expect(linha?.classList.contains("linha-analisado")).toBe(true);
+  });
+
+  it("esconde a vitrine quando nenhum analisado passa no filtro", async () => {
+    await montarComAnalisados("/?marca=GREE");
+
+    // O filtro é GREE e os analisados são LG e MIDEA: não há o que vitrinear.
+    expect(document.querySelector(".com-analise")).toBeNull();
+    expect(screen.queryByText("Aparelhos com análise")).toBeNull();
+    // O bloco não entra na contagem: só o GREE passou nos filtros.
+    expect(
+      screen.getByText("1 aparelho(s) com Dados declarados."),
+    ).toBeDefined();
+  });
+
+  it("limita a vitrine a 6 e abre com as capacidades mais compradas", async () => {
+    const mapaAmplo = new Map<string, { titulo: string; url: string }>([
+      ["elgin-d", { titulo: "Análise Elgin", url: "/analises/elgin/" }],
+      ["daikin-f", { titulo: "Análise Daikin", url: "/analises/daikin/" }],
+      ["lg-split", { titulo: "Análise LG", url: "/analises/lg/" }],
+      ["midea-oficial", { titulo: "Análise Midea", url: "/analises/midea/" }],
+      [
+        "midea-springer",
+        { titulo: "Análise Springer", url: "/analises/springer/" },
+      ],
+      ["gree-split", { titulo: "Análise Gree", url: "/analises/gree/" }],
+      ["hitachi-e", { titulo: "Análise Hitachi", url: "/analises/hitachi/" }],
+    ]);
+    // TODOS desliga o filtro padrão: os sete analisados passam no recorte.
+    window.history.replaceState(null, "", TODOS);
+    render(<Consulta opcoes={opcoesDe(itens)} analisados={mapaAmplo} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    const links = within(bloco).getAllByRole("link");
+    expect(links).toHaveLength(6);
+    // O primeiro analisado do mapa é o Elgin (30.000 BTU/h), mas as capacidades
+    // mais compradas abrem a vitrine: o LG (9.000) vem primeiro.
+    expect(links[0]?.textContent).toContain("Análise LG");
+    // O 6º slot é o primeiro "demais" na ordem das Análises: o Elgin.
+    expect(links[5]?.textContent).toContain("Análise Elgin");
+    // O corte de 6 deixa o Daikin de fora.
+    expect(within(bloco).queryByText(/Análise Daikin/)).toBeNull();
+    // A tabela continua com os oito Aparelhos do dataset.
+    expect(
+      screen.getByText("8 aparelho(s) com Dados declarados."),
+    ).toBeDefined();
+  });
+
+  it("o bloco não altera a contagem nem o 'Mostrar mais'", async () => {
+    const muitos: ItemConsulta[] = Array.from({ length: 55 }, (_, indice) => ({
+      id: `lg-${indice}`,
+      marca: "LG",
+      marcaCatalogo: "LG",
+      modelo: `Modelo ${indice}`,
+      tipo: "Split Hi-Wall",
+      funcao: "Frio",
+      capacidadesBtu: [9000],
+      tensoes: [220],
+      classes: ["A"],
+      idrs: [5],
+      consumosKwh: [100 + indice],
+    }));
+    muitos.push({
+      id: "fora-do-filtro",
+      marca: "GREE",
+      marcaCatalogo: "GREE",
+      modelo: "Fora do filtro",
+      tipo: "Split Hi-Wall",
+      funcao: "Frio",
+      capacidadesBtu: [9000],
+      tensoes: [220],
+      classes: ["A"],
+      idrs: [5],
+      consumosKwh: [500],
+    });
+    servirConsulta(muitos);
+    window.history.replaceState(null, "", "/?marca=LG");
+    render(
+      <Consulta
+        opcoes={opcoesDe(muitos)}
+        analisados={
+          new Map([
+            ["lg-0", { titulo: "Análise LG 0", url: "/analises/lg-0/" }],
+          ])
+        }
+      />,
+    );
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    expect(
+      screen.getByText("55 aparelho(s) com Dados declarados."),
+    ).toBeDefined();
+    expect(screen.getAllByRole("row").slice(1)).toHaveLength(50);
+    expect(document.querySelector(".com-analise")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar mais" }));
+    await waitFor(() =>
+      expect(screen.getAllByRole("row").slice(1)).toHaveLength(55),
+    );
+    expect(document.querySelector(".com-analise")).not.toBeNull();
+  });
+
+  it("sem analisados, não há selo nem bloco", async () => {
     render(<Consulta opcoes={opcoesDe(itens)} analisados={new Map()} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
-    expect(screen.queryByText("Analisados por nós")).toBeNull();
-    expect(screen.queryByText("Demais aparelhos")).toBeNull();
-    expect(screen.queryByText("Analisado")).toBeNull();
-  });
-
-  it("filtro por marca mantém analisados no topo dentro do filtro", async () => {
-    await montarComAnalisados();
-    fireEvent.change(screen.getByLabelText("Outras marcas"), {
-      target: { value: "LG" },
-    });
-    // Aguarda a tabela atualizar (2 modelos da marca LG: Dual Inverter e Janela)
-    await waitFor(() => {
-      const modelos = screen.getAllByRole("link", {
-        name: /Dual Inverter|Janela/,
-      });
-      expect(modelos).toHaveLength(2);
-    });
-    const linhas = screen.getAllByRole("row").slice(1);
-    // Primeira linha é o cabeçalho do grupo "Analisados por nós"
-    expect(linhas[0]?.textContent).toContain("Analisados por nós");
-    // Segunda linha é o analisado (Dual Inverter)
-    expect(linhas[1]?.textContent).toContain("Dual Inverter");
-    // Terceira linha é o cabeçalho "Demais aparelhos"
-    expect(linhas[2]?.textContent).toContain("Demais aparelhos");
-    // Quarta linha é o demais (Janela)
-    expect(linhas[3]?.textContent).toContain("Janela");
+    expect(screen.queryByText("Análise")).toBeNull();
+    expect(screen.queryByText("Aparelhos com análise")).toBeNull();
+    expect(document.querySelector(".com-analise")).toBeNull();
   });
 });

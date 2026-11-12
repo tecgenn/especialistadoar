@@ -103,11 +103,18 @@ body.ampla footer {
   align-items: start;
 }
 
+/* A barra de filtros acompanha a rolagem enquanto o painel inteiro cabe na
+   janela (ticket 45) — sem `max-height` nem `overflow-y` internos. Quando o
+   painel é mais alto que a janela, o componente a marca como estática e ela
+   rola com a página (rodapé sempre alcançável). */
 .filtros-sidebar {
   position: sticky;
   top: 1rem;
-  max-height: calc(100vh - 2rem);
-  overflow-y: auto;
+  align-self: start;
+}
+
+.filtros-sidebar-estatica {
+  position: static;
 }
 
 .consulta-resultados {
@@ -135,8 +142,6 @@ body.ampla footer {
 
   .filtros-sidebar {
     position: static;
-    max-height: none;
-    overflow-y: visible;
   }
 
   /* O painel de filtros fecha com o botão; quando fechado, some e a tabela
@@ -154,7 +159,7 @@ body.ampla footer {
 .consulta .filtros {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
   margin-block: 1rem;
 }
 
@@ -192,9 +197,10 @@ body.ampla footer {
   width: 100%;
 }
 
-/* O botão da direção ocupa só o próprio conteúdo (não estica na coluna). */
+/* O botão da direção ocupa só o próprio conteúdo e alinha com o select. */
 .consulta .filtros .ordem-direcao {
-  align-self: start;
+  align-self: end;
+  justify-self: end;
   white-space: nowrap;
 }
 
@@ -203,7 +209,7 @@ body.ampla footer {
 .consulta .campo-chips {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -211,9 +217,9 @@ body.ampla footer {
 }
 
 .consulta .campo-chips > legend {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.2rem;
   padding: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: var(--texto-suave);
 }
 
@@ -238,14 +244,91 @@ body.ampla footer {
 .consulta .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: 0.3rem;
   min-width: 0;
 }
 
 .consulta .chips button {
   align-self: auto;
-  padding: 0.3rem 0.75rem;
+  padding: 0.25rem 0.5rem;
   border-radius: 999px;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+/* Ticket 45: barra densa em blocos — Marca em 2 colunas, Capacidade em 3, Tipo
+   em 2 e a Classe numa única fileira de seis letras. */
+.consulta .campo-marca .chips,
+.consulta .campo-tipo .chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.consulta .campo-capacidade .chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.consulta .campo-classe .chips {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+/* Função e Tensão lado a lado; Ordenar em largura total com a direção ao lado. */
+.consulta .filtros-par {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.consulta .campo-tensao {
+  min-width: 0;
+}
+
+.consulta .campo-tensao select {
+  width: 100%;
+}
+
+.consulta .filtros-ordenar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.consulta .campo-ordenar {
+  min-width: 0;
+}
+
+.consulta .campo-ordenar select {
+  width: 100%;
+}
+
+.consulta .filtros-rodape {
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--borda);
+}
+
+.consulta .filtros-rodape button {
+  width: 100%;
+  text-align: center;
+}
+
+.consulta .campo-marca .chips button,
+.consulta .campo-capacidade .chips button,
+.consulta .campo-tipo .chips button,
+.consulta .campo-classe .chips button {
+  min-width: 0;
+  padding-inline: 0.35rem;
+  text-align: center;
+}
+
+.consulta .campo-classe .chips button {
+  padding-inline: 0;
+  font-weight: 600;
 }
 
 .consulta .chips button[aria-pressed="true"] {
@@ -294,29 +377,41 @@ body.ampla footer {
   color: #fff;
 }
 
-/* Cores da coluna Classe na tabela (ticket 36): reusa as mesmas cores dos
-   chips de classe. `data-classe` pode trazer vários valores separados por
-   espaço; o seletor de atributo com ~ casa cada um como token. */
-.consulta .tabela-aparelhos td[data-classe~="A"] {
+/* Selo de Classe na tabela (ticket 36, revisão do 44): a cor fica numa pílula
+   dentro da célula, não no fundo da célula inteira — a linha permanece
+   uniforme e a classe continua legível à direita do IDRS. */
+.consulta .classe-selos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.consulta .classe-selo {
+  display: inline-block;
+  min-width: 5.25rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
   background: #16a34a;
   color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
 }
-.consulta .tabela-aparelhos td[data-classe~="B"] {
+
+.consulta .classe-selo[data-classe="B"] {
   background: #2563eb;
-  color: #fff;
 }
-.consulta .tabela-aparelhos td[data-classe~="C"] {
+.consulta .classe-selo[data-classe="C"] {
   background: #ca8a04;
-  color: #fff;
 }
-.consulta .tabela-aparelhos td[data-classe~="D"] {
+.consulta .classe-selo[data-classe="D"] {
   background: #ea580c;
-  color: #fff;
 }
-.consulta .tabela-aparelhos td[data-classe~="E"],
-.consulta .tabela-aparelhos td[data-classe~="F"] {
+.consulta .classe-selo[data-classe="E"],
+.consulta .classe-selo[data-classe="F"] {
   background: #dc2626;
-  color: #fff;
 }
 
 .resultados {
@@ -382,59 +477,119 @@ body.ampla footer {
   background: var(--fundo);
 }
 
-/* Tabela de Aparelhos (ticket 27): uma linha por Aparelho, cabeçalhos
-   ordenáveis e cartões no celular. */
+/* Tabela de Aparelhos (ticket 27, revisão do 44): uma linha por Aparelho,
+   cabeçalhos ordenáveis e cartões no celular.
+
+   A grade tem **colunas de largura igual** e todo o conteúdo centralizado: a
+   leitura desce em colunas regulares, sem valores encostados na vizinha. O
+   recuo horizontal é o mesmo em todas as células (`0.75rem`) e o vertical
+   (`0.8rem`) dá ar entre as linhas. `table-layout: fixed` mantém a grade
+   estável independentemente do conteúdo. */
 .consulta .tabela-aparelhos {
   width: 100%;
-  border-collapse: collapse;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.9rem;
+}
+
+/* 7 colunas iguais: a grade fica regular em qualquer largura. */
+.consulta .tabela-aparelhos col {
+  width: 14.2857%;
 }
 
 .consulta .tabela-aparelhos th,
 .consulta .tabela-aparelhos td {
-  padding: 0.5rem 0.4rem;
-  text-align: left;
-  vertical-align: top;
+  padding: 0.6rem 0.75rem;
+  text-align: center;
+  vertical-align: middle;
   border-bottom: 1px solid var(--borda);
 }
 
 .consulta .tabela-aparelhos thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-block: 0.65rem;
+  background: var(--fundo);
   color: var(--texto-suave);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: inset 0 -1px 0 var(--borda);
+}
+
+/* Números alinhados na vírgula, sem perder a centralização da coluna. */
+.consulta .tabela-aparelhos td[data-campo="btu"],
+.consulta .tabela-aparelhos td[data-campo="consumo"],
+.consulta .tabela-aparelhos td[data-campo="idrs"] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Modelos longos quebram linha dentro da coluna, sem estourar a grade. */
+.consulta .tabela-aparelhos td[data-campo="modelo"] {
+  overflow-wrap: anywhere;
+}
+
+.consulta .tabela-aparelhos tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--fundo) 55%, var(--superficie));
+}
+
+.consulta .tabela-aparelhos tbody tr:hover td {
+  background: color-mix(in srgb, var(--primaria) 5%, var(--superficie));
 }
 
 .consulta .tabela-aparelhos thead button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
   padding: 0;
   border: 0;
   background: transparent;
   font: inherit;
   color: inherit;
   cursor: pointer;
-  white-space: nowrap;
 }
 
 .consulta .tabela-aparelhos thead button:hover {
   color: var(--primaria);
 }
 
+/* As duas setas de ordenação ficam sempre visíveis (ticket 43): a ativa em cor
+   primária e negrito, a outra em cinza claro. */
+.consulta .tabela-aparelhos .setas {
+  display: inline-flex;
+  gap: 0.1rem;
+}
+
+.consulta .tabela-aparelhos .seta {
+  color: #cbd5e1;
+}
+
+.consulta .tabela-aparelhos .seta-ativa {
+  color: var(--primaria);
+  font-weight: 700;
+}
+
 .consulta .tabela-aparelhos td[data-label="Modelo"] a {
   font-weight: 600;
 }
 
-/* Grupo de analisados (ticket 28): cabeçalho dentro da tabela. */
-.consulta .tabela-aparelhos .grupo-cabecalho td {
-  padding: 0.75rem 0.4rem;
-  border-bottom: 2px solid var(--primaria);
-  font-size: 0.9rem;
+/* Linha do analisado (ticket 44): fundo levemente destacado e borda de acento
+   à esquerda, para a linha se distinguir sem virar um grupo à parte. */
+.consulta .tabela-aparelhos tbody tr.linha-analisado td {
+  background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
 }
 
-.consulta .aviso-afiliado {
-  color: var(--texto-suave);
-  font-weight: 400;
-  font-size: 0.85rem;
+.consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
+  border-left: 3px solid var(--primaria);
 }
 
-/* Selo "Analisado" na coluna Marca (ticket 28). */
+/* Selo "Análise" na coluna Marca (ticket 44): etiqueta de contorno, distinta
+   da pílula azul dos chips de filtro. O tooltip traz só o título da Análise. */
 .consulta .analisado-selo {
   position: relative;
   display: inline-flex;
@@ -442,27 +597,122 @@ body.ampla footer {
   margin-left: 0.5rem;
 }
 
-.consulta .analisado-link {
+.consulta .analisado-etiqueta {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: var(--primaria);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--primaria);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--primaria);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-decoration: none;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
-.consulta .analisado-link:hover {
-  background: #0284c7;
-  color: #fff;
+.consulta a.analisado-etiqueta:hover {
+  background: color-mix(in srgb, var(--primaria) 12%, transparent);
+  color: var(--primaria);
 }
 
-.consulta .analisado-link:focus {
+.consulta a.analisado-etiqueta:focus-visible {
   outline: 2px solid var(--primaria);
   outline-offset: 2px;
+}
+
+/* Bloco "Aparelhos com análise" (ticket 44, revisto): um destaque **fora** da
+   tabela, acima dela, com cartões próprios — outro material, outra leitura. No
+   recorte inicial mostra todos os analisados; com um filtro ativo, só os que
+   ficam de fora. Nunca mexe em contagem, paginação nem ordenação. */
+.consulta .com-analise {
+  margin-block: 0 1.25rem;
+  padding: 1rem 1.25rem 1.25rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+}
+
+.com-analise h2 {
+  margin: 0 0 0.75rem;
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.com-analise ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.consulta .com-analise-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  height: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  color: inherit;
+  text-decoration: none;
+}
+
+.consulta .com-analise-item:hover {
+  border-color: var(--primaria);
+}
+
+.consulta .com-analise-item:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+.consulta .com-analise-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.consulta .com-analise-marca {
+  color: var(--texto-suave);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.consulta .com-analise-titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.consulta .com-analise-item:hover .com-analise-titulo {
+  color: var(--primaria);
+}
+
+@media (max-width: 40rem) {
+  .consulta .tabela-aparelhos tbody tr.linha-analisado {
+    border-left: 3px solid var(--primaria);
+    background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
+  }
+
+  .consulta .tabela-aparelhos tbody tr.linha-analisado td {
+    background: transparent;
+  }
+
+  .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
+    border-left: 0;
+  }
 }
 
 /* Tooltip do selo: aparece no hover, foco e toque. */
@@ -606,6 +856,86 @@ body.ampla footer {
   margin: 0;
 }
 
+/* Banner de transparência de afiliados (ticket 47): fica no topo do conteúdo,
+   antes do corpo do artigo. */
+.analise-transparencia {
+  margin-block: 1.25rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--primaria);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+/* CTAs da Análise (ticket 47): sempre um cartão destacado, nunca um link solto
+   no meio do texto. As ações dentro do cartão são botões. */
+.cta-cartao {
+  margin-block: 1.5rem;
+  padding: 1.25rem;
+  border: 2px solid var(--primaria);
+  border-radius: 0.75rem;
+  background: #e0f2fe;
+}
+
+.cta-cartao-titulo {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.cta-cartao-descricao {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--texto-suave);
+}
+
+.cta-cartao-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cta-acao {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--primaria);
+  color: var(--superficie);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cta-acao:hover {
+  background: #075985;
+}
+
+.cta-ofertas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cta-ofertas .oferta-cartao {
+  display: inline-block;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primaria);
+  border-radius: 999px;
+  background: var(--superficie);
+  text-decoration: none;
+}
+
+.cta-ofertas .oferta-cartao:hover {
+  border-color: #075985;
+}
+
+.cta-cartao-nota {
+  margin: 0.75rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
 .analise-aviso,
 .analise-destaque {
   margin-block: 1.5rem 1rem;
@@ -724,6 +1054,7 @@ body.ampla footer {
     gap: 0.5rem;
     padding: 0.15rem 0;
     border: 0;
+    text-align: left;
   }
 
   .consulta .tabela-aparelhos td::before {
@@ -761,5 +1092,562 @@ body.ampla footer {
 @media (max-width: 40rem) {
   .consulta .mostrar-mais {
     max-width: 100%;
+  }
+}
+
+/* Assistente de dimensionamento (ticket 41): progresso, telas de escolha,
+   contadores e o resultado com os fatores da conta. */
+.assistente {
+  margin-block: 1.5rem 2rem;
+}
+
+.assistente-progresso {
+  margin-bottom: 1rem;
+}
+
+.assistente-progresso-trilha {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--borda);
+  overflow: hidden;
+}
+
+.assistente-progresso-trilha span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primaria);
+  transition: width 0.2s ease;
+}
+
+.assistente-progresso-texto {
+  margin: 0.35rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.assistente-titulo {
+  margin-block: 1rem 0.75rem;
+  font-size: 1.4rem;
+}
+
+.assistente-titulo:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 4px;
+}
+
+.assistente-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+}
+
+.assistente-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.assistente-cartao:hover {
+  border-color: var(--primaria);
+}
+
+.assistente-cartao[aria-pressed="true"] {
+  border-color: var(--primaria);
+  outline: 2px solid var(--primaria);
+  outline-offset: 1px;
+}
+
+.assistente-cartao-titulo {
+  font-weight: 600;
+}
+
+.assistente-cartao-descricao {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.assistente-formas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 1rem;
+}
+
+.assistente-formas button {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: var(--superficie);
+  font: inherit;
+  cursor: pointer;
+}
+
+.assistente-formas button[aria-pressed="true"] {
+  border-color: var(--primaria);
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 600;
+}
+
+.assistente-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 16rem;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.assistente-campo input {
+  padding: 0.45rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  color: var(--texto);
+}
+
+.assistente-dimensoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-block: 1rem;
+}
+
+.assistente-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.assistente-acoes button {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+  cursor: pointer;
+}
+
+.assistente-avancar {
+  border-color: var(--primaria);
+  background: var(--primaria);
+  color: #fff;
+  font-weight: 600;
+}
+
+.assistente-erro {
+  color: #b91c1c;
+}
+
+.assistente-ajuda {
+  color: var(--texto-suave);
+}
+
+.assistente-equipamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.assistente-contador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.assistente-contador-botoes {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.assistente-contador-botoes button {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--borda);
+  border-radius: 50%;
+  background: var(--fundo);
+  font: inherit;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.assistente-contador-valor {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.assistente-resultado {
+  margin-top: 1.5rem;
+}
+
+.assistente-capacidade {
+  margin: 0;
+  color: var(--primaria);
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.assistente-capacidade-rotulo {
+  margin-top: 0.25rem;
+  color: var(--texto-suave);
+}
+
+.assistente-confianca {
+  display: inline-block;
+  margin-block: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.assistente-confianca-alta {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.assistente-confianca-media {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.assistente-confianca-baixa {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.assistente-explicacao {
+  max-width: 60rem;
+}
+
+.assistente-fatores-bloco,
+.assistente-suposicoes,
+.assistente-orientacoes {
+  margin-block: 1.25rem;
+}
+
+.assistente-fatores {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--borda);
+}
+
+.assistente-fatores li {
+  display: grid;
+  grid-template-columns: minmax(8rem, 12rem) 1fr auto;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--borda);
+  font-size: 0.9rem;
+}
+
+.assistente-fator-rotulo {
+  font-weight: 600;
+}
+
+.assistente-fator-detalhe {
+  color: var(--texto-suave);
+}
+
+.assistente-fator-btu {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.assistente-soma {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.assistente-alternativa {
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+/* CTAs do resultado (ticket 42): cards dos Aparelhos analisados na capacidade
+   recomendada (e na alternativa dividida) e o botão da tabela já filtrada. */
+.assistente-analisados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-block: 1.25rem;
+}
+
+.assistente-analisados-titulo {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.assistente-analisados-texto {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.assistente-analisados-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assistente-analisado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  height: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  color: inherit;
+  text-decoration: none;
+}
+
+.assistente-analisado:hover {
+  border-color: var(--primaria);
+}
+
+.assistente-analisado:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+.assistente-analisado-selo {
+  align-self: flex-start;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--primaria);
+  border-radius: 999px;
+  color: var(--primaria);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.assistente-analisado-titulo {
+  font-weight: 600;
+}
+
+.assistente-analisado-modelo {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.assistente-analisados-tabela {
+  align-self: flex-start;
+}
+
+.assistente-orientacoes dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.4rem 1rem;
+}
+
+.assistente-orientacoes dt {
+  color: var(--texto-suave);
+}
+
+.assistente-orientacoes dd {
+  margin: 0;
+}
+
+.assistente-aviso {
+  margin-block: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--primaria);
+  background: var(--superficie);
+  font-size: 0.9rem;
+}
+
+.assistente button:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+@media (max-width: 40rem) {
+  .assistente-fatores li {
+    grid-template-columns: 1fr;
+  }
+
+  .assistente-fator-btu {
+    text-align: left;
+  }
+
+  .assistente-orientacoes dl {
+    grid-template-columns: 1fr;
+  }
+
+  .assistente-orientacoes dt {
+    margin-top: 0.5rem;
+  }
+}
+
+/* Home como hub (ticket 46): hero, dois cartões de entrada, faixa de confiança,
+   capacidades e marcas populares, Análises em destaque, chamada do Assistente,
+   FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente. */
+.home-hero {
+  margin-bottom: 2rem;
+}
+
+.home-cartoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.home-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.home-cartao strong {
+  font-size: 1.2rem;
+}
+
+.home-cartao span {
+  color: var(--texto-suave);
+}
+
+.home-cartao:hover {
+  border-color: var(--primaria);
+}
+
+.home-cartao-destaque {
+  border-color: var(--primaria);
+  background: #e0f2fe;
+}
+
+.home-cartao-destaque strong {
+  color: var(--primaria);
+}
+
+.home-confianca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  padding-block: 0.75rem;
+  margin-bottom: 2rem;
+  border-block: 1px solid var(--borda);
+}
+
+.home-confianca p {
+  margin: 0;
+}
+
+.home-populares {
+  margin-bottom: 2rem;
+}
+
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.home-links a {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: var(--superficie);
+  text-decoration: none;
+}
+
+.home-links a:hover {
+  border-color: var(--primaria);
+  background: #e0f2fe;
+}
+
+.home-assistente {
+  margin-block: 2.5rem;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+}
+
+.home-passos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 0;
+  margin: 1.25rem 0;
+  list-style: none;
+}
+
+.home-passos li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.75rem;
+  border-left: 3px solid var(--primaria);
+}
+
+.home-passos span {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.home-faq,
+.home-metodologia {
+  margin-bottom: 2rem;
+}
+
+.home-pergunta {
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--borda);
+}
+
+.home-pergunta h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.home-pergunta p {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+@media (max-width: 40rem) {
+  .home-cartoes,
+  .home-passos {
+    grid-template-columns: 1fr;
   }
 }

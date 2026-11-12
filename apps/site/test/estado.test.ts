@@ -49,9 +49,7 @@ describe("estado da consulta na URL", () => {
   });
 
   it("registra explicitamente um estado sem filtros", () => {
-    expect(escreverEstado({ marca: "  ", q: "" }).toString()).toBe(
-      "tipo=&tensao=&classe=",
-    );
+    expect(escreverEstado({ marca: "  ", q: "" }).toString()).toBe("tensao=");
   });
 
   it("preserva o estado num round-trip", () => {
@@ -94,13 +92,14 @@ describe("estado da consulta na URL", () => {
         funcao: " ",
         classe: "",
       }).toString(),
-    ).toBe("tipo=&tensao=&classe=");
+    ).toBe("tensao=");
   });
 });
 
-describe("filtros padrão (ticket 38)", () => {
-  it("aplica o padrão quando a URL não traz nenhum filtro", () => {
-    expect(lerEstado(new URLSearchParams(""))).toEqual(FILTROS_PADRAO);
+describe("filtros padrão (ticket 38, revisto no 44)", () => {
+  it("aplica só a Tensão 220 V quando a URL não traz nenhum filtro", () => {
+    expect(FILTROS_PADRAO).toEqual({ tensao: 220 });
+    expect(lerEstado(new URLSearchParams(""))).toEqual({ tensao: 220 });
   });
 
   it("aplica o padrão quando a URL só traz ordenação", () => {
@@ -115,8 +114,16 @@ describe("filtros padrão (ticket 38)", () => {
     expect(lerEstado(new URLSearchParams("marca=LG"))).toEqual({ marca: "LG" });
   });
 
-  it("respeita uma URL que esvaziou os filtros do padrão", () => {
-    expect(lerEstado(new URLSearchParams("tipo=&tensao=&classe="))).toEqual({});
+  it("o link do Assistente (?btu=X) desliga os filtros padrão", () => {
+    // ADR-0019: a presença de qualquer chave de filtro desliga o padrão, então
+    // a tabela mostra todos os aparelhos da capacidade recomendada.
+    expect(lerEstado(new URLSearchParams("btu=12000"))).toEqual({
+      btu: 12000,
+    });
+  });
+
+  it("respeita uma URL que esvaziou o filtro do padrão", () => {
+    expect(lerEstado(new URLSearchParams("tensao="))).toEqual({});
   });
 
   it("não escreve o padrão na URL", () => {
@@ -134,7 +141,7 @@ describe("filtros padrão (ticket 38)", () => {
   });
 
   it("escreve o estado sem filtros de forma explícita", () => {
-    expect(escreverEstado({}).toString()).toBe("tipo=&tensao=&classe=");
+    expect(escreverEstado({}).toString()).toBe("tensao=");
   });
 
   it("preserva o round-trip do padrão, do vazio e de um estado misto", () => {

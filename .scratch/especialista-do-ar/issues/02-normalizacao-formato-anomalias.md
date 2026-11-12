@@ -8,7 +8,7 @@
 
 **Blocked by:** 01 — Fundação e primeira fatia do pipeline (ingest + parse).
 
-**Status:** completed
+**Status:** done
 
 - [x] O Valor original é preservado ponta a ponta; o Valor oficial só difere dele por regra de formato.
 - [x] `º` e `°` padronizados por regra, não por exceção.

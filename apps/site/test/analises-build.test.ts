@@ -67,12 +67,12 @@ function lerHtml(...partes: string[]): string {
 }
 
 /**
- * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/`.
- * Caiu de 2.460 fichas quando a pipeline passou a excluir Model Status =
- * "Excluído" (ticket 31); a curadoria de Análises pode apontar para um id fora
- * da base, então o número é o que o build realmente gera.
+ * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/` +
+ * `/assistente/` (ticket 41). Caiu de 2.460 fichas quando a pipeline passou a
+ * excluir Model Status = "Excluído" (ticket 31); a curadoria de Análises pode
+ * apontar para um id fora da base, então o número é o que o build realmente gera.
  */
-const PAGINAS_BASE = 2229;
+const PAGINAS_BASE = 2230;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -84,6 +84,12 @@ function esperarSemBuscaAntiga(): void {
   const redirects = readFileSync(join(distDir, "_redirects"), "utf8");
   expect(redirects).toContain("/busca/ /aparelhos/ 301");
   expect(redirects).toContain("/busca /aparelhos/ 301");
+}
+
+/** O texto da página com os espaços colapsados, para comparar frases que o
+ *  Astro quebra em linhas no HTML. */
+function textoDaPagina(html: string): string {
+  return html.replace(/\s+/g, " ");
 }
 
 /**
@@ -101,12 +107,174 @@ function cssDaPagina(html: string): string {
   return embutido + arquivos;
 }
 
+function jsonLdsDaPagina(html: string): Array<Record<string, unknown>> {
+  return [
+    ...html.matchAll(
+      /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g,
+    ),
+  ].map((achado) => JSON.parse(achado[1] ?? "{}") as Record<string, unknown>);
+}
+
+/** O primeiro bloco JSON-LD da página (o `WebSite` da home, o da própria rota nas demais). */
 function jsonLdDaPagina(html: string): Record<string, unknown> {
-  const encontrado = html.match(
-    /<script type="application\/ld\+json">([\s\S]*?)<\/script>/,
+  const [primeiro] = jsonLdsDaPagina(html);
+  expect(primeiro).toBeDefined();
+  return primeiro as Record<string, unknown>;
+}
+
+/**
+ * As contagens que a home precisa mostrar, calculadas aqui de forma
+ * independente a partir do `consulta.json` publicado — se a página escrevesse um
+ * número à mão, este teste falharia assim que a base mudasse.
+ */
+function contagensDoBuild(): {
+  aparelhos: string;
+  marcas: string;
+  capacidades: string;
+} {
+  const itens = JSON.parse(
+    readFileSync(join(distDir, "consulta.json"), "utf8"),
+  ) as Array<{ marcaCatalogo: string; capacidadesBtu: number[] }>;
+  const numero = new Intl.NumberFormat("pt-BR");
+  return {
+    aparelhos: numero.format(itens.length),
+    marcas: numero.format(
+      new Set(itens.map((item) => item.marcaCatalogo).filter((m) => m !== ""))
+        .size,
+    ),
+    capacidades: numero.format(
+      new Set(itens.flatMap((item) => item.capacidadesBtu)).size,
+    ),
+  };
+}
+
+/** As capacidades e marcas curadas que existem na base publicada. */
+function curadoriaPresente(): {
+  btus: number[];
+  marcas: Array<{ valor: string; rotulo: string }>;
+} {
+  const curadoria = JSON.parse(
+    readFileSync(join(siteDir, "filtros.json"), "utf8"),
+  ) as {
+    btus: number[];
+    marcas: Array<{ valor: string; rotulo: string }>;
+  };
+  const itens = JSON.parse(
+    readFileSync(join(distDir, "consulta.json"), "utf8"),
+  ) as Array<{ marcaCatalogo: string; capacidadesBtu: number[] }>;
+  const capacidades = new Set(itens.flatMap((item) => item.capacidadesBtu));
+  const marcas = new Set(itens.map((item) => item.marcaCatalogo));
+  return {
+    btus: curadoria.btus
+      .filter((btu) => capacidades.has(btu))
+      .sort((a, b) => a - b),
+    marcas: curadoria.marcas.filter((marca) => marcas.has(marca.valor)),
+  };
+}
+
+/** O hash (12 primeiros caracteres) da Versão da tabela atual, como a home publica. */
+function versaoDaTabela(): string | undefined {
+  const manifest = JSON.parse(
+    readFileSync(join(dataBuildDir, "manifest.json"), "utf8"),
+  ) as {
+    versaoAtual: string | null;
+    versoes: Array<{ hash: string; obtidoEm: string }>;
+  };
+  return manifest.versoes
+    .find((versao) => versao.hash === manifest.versaoAtual)
+    ?.hash.slice(0, 12);
+}
+
+/**
+ * A home é um hub (ticket 46) com os nove blocos, e tudo nela é derivado da
+ * base publicada: contagens, capacidades e marcas populares, Versão da tabela.
+ */
+function conferirHomeHub(html: string): void {
+  const contagens = contagensDoBuild();
+  const curadoria = curadoriaPresente();
+  const numero = new Intl.NumberFormat("pt-BR");
+
+  // 1. Hero com H1 e subtítulo de ar-condicionado + INMETRO + comparação.
+  expect(html).toContain("<h1>Ar-condicionado com dados do INMETRO</h1>");
+  expect(html).toContain("capacidade, consumo e eficiência");
+
+  // 2. Dois cartões grandes, o do Assistente com destaque de cor.
+  expect(html).toContain('class="home-cartoes"');
+  expect(html).toContain("<strong>Ver aparelhos</strong>");
+  expect(html).toContain('href="/aparelhos/"');
+  expect(html).toContain("<strong>Usar assistente</strong>");
+  expect(html).toContain('href="/assistente/"');
+  expect(html).toContain("home-cartao home-cartao-destaque");
+
+  // 3. Faixa de confiança com contagens reais e a Versão da tabela.
+  expect(html).toContain(`<strong>${contagens.aparelhos}</strong> aparelhos`);
+  expect(html).toContain(`<strong>${contagens.marcas}</strong> marcas`);
+  expect(html).toContain(
+    `<strong>${contagens.capacidades}</strong> capacidades`,
   );
-  expect(encontrado).not.toBeNull();
-  return JSON.parse(encontrado?.[1] ?? "{}") as Record<string, unknown>;
+  const versao = versaoDaTabela();
+  expect(versao).toBeDefined();
+  expect(html).toContain(`Versão da tabela: ${versao}`);
+
+  // 4. Capacidades populares ligadas à tabela filtrada (9.000 a 36.000).
+  expect(html).toContain("Capacidades populares");
+  expect(curadoria.btus.length).toBeGreaterThan(0);
+  for (const btu of curadoria.btus) {
+    expect(html).toContain(`href="/aparelhos/?btu=${btu}"`);
+    expect(html).toContain(`${numero.format(btu)} BTU/h`);
+  }
+
+  // 5. Marcas populares (as curadas em filtros.json) ligadas à tabela.
+  expect(html).toContain("Marcas populares");
+  expect(curadoria.marcas.length).toBeGreaterThan(0);
+  for (const marca of curadoria.marcas) {
+    expect(html).toContain(`href="/aparelhos/?marca=${marca.valor}"`);
+    expect(html).toContain(`>${marca.rotulo}</a>`);
+  }
+
+  // 7. Chamada do Assistente com "como funciona em 3 passos".
+  expect(html).toContain("Descubra quantos BTUs você precisa");
+  expect(html.match(/class="home-passos"/g) ?? []).toHaveLength(1);
+  for (const passo of [
+    "Responda cinco perguntas",
+    "Veja a conta aberta",
+    "Compare antes de comprar",
+  ]) {
+    expect(html).toContain(passo);
+  }
+
+  // 8. FAQ visível e o mesmo conteúdo no JSON-LD FAQPage.
+  expect(html).toContain("Perguntas frequentes");
+  const blocos = jsonLdsDaPagina(html);
+  const faq = blocos.find((bloco) => bloco["@type"] === "FAQPage");
+  expect(faq).toBeDefined();
+  const entidades = (faq as Record<string, unknown>).mainEntity as Array<{
+    "@type": string;
+    name: string;
+    acceptedAnswer: { "@type": string; text: string };
+  }>;
+  expect(entidades.length).toBeGreaterThanOrEqual(5);
+  expect(entidades.length).toBeLessThanOrEqual(6);
+  for (const entidade of entidades) {
+    expect(entidade["@type"]).toBe("Question");
+    expect(entidade.name.length).toBeGreaterThan(0);
+    expect(entidade.acceptedAnswer["@type"]).toBe("Answer");
+    expect(entidade.acceptedAnswer.text.length).toBeGreaterThan(0);
+    expect(html).toContain(entidade.name);
+    expect(html).toContain(entidade.acceptedAnswer.text);
+  }
+
+  // 9. Metodologia/INMETRO: origem, IDRS/Classe e caráter oficial dos valores.
+  expect(html).toContain("Metodologia e INMETRO");
+  expect(html).toContain("exportação oficial de produtos do INMETRO");
+  expect(html).toContain("IDRS");
+  expect(html).toContain("Classe");
+  expect(html).toContain("estimat");
+
+  // A home continua sem baixar JSON no cliente.
+  expect(html).not.toContain("consulta.json");
+  expect(html).not.toContain("analises.json");
+  expect(html).not.toContain("ofertas.json");
 }
 
 function mdx(analise: AnaliseFixture, corpo: string): string {
@@ -156,6 +324,14 @@ function primeiroAparelho(): AparelhoDaBase {
     throw new Error("data/build/aparelhos.json está vazio.");
   }
   return primeiro;
+}
+
+/** A capacidade que a Análise usa no CTA da tabela filtrada. */
+function capacidadeDoAparelho(id: string): number | undefined {
+  const itens = JSON.parse(
+    readFileSync(join(dataBuildDir, "consulta.json"), "utf8"),
+  ) as Array<{ id: string; capacidadesBtu: number[] }>;
+  return itens.find((item) => item.id === id)?.capacidadesBtu[0];
 }
 
 function aparelhoDiferente(id: string): AparelhoDaBase {
@@ -226,11 +402,9 @@ describe("build com uma Análise de fixture", () => {
       mdx(
         valida,
         [
-          'import OfertaFaixa from "../src/components/OfertaFaixa.astro";',
-          "",
+          // O MDX não repete o CTA de Oferta: os cartões são garantidos pelo
+          // template da Análise (ticket 47).
           "Corpo editorial da fixture, com números próprios.",
-          "",
-          `<OfertaFaixa aparelhoId="${aparelho.id}" titulo="Oferta no meio do texto" />`,
         ].join("\n"),
       ),
     );
@@ -259,14 +433,41 @@ describe("build com uma Análise de fixture", () => {
     expect(jsonLd.description).toBe(valida.descricao);
     expect(jsonLd.url).toContain(`/analises/${valida.slug}/`);
 
-    // O CTA da Oferta do Aparelho entra na Análise e o mesmo componente pode
-    // ser usado no meio do MDX (sem estilo inline).
+    // Banner de transparência no topo, antes do corpo do artigo, com o texto
+    // exato aprovado (ticket 47).
+    const textoValida = textoDaPagina(htmlValida);
+    expect(textoValida).toContain("Aviso de transparência");
+    expect(textoValida).toContain(
+      "Este artigo contém links de afiliados. Podemos receber uma comissão pelas compras realizadas através desses links, sem custo adicional para você.",
+    );
+    expect(htmlValida.indexOf("Aviso de transparência")).toBeLessThan(
+      htmlValida.indexOf("analise-corpo"),
+    );
+
+    // Com Oferta: quatro CTAs em cartão (topo, meio e dois no fim). Cada CTA é
+    // um cartão, nunca um link solto.
+    expect(htmlValida.match(/<section class="cta-cartao/g) ?? []).toHaveLength(
+      4,
+    );
+    expect(htmlValida).toContain("Ver oferta");
+    expect(htmlValida).toContain("Calcular os BTUs do meu ambiente");
+    expect(htmlValida).toContain('href="/assistente/"');
     expect(htmlValida).toContain("Onde comprar");
-    expect(htmlValida).toContain("Oferta no meio do texto");
     expect(htmlValida).toContain(`href="${oferta.url}"`);
     expect(htmlValida).toContain('rel="sponsored nofollow noopener"');
     expect(htmlValida).toContain('target="_blank"');
-    expect(htmlValida).toContain("Links comerciais");
+    // O cartão comercial se identifica como link de afiliado (ADR-0010).
+    expect(htmlValida).toContain("Link de afiliado");
+    // O MDX não repete a Oferta: só os dois cartões do template a exibem.
+    expect(htmlValida.match(/rel="sponsored/g) ?? []).toHaveLength(2);
+    expect(htmlValida).not.toContain("Oferta no meio do texto");
+    // A tabela filtrada pela capacidade do Aparelho.
+    const capacidade = capacidadeDoAparelho(aparelho.id);
+    expect(capacidade).toBeDefined();
+    expect(htmlValida).toContain(
+      `Ver outros de ${new Intl.NumberFormat("pt-BR").format(capacidade as number)} BTU/h`,
+    );
+    expect(htmlValida).toContain(`href="/aparelhos/?btu=${capacidade}"`);
 
     const htmlFicha = lerHtml("aparelhos", aparelho.id);
     expect(htmlFicha).toContain("Leia a análise");
@@ -280,21 +481,18 @@ describe("build com uma Análise de fixture", () => {
     // A home exibe o bloco estático de Análises em destaque: título, descrição e
     // link de cada Análise publicada.
     const htmlHome = lerHtml("");
-    // A home (ticket 29) é uma home de verdade: H1, texto curto, o botão para a
-    // tabela e o menu com Aparelhos/Análises — sem a ilha e sem a busca do site.
-    expect(htmlHome).toContain("<h1>Especialista do Ar</h1>");
-    expect(htmlHome).toContain("Ver todos os aparelhos");
-    expect(htmlHome).toContain('href="/aparelhos/"');
+    // A home virou um hub (ticket 46): os nove blocos são gerados no build.
+    conferirHomeHub(htmlHome);
     expect(htmlHome).toContain(">Aparelhos</a>");
     expect(htmlHome).toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");
     expect(htmlHome).not.toContain('href="/busca/"');
     expect(htmlHome).not.toContain('class="tabela-aparelhos"');
     expect(htmlHome).toContain(
-      "<title>Especialista do Ar — aparelhos de ar-condicionado com dados do INMETRO</title>",
+      "<title>Ar-condicionado e BTUs: compare aparelhos com dados do INMETRO — Especialista do Ar</title>",
     );
     expect(htmlHome).toContain(
-      '<meta name="description" content="Base estruturada dos aparelhos de ar-condicionado',
+      '<meta name="description" content="Ar-condicionado e BTUs com os dados oficiais do INMETRO',
     );
     expect(htmlHome).toContain(
       'rel="canonical" href="https://especialista-do-ar.pages.dev/"',
@@ -309,6 +507,17 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlHome).toContain(analise.titulo);
       expect(htmlHome).toContain(analise.descricao);
     }
+
+    // Os cards de Aparelhos analisados do Assistente (ticket 42) são montados
+    // no build: o mapa capacidade → analisados viaja nas props da ilha, então a
+    // página traz a Análise sem baixar analises.json no cliente. O Aparelho
+    // Ausente não gera card.
+    const htmlAssistente = lerHtml("assistente");
+    expect(htmlAssistente).toContain(`/analises/${valida.slug}/`);
+    expect(htmlAssistente).toContain(valida.titulo);
+    expect(htmlAssistente).not.toContain(`/analises/${ausente.slug}/`);
+    expect(htmlAssistente).not.toContain("analises.json");
+    expect(htmlAssistente).not.toContain("ofertas.json");
 
     // A página Aparelhos (ticket 27) mantém o menu e ganha o JSON-LD próprio.
     const htmlTabela = lerHtml("aparelhos");
@@ -381,11 +590,33 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlAusente).not.toContain("Ver ficha técnica");
     expect(htmlAusente).not.toContain("Onde comprar");
     expect(htmlAusente).not.toContain('rel="sponsored');
+    // O banner de transparência aparece em toda Análise e o Aparelho Ausente
+    // não tem ficha: os CTAs levam à tabela e ao Assistente.
+    expect(textoDaPagina(htmlAusente)).toContain("Aviso de transparência");
+    expect(htmlAusente.match(/<section class="cta-cartao/g) ?? []).toHaveLength(
+      3,
+    );
+    expect(htmlAusente).toContain("Calcular os BTUs do meu ambiente");
+    expect(htmlAusente).toContain('href="/aparelhos/"');
 
-    // Sem Oferta para o Aparelho, não há CTA — nem link comercial vazio.
+    // Sem Oferta para o Aparelho, não há link comercial — mas continuam os
+    // três CTAs em cartão (ficha, Assistente e ficha + tabela).
     const htmlSemOferta = lerHtml("analises", semOferta.slug);
     expect(htmlSemOferta).toContain(
       `href="/aparelhos/${semOferta.aparelhoId}/"`,
+    );
+    expect(
+      htmlSemOferta.match(/<section class="cta-cartao/g) ?? [],
+    ).toHaveLength(3);
+    expect(htmlSemOferta).toContain("Ver ficha técnica");
+    expect(htmlSemOferta).toContain("Calcular os BTUs do meu ambiente");
+    const capacidadeSemOferta = capacidadeDoAparelho(semOferta.aparelhoId);
+    expect(capacidadeSemOferta).toBeDefined();
+    expect(htmlSemOferta).toContain(
+      `Ver outros de ${new Intl.NumberFormat("pt-BR").format(capacidadeSemOferta as number)} BTU/h`,
+    );
+    expect(htmlSemOferta).toContain(
+      `href="/aparelhos/?btu=${capacidadeSemOferta}"`,
     );
     expect(htmlSemOferta).not.toContain("Onde comprar");
     expect(htmlSemOferta).not.toContain('rel="sponsored');
@@ -397,7 +628,7 @@ describe("build com uma Análise de fixture", () => {
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.229 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As 2.230 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -426,7 +657,7 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2229 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2.230 páginas e omite seção, menu e analises.json", () => {
     // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
     buildarSite(criarDiretorioTemporario());
 
@@ -439,11 +670,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain("Análises em destaque");
     expect(htmlHome).not.toContain('rel="sponsored');
 
-    // A home (ticket 29): H1, texto curto e botão para a tabela; o menu tem só
-    // Aparelhos (Análises é condicional) e a busca do site saiu.
-    expect(htmlHome).toContain("<h1>Especialista do Ar</h1>");
-    expect(htmlHome).toContain("Ver todos os aparelhos");
-    expect(htmlHome).toContain('href="/aparelhos/"');
+    // A home (ticket 46) continua o hub com os nove blocos; só o de Análises em
+    // destaque some quando não há nenhuma Análise publicada.
+    conferirHomeHub(htmlHome);
     expect(htmlHome).toContain(">Aparelhos</a>");
     expect(htmlHome).not.toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");
@@ -455,6 +684,27 @@ describe("build sem nenhuma Análise (estado zero)", () => {
 
     const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
     expect(sitemap).not.toContain("/analises/");
+    expect(sitemap).toContain("/assistente/");
+
+    // O Assistente (ticket 41) tem página própria, entra no menu e publica o
+    // JSON-LD de aplicação. A ilha renderiza no servidor antes de hidratar: a
+    // primeira pergunta e o progresso já vêm no HTML, sem depender de JS.
+    const htmlAssistente = lerHtml("assistente");
+    expect(htmlAssistente).toContain(
+      "<title>Calculadora de BTUs: quantos BTUs preciso? — Especialista do Ar</title>",
+    );
+    expect(htmlAssistente).toContain(
+      "<h1>Descubra a capacidade ideal para o seu ambiente</h1>",
+    );
+    expect(htmlAssistente).toContain("Onde você vai usar o ar-condicionado?");
+    expect(htmlAssistente).toContain("Etapa 1 de 5");
+    const jsonLdAssistente = jsonLdDaPagina(htmlAssistente);
+    expect(jsonLdAssistente["@type"]).toBe("WebApplication");
+    expect(jsonLdAssistente.name).toBe("Calculadora de BTUs");
+    expect(htmlHome).toContain(">Assistente</a>");
+    // Sem nenhuma Análise publicada, o Assistente não tem cards: o resultado
+    // continua oferecendo só o caminho para a tabela.
+    expect(htmlAssistente).not.toContain("/analises/");
 
     expect(
       existsSync(join(distDir, "aparelhos", aparelho.id, "index.html")),

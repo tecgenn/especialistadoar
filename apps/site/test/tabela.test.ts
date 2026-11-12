@@ -20,10 +20,11 @@ function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
 }
 
 describe("colunas da tabela de Aparelhos", () => {
-  it("lista as colunas na ordem da tabela (ticket 31)", () => {
+  it("lista as colunas na ordem da tabela (ticket 43)", () => {
     expect(COLUNAS_TABELA.map((coluna) => coluna.rotulo)).toEqual([
       "Marca",
       "Modelo",
+      "Tipo",
       "BTU/h",
       "Consumo (kWh)",
       "IDRS",

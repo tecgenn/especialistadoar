@@ -27,7 +27,7 @@ regenerados; `id` e URL de nenhum Aparelho mudam.
       campos novos (os `id`s são idênticos) — com a ressalva registrada abaixo.
 - [x] O tamanho de `consulta.json` (hoje ~396 KB) e o de `aparelhos.json` (~3,1 MB)
       ficam registrados antes e depois neste ticket.
-- [x] `docs/agentes.md` e `docs/agents/architecture.md` documentam os campos novos e
+- [x] `docs/base-consumer-guide.md` e `docs/agents/architecture.md` documentam os campos novos e
       a semântica de `situacao`; `README.md` se necessário.
 - [x] `pnpm build` reproduz `data/build` e `reports` byte a byte depois de
       regenerar e commitar; `pnpm build:site`, lint, typecheck e testes verdes.

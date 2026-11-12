@@ -1,0 +1,22 @@
+Conteúdo editorial — CC BY-NC 4.0
+
+Copyright (c) 2026 TecGenn
+
+O conteúdo editorial deste repositório — os textos, as Análises em MDX, as
+descrições, os textos do site e os demais materiais redigidos pela equipe — está
+licenciado sob a Creative Commons Attribution-NonCommercial 4.0 International
+(CC BY-NC 4.0).
+
+Você pode compartilhar e adaptar esse conteúdo para fins não comerciais, desde
+que atribua o crédito a TecGenn, indique as alterações feitas e não sugira que
+TecGenn endossa você ou o seu uso.
+
+Texto legal completo (a licença canônica):
+https://creativecommons.org/licenses/by-nc/4.0/legalcode
+
+Resumo legível:
+https://creativecommons.org/licenses/by-nc/4.0/
+
+Escopo: esta licença NÃO se aplica ao código-fonte, que é licenciado sob a MIT
+(ver `LICENSE`). Os dados brutos do INMETRO mantêm a origem e as condições do
+órgão publicador; consulte `data/raw/` e o `manifest.json` para a proveniência.

@@ -13,3 +13,9 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
 Edit the right-hand column to match whatever vocabulary you actually use.
+
+## Resolution
+
+A closed ticket records `**Status:** done` near the top of its file — the bold form is
+the one the tracker files use. `completed` was an early variant and was normalized to
+`done`; don't introduce new resolution words.

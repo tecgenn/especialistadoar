@@ -1,0 +1,52 @@
+---
+import consultaJson from "@dados/consulta.json";
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import Assistente from "../../components/Assistente.tsx";
+import { carregarAnalises } from "../../conteudo/analises.ts";
+import Base from "../../layouts/Base.astro";
+import { agruparAnalisadosPorCapacidade } from "../../lib/analises.ts";
+
+// Os cards de Aparelhos analisados (ticket 42) são montados no build: a ilha
+// recebe o mapa capacidade → analisados pronto e só consulta pelo valor
+// recomendado, sem nenhuma chamada de rede no cliente.
+const { analises } = await carregarAnalises();
+const analisados = agruparAnalisadosPorCapacidade(
+  analises,
+  consultaJson as ItemConsulta[],
+);
+
+const descricao =
+  "Descubra quantos BTUs o seu ambiente pede em cinco perguntas: metragem, incidência de sol, pessoas, eletrônicos e janelas. O resultado mostra os fatores, a confiança e orientações.";
+
+const jsonLd: Record<string, unknown> = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Calculadora de BTUs",
+  applicationCategory: "UtilityApplication",
+  operatingSystem: "Web",
+  url: Astro.site ? new URL("/assistente/", Astro.site).href : undefined,
+  description: descricao,
+  inLanguage: "pt-BR",
+  isPartOf: {
+    "@type": "WebSite",
+    name: "Especialista do Ar",
+    url: Astro.site?.href,
+  },
+};
+---
+
+<Base
+  titulo="Calculadora de BTUs: quantos BTUs preciso? — Especialista do Ar"
+  descricao={descricao}
+  jsonLd={jsonLd}
+>
+  <h1>Descubra a capacidade ideal para o seu ambiente</h1>
+  <p class="intro">
+    Responda cinco perguntas simples sobre o ambiente e veja quantos BTUs ele
+    pede. O resultado mostra os fatores usados, o nível de confiança e
+    orientações para escolher e instalar o aparelho. É uma estimativa calculada
+    por heurística, não um Valor oficial do INMETRO.
+  </p>
+
+  <Assistente client:load analisados={analisados} />
+</Base>

@@ -17,6 +17,8 @@ export interface ColunaTabela {
 export const COLUNAS_TABELA: readonly ColunaTabela[] = [
   { campo: "marca", rotulo: "Marca" },
   { campo: "modelo", rotulo: "Modelo" },
+  // Tipo é somente leitura (ticket 43): aparece após Modelo, mas não ordena.
+  { campo: "tipo", rotulo: "Tipo" },
   { campo: "btu", rotulo: "BTU/h" },
   { campo: "consumo", rotulo: "Consumo (kWh)" },
   { campo: "idrs", rotulo: "IDRS" },

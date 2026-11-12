@@ -41,15 +41,24 @@ Texto editorial sobre um único Aparelho, publicado no site numa seção própri
 _Avoid_: Artigo, review, resenha
 
 **Aparelho analisado**:
-Aparelho que tem uma Análise publicada. Ganha o selo "Analisado" com link para a Análise e aparece antes dos demais na tabela de Aparelhos, dentro dos filtros ativos. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Como a Análise existe para levar a uma Oferta, sempre que há Oferta o aviso de link de afiliado aparece de forma visível no grupo da tabela, na Análise e em cada Oferta; o selo tem um tooltip com o mesmo aviso.
-_Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de qualidade ou escondem a relação comercial)
+Aparelho que tem uma Análise publicada. Na tabela de Aparelhos, ganha o selo "Análise" — etiqueta de contorno, com link para a Análise e tooltip com o título dela — e a linha destacada. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Acima da tabela, fora dela e com cartões próprios, a vitrine **"Aparelhos com análise"** acompanha os filtros ativos (inclusive o padrão de Tensão 220 V): mostra até **6** analisados que passam no recorte — as capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) abrem a lista e as demais completam, na ordem das Análises, da mais recente para a mais antiga. Cada item mostra a Marca e o **título da Análise** (não o modelo). Os cartões repetem aparelhos que também aparecem, destacados, na tabela; o bloco não altera contagem, ordenação nem paginação. Sem analisado no recorte, a vitrine não aparece. Os analisados que passam nos filtros aparecem antes dos demais na tabela. A tabela não exibe aviso de afiliado: o aviso de transparência fica no topo da Análise e em cada Oferta.
+_Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de qualidade ou escondem a relação comercial); selo "Analisado" (nome antigo)
+
+**Assistente**:
+O configurador determinístico do site (`/assistente/`) que traduz cinco perguntas sobre o ambiente — tipo de ambiente, área, incidência de sol, pessoas e equipamentos/lâmpadas/janelas — numa capacidade comercial de ar-condicionado. Não usa IA em runtime, LLM nem Worker: a inteligência está na árvore de perguntas e nos coeficientes fixos e auditáveis. O estado inteiro vive na URL, então o resultado é compartilhável.
+_Avoid_: Chat, robô, calculadora de carga térmica (não é cálculo de engenharia)
+
+**Recomendação do Assistente**:
+O resultado do Assistente: uma capacidade comercial (9.000 a 60.000 BTU/h), os fatores usados, o nível de confiança e orientações. É sempre um **Valor calculado** por uma heurística de mercado, nunca um Valor oficial do INMETRO nem promessa de economia; acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica.
+_Avoid_: Resultado oficial, dimensionamento definitivo, recomendação de compra
 
 **Guia**:
 Texto editorial sobre uma escolha que envolve vários Aparelhos — uma potência, um perfil de uso —, apontando para as Análises e fichas de cada um.
+_Ainda não implementado: nenhum Guia existe no site; o formato entra numa fase futura._
 _Avoid_: Artigo, ranking, lista
 
-**Filtros padrão (ticket 38)**:
-O recorte aplicado implicitamente quando `/aparelhos/` é aberto sem querystring — Tipo `Split Hi-Wall`, Tensão `220` V e Classe `A`. É o `FILTROS_PADRAO` de `apps/site/src/lib/estado.ts`: aplicado na leitura (`lerEstado`) mas nunca escrito na URL, a menos que o estado diferente do padrão já contenha esses valores. Um link com qualquer chave de filtro é respeitado e não recebe o padrão por cima; desligar o padrão grava as chaves vazias (`tipo=&tensao=&classe=`). "Limpar filtros" volta ao padrão preservando a ordenação.
+**Filtros padrão (ticket 38, revisto no 44)**:
+O recorte aplicado implicitamente quando `/aparelhos/` é aberto sem querystring — só a Tensão `220` V. É o `FILTROS_PADRAO` de `apps/site/src/lib/estado.ts`: aplicado na leitura (`lerEstado`) mas nunca escrito na URL, a menos que o estado diferente do padrão já contenha esse valor. Um link com qualquer chave de filtro é respeitado e não recebe o padrão por cima; desligar o padrão grava a chave vazia (`tensao=`). "Limpar filtros" volta ao padrão preservando a ordenação.
 _Avoid_: Filtros iniciais, recorte fixo (o padrão é implícito e compartilhável, não um parâmetro da URL)
 
 **IDRS**:
@@ -95,6 +104,7 @@ _Avoid_: Valor original (o original é o que o Registro INMETRO guarda, sem padr
 **Valor calculado**:
 Dado derivado por conta determinística a partir de Valores oficiais e de entradas informadas por quem consulta, como o custo anual estimado com uma tarifa dada na consulta. Sempre acompanha a fórmula e as entradas usadas, para nunca ser confundido com um Valor oficial.
 _Avoid_: Estimativa, recomendação
+
 **Dados declarados**:
 Valores de capacidade e consumo informados para quatro condições (carga total e
 parcial, a 35 °C e a 29 °C), a partir dos quais o IDRS é calculado. É a camada mais

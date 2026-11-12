@@ -1,0 +1,30 @@
+---
+/**
+ * Um CTA em cartão da Análise (ticket 47). O cartão é o bloco visual do CTA; as
+ * ações dentro dele são botões — nunca links soltos no meio do texto. Um cartão
+ * comercial (Oferta) ganha a identificação de link de afiliado, coerente com o
+ * ADR-0010.
+ */
+interface Props {
+  titulo: string;
+  descricao?: string;
+  /** Verdadeiro no cartão de Oferta: acrescenta o aviso de link de afiliado. */
+  comercial?: boolean;
+}
+
+const { titulo, descricao, comercial = false } = Astro.props;
+---
+
+<section class:list={["cta-cartao", { "cta-cartao-comercial": comercial }]}>
+  <h2 class="cta-cartao-titulo">{titulo}</h2>
+  {descricao ? <p class="cta-cartao-descricao">{descricao}</p> : null}
+  <div class="cta-cartao-acoes"><slot /></div>
+  {
+    comercial ? (
+      <p class="cta-cartao-nota">
+        Link de afiliado: podemos receber uma comissão pela compra, sem custo
+        adicional para você.
+      </p>
+    ) : null
+  }
+</section>

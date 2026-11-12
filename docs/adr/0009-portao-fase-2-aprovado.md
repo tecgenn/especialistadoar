@@ -3,7 +3,7 @@
 **Status:** aceito
 
 > **Nota (2026-10-19):** superado pelo **ADR-0011**. O Worker dinâmico foi
-> removido; o Valor calculado virou uma fórmula documentada em `docs/agentes.md`.
+> removido; o Valor calculado virou uma fórmula documentada em `docs/base-consumer-guide.md`.
 
 O **teste de aceitação da Fase 2** (o portão de decisão do PRD) foi rodado em
 2026-10-17: um Agente fresco, sem o gabarito e sem o código-fonte, respondeu às 10

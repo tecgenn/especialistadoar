@@ -170,7 +170,7 @@ aparece como opção.
   dado manda); o build não falha por isso.
 - **Documentação**: novo termo **Marca de catálogo** no glossário, **ADR-0016**
   registrando a escolha (campo derivado, não reescrita da Marca oficial), e
-  `docs/agentes.md` atualizado com `marcaCatalogo`, a nova semântica do filtro e o
+  `docs/base-consumer-guide.md` atualizado com `marcaCatalogo`, a nova semântica do filtro e o
   tipo de Anomalia.
 - **Nada muda** em Ofertas, Análises, Worker (inexistente), `schema.json` da base
   servida ou na identidade do Aparelho.

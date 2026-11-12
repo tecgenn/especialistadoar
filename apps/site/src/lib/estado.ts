@@ -10,21 +10,19 @@ import {
  * querystring, para o resultado ficar na URL (`?marca=&tipo=&btu=&tensao=&q=`)
  * e ser compartilhável/favoritável (ADR-0008). Puro, sem DOM.
  *
- * **Filtros padrão (ticket 38).** Abrir `/aparelhos/` sem nenhum filtro na URL
- * aplica o recorte mais comum — Tipo Split Hi-Wall, Tensão 220 V e Classe A —
- * sem sujar a URL. O padrão é implícito: uma URL que traga **qualquer** chave de
- * filtro é o estado completo, e o padrão **não** é somado por cima (um link com
- * filtro próprio é respeitado). Para representar "nenhum filtro" — a pessoa
- * desligou os três do padrão —, `escreverEstado` grava as chaves do padrão
- * vazias; a presença da chave desliga o padrão na leitura e o estado continua
- * compartilhável.
+ * **Filtros padrão (ticket 38, revisto no 44).** Abrir `/aparelhos/` sem nenhum
+ * filtro na URL aplica só a Tensão 220 V — o recorte mais comum da rede
+ * brasileira —, sem sujar a URL. O padrão é implícito: uma URL que traga
+ * **qualquer** chave de filtro é o estado completo, e o padrão **não** é somado
+ * por cima (um link com filtro próprio é respeitado). Para representar "nenhum
+ * filtro" — a pessoa desligou a tensão do padrão —, `escreverEstado` grava a
+ * chave do padrão vazia; a presença da chave desliga o padrão na leitura e o
+ * estado continua compartilhável.
  */
 
 /** O recorte inicial de `/aparelhos/`, aplicado quando a URL não traz filtro. */
 export const FILTROS_PADRAO: FiltrosConsulta = {
-  tipo: "Split Hi-Wall",
   tensao: 220,
-  classe: "A",
 };
 
 /** As chaves que são filtro; a ordenação não conta como filtro. */

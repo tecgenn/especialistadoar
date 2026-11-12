@@ -7,7 +7,7 @@ import {
   type OrdemConsulta,
   ordenar,
 } from "@especialista-do-ar/api/consulta";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   escreverEstado,
   FILTROS_PADRAO,
@@ -18,7 +18,7 @@ import type { OpcoesConsulta } from "../lib/opcoes";
 import { COLUNAS_TABELA, valorDaColuna } from "../lib/tabela";
 
 /**
- * A **única ilha** do site (ADR-0008): a tabela de Aparelhos com filtros
+ * A ilha de consulta do site (ADR-0008): a tabela de Aparelhos com filtros
  * combináveis, busca textual e ordenação rodam **no cliente**, sobre o
  * `consulta.json` publicado, pelo módulo isomórfico do ticket 08
  * (`criarConsulta`/`ordenar`). O estado vive na URL. A consulta é 100% estática:
@@ -34,15 +34,18 @@ export interface PropsConsulta {
   opcoes: OpcoesConsulta;
   /** URL do dataset enxuto de consulta (servido ao lado das páginas). */
   consultaUrl?: string;
-  /** Mapa de Aparelhos analisados: aparelhoId → { titulo, url, temLinkAfiliado }. */
-  analisados?: Map<
-    string,
-    { titulo: string; url: string; temLinkAfiliado: boolean }
-  >;
+  /** Mapa de Aparelhos analisados: aparelhoId → { titulo, url }. */
+  analisados?: Map<string, { titulo: string; url: string }>;
 }
 
 /** Quantas linhas aparecem por vez na tabela. */
 const TAMANHO_PAGINA = 50;
+
+/** Quantos cartões a vitrine "Aparelhos com análise" exibe no máximo. */
+const VITRINE_MAXIMO = 6;
+
+/** Capacidades mais compradas: os analisados delas abrem a vitrine. */
+const CAPACIDADES_DESTAQUE = [9000, 12000, 18000];
 
 /** Os campos que a tabela sabe ordenar (as colunas ordenáveis do ticket 31). */
 const CAMPOS_ORDENAVEIS = new Set<string>(ORDENS_CONSULTA);
@@ -91,8 +94,10 @@ function Chips({
 }
 
 /**
- * Os chips de Classe (ticket 34): como os demais, mas cada botão carrega
- * `data-classe` para o CSS pintar a classe energética (A–F) e a cor curada.
+ * Os chips de Classe (ticket 34, compactados no 45): como os demais, mas cada
+ * botão carrega `data-classe` para o CSS pintar a classe energética (A–F) e a
+ * cor curada. O rótulo visível é só a letra — a legenda do grupo já diz que é
+ * Classe —, e o `aria-label` mantém o nome completo para leitores de tela.
  */
 function ChipsClass({
   opcoes,
@@ -108,10 +113,11 @@ function ChipsClass({
   }
   return (
     <div className="chips classes-chips">
-      {opcoes.map(({ valor, rotulo, cor }) => (
+      {opcoes.map(({ valor, cor }) => (
         <button
           key={valor}
           type="button"
+          aria-label={`Classe ${valor}`}
           aria-pressed={estaAtivo(valor)}
           data-classe={valor}
           style={
@@ -121,14 +127,18 @@ function ChipsClass({
           }
           onClick={() => selecionar(valor)}
         >
-          {rotulo}
+          {valor}
         </button>
       ))}
     </div>
   );
 }
 
-/** Um cabeçalho ordenável: o botão alterna a direção; `aria-sort` fica no `th`. */
+/**
+ * Um cabeçalho ordenável (ticket 43): as duas setas ficam **sempre visíveis**,
+ * a direção ativa em destaque e a outra apagada — assim se descobre que o
+ * cabeçalho é clicável. O botão alterna a direção; `aria-sort` fica no `th`.
+ */
 function Cabecalho({
   campo,
   rotulo,
@@ -149,12 +159,52 @@ function Cabecalho({
         ? "descending"
         : "none";
   return (
-    <th scope="col" aria-sort={ariaSort}>
+    <th scope="col" aria-sort={ariaSort} data-campo={campo}>
       <button type="button" onClick={() => alternar(campo)}>
         {rotulo}
-        {direcao === "asc" ? " ↑" : direcao === "desc" ? " ↓" : null}
+        <span className="setas" aria-hidden="true">
+          <span
+            className={`seta seta-asc${direcao === "asc" ? " seta-ativa" : ""}`}
+          >
+            ↑
+          </span>
+          <span
+            className={`seta seta-desc${direcao === "desc" ? " seta-ativa" : ""}`}
+          >
+            ↓
+          </span>
+        </span>
       </button>
     </th>
+  );
+}
+
+/**
+ * O selo "Análise" (ticket 44): etiqueta de contorno — não a pílula azul dos
+ * chips — com link para a Análise e tooltip contendo **apenas** o título. O
+ * `aria-describedby` leva o título a leitores de tela.
+ */
+function SeloAnalise({
+  itemId,
+  analise,
+}: {
+  itemId: string;
+  analise: { titulo: string; url: string };
+}) {
+  const tooltipId = `analise-tooltip-${itemId}`;
+  return (
+    <span className="analisado-selo">
+      <a
+        href={analise.url}
+        className="analisado-link analisado-etiqueta"
+        aria-describedby={tooltipId}
+      >
+        Análise
+      </a>
+      <span className="analisado-tooltip" role="tooltip" id={tooltipId}>
+        {analise.titulo}
+      </span>
+    </span>
   );
 }
 
@@ -164,6 +214,8 @@ export default function Consulta({
   analisados = new Map(),
 }: PropsConsulta) {
   const [motor, setMotor] = useState<MotorConsulta | null>(null);
+  /** O dataset como veio do `consulta.json`, para o bloco "Com análise". */
+  const [itens, setItens] = useState<ItemConsulta[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [estado, setEstado] = useState<FiltrosConsulta>(FILTROS_PADRAO);
   const [paginacao, setPaginacao] = useState({
@@ -173,7 +225,33 @@ export default function Consulta({
   /** No celular (≤ 64 rem) os filtros vivem num painel recolhível acima dos
    *  resultados; começa aberto para não esconder o recorte inicial. */
   const [filtrosAberto, setFiltrosAberto] = useState(true);
+  /** A barra lateral só fica `sticky` quando cabe na janela (ticket 45); numa
+   *  tela baixa ela vira estática e rola com a página, sem esconder o rodapé. */
+  const sidebarRef = useRef<HTMLElement | null>(null);
+  const [sidebarEstatica, setSidebarEstatica] = useState(false);
 
+  // `top: 1rem` do `.filtros-sidebar` mais 1 rem de folga (≈ 32 px na raiz 16 px).
+  const FOLGA_SIDEBAR_PX = 32;
+
+  useEffect(() => {
+    const elemento = sidebarRef.current;
+    if (elemento === null) {
+      return;
+    }
+    const medir = () => {
+      const disponivel = window.innerHeight - FOLGA_SIDEBAR_PX;
+      setSidebarEstatica(elemento.offsetHeight > disponivel);
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    const observador =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(medir);
+    observador?.observe(elemento);
+    return () => {
+      window.removeEventListener("resize", medir);
+      observador?.disconnect();
+    };
+  }, []);
   useEffect(() => {
     let cancelado = false;
     fetch(consultaUrl)
@@ -185,6 +263,7 @@ export default function Consulta({
       })
       .then((dataset) => {
         if (!cancelado) {
+          setItens(dataset);
           setMotor(criarConsulta(dataset));
         }
       })
@@ -282,17 +361,38 @@ export default function Consulta({
   }
   const resultados = [...grupoAnalisados, ...grupoDemais];
 
+  // A vitrine "Aparelhos com análise" (ticket 44, revisto) fica **fora** da
+  // tabela, acima dela, e não entra na contagem, na paginação nem na ordenação.
+  // Ela acompanha os filtros ativos: mostra os analisados que passam no recorte
+  // (os mesmos que aparecem destacados na tabela). As capacidades mais
+  // compradas abrem a lista e as demais completam, na ordem das Análises (da
+  // mais recente para a mais antiga), até VITRINE_MAXIMO cartões.
+  const temFiltro = temFiltroAtivo(estado);
+  const filtradosIds = new Set(filtrados.map((item) => item.id));
+  const itensPorId = new Map((itens ?? []).map((item) => [item.id, item]));
+  const analisadosFiltrados: ItemConsulta[] = [];
+  for (const id of analisados.keys()) {
+    const item = itensPorId.get(id);
+    if (item !== undefined && filtradosIds.has(id)) {
+      analisadosFiltrados.push(item);
+    }
+  }
+  const emDestaque = analisadosFiltrados.filter((item) =>
+    item.capacidadesBtu.some((capacidade) =>
+      CAPACIDADES_DESTAQUE.includes(capacidade),
+    ),
+  );
+  const demais = analisadosFiltrados.filter(
+    (item) => !emDestaque.includes(item),
+  );
+  const comAnalise = [...emDestaque, ...demais].slice(0, VITRINE_MAXIMO);
+
   // Mudar filtro ou ordem volta para o início; "Mostrar mais" só cresce a
   // quantidade dentro do mesmo estado.
   const chaveEstado = escreverEstado(estado).toString();
   const mostrados =
     paginacao.chave === chaveEstado ? paginacao.quantidade : TAMANHO_PAGINA;
   const exibidos = resultados.slice(0, mostrados);
-  const temFiltro = temFiltroAtivo(estado);
-  const temAnalisadosVisiveis = grupoAnalisados.length > 0;
-  const analisadosComLinkAfiliado = grupoAnalisados.some(
-    (item) => analisados.get(item.id)?.temLinkAfiliado,
-  );
 
   // O chip aceso **é** o valor do filtro: o `<select>` "Outras…" não repete esse
   // valor, então mostra o placeholder enquanto o chip estiver ativo (um valor
@@ -328,7 +428,11 @@ export default function Consulta({
   return (
     <section className={`consulta${filtrosAberto ? "" : " filtros-fechado"}`}>
       <div className="consulta-layout">
-        <aside id="filtros-sidebar" className="filtros-sidebar">
+        <aside
+          id="filtros-sidebar"
+          ref={sidebarRef}
+          className={`filtros-sidebar${sidebarEstatica ? " filtros-sidebar-estatica" : ""}`}
+        >
           <form
             className="filtros"
             onSubmit={(evento) => evento.preventDefault()}
@@ -345,7 +449,7 @@ export default function Consulta({
               />
             </label>
 
-            <fieldset className="campo-chips">
+            <fieldset className="campo-chips campo-marca">
               <legend>Marca</legend>
               <Chips
                 opcoes={opcoes.marcasChip}
@@ -376,7 +480,7 @@ export default function Consulta({
               </label>
             </fieldset>
 
-            <fieldset className="campo-chips">
+            <fieldset className="campo-chips campo-capacidade">
               <legend>Capacidade</legend>
               <Chips
                 opcoes={opcoes.btusChip.map((btu) => ({
@@ -414,20 +518,47 @@ export default function Consulta({
               </label>
             </fieldset>
 
-            <fieldset className="campo-chips">
-              <legend>Função</legend>
-              <Chips
-                opcoes={funcoes}
-                estaAtivo={(valor) => estado.funcao === valor}
-                selecionar={(valor) =>
-                  atualizar({
-                    funcao: estado.funcao === valor ? undefined : valor,
-                  })
-                }
-              />
-            </fieldset>
+            {/* Ticket 45: Função e Tensão dividem a mesma linha da grade. */}
+            <div className="filtros-par">
+              <fieldset className="campo-chips campo-funcao">
+                <legend>Função</legend>
+                <Chips
+                  opcoes={funcoes}
+                  estaAtivo={(valor) => estado.funcao === valor}
+                  selecionar={(valor) =>
+                    atualizar({
+                      funcao: estado.funcao === valor ? undefined : valor,
+                    })
+                  }
+                />
+              </fieldset>
 
-            <fieldset className="campo-chips">
+              <label className="campo-tensao">
+                <span>Tensão (V)</span>
+                <select
+                  value={
+                    estado.tensao === undefined ? "" : String(estado.tensao)
+                  }
+                  onChange={(evento) =>
+                    atualizar({
+                      tensao:
+                        evento.target.value === ""
+                          ? undefined
+                          : Number(evento.target.value),
+                    })
+                  }
+                >
+                  <option value="">Todas</option>
+                  {opcoes.tensoes.map((tensao) => (
+                    <option key={tensao} value={tensao}>
+                      {tensao}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <fieldset className="campo-chips campo-tipo">
               <legend>Tipo</legend>
               <Chips
                 opcoes={tipos}
@@ -438,7 +569,7 @@ export default function Consulta({
               />
             </fieldset>
 
-            <fieldset className="campo-chips">
+            <fieldset className="campo-chips campo-classe">
               <legend>Classe</legend>
               <ChipsClass
                 opcoes={opcoes.classesChip}
@@ -476,71 +607,53 @@ export default function Consulta({
               ) : null}
             </fieldset>
 
-            <label>
-              <span>Tensão (V)</span>
-              <select
-                value={estado.tensao === undefined ? "" : String(estado.tensao)}
-                onChange={(evento) =>
-                  atualizar({
-                    tensao:
-                      evento.target.value === ""
-                        ? undefined
-                        : Number(evento.target.value),
-                  })
-                }
-              >
-                <option value="">Todas</option>
-                {opcoes.tensoes.map((tensao) => (
-                  <option key={tensao} value={tensao}>
-                    {tensao}
+            <div className="filtros-ordenar">
+              <label className="campo-ordenar">
+                <span>Ordenar por</span>
+                <select
+                  value={estado.ordem ?? ""}
+                  onChange={(evento) => trocarOrdem(evento.target.value)}
+                >
+                  <option value="">
+                    {estado.q === undefined || estado.q.trim() === ""
+                      ? "Padrão (A–Z)"
+                      : "Padrão (relevância)"}
                   </option>
-                ))}
-              </select>
-            </label>
+                  {COLUNAS_TABELA.filter((coluna) =>
+                    CAMPOS_ORDENAVEIS.has(coluna.campo),
+                  ).map((coluna) => (
+                    <option key={coluna.campo} value={coluna.campo}>
+                      {coluna.rotulo}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label>
-              <span>Ordenar por</span>
-              <select
-                value={estado.ordem ?? ""}
-                onChange={(evento) => trocarOrdem(evento.target.value)}
-              >
-                <option value="">
-                  {estado.q === undefined || estado.q.trim() === ""
-                    ? "Padrão (A–Z)"
-                    : "Padrão (relevância)"}
-                </option>
-                {COLUNAS_TABELA.filter((coluna) =>
-                  CAMPOS_ORDENAVEIS.has(coluna.campo),
-                ).map((coluna) => (
-                  <option key={coluna.campo} value={coluna.campo}>
-                    {coluna.rotulo}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
-                a direção precisa de um controle próprio — sem ele, o celular só
-                ordenaria crescente. */}
-            {estado.ordem !== undefined ? (
-              <button
-                type="button"
-                className="ordem-direcao"
-                aria-label={
-                  estado.dir === "desc"
-                    ? "Ordenar de forma crescente"
-                    : "Ordenar de forma decrescente"
-                }
-                onClick={alternarDirecao}
-              >
-                {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
-              </button>
-            ) : null}
+              {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
+                  a direção precisa de um controle próprio — sem ele, o celular só
+                  ordenaria crescente. */}
+              {estado.ordem !== undefined ? (
+                <button
+                  type="button"
+                  className="ordem-direcao"
+                  aria-label={
+                    estado.dir === "desc"
+                      ? "Ordenar de forma crescente"
+                      : "Ordenar de forma decrescente"
+                  }
+                  onClick={alternarDirecao}
+                >
+                  {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
+                </button>
+              ) : null}
+            </div>
 
             {temFiltro ? (
-              <button type="button" onClick={limpar}>
-                Limpar filtros
-              </button>
+              <div className="filtros-rodape">
+                <button type="button" onClick={limpar}>
+                  Limpar filtros
+                </button>
+              </div>
             ) : null}
           </form>
         </aside>
@@ -564,10 +677,43 @@ export default function Consulta({
               <p role="status">
                 {resultados.length} aparelho(s) com Dados declarados.
               </p>
+              {comAnalise.length === 0 ? null : (
+                <section
+                  className="com-analise"
+                  aria-labelledby="com-analise-titulo"
+                >
+                  <h2 id="com-analise-titulo">Aparelhos com análise</h2>
+                  <ul>
+                    {comAnalise.map((item) => {
+                      const analise = analisados.get(item.id);
+                      return analise === undefined ? null : (
+                        <li key={item.id}>
+                          <a className="com-analise-item" href={analise.url}>
+                            <span className="analisado-etiqueta">Análise</span>
+                            <span className="com-analise-texto">
+                              <span className="com-analise-marca">
+                                {item.marcaCatalogo}
+                              </span>
+                              <span className="com-analise-titulo">
+                                {analise.titulo}
+                              </span>
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              )}
               <table className="tabela-aparelhos">
                 <caption className="sr-only">
                   Aparelhos de ar-condicionado, uma linha por Aparelho
                 </caption>
+                <colgroup>
+                  {COLUNAS_TABELA.map((coluna) => (
+                    <col key={coluna.campo} className={`col-${coluna.campo}`} />
+                  ))}
+                </colgroup>
                 <thead>
                   <tr>
                     {COLUNAS_TABELA.map((coluna) =>
@@ -580,7 +726,11 @@ export default function Consulta({
                           alternar={alternar}
                         />
                       ) : (
-                        <th key={coluna.campo} scope="col">
+                        <th
+                          key={coluna.campo}
+                          scope="col"
+                          data-campo={coluna.campo}
+                        >
                           {coluna.rotulo}
                         </th>
                       ),
@@ -588,102 +738,64 @@ export default function Consulta({
                   </tr>
                 </thead>
                 <tbody>
-                  {(() => {
-                    const linhas: React.ReactNode[] = [];
-                    let grupoAtual: "analisados" | "demais" | null = null;
-
-                    for (const item of exibidos) {
-                      const ehAnalisado = analisadosIds.has(item.id);
-                      const grupo = ehAnalisado ? "analisados" : "demais";
-
-                      // Cabeçalho do grupo quando muda de grupo
-                      if (grupo !== grupoAtual) {
-                        if (grupo === "analisados") {
-                          linhas.push(
-                            <tr
-                              key="grupo-analisados"
-                              className="grupo-cabecalho"
-                            >
-                              <td colSpan={COLUNAS_TABELA.length}>
-                                <strong>Analisados por nós</strong>
-                                {analisadosComLinkAfiliado && (
-                                  <span className="aviso-afiliado">
-                                    {" "}
-                                    · contém links de afiliado
-                                  </span>
-                                )}
-                              </td>
-                            </tr>,
-                          );
-                        } else if (
-                          grupo === "demais" &&
-                          temAnalisadosVisiveis
-                        ) {
-                          linhas.push(
-                            <tr key="grupo-demais" className="grupo-cabecalho">
-                              <td colSpan={COLUNAS_TABELA.length}>
-                                <strong>Demais aparelhos</strong>
-                              </td>
-                            </tr>,
-                          );
+                  {exibidos.map((item) => {
+                    const analise = analisados.get(item.id);
+                    return (
+                      <tr
+                        key={item.id}
+                        className={
+                          analise === undefined ? undefined : "linha-analisado"
                         }
-                        grupoAtual = grupo;
-                      }
-
-                      const analise = ehAnalisado
-                        ? analisados.get(item.id)
-                        : undefined;
-
-                      linhas.push(
-                        <tr key={item.id}>
-                          {COLUNAS_TABELA.map((coluna) => {
-                            const valor = valorDaColuna(item, coluna.campo);
-                            return (
-                              <td
-                                key={coluna.campo}
-                                data-label={coluna.rotulo}
-                                data-classe={
-                                  coluna.campo === "classe" &&
-                                  item.classes.length > 0
-                                    ? item.classes.join(" ")
-                                    : undefined
-                                }
-                              >
-                                {coluna.campo === "marca" && analise ? (
-                                  <>
-                                    {valor}
-                                    <span
-                                      className="analisado-selo"
-                                      id={`analisado-tooltip-${item.id}`}
-                                    >
-                                      <a
-                                        href={analise.url}
-                                        className="analisado-link"
-                                      >
-                                        Analisado
-                                      </a>
-                                      <span
-                                        className="analisado-tooltip"
-                                        role="tooltip"
-                                      >
-                                        Análise completa: {analise.titulo}.
-                                        Contém links de afiliado.
-                                      </span>
-                                    </span>
-                                  </>
-                                ) : coluna.campo === "modelo" ? (
-                                  <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                      >
+                        {COLUNAS_TABELA.map((coluna) => {
+                          const valor = valorDaColuna(item, coluna.campo);
+                          return (
+                            <td
+                              key={coluna.campo}
+                              data-label={coluna.rotulo}
+                              data-campo={coluna.campo}
+                              data-classe={
+                                coluna.campo === "classe" &&
+                                item.classes.length > 0
+                                  ? item.classes.join(" ")
+                                  : undefined
+                              }
+                            >
+                              {coluna.campo === "marca" && analise ? (
+                                <>
+                                  {valor}
+                                  <SeloAnalise
+                                    itemId={item.id}
+                                    analise={analise}
+                                  />
+                                </>
+                              ) : coluna.campo === "modelo" ? (
+                                <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                              ) : coluna.campo === "classe" ? (
+                                item.classes.length === 0 ? (
+                                  "—"
                                 ) : (
-                                  valor
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>,
-                      );
-                    }
-                    return linhas;
-                  })()}
+                                  <span className="classe-selos">
+                                    {item.classes.map((classe) => (
+                                      <span
+                                        key={classe}
+                                        className="classe-selo"
+                                        data-classe={classe}
+                                      >
+                                        Classe {classe}
+                                      </span>
+                                    ))}
+                                  </span>
+                                )
+                              ) : (
+                                valor
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {resultados.length > mostrados ? (

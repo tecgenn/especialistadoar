@@ -5,7 +5,7 @@ da exportação oficial de produtos do INMETRO (um CSV) e consumida por agentes 
 IA e por um site. O objetivo é que ninguém precise interpretar a exportação bruta.
 
 - **Vocabulário e conceitos do domínio:** `CONTEXT.md`
-- **Como um Agente consome a base (arquivos JSON estáticos):** `docs/agentes.md`
+- **Como um Agente consome a base (arquivos JSON estáticos):** `docs/base-consumer-guide.md`
 - **Como o código está estruturado:** `docs/agents/architecture.md`
 - **O que já está pronto e o que vem a seguir:** `docs/agents/project-state.md`
 - **Decisões e porquês:** `docs/adr/`
@@ -123,6 +123,12 @@ As marcas e capacidades que aparecem como **botões** no topo dos filtros vêm d
   rótulo repetido, ou capacidade que não seja inteira e positiva.
 - Nada disso entra em `data/build/`, na API ou na consulta: é apresentação.
 
+## Assistente de dimensionamento
+
+O Assistente (`/assistente/`) é um configurador interativo, determinístico e sem IA em runtime que traduz cinco perguntas sobre o ambiente — tipo de ambiente, área, incidência de sol, pessoas e equipamentos/lâmpadas/janelas — numa capacidade comercial de ar-condicionado (9.000 a 60.000 BTU/h). O motor é puro (`apps/site/src/lib/assistente.ts`) e a ilha React apenas coleta respostas e renderiza; todo o estado vive na URL, então o resultado é compartilhável. Acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica. O resultado leva aos Aparelhos analisados daquela capacidade e à tabela filtrada por BTU/h.
+
+Coeficientes fixos: base por m² conforme incidência solar (sem sol 600, manhã 650, tarde 750, dia todo 800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima e alternativa dividida (ex.: 24.000 → 2 × 12.000). É um Valor calculado, nunca um Valor oficial do INMETRO.
+
 ## Escrever uma Análise
 
 Uma **Análise** é uma peça editorial em MDX sobre **um** Aparelho, publicada em
@@ -147,11 +153,13 @@ Texto editorial, com números próprios...
 - `slug` vira a URL e precisa ser único, sem `/`.
 - `data` pode ficar sem aspas; o build normaliza para `YYYY-MM-DD`.
 - Imagens entram pelo componente de imagem do Astro (`astro:assets`), com `alt`.
-- O **CTA da Oferta** aparece sozinho no fim da Análise quando o Aparelho tem
-  Oferta em `apps/site/ofertas.json`; sem Oferta (ou com o Aparelho fora da
-  tabela), nada é renderizado. No meio do texto, use o mesmo componente:
-  importe `../../components/OfertaFaixa.astro` no MDX e passe
-  `<OfertaFaixa aparelhoId="ap-..." />` — sem estilo inline.
+- O **template da Análise monta os CTAs** — o MDX não repete Oferta nem CTA.
+  Toda Análise abre com o **banner de transparência** e ganha **3 cartões**
+  (ficha técnica no topo, Assistente depois do corpo e "Continue a pesquisa" no
+  fim) ou **4** quando o Aparelho tem Oferta em `apps/site/ofertas.json` ("Ver
+  oferta" no topo e "Onde comprar" no fim). Sem Oferta, os cartões levam à ficha,
+  ao Assistente e à tabela; com o Aparelho fora da tabela, à tabela e ao índice
+  de Análises.
 - Com **zero** Análises o site fica exatamente como hoje: sem `/analises/`, sem
   menu, sem `analises.json` e sem entrada no sitemap. A primeira Análise liga
   tudo automaticamente, inclusive o "Leia a análise" na ficha do Aparelho.
@@ -168,6 +176,8 @@ Rode a suíte completa **e** o build antes de enviar qualquer mudança:
 pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 ```
 
+No fechamento de cada fase, confirme também: `pnpm build` reproduz `data/build` + `reports` byte a byte, `pnpm build:site` gera o número esperado de páginas (2.232 com a Fase 9) e `pnpm test` está verde.
+
 E **commite os artefatos gerados junto com a mudança** sempre que ela tocar o CSV
 bruto (`data/raw/`) ou a camada curada (`data/excecoes-manuais.jsonl`,
 `data/vinculos-confirmados.jsonl`, `data/marcas-catalogo.jsonl`). O `pnpm build`
@@ -178,6 +188,19 @@ divergirem de um build novo (o gate *"Published artifacts match a fresh build"*)
 passam só pela camada curada (Exceção manual, Vínculo confirmado; a Marca de
 catálogo agrupa marcas na consulta sem alterar conteúdo); o resto é regra de
 formato no pipeline.
+
+## Licença
+
+O repositório usa **duas licenças**, separadas por tipo de material:
+
+- **Código** (pipeline, pacotes, site, scripts e testes) — [MIT](LICENSE).
+  Use, modifique e redistribua livremente, mantendo o aviso de copyright.
+- **Conteúdo editorial** (textos, Análises em MDX, descrições e textos do site) —
+  [CC BY-NC 4.0](LICENSE-CONTENT). Compartilhe e adapte com atribuição a
+  **TecGenn**, apenas para fins não comerciais.
+
+Os dados brutos do INMETRO mantêm a origem e as condições do órgão publicador;
+a proveniência de cada Versão está em `data/build/manifest.json`.
 
 ## Contribuição
 

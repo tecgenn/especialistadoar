@@ -1,6 +1,7 @@
 {
   "name": "especialista-do-ar",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "packageManager": "pnpm@10.26.2",
   "engines": {
