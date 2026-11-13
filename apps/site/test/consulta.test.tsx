@@ -197,7 +197,12 @@ function modelosVisiveis(): string[] {
   return screen
     .getAllByRole("row")
     .slice(1)
-    .map((linha) => linha.querySelector("a")?.textContent ?? "");
+    .map((linha) => {
+      const linkModelo = linha.querySelector<HTMLAnchorElement>(
+        'a[href^="/aparelhos/"]',
+      );
+      return linkModelo?.textContent ?? "";
+    });
 }
 
 function cabecalho(nome: RegExp): HTMLElement {
@@ -263,8 +268,11 @@ describe("ilha de consulta (ADR-0008)", () => {
     const rotulos = [...(primeira?.querySelectorAll("td") ?? [])].map(
       (celula) => celula.getAttribute("data-label"),
     );
+    // A célula da tag "Análise" (entre Comparar e Marca) não tem rótulo quando
+    // está vazia — não é uma coluna de dados (ticket 54).
     expect(rotulos).toEqual([
       "Comparar",
+      null,
       "Marca",
       "Modelo",
       "Tipo",
@@ -574,6 +582,7 @@ describe("colunas e setas de ordenação (ticket 43)", () => {
         .map((th) => th.getAttribute("data-campo")),
     ).toEqual([
       "selecao",
+      "tag-analise",
       "marca",
       "modelo",
       "tipo",
@@ -1066,7 +1075,7 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
   }
 
-  it("mostra o selo 'Análise' com link para a Análise, fora da célula de Marca", async () => {
+  it("mostra o selo 'Análise' com link para a Análise, entre Comparar e Marca", async () => {
     await montarComAnalisados();
     const tabela = screen.getByRole("table");
     const links = within(tabela).getAllByRole("link", { name: "Análise" });
@@ -1074,12 +1083,22 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     // O texto "Análise" está dentro do <a> da etiqueta de contorno.
     expect(links[0]?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
     expect(links[0]?.classList.contains("analisado-etiqueta")).toBe(true);
-    // O selo saiu da primeira coluna (Marca) e vive na última (Análise).
+    // O selo vive na segunda célula da linha (entre Comparar e Marca).
     const linha = links[0]?.closest("tr") as HTMLElement;
     const celulas = [...linha.querySelectorAll("td")];
-    expect(celulas[0]?.querySelector(".analisado-selo")).toBeNull();
-    expect(celulas.at(-1)?.getAttribute("data-campo")).toBe("analise");
-    expect(celulas.at(-1)?.querySelector(".analisado-selo")).not.toBeNull();
+    expect(celulas[0]?.getAttribute("data-campo")).toBe("selecao");
+    expect(celulas[1]?.getAttribute("data-campo")).toBe("tag-analise");
+    expect(celulas[1]?.querySelector(".analisado-selo")).not.toBeNull();
+  });
+
+  it("a célula da tag fica vazia para aparelhos sem Análise", async () => {
+    await montarComAnalisados();
+    const linhas = screen.getAllByRole("row").slice(1);
+    const primeira = linhas[0]; // Daikin (Classe F): não tem Análise
+    const celulas = [...(primeira?.querySelectorAll("td") ?? [])];
+    expect(celulas[1]?.getAttribute("data-campo")).toBe("tag-analise");
+    expect(celulas[1]?.querySelector(".analisado-selo")).toBeNull();
+    expect(celulas[1]?.textContent?.trim()).toBe("");
   });
 
   it("o tooltip do selo traz apenas o título da Análise", async () => {
@@ -1336,85 +1355,6 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(screen.queryByText("Análise")).toBeNull();
     expect(screen.queryByText("Aparelhos com análise")).toBeNull();
     expect(document.querySelector(".com-analise")).toBeNull();
-  });
-});
-
-describe("coluna Análise (ticket 50)", () => {
-  const analisadosMap = new Map<string, { titulo: string; url: string }>([
-    [
-      "lg-split",
-      {
-        titulo: "Análise do LG Dual Inverter",
-        url: "/analises/lg-dual-inverter/",
-      },
-    ],
-  ]);
-
-  function camposDoCabecalho(): (string | null)[] {
-    return screen
-      .getAllByRole("columnheader")
-      .map((th) => th.getAttribute("data-campo"));
-  }
-
-  async function montarComAnalise(url = TODOS) {
-    window.history.replaceState(null, "", url);
-    render(<Consulta opcoes={opcoesDe(itens)} analisados={analisadosMap} />);
-    await screen.findByText(/aparelho\(s\) com Dados declarados/);
-  }
-
-  it("é a última coluna quando há ao menos uma Análise publicada", async () => {
-    await montarComAnalise();
-
-    expect(camposDoCabecalho()).toEqual([
-      "selecao",
-      "marca",
-      "modelo",
-      "tipo",
-      "btu",
-      "consumo",
-      "idrs",
-      "classe",
-      "analise",
-    ]);
-    const ultimo = screen.getAllByRole("columnheader").at(-1);
-    expect(ultimo?.textContent).toBe("Análise");
-    expect(ultimo?.querySelector("button")).toBeNull();
-  });
-
-  it("não existe sem Análise publicada", async () => {
-    await montar();
-
-    expect(camposDoCabecalho()).toEqual([
-      "selecao",
-      "marca",
-      "modelo",
-      "tipo",
-      "btu",
-      "consumo",
-      "idrs",
-      "classe",
-    ]);
-    expect(screen.queryByRole("columnheader", { name: "Análise" })).toBeNull();
-  });
-
-  it("marca a célula vazia para o cartão do celular esconder a linha", async () => {
-    await montarComAnalise();
-
-    const linha = screen
-      .getAllByRole("row")
-      .find((row) => row.textContent?.includes("Dual Inverter"));
-    const celulas = [...(linha?.querySelectorAll("td") ?? [])];
-    expect(celulas.at(-1)?.getAttribute("data-campo")).toBe("analise");
-    expect(celulas.at(-1)?.classList.contains("celula-analise-vazia")).toBe(
-      false,
-    );
-
-    const outra = screen
-      .getAllByRole("row")
-      .find((row) => row.textContent?.includes("Classe E"));
-    const ultimaOutra = [...(outra?.querySelectorAll("td") ?? [])].at(-1);
-    expect(ultimaOutra?.classList.contains("celula-analise-vazia")).toBe(true);
-    expect(ultimaOutra?.textContent).toBe("—");
   });
 });
 

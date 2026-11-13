@@ -537,7 +537,7 @@ export default function Consulta({
   }));
   const classesExtras = opcoes.classes;
 
-  const colunas = colunasDaTabela(analisados.size > 0);
+  const colunas = colunasDaTabela();
   const resumo = resumoDosFiltros(estado, opcoes);
 
   // Seleção para comparar (ticket 51): a barra de ação e os checkboxes leem
@@ -879,6 +879,7 @@ export default function Consulta({
                 </caption>
                 <colgroup>
                   <col className="col-selecao" />
+                  <col className="col-tag-analise" />
                   {colunas.map((coluna) => (
                     <col key={coluna.campo} className={`col-${coluna.campo}`} />
                   ))}
@@ -888,6 +889,7 @@ export default function Consulta({
                     <th scope="col" data-campo="selecao">
                       Comparar
                     </th>
+                    <th scope="col" data-campo="tag-analise" />
                     {colunas.map((coluna) =>
                       CAMPOS_ORDENAVEIS.has(coluna.campo) ? (
                         <Cabecalho
@@ -930,31 +932,23 @@ export default function Consulta({
                             onChange={() => alternarSelecao(item.id)}
                           />
                         </td>
+                        <td
+                          data-campo="tag-analise"
+                          data-label={
+                            analise !== undefined ? "Análise" : undefined
+                          }
+                          className={
+                            analise === undefined
+                              ? "celula-tag-vazia"
+                              : undefined
+                          }
+                        >
+                          {analise !== undefined ? (
+                            <SeloAnalise itemId={item.id} analise={analise} />
+                          ) : null}
+                        </td>
                         {colunas.map((coluna) => {
                           const campo = coluna.campo;
-                          if (campo === "analise") {
-                            return (
-                              <td
-                                key={campo}
-                                data-label={coluna.rotulo}
-                                data-campo={campo}
-                                className={
-                                  analise === undefined
-                                    ? "celula-analise-vazia"
-                                    : undefined
-                                }
-                              >
-                                {analise === undefined ? (
-                                  "—"
-                                ) : (
-                                  <SeloAnalise
-                                    itemId={item.id}
-                                    analise={analise}
-                                  />
-                                )}
-                              </td>
-                            );
-                          }
                           const valor = valorDaColuna(item, campo);
                           return (
                             <td

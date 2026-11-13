@@ -643,8 +643,10 @@ body.ampla footer {
   border-left: 3px solid var(--primaria);
 }
 
-/* Selo "Análise" na coluna Marca (ticket 44): etiqueta de contorno, distinta
-   da pílula azul dos chips de filtro. O tooltip traz só o título da Análise. */
+/* Selo "Análise" na linha do aparelho (ticket 44, reposicionado no 54):
+   etiqueta de contorno, distinta da pílula azul dos chips de filtro. O tooltip
+   traz só o título da Análise. Vive entre o checkbox "Comparar" e a Marca,
+   só para aparelhos que têm Análise publicada. */
 .consulta .analisado-selo {
   position: relative;
   display: inline-flex;
@@ -652,13 +654,16 @@ body.ampla footer {
   margin-left: 0.5rem;
 }
 
-/* A coluna "Análise" (ticket 50) fica à direita e centraliza o selo. */
-.consulta .tabela-aparelhos td[data-campo="analise"] {
+/* A célula da tag "Análise" fica entre "Comparar" e "Marca", estreita, só
+   preenchida quando o aparelho tem Análise. Não é uma coluna de dados. */
+.consulta .tabela-aparelhos td[data-campo="tag-analise"] {
+  width: 44px;
   font-size: 0.76rem;
   white-space: nowrap;
+  text-align: center;
 }
 
-.consulta .tabela-aparelhos td[data-campo="analise"] .analisado-selo {
+.consulta .tabela-aparelhos td[data-campo="tag-analise"] .analisado-selo {
   margin-left: 0;
 }
 
@@ -1205,18 +1210,20 @@ body.ampla footer {
     font-weight: 600;
   }
 
-  /* O cartão termina com o selo "Análise" (ticket 50), sem repetir o rótulo
-     da coluna; sem Análise, a linha some em vez de deixar um travessão solto. */
-  .consulta .tabela-aparelhos td[data-campo="analise"] {
+  /* A célula da tag "Análise" (ticket 54): no cartão do celular, células vazias
+     somem em vez de deixar um rótulo solto; quando preenchida, ocupa a largura
+     do conteúdo sem rótulo repetido. */
+  .consulta .tabela-aparelhos td[data-campo="tag-analise"] {
     grid-template-columns: 1fr;
     padding-top: 0.35rem;
+    text-align: center;
   }
 
-  .consulta .tabela-aparelhos td[data-campo="analise"]::before {
+  .consulta .tabela-aparelhos td[data-campo="tag-analise"]::before {
     content: none;
   }
 
-  .consulta .tabela-aparelhos td.celula-analise-vazia {
+  .consulta .tabela-aparelhos td.celula-tag-vazia {
     display: none;
   }
 }

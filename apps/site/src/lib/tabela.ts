@@ -9,10 +9,8 @@ import { formatarFaixa } from "./ficha.ts";
  * em que aparecem na tela. O rótulo serve ao cabeçalho, ao seletor "Ordenar por"
  * e ao cartão do celular (`data-label`).
  */
-export type CampoTabela = ColunaExibicao | "analise";
-
 export interface ColunaTabela {
-  campo: CampoTabela;
+  campo: ColunaExibicao;
   rotulo: string;
 }
 
@@ -27,18 +25,13 @@ export const COLUNAS_TABELA: readonly ColunaTabela[] = [
   { campo: "classe", rotulo: "Classe" },
 ];
 
-/** A coluna do selo "Análise", sempre a última (ticket 50). */
-export const COLUNA_ANALISE: ColunaTabela = {
-  campo: "analise",
-  rotulo: "Análise",
-};
-
 /**
- * As colunas renderizadas: a coluna "Análise" só existe quando há ao menos
- * uma Análise publicada — sem Análise, uma coluna vazia só ocupa espaço.
+ * As colunas renderizadas na tabela de Aparelhos. A tag "Análise" não é uma
+ * coluna de dados: é um elemento da linha (ticket 54), renderizado apenas para
+ * aparelhos que têm Análise publicada, entre o checkbox de seleção e a Marca.
  */
-export function colunasDaTabela(comAnalise: boolean): ColunaTabela[] {
-  return comAnalise ? [...COLUNAS_TABELA, COLUNA_ANALISE] : [...COLUNAS_TABELA];
+export function colunasDaTabela(): ColunaTabela[] {
+  return [...COLUNAS_TABELA];
 }
 
 /**

@@ -6,20 +6,20 @@
 
 **Status:** done
 
-- [ ] `docs/agents/architecture.md` descreve a Comparação, a nova ilha e o contrato `?ids=`
-- [ ] `README.md` cita a rota `/comparar/`, a seleção na tabela e o comando de validação da fase
-- [ ] `CONTEXT.md` mantém **Comparação**, **Aparelho similar**, **Aparelho analisado** e **Filtros padrão** atualizados
-- [ ] `docs/adr/0021-comparacao-de-aparelhos.md` presente e referenciado
-- [ ] `docs/agents/project-state.md` registra a Fase 10 concluída e o próximo passo
-- [ ] `pnpm build` reproduz `data/build` e `reports` byte a byte
-- [ ] `pnpm build:site` gera a nova `/comparar/` e o total de páginas esperado
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
-- [ ] Verificações manuais:
-  - [ ] `/comparar/` abre vazia, monta 1, 2 e 3 modelos e compartilha a URL
-  - [ ] `/aparelhos/` marca até 3, desabilita o resto e leva a comparação pronta
-  - [ ] Mudar filtro, busca e ordenação preserva a seleção; "Limpar filtros" também
-  - [ ] A tabela segue a ordenação sem puxar analisados ao topo
-  - [ ] Filtrar uma marca sem Análise mantém a vitrine com similares e a legenda
-  - [ ] "Pesquisa avançada" abre pela URL, o resumo mostra o 220 V padrão e o "×" desliga
-  - [ ] No celular: checkbox no topo do cartão, Análise no fim e matriz com rolagem
-- [ ] Nenhum artefato de `data/build` ou `reports` alterado fora do esperado
+- [x] `docs/agents/architecture.md` descreve a Comparação, a nova ilha e o contrato `?ids=`
+- [x] `README.md` cita a rota `/comparar/`, a seleção na tabela e o comando de validação da fase
+- [x] `CONTEXT.md` mantém **Comparação**, **Aparelho similar**, **Aparelho analisado** e **Filtros padrão** atualizados
+- [x] `docs/adr/0021-comparacao-de-aparelhos.md` presente e referenciado
+- [x] `docs/agents/project-state.md` registra a Fase 10 concluída e o próximo passo
+- [x] `pnpm build` reproduz `data/build` e `reports` byte a byte
+- [x] `pnpm build:site` gera a nova `/comparar/` e o total de páginas esperado
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Verificações manuais:
+  - [x] `/comparar/` abre vazia, monta 1, 2 e 3 modelos e compartilha a URL
+  - [x] `/aparelhos/` marca até 3, desabilita o resto e leva a comparação pronta
+  - [x] Mudar filtro, busca e ordenação preserva a seleção; "Limpar filtros" também
+  - [x] A tabela segue a ordenação sem puxar analisados ao topo
+  - [x] Filtrar uma marca sem Análise mantém a vitrine com similares e a legenda
+  - [x] "Pesquisa avançada" abre pela URL, o resumo mostra o 220 V padrão e o "×" desliga
+  - [x] No celular: checkbox no topo do cartão, Análise no fim e matriz com rolagem
+- [x] Nenhum artefato de `data/build` ou `reports` alterado fora do esperado
