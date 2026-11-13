@@ -166,11 +166,30 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
  */
 const TODOS = "/?tensao=";
 
-/** Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando"). */
-async function montar(entrada?: FiltrosCurados, url = TODOS) {
+/** Abre o painel "Pesquisa avançada" (fechado por padrão no ticket 50). */
+function abrirPesquisaAvancada() {
+  const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+  if (botao.getAttribute("aria-expanded") !== "true") {
+    fireEvent.click(botao);
+  }
+}
+
+/**
+ * Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando").
+ * Por padrão abre a Pesquisa avançada, porque a maioria dos testes manipula os
+ * campos do painel; os testes do próprio painel passam `abrir: false`.
+ */
+async function montar(
+  entrada?: FiltrosCurados,
+  url = TODOS,
+  { abrir = true }: { abrir?: boolean } = {},
+) {
   window.history.replaceState(null, "", url);
   render(<Consulta opcoes={opcoesDe(itens, entrada)} />);
   await screen.findByText(/aparelho\(s\) com Dados declarados/);
+  if (abrir) {
+    abrirPesquisaAvancada();
+  }
 }
 
 /** Os modelos de cada linha de dados, na ordem renderizada. */
@@ -178,7 +197,12 @@ function modelosVisiveis(): string[] {
   return screen
     .getAllByRole("row")
     .slice(1)
-    .map((linha) => linha.querySelector("a")?.textContent ?? "");
+    .map((linha) => {
+      const linkModelo = linha.querySelector<HTMLAnchorElement>(
+        'a[href^="/aparelhos/"]',
+      );
+      return linkModelo?.textContent ?? "";
+    });
 }
 
 function cabecalho(nome: RegExp): HTMLElement {
@@ -226,7 +250,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
-  it("mostra uma linha por Aparelho com as 7 colunas da tabela", async () => {
+  it("mostra uma linha por Aparelho com as colunas da tabela", async () => {
     await montar();
     const [primeira] = screen.getAllByRole("row").slice(1);
     expect(primeira?.textContent).toContain("DAIKIN");
@@ -244,7 +268,10 @@ describe("ilha de consulta (ADR-0008)", () => {
     const rotulos = [...(primeira?.querySelectorAll("td") ?? [])].map(
       (celula) => celula.getAttribute("data-label"),
     );
+    // Não há célula própria da tag "Análise": o selo viaja inline dentro da
+    // célula da Marca (não é uma coluna de dados, ticket 54).
     expect(rotulos).toEqual([
+      "Comparar",
       "Marca",
       "Modelo",
       "Tipo",
@@ -552,7 +579,16 @@ describe("colunas e setas de ordenação (ticket 43)", () => {
       screen
         .getAllByRole("columnheader")
         .map((th) => th.getAttribute("data-campo")),
-    ).toEqual(["marca", "modelo", "tipo", "btu", "consumo", "idrs", "classe"]);
+    ).toEqual([
+      "selecao",
+      "marca",
+      "modelo",
+      "tipo",
+      "btu",
+      "consumo",
+      "idrs",
+      "classe",
+    ]);
 
     const tipo = cabecalho(/^Tipo$/);
     expect(tipo.querySelector("button")).toBeNull();
@@ -832,41 +868,156 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
   });
 });
 
-describe("layout (ticket 34)", () => {
-  it("usa a grade de duas colunas com a barra lateral de filtros", async () => {
-    await montar();
-    expect(document.querySelector(".consulta-layout")).not.toBeNull();
-    expect(document.querySelector(".filtros-sidebar")).not.toBeNull();
-    expect(document.querySelector(".consulta-resultados")).not.toBeNull();
+describe("layout central (ticket 50)", () => {
+  it("não tem barra lateral e usa a coluna de até 72 rem", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    expect(document.querySelector(".filtros-sidebar")).toBeNull();
+    expect(document.querySelector(".consulta-layout")).toBeNull();
+
+    const css = cssDaConsulta();
+    expect(css).toMatch(/\.pagina-aparelhos\s*\{[^}]*max-width:\s*72rem/);
+    expect(css).not.toMatch(/\.filtros-sidebar/);
+  });
+
+  it("ordena a leitura: busca, Pesquisa avançada, vitrine, ordenação e tabela", async () => {
+    window.history.replaceState(null, "", TODOS);
+    render(
+      <Consulta
+        opcoes={opcoesDe(itens, curadoria)}
+        analisados={
+          new Map([
+            ["lg-split", { titulo: "Análise LG", url: "/analises/lg/" }],
+          ])
+        }
+      />,
+    );
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    const busca = document.querySelector(".busca") as HTMLElement;
+    const avancon = screen.getByRole("button", { name: "Pesquisa avançada" });
+    const vitrine = document.querySelector(".com-analise") as HTMLElement;
+    const ordenacao = document.querySelector(".linha-ordenacao") as HTMLElement;
+    const tabela = screen.getByRole("table");
+    const antes = (a: Node, b: Node) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(antes(busca, avancon)).toBe(true);
+    expect(antes(avancon, vitrine)).toBe(true);
+    expect(antes(vitrine, ordenacao)).toBe(true);
+    expect(antes(ordenacao, tabela)).toBe(true);
   });
 });
 
-describe("painel de filtros recolhível (ticket 39)", () => {
-  it("começa com o painel aberto e o botão 'Ocultar filtros'", async () => {
-    await montar(curadoria);
-    const consulta = document.querySelector(".consulta");
-    expect(consulta).not.toBeNull();
-    expect(consulta?.classList.contains("filtros-fechado")).toBe(false);
-    expect(
-      screen.getByRole("button", { name: "Ocultar filtros" }),
-    ).toBeDefined();
+describe("Pesquisa avançada (ticket 50)", () => {
+  function painel(): HTMLElement {
+    return document.getElementById("pesquisa-avancada") as HTMLElement;
+  }
+
+  it("começa fechada, com os campos fora da árvore acessível", async () => {
+    await montar(curadoria, "/", { abrir: false });
+
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+    expect(botao.getAttribute("aria-expanded")).toBe("false");
+    expect(painel().hidden).toBe(true);
+    expect(screen.queryByRole("group", { name: "Marca" })).toBeNull();
   });
 
-  it("fecha e reabre o painel ao clicar no botão", async () => {
-    await montar(curadoria);
-    const consulta = document.querySelector(".consulta");
+  it("abre e fecha pelo botão", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Ocultar filtros" }));
-    expect(consulta?.classList.contains("filtros-fechado")).toBe(true);
-    expect(
-      screen.getByRole("button", { name: "Exibir filtros" }),
-    ).toBeDefined();
+    fireEvent.click(botao);
+    expect(botao.getAttribute("aria-expanded")).toBe("true");
+    expect(painel().hidden).toBe(false);
+    expect(screen.getByRole("group", { name: "Marca" })).toBeDefined();
 
-    fireEvent.click(screen.getByRole("button", { name: "Exibir filtros" }));
-    expect(consulta?.classList.contains("filtros-fechado")).toBe(false);
+    fireEvent.click(botao);
+    expect(botao.getAttribute("aria-expanded")).toBe("false");
+    expect(painel().hidden).toBe(true);
+  });
+
+  it("abre sozinha quando a URL traz um filtro avançado", async () => {
+    await montar(curadoria, "/?marca=LG", { abrir: false });
+
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+    expect(botao.getAttribute("aria-expanded")).toBe("true");
+    expect(painel().hidden).toBe(false);
+    expect(screen.getByRole("group", { name: "Marca" })).toBeDefined();
+  });
+
+  it("não abre com a carga limpa nem com o padrão desligado", async () => {
+    for (const url of ["/", "/?tensao="]) {
+      cleanup();
+      await montar(curadoria, url, { abrir: false });
+      const botao = screen.getByRole("button", {
+        name: "Pesquisa avançada",
+      });
+      expect(botao.getAttribute("aria-expanded")).toBe("false");
+      expect(painel().hidden).toBe(true);
+    }
+  });
+});
+
+describe("chips do recorte efetivo (ticket 50)", () => {
+  function grupo(): HTMLElement {
+    return screen.getByRole("group", { name: "Filtros ativos" });
+  }
+
+  function chips(): HTMLElement[] {
+    return within(grupo()).queryAllByRole("button");
+  }
+
+  it("mostra o 220 V implícito, e o × desliga o padrão gravando tensao=", async () => {
+    await montar(curadoria, "/", { abrir: false });
+
+    expect(chips()).toHaveLength(1);
+    expect(chips()[0]?.textContent).toBe("Tensão: 220 V×");
+    expect(chips()[0]?.getAttribute("aria-label")).toBe(
+      "Remover filtro Tensão: 220 V",
+    );
+
+    fireEvent.click(chips()[0] as HTMLElement);
+    await waitFor(() => expect(window.location.search).toBe("?tensao="));
+    expect(screen.getAllByRole("link")).toHaveLength(8);
+    expect(chips()).toHaveLength(0);
+    expect(within(grupo()).getByText("Nenhum filtro ativo.")).toBeDefined();
+    // A URL sem o padrão mostra todos; o painel continua fechado.
     expect(
-      screen.getByRole("button", { name: "Ocultar filtros" }),
-    ).toBeDefined();
+      screen
+        .getByRole("button", { name: "Pesquisa avançada" })
+        .getAttribute("aria-expanded"),
+    ).toBe("false");
+  });
+
+  it("resume todos os filtros efetivos, inclusive a busca", async () => {
+    await montar(
+      curadoria,
+      "/?marca=LG&btu=9000&funcao=Frio&tensao=220&tipo=Split+Hi-Wall&classe=A&q=inverter",
+      { abrir: false },
+    );
+
+    expect(chips().map((chip) => chip.textContent)).toEqual([
+      "Busca: inverter×",
+      "Marca: LG×",
+      "Capacidade: 9.000 BTU/h×",
+      "Função: Frio×",
+      "Tensão: 220 V×",
+      "Tipo: Split Hi-Wall×",
+      "Classe: A×",
+    ]);
+  });
+
+  it("o × remove só aquele filtro e mantém a ordenação", async () => {
+    await montar(curadoria, "/?marca=LG&ordem=consumo", { abrir: false });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remover filtro Marca: LG" }),
+    );
+
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("marca")).toBeNull();
+    expect(busca.get("ordem")).toBe("consumo");
   });
 });
 
@@ -896,43 +1047,6 @@ describe("layout compacto dos filtros (ticket 45)", () => {
       /\.consulta \.campo-classe \.chips\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/,
     );
   });
-
-  it("não usa rolagem interna na barra lateral", () => {
-    const css = cssDaConsulta();
-    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*overflow-y/);
-    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*max-height/);
-    // Sticky por padrão; estática quando o componente mede o painel e ele não cabe.
-    expect(css).toMatch(/\.filtros-sidebar\s*\{[^}]*position:\s*sticky/);
-    expect(css).toMatch(
-      /\.filtros-sidebar-estatica\s*\{[^}]*position:\s*static/,
-    );
-  });
-
-  it("fica estática quando o painel é mais alto que a janela", async () => {
-    const alturaOriginal = window.innerHeight;
-    const alturaPainel = vi
-      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
-      .mockReturnValue(900);
-    Object.defineProperty(window, "innerHeight", {
-      configurable: true,
-      value: 600,
-    });
-
-    try {
-      await montar(curadoria);
-      expect(
-        document
-          .querySelector(".filtros-sidebar")
-          ?.classList.contains("filtros-sidebar-estatica"),
-      ).toBe(true);
-    } finally {
-      alturaPainel.mockRestore();
-      Object.defineProperty(window, "innerHeight", {
-        configurable: true,
-        value: alturaOriginal,
-      });
-    }
-  });
 });
 
 describe("Aparelhos analisados na tabela (ticket 44)", () => {
@@ -959,22 +1073,37 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
   }
 
-  it("mostra o selo 'Análise' com link para a Análise na coluna Marca", async () => {
+  it("mostra o selo 'Análise' dentro da célula da Marca, ao lado do valor", async () => {
     await montarComAnalisados();
     const tabela = screen.getByRole("table");
-    const selos = within(tabela).getAllByText("Análise");
-    expect(selos).toHaveLength(2);
+    const links = within(tabela).getAllByRole("link", { name: "Análise" });
+    expect(links).toHaveLength(2);
     // O texto "Análise" está dentro do <a> da etiqueta de contorno.
-    const link = selos[0].closest("a");
-    expect(link?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
-    expect(link?.classList.contains("analisado-etiqueta")).toBe(true);
+    expect(links[0]?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
+    expect(links[0]?.classList.contains("analisado-etiqueta")).toBe(true);
+    // O selo vive dentro da célula da Marca (segunda célula da linha).
+    const linha = links[0]?.closest("tr") as HTMLElement;
+    const celulas = [...linha.querySelectorAll("td")];
+    expect(celulas[0]?.getAttribute("data-campo")).toBe("selecao");
+    expect(celulas[1]?.getAttribute("data-campo")).toBe("marca");
+    expect(celulas[1]?.querySelector(".analisado-selo")).not.toBeNull();
+  });
+
+  it("a célula da Marca não tem selo para aparelhos sem Análise", async () => {
+    await montarComAnalisados();
+    const linhas = screen.getAllByRole("row").slice(1);
+    const primeira = linhas[0]; // Daikin (Classe F): não tem Análise
+    const celulas = [...(primeira?.querySelectorAll("td") ?? [])];
+    expect(celulas[1]?.getAttribute("data-campo")).toBe("marca");
+    expect(celulas[1]?.querySelector(".analisado-selo")).toBeNull();
+    expect(celulas[1]?.textContent?.trim()).toBe("DAIKIN");
   });
 
   it("o tooltip do selo traz apenas o título da Análise", async () => {
     await montarComAnalisados();
     const tabela = screen.getByRole("table");
     const selo = within(tabela)
-      .getAllByText("Análise")[0]
+      .getAllByRole("link", { name: "Análise" })[0]
       ?.closest(".analisado-selo");
     expect(selo).not.toBeNull();
     const tooltip = selo?.querySelector('[role="tooltip"]');
@@ -984,13 +1113,23 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(link?.getAttribute("aria-describedby")).toBe(tooltip?.id);
   });
 
-  it("destaca as linhas dos analisados", async () => {
+  it("destaca as linhas dos analisados onde quer que a ordenação os ponha", async () => {
     await montarComAnalisados();
     const linhas = screen.getAllByRole("row").slice(1);
-    // Sem filtros, os dois analisados são as primeiras linhas de dados.
-    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(true);
-    expect(linhas[1]?.classList.contains("linha-analisado")).toBe(true);
-    expect(linhas[2]?.classList.contains("linha-analisado")).toBe(false);
+
+    // A ordem padrão é A–Z de Marca: o Daikin abre a tabela, não um analisado
+    // (ticket 52: a tabela deixou de puxar os analisados para o topo).
+    expect(linhas[0]?.textContent).toContain("Classe F");
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(false);
+
+    const dual = linhas.find((linha) =>
+      linha.textContent?.includes("Dual Inverter"),
+    );
+    const xtreme = linhas.find((linha) =>
+      linha.textContent?.includes("Xtreme Save"),
+    );
+    expect(dual?.classList.contains("linha-analisado")).toBe(true);
+    expect(xtreme?.classList.contains("linha-analisado")).toBe(true);
   });
 
   it("não mostra mais os cabeçalhos de grupo nem o aviso de afiliado", async () => {
@@ -1000,16 +1139,25 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(screen.queryByText(/links de afiliado/)).toBeNull();
   });
 
-  it("analisados aparecem antes dos demais, qualquer que seja a ordenação", async () => {
+  it("respeita a ordenação escolhida em vez de promover os analisados", async () => {
     await montarComAnalisados();
-    // Ordena por consumo: dentro dos analisados, o Xtreme Save (200)
-    // vem antes do Dual Inverter (300).
+    // Consumo crescente: a ordem vem do motor de consulta, e o Dual Inverter
+    // (300 kWh) fica no meio da tabela, atrás de cinco aparelhos.
     fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
-    await waitFor(() => {
-      const linhas = screen.getAllByRole("row").slice(1);
-      expect(linhas[0]?.textContent).toContain("Xtreme Save");
-      expect(linhas[1]?.textContent).toContain("Dual Inverter");
-    });
+    await waitFor(() =>
+      expect(modelosVisiveis()).toEqual([
+        "Janela",
+        "G-Top Inverter",
+        "Classe D",
+        "Xtreme Save",
+        "Classe E",
+        "Dual Inverter",
+        "Classe F",
+        "Springer Inverter",
+      ]),
+    );
+    const linhas = screen.getAllByRole("row").slice(1);
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(false);
   });
 
   it("no recorte inicial, a vitrine mostra os analisados do recorte, fora da tabela", async () => {
@@ -1034,34 +1182,79 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(links[0]?.textContent).toContain("LG");
     expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
     expect(links[1]?.textContent).toContain("Análise do Midea Xtreme Save");
+
+    // Cada cartão traz capacidade e Tipo: dá para avaliar sem abrir a ficha.
+    expect(links[0]?.textContent).toContain("9.000 BTU/h · Split Hi-Wall");
+    expect(links[1]?.textContent).toContain("12.000 BTU/h · Split Hi-Wall");
+    // Nenhum cartão está fora do recorte, então não há legenda de similares.
+    expect(bloco.querySelector(".com-analise-legenda")).toBeNull();
   });
 
-  it("com filtro ativo, a vitrine acompanha o recorte e repete o analisado da tabela", async () => {
+  it("com filtro ativo, completa a vitrine com similares fora do recorte", async () => {
     await montarComAnalisados("/?marca=LG");
 
-    // O bloco mostra o analisado que passa no filtro...
     const bloco = document.querySelector(".com-analise") as HTMLElement;
     expect(bloco).not.toBeNull();
     const links = within(bloco).getAllByRole("link");
-    expect(links).toHaveLength(1);
+    // O LG passa no recorte e abre a vitrine; o Midea, de outra marca, entra
+    // como similar (mesma capacidade do recorte: 12.000 BTU/h).
+    expect(links).toHaveLength(2);
     expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
+    expect(links[1]?.textContent).toContain("Análise do Midea Xtreme Save");
 
-    // ...e ele também aparece, destacado, na tabela: a repetição é intencional.
+    // Como há ao menos um compatível, não é preciso explicar a exceção.
+    expect(bloco.querySelector(".com-analise-legenda")).toBeNull();
+
+    // ...e o analisado compatível continua, destacado, na tabela.
     const linha = screen
       .getAllByRole("row")
       .find((row) => row.textContent?.includes("Dual Inverter"));
     expect(linha?.classList.contains("linha-analisado")).toBe(true);
   });
 
-  it("esconde a vitrine quando nenhum analisado passa no filtro", async () => {
+  it("com filtro de marca sem Análise, mostra similares e cita a marca na legenda", async () => {
     await montarComAnalisados("/?marca=GREE");
 
-    // O filtro é GREE e os analisados são LG e MIDEA: não há o que vitrinear.
-    expect(document.querySelector(".com-analise")).toBeNull();
-    expect(screen.queryByText("Aparelhos com análise")).toBeNull();
+    // Os analisados são LG e MIDEA: nenhum passa no filtro GREE, mas a vitrine
+    // continua visível como alternativa.
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    expect(within(bloco).getByText("Aparelhos com análise")).toBeDefined();
+
+    const links = within(bloco).getAllByRole("link");
+    expect(links).toHaveLength(2);
+    // A capacidade do recorte (12.000 BTU/h do GREE) puxa o Midea para cima.
+    expect(links[0]?.textContent).toContain("Análise do Midea Xtreme Save");
+    expect(links[1]?.textContent).toContain("Análise do LG Dual Inverter");
+
+    // A legenda explica que os cartões estão fora do recorte e nomeia o GREE,
+    // para a exceção não parecer um erro de filtro.
+    const legenda = bloco.querySelector(".com-analise-legenda");
+    expect(legenda?.textContent).toContain("fora do recorte");
+    expect(legenda?.textContent).toContain("GREE");
+
     // O bloco não entra na contagem: só o GREE passou nos filtros.
     expect(
       screen.getByText("1 aparelho(s) com Dados declarados."),
+    ).toBeDefined();
+    const linhas = screen.getAllByRole("row").slice(1);
+    expect(linhas).toHaveLength(1);
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(false);
+  });
+
+  it("num recorte vazio sem marca, explica os cartões sem citar marca", async () => {
+    // A busca sem resultado esvazia o recorte sem apontar uma marca: a legenda
+    // genérica ainda explica por que os cartões estão ali.
+    await montarComAnalisados("/?q=zzzzzz");
+
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    expect(within(bloco).getAllByRole("link")).toHaveLength(2);
+    const legenda = bloco.querySelector(".com-analise-legenda");
+    expect(legenda?.textContent).toContain("fora do recorte");
+    expect(legenda?.textContent).not.toContain("marca");
+    expect(
+      screen.getByText("0 aparelho(s) com Dados declarados."),
     ).toBeDefined();
   });
 
@@ -1160,5 +1353,214 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(screen.queryByText("Análise")).toBeNull();
     expect(screen.queryByText("Aparelhos com análise")).toBeNull();
     expect(document.querySelector(".com-analise")).toBeNull();
+  });
+});
+
+/**
+ * Ticket 51: a tabela ganha a coluna de seleção à esquerda e a barra de ação
+ * acima da vitrine. A seleção é o mesmo contrato `?ids=` de `/comparar/`
+ * (ADR-0021), separado dos filtros, e sobrevive a qualquer mudança de recorte.
+ */
+describe("seleção para comparar (ticket 51)", () => {
+  function caixas(): HTMLInputElement[] {
+    return screen.getAllByRole("checkbox") as HTMLInputElement[];
+  }
+
+  function caixa(modelo: string): HTMLInputElement {
+    return screen.getByRole("checkbox", {
+      name: new RegExp(modelo),
+    }) as HTMLInputElement;
+  }
+
+  function idsDaUrl(): string | null {
+    return new URLSearchParams(window.location.search).get("ids");
+  }
+
+  it("mostra a coluna Comparar como a primeira, com cabeçalho vazio", async () => {
+    await montar();
+
+    const cabecalhos = screen.getAllByRole("columnheader");
+    expect(cabecalhos[0]?.getAttribute("data-campo")).toBe("selecao");
+    // Cabeçalho intencionalmente em branco: cada checkbox já anuncia
+    // "Comparar <marca> <modelo>" no aria-label (ticket 54).
+    expect(cabecalhos[0]?.textContent).toBe("");
+
+    const [primeira] = screen.getAllByRole("row").slice(1);
+    const primeiraCelula = primeira?.querySelector("td");
+    expect(primeiraCelula?.getAttribute("data-campo")).toBe("selecao");
+    // O rótulo é o que o cartão do celular mostra na primeira linha.
+    expect(primeiraCelula?.getAttribute("data-label")).toBe("Comparar");
+
+    expect(caixas()).toHaveLength(itens.length);
+    expect(screen.queryByRole("checkbox", { name: /todos/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /selecionar todos/i }),
+    ).toBeNull();
+  });
+
+  it("marca e desmarca, atualizando `ids` na ordem de seleção", async () => {
+    await montar();
+
+    fireEvent.click(caixa("Classe F"));
+    expect(idsDaUrl()).toBe("daikin-f");
+    expect(caixa("Classe F").checked).toBe(true);
+
+    fireEvent.click(caixa("Classe E"));
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+
+    fireEvent.click(caixa("Classe F"));
+    expect(idsDaUrl()).toBe("hitachi-e");
+    expect(caixa("Classe F").checked).toBe(false);
+  });
+
+  it("mostra a contagem e só habilita Comparar com 2 ou 3", async () => {
+    await montar();
+
+    expect(screen.getByText("0 de 3 modelos selecionados")).toBeDefined();
+    expect(
+      (screen.getByRole("button", { name: "Comparar" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+
+    fireEvent.click(caixa("Classe F"));
+    expect(screen.getByText("1 de 3 modelos selecionados")).toBeDefined();
+    expect(
+      (screen.getByRole("button", { name: "Comparar" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+
+    fireEvent.click(caixa("Classe E"));
+    expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined();
+    const comparar = screen.getByRole("link", { name: "Comparar" });
+    expect(comparar.getAttribute("href")).toBe(
+      "/comparar/?ids=daikin-f%2Chitachi-e",
+    );
+  });
+
+  it("com 3 selecionados desabilita os demais e explica o limite", async () => {
+    await montar(undefined, "/?ids=daikin-f,hitachi-e,elgin-d");
+
+    await waitFor(() =>
+      expect(screen.getByText("3 de 3 modelos selecionados")).toBeDefined(),
+    );
+    expect(caixa("Classe F").checked).toBe(true);
+    expect(caixa("Classe F").disabled).toBe(false);
+    expect(caixa("Classe E").disabled).toBe(false);
+    expect(caixa("Classe D").disabled).toBe(false);
+
+    // Os não selecionados ficam desabilitados, com a explicação à vista.
+    expect(caixa("G-Top Inverter").disabled).toBe(true);
+    expect(caixa("Dual Inverter").disabled).toBe(true);
+    expect(
+      screen.getByText("Limite de 3 modelos por comparação."),
+    ).toBeDefined();
+  });
+
+  it("preserva `ids` ao mudar filtro, busca e ordenação", async () => {
+    await montar(undefined, "/?ids=daikin-f,hitachi-e");
+
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
+      target: { value: "LG" },
+    });
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    fireEvent.change(screen.getByLabelText("Busca"), {
+      target: { value: "dual" },
+    });
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    // O "×" do chip desliga um filtro por outro caminho: a seleção continua.
+    fireEvent.click(
+      screen.getByRole("button", { name: /Remover filtro Marca/ }),
+    );
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+    expect(new URLSearchParams(window.location.search).get("marca")).toBeNull();
+
+    // Inverter a direção da ordenação também é uma mudança de estado.
+    fireEvent.click(screen.getByRole("button", { name: /Ordenar de forma/ }));
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("marca")).toBeNull();
+    expect(busca.get("q")).toBe("dual");
+    expect(busca.get("ordem")).toBe("consumo");
+    expect(busca.get("dir")).toBe("desc");
+  });
+
+  it("reconstrói a seleção ao voltar ou avançar no navegador", async () => {
+    await montar(undefined, "/?ids=daikin-f");
+
+    await waitFor(() => expect(caixa("Classe F").checked).toBe(true));
+
+    window.history.pushState(null, "", "/?ids=hitachi-e");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    await waitFor(() => expect(caixa("Classe E").checked).toBe(true));
+    expect(caixa("Classe F").checked).toBe(false);
+    expect(idsDaUrl()).toBe("hitachi-e");
+  });
+
+  it("preserva `ids` mesmo quando a base ainda não terminou de carregar", async () => {
+    window.history.replaceState(null, "", "/?ids=daikin-f,hitachi-e");
+    render(<Consulta opcoes={opcoesDe(itens)} />);
+
+    // A busca pode ser usada antes do `consulta.json` chegar; a seleção da URL
+    // não pode ser apagada só porque ainda não foi validada contra a base.
+    fireEvent.change(screen.getByLabelText("Busca"), {
+      target: { value: "dual" },
+    });
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+    expect(new URLSearchParams(window.location.search).get("q")).toBe("dual");
+  });
+
+  it("'Limpar filtros' não apaga a seleção; 'Limpar seleção' remove só `ids`", async () => {
+    await montar(undefined, "/?ids=daikin-f,hitachi-e&marca=LG");
+
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+    await waitFor(() =>
+      expect(
+        new URLSearchParams(window.location.search).get("marca"),
+      ).toBeNull(),
+    );
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpar seleção" }));
+    await waitFor(() => expect(idsDaUrl()).toBeNull());
+    expect(window.location.search).toBe("");
+    // O recorte voltou ao padrão, sem a seleção levar os filtros junto.
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("220");
+  });
+
+  it("reconstrói a seleção da URL e avisa quantos ids foram descartados", async () => {
+    await montar(undefined, "/?ids=daikin-f,ap-desconhecido,daikin-f");
+
+    await waitFor(() =>
+      expect(screen.getByText("1 de 3 modelos selecionados")).toBeDefined(),
+    );
+    expect(caixa("Classe F").checked).toBe(true);
+    expect(
+      screen.getByText(
+        "2 ids repetidos ou desconhecidos foram descartados do link.",
+      ),
+    ).toBeDefined();
   });
 });

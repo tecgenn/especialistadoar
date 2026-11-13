@@ -211,14 +211,17 @@ nova exportação CSV
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
   botão ao lado de "Ordenar por" inverte a direção. A página usa a variante
-  **ampla** do layout (sem o teto de 64 rem das páginas de leitura), com a barra de
-  filtros em blocos compactos (ticket 45): busca em largura total, Marca em duas
-  colunas de chips, Capacidade em três, Função e Tensão lado a lado, Tipo em duas,
-  Classe numa fileira de seis letras (com `aria-label` "Classe A"…), Ordenar em
-  largura total e "Limpar filtros" no rodapé. A barra não tem rolagem interna: é
-  `sticky` quando o painel cabe na janela e vira estática quando não cabe, para o
-  rodapé nunca ficar inalcançável; no celular, os filtros ficam num painel
-  recolhível. Ao abrir
+  **ampla** do layout e uma coluna central de até 72 rem (ticket 50), sem barra
+  lateral: busca em largura total, a linha de **Pesquisa avançada** com os chips
+  do recorte efetivo (inclusive o padrão implícito de Tensão 220 V, cujo "×"
+  grava `tensao=`), o painel recolhível com Marca, Capacidade, Função, Tensão,
+  Tipo e Classe (fechado por padrão e aberto sozinho quando a URL traz um filtro
+  avançado), a vitrine de Análises e, acima da tabela, a linha compacta de
+  "Ordenar por". Na célula da Marca, ao lado do valor, a linha ganha o selo
+  "Análise" — etiqueta de contorno com link para a Análise — só para aparelhos
+  que têm Análise publicada; não é uma coluna de dados nem ocupa célula
+  própria, então a maioria das linhas fica sem ele. Abaixo de 640 px o cartão
+  do Aparelho exibe o selo junto à Marca, na mesma posição. Ao abrir
   sem querystring, o **filtro padrão** — Tensão 220 V — vale como estado inicial
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e
@@ -277,13 +280,17 @@ nova exportação CSV
   de Análises em destaque (`AnalisesDestaque`, montado no build — o cliente não
   baixa `analises.json` nem `ofertas.json`). A ilha da tabela recebe no build o
   mapa `aparelhoId → { titulo, url }`; o selo "Análise" (etiqueta de contorno)
-  linka a Análise, as linhas analisadas ganham destaque e os analisados que
-  passam nos filtros viram a vitrine "Aparelhos com análise" **fora** da
-  `<table>`, com cartões que mostram a Marca e o título da Análise — até 6, as
-  capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) primeiro e as demais
-  completando na ordem das Análises —, sem entrar na contagem, na ordenação nem
-  no "Mostrar mais". Os cartões repetem os analisados que também aparecem,
-  destacados, na tabela. O `/assistente/`
+  linka a Análise, as linhas analisadas ganham destaque e a tabela respeita a
+  ordenação escolhida — sem promover analisados ao topo. Os analisados viram a
+  vitrine "Aparelhos com análise" **fora** da `<table>`, sempre visível quando há
+  ao menos uma Análise: primeiro os que passam no recorte (até 6, as capacidades
+  mais compradas — 9.000, 12.000 e 18.000 BTU/h — primeiro, depois a recência) e,
+  completando as vagas, Aparelhos similares de fora do recorte por capacidade,
+  marca conhecida, atributos em comum e recência; cada cartão mostra a Marca, o
+  título da Análise, a capacidade e o Tipo, e uma legenda explica quando só há
+  similares. O bloco não entra na contagem, na ordenação nem no "Mostrar mais".
+  Os cartões repetem os analisados que também aparecem, destacados, na tabela. O
+  `/assistente/`
   recebe no build o mapa capacidade → analisados e só consulta o valor
   recomendado, sem busca no cliente (ticket 42).
   Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada
@@ -292,6 +299,7 @@ nova exportação CSV
 
 - **assistente** — em `apps/site/src/lib/assistente.ts`, o motor puro do Assistente de dimensionamento (ticket 41): recebe as respostas das cinco telas do wizard (`/assistente/`) e devolve a Recomendação do Assistente — capacidade comercial recomendada, fatores usados, nível de confiança, explicação curta e orientações. Coeficientes fixos e auditáveis: base por m² conforme incidência solar (600/650/750/800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima (9.000 a 60.000 BTU/h), teto de 60.000 com alternativa dividida (2 × metade da capacidade quando for comercial e ≥ 9.000). A ilha React `Assistente.tsx` apenas coleta respostas e renderiza; não calcula. Todo o estado vive na URL, então recarregar e compartilhar preservam o resultado. No build, o mapa capacidade → analisados (ticket 42) é montado a partir das Análises publicadas e das `capacidadesBtu` do `consulta.json`, e só o valor recomendado é consultado — sem busca no cliente. ADR-0020 registra a decisão (heurística de mercado, sem LLM/Worker, Valor calculado nunca oficial, acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica).
 
+- **comparação** — em `apps/site`, a sessão de Comparação (tickets 49–52): a página `/comparar/` (item "Comparar" no menu, entre Aparelhos e Assistente) e a ilha `Comparar.tsx`. Três campos de busca posicionais (`Modelo 1`, `Modelo 2`, `Modelo 3`) são comboboxes acessíveis sobre o mesmo `consulta.json` e motor MiniSearch da tabela (~8 sugestões com marca, modelo, capacidade e tipo); a escolha vira um cartão com "Trocar"/"Remover" e os campos aproximam ao remover o do meio. A seleção vive em `?ids=id1,id2,id3` — mesmo contrato da tabela, máximo de 3, ordem preservada, ids repetidos/desconhecidos descartados com aviso — separada de `FiltrosConsulta`, então nunca se mistura com filtros, busca ou ordenação. A página abre vazia (estado que explica a ferramenta), mostra um convite com 1 modelo e a matriz neutra de atributos (Tipo, Função, Capacidade, Tensão, Consumo anual, IDRS e Classe, como faixa quando há mais de uma Variante) com 2 ou 3 modelos; sem destaque de "melhor valor". O contrato puro `?ids=` vive em `apps/site/src/lib/comparacao.ts` (`lerIds`, `escreverIds`, `linhasDaComparacao`, `MAXIMO_COMPARACAO`), sem DOM, e a página publica canonical sem `ids` (não indexada). Ver ADR-0021.
 - **aparelho:buscar** — `apps/site/src/lib/buscar-aparelho.ts` (busca pura) + `apps/site/scripts/buscar-aparelho.ts` (CLI, `pnpm aparelho:buscar`): procura na base servida por marca ou modelo (trecho, sem caixa nem acento) ou por potência exata em BTU e imprime marca, modelo, potência e `id` — o valor do `aparelhoId` de uma Análise (ticket 16). Só leitura: não cria artefato nem toca no pipeline.
 
 ## Interfaces

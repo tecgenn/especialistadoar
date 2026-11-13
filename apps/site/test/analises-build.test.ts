@@ -68,11 +68,12 @@ function lerHtml(...partes: string[]): string {
 
 /**
  * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/` +
- * `/assistente/` (ticket 41). Caiu de 2.460 fichas quando a pipeline passou a
- * excluir Model Status = "Excluído" (ticket 31); a curadoria de Análises pode
- * apontar para um id fora da base, então o número é o que o build realmente gera.
+ * `/assistente/` (ticket 41) + `/comparar/` (ticket 49). Caiu de 2.460 fichas
+ * quando a pipeline passou a excluir Model Status = "Excluído" (ticket 31); a
+ * curadoria de Análises pode apontar para um id fora da base, então o número é
+ * o que o build realmente gera.
  */
-const PAGINAS_BASE = 2230;
+const PAGINAS_BASE = 2231;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -628,7 +629,7 @@ describe("build com uma Análise de fixture", () => {
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.230 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As 2.231 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -657,7 +658,7 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2.230 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2.231 páginas e omite seção, menu e analises.json", () => {
     // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
     buildarSite(criarDiretorioTemporario());
 
@@ -685,6 +686,26 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
     expect(sitemap).not.toContain("/analises/");
     expect(sitemap).toContain("/assistente/");
+    expect(sitemap).toContain("/comparar/");
+
+    // A Comparação (ticket 49) tem página própria e entra no menu entre
+    // Aparelhos e Assistente. O canonical não leva `ids`: a seleção é estado de
+    // interface, não uma página a indexar.
+    const htmlComparar = lerHtml("comparar");
+    expect(htmlComparar).toContain("<h1>Comparar aparelhos</h1>");
+    const menu = htmlComparar.slice(
+      htmlComparar.indexOf("<nav>"),
+      htmlComparar.indexOf("</nav>"),
+    );
+    expect(menu.indexOf(">Aparelhos</a>")).toBeLessThan(
+      menu.indexOf(">Comparar</a>"),
+    );
+    expect(menu.indexOf(">Comparar</a>")).toBeLessThan(
+      menu.indexOf(">Assistente</a>"),
+    );
+    expect(
+      htmlComparar.match(/<link rel="canonical" href="([^"]*)"/)?.[1],
+    ).toBe("https://especialista-do-ar.pages.dev/comparar/");
 
     // O Assistente (ticket 41) tem página própria, entra no menu e publica o
     // JSON-LD de aplicação. A ilha renderiza no servidor antes de hidratar: a

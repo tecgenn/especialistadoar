@@ -94,73 +94,24 @@ body.ampla footer {
   color: #fff;
 }
 
-/* Layout da consulta (ticket 34): filtros numa barra lateral sticky, resultados
-   à direita. No celular as duas colunas empilham. */
-.consulta-layout {
-  display: grid;
-  grid-template-columns: clamp(300px, 22vw, 360px) 1fr;
-  gap: 2rem;
-  align-items: start;
+/* Layout da consulta (ticket 50): sem barra lateral — busca, Pesquisa
+   avançada, vitrine de Análises, ordenação e tabela numa coluna central única
+   de até 72 rem. */
+.pagina-aparelhos {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
 }
 
-/* A barra de filtros acompanha a rolagem enquanto o painel inteiro cabe na
-   janela (ticket 45) — sem `max-height` nem `overflow-y` internos. Quando o
-   painel é mais alto que a janela, o componente a marca como estática e ela
-   rola com a página (rodapé sempre alcançável). */
-.filtros-sidebar {
-  position: sticky;
-  top: 1rem;
-  align-self: start;
-}
-
-.filtros-sidebar-estatica {
-  position: static;
-}
-
-.consulta-resultados {
-  min-width: 0;
-}
-
-/* ticket 39: botão que abre/fecha o painel de filtros no celular. */
-.botao-filtros {
-  display: none;
-  align-self: start;
-  padding: 0.45rem 0.75rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.375rem;
-  background: var(--superficie);
-  font: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-@media (max-width: 64rem) {
-  .consulta-layout {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .filtros-sidebar {
-    position: static;
-  }
-
-  /* O painel de filtros fecha com o botão; quando fechado, some e a tabela
-     ocupa a largura toda acima dos resultados. */
-  .consulta.filtros-fechado .filtros-sidebar {
-    display: none;
-  }
-
-  .botao-filtros {
-    display: inline-block;
-    margin-bottom: 0.5rem;
-  }
+.consulta {
+  width: 100%;
 }
 
 .consulta .filtros {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-block: 1rem;
+  margin-block: 1rem 1.25rem;
 }
 
 .consulta label {
@@ -197,11 +148,97 @@ body.ampla footer {
   width: 100%;
 }
 
-/* O botão da direção ocupa só o próprio conteúdo e alinha com o select. */
-.consulta .filtros .ordem-direcao {
-  align-self: end;
-  justify-self: end;
-  white-space: nowrap;
+/* A linha da Pesquisa avançada (ticket 50): o botão, os chips do recorte
+   efetivo e o "Limpar filtros" na mesma faixa, quebrando no celular. */
+.consulta .linha-pesquisa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.consulta .botao-pesquisa-avancada[aria-expanded="true"] {
+  border-color: var(--primaria);
+  background: color-mix(in srgb, var(--primaria) 8%, var(--superficie));
+  color: var(--primaria);
+  font-weight: 600;
+}
+
+.consulta .resumo-filtros {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.consulta .resumo-vazio {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+/* Cada chip do recorte é um botão com "×": clicar desliga só aquele filtro. */
+.consulta .chip-filtro {
+  align-self: auto;
+  padding: 0.2rem 0.55rem;
+  border-color: color-mix(in srgb, var(--primaria) 35%, var(--borda));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primaria) 7%, var(--superficie));
+  color: var(--primaria);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.consulta .chip-filtro:hover {
+  border-color: var(--primaria);
+}
+
+.consulta .chip-filtro:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+.consulta .chip-x {
+  margin-left: 0.3rem;
+  font-weight: 700;
+}
+
+.consulta .limpar-filtros {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+/* O painel avançado (ticket 50): os seis filtros em grade, recolhido por
+   `hidden` até o botão abrir — ou até a URL trazer um filtro avançado. */
+.consulta .filtros-avancados {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.consulta .filtros-avancados[hidden] {
+  display: none;
+}
+
+@media (max-width: 56rem) {
+  .consulta .filtros-avancados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .consulta .filtros-avancados {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Um campo com chips: legenda, chips que quebram linha e, quando há valores
@@ -275,14 +312,6 @@ body.ampla footer {
   gap: 0.25rem;
 }
 
-/* Função e Tensão lado a lado; Ordenar em largura total com a direção ao lado. */
-.consulta .filtros-par {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: start;
-}
-
 .consulta .campo-tensao {
   min-width: 0;
 }
@@ -291,30 +320,38 @@ body.ampla footer {
   width: 100%;
 }
 
-.consulta .filtros-ordenar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem;
-  align-items: end;
+/* A ordenação saiu do painel (ticket 50): uma linha compacta acima da tabela,
+   com a contagem à esquerda e os controles à direita. */
+.consulta .linha-ordenacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-block: 0 0.6rem;
 }
 
-.consulta .campo-ordenar {
-  min-width: 0;
+.consulta .linha-ordenacao p[role="status"] {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
 }
 
-.consulta .campo-ordenar select {
-  width: 100%;
+.consulta .linha-ordenacao .campo-ordenar {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  font-size: 0.85rem;
 }
 
-.consulta .filtros-rodape {
-  margin-top: 0.25rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--borda);
+.consulta .linha-ordenacao .campo-ordenar select {
+  width: auto;
 }
 
-.consulta .filtros-rodape button {
-  width: 100%;
-  text-align: center;
+.consulta .linha-ordenacao .ordem-direcao {
+  align-self: center;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .consulta .campo-marca .chips button,
@@ -477,30 +514,28 @@ body.ampla footer {
   background: var(--fundo);
 }
 
-/* Tabela de Aparelhos (ticket 27, revisão do 44): uma linha por Aparelho,
-   cabeçalhos ordenáveis e cartões no celular.
+/* Tabela de Aparelhos (ticket 27, revisão do 50): uma linha por Aparelho,
+   cabeçalhos ordenáveis, cartões no celular e tipografia mais compacta para
+   caber mais Aparelhos na coluna central de 72 rem.
 
-   A grade tem **colunas de largura igual** e todo o conteúdo centralizado: a
-   leitura desce em colunas regulares, sem valores encostados na vizinha. O
-   recuo horizontal é o mesmo em todas as células (`0.75rem`) e o vertical
-   (`0.8rem`) dá ar entre as linhas. `table-layout: fixed` mantém a grade
-   estável independentemente do conteúdo. */
+   Seleção (ticket 51) e Análise têm largura fixa; as demais colunas dividem o
+   restante por igual. `table-layout: fixed` mantém a grade estável
+   independentemente do conteúdo. */
 .consulta .tabela-aparelhos {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
-/* 7 colunas iguais: a grade fica regular em qualquer largura. */
-.consulta .tabela-aparelhos col {
-  width: 14.2857%;
+.consulta .tabela-aparelhos .col-selecao {
+  width: 3rem;
 }
 
 .consulta .tabela-aparelhos th,
 .consulta .tabela-aparelhos td {
-  padding: 0.6rem 0.75rem;
+  padding: 0.45rem 0.55rem;
   text-align: center;
   vertical-align: middle;
   border-bottom: 1px solid var(--borda);
@@ -578,6 +613,22 @@ body.ampla footer {
   font-weight: 600;
 }
 
+/* O checkbox da seleção (ticket 51) ocupa o centro da coluna estreita. */
+.consulta .tabela-aparelhos td[data-campo="selecao"] input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--primaria);
+  cursor: pointer;
+}
+
+.consulta .tabela-aparelhos td[data-campo="selecao"] input:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 /* Linha do analisado (ticket 44): fundo levemente destacado e borda de acento
    à esquerda, para a linha se distinguir sem virar um grupo à parte. */
 .consulta .tabela-aparelhos tbody tr.linha-analisado td {
@@ -588,13 +639,15 @@ body.ampla footer {
   border-left: 3px solid var(--primaria);
 }
 
-/* Selo "Análise" na coluna Marca (ticket 44): etiqueta de contorno, distinta
-   da pílula azul dos chips de filtro. O tooltip traz só o título da Análise. */
+/* Selo "Análise" (ticket 44): etiqueta de contorno, distinta da pílula azul
+   dos chips de filtro. O tooltip traz só o título da Análise. Vive dentro da
+   célula da Marca, ao lado do valor, só para aparelhos que têm Análise
+   publicada — não participa do layout de colunas da tabela. */
 .consulta .analisado-selo {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-left: 0.5rem;
+  margin-left: 0.4rem;
 }
 
 .consulta .analisado-etiqueta {
@@ -623,10 +676,58 @@ body.ampla footer {
   outline-offset: 2px;
 }
 
-/* Bloco "Aparelhos com análise" (ticket 44, revisto): um destaque **fora** da
-   tabela, acima dela, com cartões próprios — outro material, outra leitura. No
-   recorte inicial mostra todos os analisados; com um filtro ativo, só os que
-   ficam de fora. Nunca mexe em contagem, paginação nem ordenação. */
+/* Barra de seleção para comparar (ticket 51): entre os filtros e a vitrine,
+   com a contagem à esquerda, os avisos no meio e as ações à direita. */
+.consulta .barra-selecao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-block: 0 1.25rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.consulta .selecao-contagem {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.consulta .selecao-limite,
+.consulta .selecao-aviso {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.consulta .selecao-aviso {
+  color: #b45309;
+}
+
+.consulta .barra-selecao-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* "Comparar" desabilitado continua com a forma de botão, mas apagado: só 2 ou 3
+   selecionados habilitam a ida para `/comparar/`. */
+.consulta .barra-selecao-acoes .botao:disabled {
+  border-color: var(--borda);
+  background: var(--fundo);
+  color: var(--texto-suave);
+  cursor: not-allowed;
+}
+
+/* Bloco "Aparelhos com análise" (ticket 44, revisto no 52): um destaque **fora**
+   da tabela, acima dela, com cartões próprios — outro material, outra leitura.
+   Sempre visível quando há Análise: mostra primeiro os analisados que passam no
+   recorte e completa com similares; a legenda explica quando só há similares.
+   Nunca mexe em contagem, paginação nem ordenação. */
 .consulta .com-analise {
   margin-block: 0 1.25rem;
   padding: 1rem 1.25rem 1.25rem;
@@ -694,6 +795,21 @@ body.ampla footer {
 .consulta .com-analise-titulo {
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+/* Capacidade e Tipo no cartão (ticket 52): o suficiente para avaliar a
+   alternativa sem abrir a ficha. */
+.consulta .com-analise-detalhe {
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+}
+
+/* Legenda da vitrine quando só há similares: o recorte não foi ignorado, e a
+   marca filtrada é citada para não parecer um erro. */
+.consulta .com-analise-legenda {
+  margin: 0 0 0.75rem;
+  color: var(--texto-suave);
+  font-size: 0.82rem;
 }
 
 .consulta .com-analise-item:hover .com-analise-titulo {
@@ -1061,6 +1177,25 @@ body.ampla footer {
     content: attr(data-label);
     color: var(--texto-suave);
     font-size: 0.8rem;
+  }
+
+  /* O checkbox abre o cartão (ticket 51): primeira linha, com o rótulo
+     "Comparar" e uma borda separando da ficha do Aparelho. */
+  .consulta .tabela-aparelhos td[data-campo="selecao"] {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .consulta .tabela-aparelhos td[data-campo="selecao"]::before {
+    font-weight: 600;
+  }
+
+  .consulta .tabela-aparelhos td[data-campo="marca"] {
+    /* No celular, a tag "Análise" viaja inline com a Marca, sem célula própria. */
+    text-align: left;
   }
 }
 
@@ -1649,5 +1784,310 @@ body.ampla footer {
   .home-cartoes,
   .home-passos {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Comparação de Aparelhos (ticket 49): três campos posicionais que viram
+   cartões e uma matriz neutra, com uma coluna por modelo. A seleção vive na
+   URL (`?ids=`), separada dos filtros da tabela (ADR-0021). */
+.comparar-campos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.comparar-campo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.comparar-campo > label {
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.comparar-campo input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+}
+
+.comparar-campo input:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 1px;
+}
+
+/* As sugestões abrem sobre o conteúdo, sem empurrar os campos seguintes. */
+.comparar-sugestoes {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  max-height: 18rem;
+  overflow-y: auto;
+  margin: 0.25rem 0 0;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+  box-shadow: 0 10px 24px rgb(15 23 42 / 12%);
+}
+
+.comparar-sugestoes [role="option"] {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.comparar-sugestoes [role="option"]:hover,
+.comparar-sugestoes .comparar-opcao-ativa {
+  background: color-mix(in srgb, var(--primaria) 10%, var(--superficie));
+}
+
+.comparar-sugestao-marca {
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.comparar-sugestao-modelo {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.comparar-sugestao-meta {
+  color: var(--texto-suave);
+  font-size: 0.82rem;
+}
+
+.comparar-sem-resultado {
+  margin: 0.25rem 0 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.comparar-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--primaria);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--primaria) 5%, var(--superficie));
+}
+
+.comparar-cartao-marca {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.comparar-cartao-modelo {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.comparar-cartao-resumo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.comparar-cartao-acoes {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.comparar-cartao-acoes button,
+.comparar-limpar button {
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  color: var(--primaria);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.comparar-cartao-acoes button:hover,
+.comparar-limpar button:hover {
+  border-color: var(--primaria);
+}
+
+.comparar-aviso {
+  padding: 0.5rem 0.75rem;
+  margin: 0.75rem 0 0;
+  border: 1px solid #fbbf24;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 0.85rem;
+}
+
+.comparar-limpar {
+  margin: 0.75rem 0 0;
+}
+
+.comparar-vazio {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px dashed var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+}
+
+.comparar-vazio h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.comparar-vazio p {
+  margin: 0 0 0.5rem;
+  color: var(--texto-suave);
+}
+
+.comparar-convite {
+  padding: 0.6rem 0.85rem;
+  margin: 1.25rem 0 0;
+  border-radius: 0.5rem;
+  background: #e0f2fe;
+  font-size: 0.9rem;
+}
+
+.comparar-matriz-bloco {
+  margin-top: 1.25rem;
+}
+
+/* A dica de rolagem só aparece no celular (abaixo de 40 rem), onde a matriz
+   não cabe; no desktop a comparação inteira fica visível. */
+.comparar-dica {
+  display: none;
+  margin: 0 0 0.5rem;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+.comparar-matriz-rolagem {
+  overflow-x: auto;
+  border: 1px solid var(--borda);
+  border-radius: 0.75rem;
+  background: var(--superficie);
+}
+
+.comparar-matriz {
+  width: 100%;
+  min-width: 34rem;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Com um modelo só não há o que rolar: a coluna ocupa a largura disponível. */
+.comparar-matriz[data-colunas="1"] {
+  min-width: 0;
+}
+
+.comparar-matriz th,
+.comparar-matriz td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--borda);
+  text-align: left;
+  vertical-align: top;
+}
+
+.comparar-matriz tbody tr:last-child th,
+.comparar-matriz tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.comparar-matriz thead th {
+  background: var(--fundo);
+}
+
+/* Coluna de atributos fixa: no celular ela fica à vista enquanto as colunas
+   dos modelos rolam na horizontal. */
+.comparar-matriz .comparar-atributo {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 9rem;
+  background: var(--fundo);
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.comparar-coluna-marca {
+  display: block;
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.comparar-coluna-modelo {
+  display: block;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.comparar-ficha {
+  display: inline-block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.comparar-selo {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--primaria);
+  border-radius: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.comparar-matriz td {
+  font-variant-numeric: tabular-nums;
+}
+
+.comparar-nota {
+  margin-top: 0.75rem;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 40rem) {
+  .comparar-campos {
+    grid-template-columns: 1fr;
+  }
+
+  .comparar-dica {
+    display: block;
   }
 }

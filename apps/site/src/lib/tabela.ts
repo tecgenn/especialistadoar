@@ -26,6 +26,15 @@ export const COLUNAS_TABELA: readonly ColunaTabela[] = [
 ];
 
 /**
+ * As colunas renderizadas na tabela de Aparelhos. A tag "Análise" não é uma
+ * coluna de dados: é um elemento da linha (ticket 54), renderizado apenas para
+ * aparelhos que têm Análise publicada, entre o checkbox de seleção e a Marca.
+ */
+export function colunasDaTabela(): ColunaTabela[] {
+  return [...COLUNAS_TABELA];
+}
+
+/**
  * O texto de uma célula. Listas viram faixa quando têm mais de um valor
  * ("9.000 – 12.000"); dado ausente aparece como travessão.
  */

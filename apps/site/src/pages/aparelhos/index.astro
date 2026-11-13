@@ -43,11 +43,13 @@ const jsonLd: Record<string, unknown> = {
   jsonLd={jsonLd}
   ampla
 >
-  <h1>Aparelhos de ar-condicionado</h1>
-  <p class="intro">
-    {dataset.length} Aparelhos com Dados declarados, a partir da exportação
-    oficial de produtos do INMETRO. Ordene por qualquer coluna e filtre por
-    marca, capacidade, função, tipo, Classe e tensão.
-  </p>
-  <Consulta client:load opcoes={opcoes} analisados={analisados} />
+  <div class="pagina-aparelhos">
+    <h1>Aparelhos de ar-condicionado</h1>
+    <p class="intro">
+      {dataset.length} Aparelhos com Dados declarados, a partir da exportação
+      oficial de produtos do INMETRO. Ordene por qualquer coluna e filtre por
+      marca, capacidade, função, tipo, Classe e tensão.
+    </p>
+    <Consulta client:load opcoes={opcoes} analisados={analisados} />
+  </div>
 </Base>

@@ -1,5 +1,7 @@
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
 import {
+  type AnalisadoVitrine,
   type Analise,
   type AnaliseFrontmatter,
   type AparelhoComCapacidades,
@@ -9,7 +11,9 @@ import {
   listaAnalisesJson,
   mapaPorAparelho,
   montarAnalises,
+  montarVitrine,
   secaoVisivel,
+  VITRINE_MAXIMO,
   validarAnalises,
 } from "../src/lib/analises.ts";
 
@@ -277,5 +281,265 @@ describe("agruparAnalisadosPorCapacidade", () => {
       "/analises/recente/",
       "/analises/antiga/",
     ]);
+  });
+});
+
+/**
+ * Ticket 52: a vitrine "Aparelhos com análise" nunca some quando há ao menos
+ * uma Análise. Os compatíveis (passam no recorte) vêm primeiro; os similares
+ * completam até seis cartões, ordenados por capacidade → marca conhecida →
+ * atributos em comum → recência. Recorte vazio pula a capacidade.
+ */
+describe("montarVitrine", () => {
+  function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
+    return {
+      id: "ap-aaaaaaaaaaaa",
+      marca: "SAMSUNG",
+      marcaCatalogo: "SAMSUNG",
+      modelo: "Modelo",
+      tipo: "Split Hi-Wall",
+      funcao: "Frio",
+      capacidadesBtu: [12000],
+      tensoes: [220],
+      classes: ["A"],
+      idrs: [5],
+      consumosKwh: [200],
+      ...over,
+    };
+  }
+
+  function analisado(
+    over: Partial<ItemConsulta> = {},
+    titulo = "Uma análise",
+  ): AnalisadoVitrine {
+    const consulta = item(over);
+    return {
+      item: consulta,
+      titulo,
+      url: `/analises/${consulta.id}/`,
+    };
+  }
+
+  function ids(cartoes: ReturnType<typeof montarVitrine>): string[] {
+    return cartoes.map((cartao) => cartao.item.id);
+  }
+
+  it("põe os compatíveis primeiro, mesmo quando o similar tem a capacidade exata", () => {
+    const compativel = analisado({
+      id: "ap-aaaaaaaaaaaa",
+      capacidadesBtu: [30000],
+    });
+    const similar = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      capacidadesBtu: [12000],
+    });
+
+    const cartoes = montarVitrine([similar, compativel], {
+      filtrados: [compativel.item],
+      recorte: { btu: 12000 },
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"]);
+    expect(cartoes.map((cartao) => cartao.foraDoRecorte)).toEqual([
+      false,
+      true,
+    ]);
+  });
+
+  it("entre compatíveis, abre pelas capacidades mais compradas e depois pela recência", () => {
+    const grande = analisado({
+      id: "ap-aaaaaaaaaaaa",
+      capacidadesBtu: [30000],
+    });
+    const pequeno = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      capacidadesBtu: [9000],
+    });
+
+    const cartoes = montarVitrine([grande, pequeno], {
+      filtrados: [grande.item, pequeno.item],
+      recorte: {},
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-bbbbbbbbbbbb", "ap-aaaaaaaaaaaa"]);
+  });
+
+  it("ordena os similares por capacidade exata, depois distância relativa", () => {
+    const exato = analisado({ id: "ap-aaaaaaaaaaaa", capacidadesBtu: [12000] });
+    const abaixo = analisado({ id: "ap-bbbbbbbbbbbb", capacidadesBtu: [9000] });
+    const acima = analisado({ id: "ap-cccccccccccc", capacidadesBtu: [18000] });
+    const distante = analisado({
+      id: "ap-dddddddddddd",
+      capacidadesBtu: [24000],
+    });
+
+    const cartoes = montarVitrine([distante, acima, abaixo, exato], {
+      filtrados: [item({ id: "ap-eeeeeeeeeeee", capacidadesBtu: [12000] })],
+      recorte: { btu: 12000 },
+    });
+
+    expect(ids(cartoes)).toEqual([
+      "ap-aaaaaaaaaaaa",
+      "ap-bbbbbbbbbbbb",
+      "ap-cccccccccccc",
+      "ap-dddddddddddd",
+    ]);
+  });
+
+  it("sem BTU no recorte, a capacidade presente no conjunto filtrado vem antes", () => {
+    const presente = analisado({
+      id: "ap-aaaaaaaaaaaa",
+      capacidadesBtu: [18000],
+    });
+    const distante = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      capacidadesBtu: [22000],
+    });
+
+    const cartoes = montarVitrine([distante, presente], {
+      filtrados: [
+        item({
+          id: "ap-eeeeeeeeeeee",
+          marcaCatalogo: "LG",
+          capacidadesBtu: [12000, 18000],
+        }),
+      ],
+      recorte: { marca: "LG" },
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"]);
+  });
+
+  it("desempata pela Marca de catálogo conhecida", () => {
+    const conhecida = analisado({
+      id: "ap-aaaaaaaaaaaa",
+      marcaCatalogo: "SAMSUNG",
+    });
+    const desconhecida = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      marcaCatalogo: "MARCA NOVA",
+    });
+
+    const cartoes = montarVitrine([desconhecida, conhecida], {
+      filtrados: [item({ id: "ap-eeeeeeeeeeee" })],
+      recorte: {},
+      marcasConhecidas: ["SAMSUNG"],
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"]);
+  });
+
+  it("desempata por atributos em comum com o recorte", () => {
+    const completo = analisado({ id: "ap-aaaaaaaaaaaa" });
+    const parcial = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      tipo: "Janela",
+      funcao: "Quente/Frio",
+      classes: ["C"],
+    });
+
+    const cartoes = montarVitrine([parcial, completo], {
+      filtrados: [
+        item({
+          id: "ap-eeeeeeeeeeee",
+          marcaCatalogo: "LG",
+          tipo: "Split Hi-Wall",
+          funcao: "Frio",
+          classes: ["A"],
+          tensoes: [220],
+        }),
+      ],
+      recorte: { marca: "LG" },
+      marcasConhecidas: ["SAMSUNG"],
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"]);
+  });
+
+  it("usa a ordem recebida (recência da Análise) como desempate final", () => {
+    const recente = analisado({ id: "ap-aaaaaaaaaaaa" });
+    const antiga = analisado({ id: "ap-bbbbbbbbbbbb" });
+
+    const cartoes = montarVitrine([recente, antiga], {
+      filtrados: [item({ id: "ap-eeeeeeeeeeee" })],
+      recorte: {},
+      marcasConhecidas: ["SAMSUNG"],
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"]);
+  });
+
+  it("com recorte vazio, pula a capacidade e usa a marca conhecida", () => {
+    const conhecidaLonge = analisado({
+      id: "ap-aaaaaaaaaaaa",
+      marcaCatalogo: "SAMSUNG",
+      capacidadesBtu: [30000],
+    });
+    const desconhecidaPerto = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      marcaCatalogo: "MARCA NOVA",
+      capacidadesBtu: [12000],
+    });
+
+    const cartoes = montarVitrine([desconhecidaPerto, conhecidaLonge], {
+      filtrados: [],
+      recorte: { marca: "LG", btu: 12000 },
+      marcasConhecidas: ["SAMSUNG"],
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"]);
+  });
+
+  it("joga para o fim o similar sem capacidade declarada", () => {
+    const semCapacidade = analisado({
+      id: "ap-aaaaaaaaaaaa",
+      capacidadesBtu: [],
+    });
+    const distante = analisado({
+      id: "ap-bbbbbbbbbbbb",
+      capacidadesBtu: [30000],
+    });
+
+    const cartoes = montarVitrine([semCapacidade, distante], {
+      filtrados: [item({ id: "ap-eeeeeeeeeeee", capacidadesBtu: [12000] })],
+      recorte: { btu: 12000 },
+    });
+
+    expect(ids(cartoes)).toEqual(["ap-bbbbbbbbbbbb", "ap-aaaaaaaaaaaa"]);
+  });
+
+  it("preenche até seis cartões e marca os similares como fora do recorte", () => {
+    const analisados = Array.from({ length: 8 }, (_, indice) =>
+      analisado({
+        id: `ap-${indice.toString(16).padStart(12, "0")}`,
+      }),
+    );
+
+    const cartoes = montarVitrine(analisados, {
+      filtrados: [item({ id: "ap-eeeeeeeeeeee" })],
+      recorte: {},
+      marcasConhecidas: ["SAMSUNG"],
+    });
+
+    expect(cartoes).toHaveLength(VITRINE_MAXIMO);
+    expect(cartoes.every((cartao) => cartao.foraDoRecorte)).toBe(true);
+  });
+
+  it("sem Análises publicadas devolve lista vazia", () => {
+    expect(montarVitrine([], { filtrados: [item()], recorte: {} })).toEqual([]);
+  });
+
+  it("respeita um teto menor que o padrão", () => {
+    const analisados = Array.from({ length: 4 }, (_, indice) =>
+      analisado({ id: `ap-${indice.toString(16).padStart(12, "0")}` }),
+    );
+
+    expect(
+      montarVitrine(analisados, {
+        filtrados: analisados.map(({ item: consulta }) => consulta),
+        recorte: {},
+        maximo: 2,
+      }),
+    ).toHaveLength(2);
   });
 });
