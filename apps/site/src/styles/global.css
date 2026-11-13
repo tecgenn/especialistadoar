@@ -533,10 +533,6 @@ body.ampla footer {
   width: 3rem;
 }
 
-.consulta .tabela-aparelhos .col-analise {
-  width: 6.5rem;
-}
-
 .consulta .tabela-aparelhos th,
 .consulta .tabela-aparelhos td {
   padding: 0.45rem 0.55rem;
@@ -643,28 +639,15 @@ body.ampla footer {
   border-left: 3px solid var(--primaria);
 }
 
-/* Selo "Análise" na linha do aparelho (ticket 44, reposicionado no 54):
-   etiqueta de contorno, distinta da pílula azul dos chips de filtro. O tooltip
-   traz só o título da Análise. Vive entre o checkbox "Comparar" e a Marca,
-   só para aparelhos que têm Análise publicada. */
+/* Selo "Análise" (ticket 44): etiqueta de contorno, distinta da pílula azul
+   dos chips de filtro. O tooltip traz só o título da Análise. Vive dentro da
+   célula da Marca, ao lado do valor, só para aparelhos que têm Análise
+   publicada — não participa do layout de colunas da tabela. */
 .consulta .analisado-selo {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-left: 0.5rem;
-}
-
-/* A célula da tag "Análise" fica entre "Comparar" e "Marca", estreita, só
-   preenchida quando o aparelho tem Análise. Não é uma coluna de dados. */
-.consulta .tabela-aparelhos td[data-campo="tag-analise"] {
-  width: 44px;
-  font-size: 0.76rem;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.consulta .tabela-aparelhos td[data-campo="tag-analise"] .analisado-selo {
-  margin-left: 0;
+  margin-left: 0.4rem;
 }
 
 .consulta .analisado-etiqueta {
@@ -1210,21 +1193,9 @@ body.ampla footer {
     font-weight: 600;
   }
 
-  /* A célula da tag "Análise" (ticket 54): no cartão do celular, células vazias
-     somem em vez de deixar um rótulo solto; quando preenchida, ocupa a largura
-     do conteúdo sem rótulo repetido. */
-  .consulta .tabela-aparelhos td[data-campo="tag-analise"] {
-    grid-template-columns: 1fr;
-    padding-top: 0.35rem;
-    text-align: center;
-  }
-
-  .consulta .tabela-aparelhos td[data-campo="tag-analise"]::before {
-    content: none;
-  }
-
-  .consulta .tabela-aparelhos td.celula-tag-vazia {
-    display: none;
+  .consulta .tabela-aparelhos td[data-campo="marca"] {
+    /* No celular, a tag "Análise" viaja inline com a Marca, sem célula própria. */
+    text-align: left;
   }
 }
 

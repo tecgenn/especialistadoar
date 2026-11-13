@@ -217,11 +217,11 @@ nova exportação CSV
   grava `tensao=`), o painel recolhível com Marca, Capacidade, Função, Tensão,
   Tipo e Classe (fechado por padrão e aberto sozinho quando a URL traz um filtro
   avançado), a vitrine de Análises e, acima da tabela, a linha compacta de
-  "Ordenar por". Entre o checkbox "Comparar" e a Marca, a linha ganha o selo
+  "Ordenar por". Na célula da Marca, ao lado do valor, a linha ganha o selo
   "Análise" — etiqueta de contorno com link para a Análise — só para aparelhos
-  que têm Análise publicada; não é uma coluna de dados, então a maioria das
-  linhas fica sem ele. Abaixo de 640 px o cartão do Aparelho exibe a tag na
-  mesma posição. Ao abrir
+  que têm Análise publicada; não é uma coluna de dados nem ocupa célula
+  própria, então a maioria das linhas fica sem ele. Abaixo de 640 px o cartão
+  do Aparelho exibe o selo junto à Marca, na mesma posição. Ao abrir
   sem querystring, o **filtro padrão** — Tensão 220 V — vale como estado inicial
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e

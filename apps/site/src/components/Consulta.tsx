@@ -879,17 +879,13 @@ export default function Consulta({
                 </caption>
                 <colgroup>
                   <col className="col-selecao" />
-                  <col className="col-tag-analise" />
                   {colunas.map((coluna) => (
                     <col key={coluna.campo} className={`col-${coluna.campo}`} />
                   ))}
                 </colgroup>
                 <thead>
                   <tr>
-                    <th scope="col" data-campo="selecao">
-                      Comparar
-                    </th>
-                    <th scope="col" data-campo="tag-analise" />
+                    <th scope="col" data-campo="selecao"></th>
                     {colunas.map((coluna) =>
                       CAMPOS_ORDENAVEIS.has(coluna.campo) ? (
                         <Cabecalho
@@ -932,21 +928,6 @@ export default function Consulta({
                             onChange={() => alternarSelecao(item.id)}
                           />
                         </td>
-                        <td
-                          data-campo="tag-analise"
-                          data-label={
-                            analise !== undefined ? "Análise" : undefined
-                          }
-                          className={
-                            analise === undefined
-                              ? "celula-tag-vazia"
-                              : undefined
-                          }
-                        >
-                          {analise !== undefined ? (
-                            <SeloAnalise itemId={item.id} analise={analise} />
-                          ) : null}
-                        </td>
                         {colunas.map((coluna) => {
                           const campo = coluna.campo;
                           const valor = valorDaColuna(item, campo);
@@ -979,6 +960,16 @@ export default function Consulta({
                                     ))}
                                   </span>
                                 )
+                              ) : campo === "marca" ? (
+                                <>
+                                  {valor}
+                                  {analise !== undefined && (
+                                    <SeloAnalise
+                                      itemId={item.id}
+                                      analise={analise}
+                                    />
+                                  )}
+                                </>
                               ) : (
                                 valor
                               )}
