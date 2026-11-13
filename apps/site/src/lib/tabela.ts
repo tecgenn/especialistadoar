@@ -9,8 +9,10 @@ import { formatarFaixa } from "./ficha.ts";
  * em que aparecem na tela. O rótulo serve ao cabeçalho, ao seletor "Ordenar por"
  * e ao cartão do celular (`data-label`).
  */
+export type CampoTabela = ColunaExibicao | "analise";
+
 export interface ColunaTabela {
-  campo: ColunaExibicao;
+  campo: CampoTabela;
   rotulo: string;
 }
 
@@ -24,6 +26,20 @@ export const COLUNAS_TABELA: readonly ColunaTabela[] = [
   { campo: "idrs", rotulo: "IDRS" },
   { campo: "classe", rotulo: "Classe" },
 ];
+
+/** A coluna do selo "Análise", sempre a última (ticket 50). */
+export const COLUNA_ANALISE: ColunaTabela = {
+  campo: "analise",
+  rotulo: "Análise",
+};
+
+/**
+ * As colunas renderizadas: a coluna "Análise" só existe quando há ao menos
+ * uma Análise publicada — sem Análise, uma coluna vazia só ocupa espaço.
+ */
+export function colunasDaTabela(comAnalise: boolean): ColunaTabela[] {
+  return comAnalise ? [...COLUNAS_TABELA, COLUNA_ANALISE] : [...COLUNAS_TABELA];
+}
 
 /**
  * O texto de uma célula. Listas viram faixa quando têm mais de um valor

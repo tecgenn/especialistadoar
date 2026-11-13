@@ -1,6 +1,10 @@
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
-import { COLUNAS_TABELA, valorDaColuna } from "../src/lib/tabela.ts";
+import {
+  COLUNAS_TABELA,
+  colunasDaTabela,
+  valorDaColuna,
+} from "../src/lib/tabela.ts";
 
 function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
   return {
@@ -29,6 +33,22 @@ describe("colunas da tabela de Aparelhos", () => {
       "Consumo (kWh)",
       "IDRS",
       "Classe",
+    ]);
+  });
+
+  it("só acrescenta a coluna Análise no fim quando há Análise publicada", () => {
+    expect(colunasDaTabela(false).map((coluna) => coluna.campo)).toEqual(
+      COLUNAS_TABELA.map((coluna) => coluna.campo),
+    );
+    expect(colunasDaTabela(true).map((coluna) => coluna.campo)).toEqual([
+      "marca",
+      "modelo",
+      "tipo",
+      "btu",
+      "consumo",
+      "idrs",
+      "classe",
+      "analise",
     ]);
   });
 

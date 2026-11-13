@@ -211,14 +211,15 @@ nova exportação CSV
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
   botão ao lado de "Ordenar por" inverte a direção. A página usa a variante
-  **ampla** do layout (sem o teto de 64 rem das páginas de leitura), com a barra de
-  filtros em blocos compactos (ticket 45): busca em largura total, Marca em duas
-  colunas de chips, Capacidade em três, Função e Tensão lado a lado, Tipo em duas,
-  Classe numa fileira de seis letras (com `aria-label` "Classe A"…), Ordenar em
-  largura total e "Limpar filtros" no rodapé. A barra não tem rolagem interna: é
-  `sticky` quando o painel cabe na janela e vira estática quando não cabe, para o
-  rodapé nunca ficar inalcançável; no celular, os filtros ficam num painel
-  recolhível. Ao abrir
+  **ampla** do layout e uma coluna central de até 72 rem (ticket 50), sem barra
+  lateral: busca em largura total, a linha de **Pesquisa avançada** com os chips
+  do recorte efetivo (inclusive o padrão implícito de Tensão 220 V, cujo "×"
+  grava `tensao=`), o painel recolhível com Marca, Capacidade, Função, Tensão,
+  Tipo e Classe (fechado por padrão e aberto sozinho quando a URL traz um filtro
+  avançado), a vitrine de Análises e, acima da tabela, a linha compacta de
+  "Ordenar por". A tabela termina com a coluna **Análise** — o selo com link para
+  a Análise, que deixa a coluna Marca —, renderizada só quando há ao menos uma
+  Análise publicada; abaixo de 640 px o cartão do Aparelho termina com ele. Ao abrir
   sem querystring, o **filtro padrão** — Tensão 220 V — vale como estado inicial
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e

@@ -94,73 +94,24 @@ body.ampla footer {
   color: #fff;
 }
 
-/* Layout da consulta (ticket 34): filtros numa barra lateral sticky, resultados
-   à direita. No celular as duas colunas empilham. */
-.consulta-layout {
-  display: grid;
-  grid-template-columns: clamp(300px, 22vw, 360px) 1fr;
-  gap: 2rem;
-  align-items: start;
+/* Layout da consulta (ticket 50): sem barra lateral — busca, Pesquisa
+   avançada, vitrine de Análises, ordenação e tabela numa coluna central única
+   de até 72 rem. */
+.pagina-aparelhos {
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
 }
 
-/* A barra de filtros acompanha a rolagem enquanto o painel inteiro cabe na
-   janela (ticket 45) — sem `max-height` nem `overflow-y` internos. Quando o
-   painel é mais alto que a janela, o componente a marca como estática e ela
-   rola com a página (rodapé sempre alcançável). */
-.filtros-sidebar {
-  position: sticky;
-  top: 1rem;
-  align-self: start;
-}
-
-.filtros-sidebar-estatica {
-  position: static;
-}
-
-.consulta-resultados {
-  min-width: 0;
-}
-
-/* ticket 39: botão que abre/fecha o painel de filtros no celular. */
-.botao-filtros {
-  display: none;
-  align-self: start;
-  padding: 0.45rem 0.75rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.375rem;
-  background: var(--superficie);
-  font: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-@media (max-width: 64rem) {
-  .consulta-layout {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .filtros-sidebar {
-    position: static;
-  }
-
-  /* O painel de filtros fecha com o botão; quando fechado, some e a tabela
-     ocupa a largura toda acima dos resultados. */
-  .consulta.filtros-fechado .filtros-sidebar {
-    display: none;
-  }
-
-  .botao-filtros {
-    display: inline-block;
-    margin-bottom: 0.5rem;
-  }
+.consulta {
+  width: 100%;
 }
 
 .consulta .filtros {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-block: 1rem;
+  margin-block: 1rem 1.25rem;
 }
 
 .consulta label {
@@ -197,11 +148,97 @@ body.ampla footer {
   width: 100%;
 }
 
-/* O botão da direção ocupa só o próprio conteúdo e alinha com o select. */
-.consulta .filtros .ordem-direcao {
-  align-self: end;
-  justify-self: end;
-  white-space: nowrap;
+/* A linha da Pesquisa avançada (ticket 50): o botão, os chips do recorte
+   efetivo e o "Limpar filtros" na mesma faixa, quebrando no celular. */
+.consulta .linha-pesquisa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.consulta .botao-pesquisa-avancada[aria-expanded="true"] {
+  border-color: var(--primaria);
+  background: color-mix(in srgb, var(--primaria) 8%, var(--superficie));
+  color: var(--primaria);
+  font-weight: 600;
+}
+
+.consulta .resumo-filtros {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.consulta .resumo-vazio {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+/* Cada chip do recorte é um botão com "×": clicar desliga só aquele filtro. */
+.consulta .chip-filtro {
+  align-self: auto;
+  padding: 0.2rem 0.55rem;
+  border-color: color-mix(in srgb, var(--primaria) 35%, var(--borda));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primaria) 7%, var(--superficie));
+  color: var(--primaria);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.consulta .chip-filtro:hover {
+  border-color: var(--primaria);
+}
+
+.consulta .chip-filtro:focus-visible {
+  outline: 2px solid var(--primaria);
+  outline-offset: 2px;
+}
+
+.consulta .chip-x {
+  margin-left: 0.3rem;
+  font-weight: 700;
+}
+
+.consulta .limpar-filtros {
+  margin-left: auto;
+  font-size: 0.85rem;
+}
+
+/* O painel avançado (ticket 50): os seis filtros em grade, recolhido por
+   `hidden` até o botão abrir — ou até a URL trazer um filtro avançado. */
+.consulta .filtros-avancados {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.consulta .filtros-avancados[hidden] {
+  display: none;
+}
+
+@media (max-width: 56rem) {
+  .consulta .filtros-avancados {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 40rem) {
+  .consulta .filtros-avancados {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Um campo com chips: legenda, chips que quebram linha e, quando há valores
@@ -275,14 +312,6 @@ body.ampla footer {
   gap: 0.25rem;
 }
 
-/* Função e Tensão lado a lado; Ordenar em largura total com a direção ao lado. */
-.consulta .filtros-par {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
-  align-items: start;
-}
-
 .consulta .campo-tensao {
   min-width: 0;
 }
@@ -291,30 +320,38 @@ body.ampla footer {
   width: 100%;
 }
 
-.consulta .filtros-ordenar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.5rem;
-  align-items: end;
+/* A ordenação saiu do painel (ticket 50): uma linha compacta acima da tabela,
+   com a contagem à esquerda e os controles à direita. */
+.consulta .linha-ordenacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-block: 0 0.6rem;
 }
 
-.consulta .campo-ordenar {
-  min-width: 0;
+.consulta .linha-ordenacao p[role="status"] {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
 }
 
-.consulta .campo-ordenar select {
-  width: 100%;
+.consulta .linha-ordenacao .campo-ordenar {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  font-size: 0.85rem;
 }
 
-.consulta .filtros-rodape {
-  margin-top: 0.25rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--borda);
+.consulta .linha-ordenacao .campo-ordenar select {
+  width: auto;
 }
 
-.consulta .filtros-rodape button {
-  width: 100%;
-  text-align: center;
+.consulta .linha-ordenacao .ordem-direcao {
+  align-self: center;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .consulta .campo-marca .chips button,
@@ -477,30 +514,32 @@ body.ampla footer {
   background: var(--fundo);
 }
 
-/* Tabela de Aparelhos (ticket 27, revisão do 44): uma linha por Aparelho,
-   cabeçalhos ordenáveis e cartões no celular.
+/* Tabela de Aparelhos (ticket 27, revisão do 50): uma linha por Aparelho,
+   cabeçalhos ordenáveis, cartões no celular e tipografia mais compacta para
+   caber mais Aparelhos na coluna central de 72 rem.
 
-   A grade tem **colunas de largura igual** e todo o conteúdo centralizado: a
-   leitura desce em colunas regulares, sem valores encostados na vizinha. O
-   recuo horizontal é o mesmo em todas as células (`0.75rem`) e o vertical
-   (`0.8rem`) dá ar entre as linhas. `table-layout: fixed` mantém a grade
-   estável independentemente do conteúdo. */
+   Seleção (ticket 51) e Análise têm largura fixa; as demais colunas dividem o
+   restante por igual. `table-layout: fixed` mantém a grade estável
+   independentemente do conteúdo. */
 .consulta .tabela-aparelhos {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
 }
 
-/* 7 colunas iguais: a grade fica regular em qualquer largura. */
-.consulta .tabela-aparelhos col {
-  width: 14.2857%;
+.consulta .tabela-aparelhos .col-selecao {
+  width: 3rem;
+}
+
+.consulta .tabela-aparelhos .col-analise {
+  width: 6.5rem;
 }
 
 .consulta .tabela-aparelhos th,
 .consulta .tabela-aparelhos td {
-  padding: 0.6rem 0.75rem;
+  padding: 0.45rem 0.55rem;
   text-align: center;
   vertical-align: middle;
   border-bottom: 1px solid var(--borda);
@@ -595,6 +634,16 @@ body.ampla footer {
   display: inline-flex;
   align-items: center;
   margin-left: 0.5rem;
+}
+
+/* A coluna "Análise" (ticket 50) fica à direita e centraliza o selo. */
+.consulta .tabela-aparelhos td[data-campo="analise"] {
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.consulta .tabela-aparelhos td[data-campo="analise"] .analisado-selo {
+  margin-left: 0;
 }
 
 .consulta .analisado-etiqueta {
@@ -1061,6 +1110,21 @@ body.ampla footer {
     content: attr(data-label);
     color: var(--texto-suave);
     font-size: 0.8rem;
+  }
+
+  /* O cartão termina com o selo "Análise" (ticket 50), sem repetir o rótulo
+     da coluna; sem Análise, a linha some em vez de deixar um travessão solto. */
+  .consulta .tabela-aparelhos td[data-campo="analise"] {
+    grid-template-columns: 1fr;
+    padding-top: 0.35rem;
+  }
+
+  .consulta .tabela-aparelhos td[data-campo="analise"]::before {
+    content: none;
+  }
+
+  .consulta .tabela-aparelhos td.celula-analise-vazia {
+    display: none;
   }
 }
 

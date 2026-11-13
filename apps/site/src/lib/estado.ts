@@ -96,6 +96,29 @@ export function temFiltroAtivo(estado: FiltrosConsulta): boolean {
   return !igualAoPadrao(estado);
 }
 
+/**
+ * Os filtros do painel "Pesquisa avançada" (tudo menos a busca). O painel abre
+ * sozinho quando a **URL** traz um deles com valor — `?tensao=` (o padrão
+ * desligado) não conta, porque não restringe nada, e a URL limpa também não,
+ * mesmo que o padrão de 220 V esteja valendo por baixo (o chip do recorte
+ * efetivo já o mostra).
+ */
+const CAMPOS_AVANCADOS = [
+  "marca",
+  "btu",
+  "tensao",
+  "funcao",
+  "tipo",
+  "classe",
+] as const;
+
+/** A URL traz algum filtro avançado? (Lê a querystring, não o estado padrão.) */
+export function temFiltroAvancado(busca: URLSearchParams): boolean {
+  return CAMPOS_AVANCADOS.some(
+    (campo) => texto(busca.get(campo)) !== undefined,
+  );
+}
+
 function lerFiltros(busca: URLSearchParams): FiltrosConsulta {
   // A marca é comparada sem diferenciar caixa pelo motor de consulta; normalizar
   // aqui mantém o mesmo valor canônico no chip, no `<select>` e na URL (um

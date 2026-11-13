@@ -4,19 +4,19 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Sem barra lateral: busca e filtros numa coluna centralizada, tabela com teto de 72 rem
-- [ ] Busca em largura total no topo, acima da vitrine de Aparelhos analisados
-- [ ] "Pesquisa avançada" abre e fecha o painel com Marca, Capacidade, Função, Tensão, Tipo e Classe
-- [ ] O painel começa fechado e abre automaticamente quando a URL traz um filtro avançado
-- [ ] Chips do recorte efetivo, cada um com "×"; o resumo inclui o 220 V implícito e o "×" dele grava `tensao=`
-- [ ] "Limpar filtros" mantém a regra atual (só aparece quando o estado difere do padrão) e preserva a ordenação
-- [ ] A ordenação fica fora do painel, numa linha compacta acima da tabela
-- [ ] A tabela tem a coluna "Análise" como última, com o selo e link para a Análise
-- [ ] O selo sai da célula de Marca
-- [ ] A coluna "Análise" só é renderizada quando existe ao menos uma Análise publicada
-- [ ] Tipografia e espaçamento menores; larguras fixas para seleção e Análise, proporcionais para o resto
-- [ ] No celular, o cartão termina com o selo "Análise"
-- [ ] Testes da ilha cobrem painel fechado/aberto pela URL, resumo com o 220 V padrão, "×" gravando `tensao=`, ordem das colunas e ausência da coluna Análise sem Análise
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Sem barra lateral: busca e filtros numa coluna centralizada, tabela com teto de 72 rem
+- [x] Busca em largura total no topo, acima da vitrine de Aparelhos analisados
+- [x] "Pesquisa avançada" abre e fecha o painel com Marca, Capacidade, Função, Tensão, Tipo e Classe
+- [x] O painel começa fechado e abre automaticamente quando a URL traz um filtro avançado
+- [x] Chips do recorte efetivo, cada um com "×"; o resumo inclui o 220 V implícito e o "×" dele grava `tensao=`
+- [x] "Limpar filtros" mantém a regra atual (só aparece quando o estado difere do padrão) e preserva a ordenação
+- [x] A ordenação fica fora do painel, numa linha compacta acima da tabela
+- [x] A tabela tem a coluna "Análise" como última, com o selo e link para a Análise
+- [x] O selo sai da célula de Marca
+- [x] A coluna "Análise" só é renderizada quando existe ao menos uma Análise publicada
+- [x] Tipografia e espaçamento menores; larguras fixas para seleção e Análise, proporcionais para o resto
+- [x] No celular, o cartão termina com o selo "Análise"
+- [x] Testes da ilha cobrem painel fechado/aberto pela URL, resumo com o 220 V padrão, "×" gravando `tensao=`, ordem das colunas e ausência da coluna Análise sem Análise
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes

@@ -4,6 +4,7 @@ import {
   FILTROS_PADRAO,
   lerEstado,
   temFiltroAtivo,
+  temFiltroAvancado,
 } from "../src/lib/estado.ts";
 
 describe("estado da consulta na URL", () => {
@@ -163,5 +164,35 @@ describe("filtros padrão (ticket 38, revisto no 44)", () => {
     expect(temFiltroAtivo({})).toBe(true);
     expect(temFiltroAtivo({ ...FILTROS_PADRAO, marca: "LG" })).toBe(true);
     expect(temFiltroAtivo({ tipo: "Split Hi-Wall" })).toBe(true);
+  });
+});
+
+describe("Pesquisa avançada aberta pela URL (ticket 50)", () => {
+  function naUrl(search: string): boolean {
+    return temFiltroAvancado(new URLSearchParams(search));
+  }
+
+  it("não conta a busca nem a ordenação como filtro avançado", () => {
+    expect(naUrl("q=inverter")).toBe(false);
+    expect(naUrl("ordem=consumo&dir=desc")).toBe(false);
+  });
+
+  it("conta marca, tipo, capacidade, tensão, função e classe", () => {
+    for (const search of [
+      "marca=LG",
+      "tipo=Split+Hi-Wall",
+      "btu=9000",
+      "tensao=127",
+      "funcao=Frio",
+      "classe=A",
+    ]) {
+      expect(naUrl(search)).toBe(true);
+    }
+  });
+
+  it("não abre com a URL limpa, com o padrão desligado nem com chave vazia", () => {
+    expect(naUrl("")).toBe(false);
+    expect(naUrl("tensao=")).toBe(false);
+    expect(naUrl("marca=")).toBe(false);
   });
 });

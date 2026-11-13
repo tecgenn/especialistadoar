@@ -166,11 +166,30 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
  */
 const TODOS = "/?tensao=";
 
-/** Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando"). */
-async function montar(entrada?: FiltrosCurados, url = TODOS) {
+/** Abre o painel "Pesquisa avançada" (fechado por padrão no ticket 50). */
+function abrirPesquisaAvancada() {
+  const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+  if (botao.getAttribute("aria-expanded") !== "true") {
+    fireEvent.click(botao);
+  }
+}
+
+/**
+ * Renderiza a ilha e espera o dataset carregar (fim do estado "Carregando").
+ * Por padrão abre a Pesquisa avançada, porque a maioria dos testes manipula os
+ * campos do painel; os testes do próprio painel passam `abrir: false`.
+ */
+async function montar(
+  entrada?: FiltrosCurados,
+  url = TODOS,
+  { abrir = true }: { abrir?: boolean } = {},
+) {
   window.history.replaceState(null, "", url);
   render(<Consulta opcoes={opcoesDe(itens, entrada)} />);
   await screen.findByText(/aparelho\(s\) com Dados declarados/);
+  if (abrir) {
+    abrirPesquisaAvancada();
+  }
 }
 
 /** Os modelos de cada linha de dados, na ordem renderizada. */
@@ -832,41 +851,156 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
   });
 });
 
-describe("layout (ticket 34)", () => {
-  it("usa a grade de duas colunas com a barra lateral de filtros", async () => {
-    await montar();
-    expect(document.querySelector(".consulta-layout")).not.toBeNull();
-    expect(document.querySelector(".filtros-sidebar")).not.toBeNull();
-    expect(document.querySelector(".consulta-resultados")).not.toBeNull();
+describe("layout central (ticket 50)", () => {
+  it("não tem barra lateral e usa a coluna de até 72 rem", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    expect(document.querySelector(".filtros-sidebar")).toBeNull();
+    expect(document.querySelector(".consulta-layout")).toBeNull();
+
+    const css = cssDaConsulta();
+    expect(css).toMatch(/\.pagina-aparelhos\s*\{[^}]*max-width:\s*72rem/);
+    expect(css).not.toMatch(/\.filtros-sidebar/);
+  });
+
+  it("ordena a leitura: busca, Pesquisa avançada, vitrine, ordenação e tabela", async () => {
+    window.history.replaceState(null, "", TODOS);
+    render(
+      <Consulta
+        opcoes={opcoesDe(itens, curadoria)}
+        analisados={
+          new Map([
+            ["lg-split", { titulo: "Análise LG", url: "/analises/lg/" }],
+          ])
+        }
+      />,
+    );
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    const busca = document.querySelector(".busca") as HTMLElement;
+    const avancon = screen.getByRole("button", { name: "Pesquisa avançada" });
+    const vitrine = document.querySelector(".com-analise") as HTMLElement;
+    const ordenacao = document.querySelector(".linha-ordenacao") as HTMLElement;
+    const tabela = screen.getByRole("table");
+    const antes = (a: Node, b: Node) =>
+      Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+
+    expect(antes(busca, avancon)).toBe(true);
+    expect(antes(avancon, vitrine)).toBe(true);
+    expect(antes(vitrine, ordenacao)).toBe(true);
+    expect(antes(ordenacao, tabela)).toBe(true);
   });
 });
 
-describe("painel de filtros recolhível (ticket 39)", () => {
-  it("começa com o painel aberto e o botão 'Ocultar filtros'", async () => {
-    await montar(curadoria);
-    const consulta = document.querySelector(".consulta");
-    expect(consulta).not.toBeNull();
-    expect(consulta?.classList.contains("filtros-fechado")).toBe(false);
-    expect(
-      screen.getByRole("button", { name: "Ocultar filtros" }),
-    ).toBeDefined();
+describe("Pesquisa avançada (ticket 50)", () => {
+  function painel(): HTMLElement {
+    return document.getElementById("pesquisa-avancada") as HTMLElement;
+  }
+
+  it("começa fechada, com os campos fora da árvore acessível", async () => {
+    await montar(curadoria, "/", { abrir: false });
+
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+    expect(botao.getAttribute("aria-expanded")).toBe("false");
+    expect(painel().hidden).toBe(true);
+    expect(screen.queryByRole("group", { name: "Marca" })).toBeNull();
   });
 
-  it("fecha e reabre o painel ao clicar no botão", async () => {
-    await montar(curadoria);
-    const consulta = document.querySelector(".consulta");
+  it("abre e fecha pelo botão", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
 
-    fireEvent.click(screen.getByRole("button", { name: "Ocultar filtros" }));
-    expect(consulta?.classList.contains("filtros-fechado")).toBe(true);
-    expect(
-      screen.getByRole("button", { name: "Exibir filtros" }),
-    ).toBeDefined();
+    fireEvent.click(botao);
+    expect(botao.getAttribute("aria-expanded")).toBe("true");
+    expect(painel().hidden).toBe(false);
+    expect(screen.getByRole("group", { name: "Marca" })).toBeDefined();
 
-    fireEvent.click(screen.getByRole("button", { name: "Exibir filtros" }));
-    expect(consulta?.classList.contains("filtros-fechado")).toBe(false);
+    fireEvent.click(botao);
+    expect(botao.getAttribute("aria-expanded")).toBe("false");
+    expect(painel().hidden).toBe(true);
+  });
+
+  it("abre sozinha quando a URL traz um filtro avançado", async () => {
+    await montar(curadoria, "/?marca=LG", { abrir: false });
+
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+    expect(botao.getAttribute("aria-expanded")).toBe("true");
+    expect(painel().hidden).toBe(false);
+    expect(screen.getByRole("group", { name: "Marca" })).toBeDefined();
+  });
+
+  it("não abre com a carga limpa nem com o padrão desligado", async () => {
+    for (const url of ["/", "/?tensao="]) {
+      cleanup();
+      await montar(curadoria, url, { abrir: false });
+      const botao = screen.getByRole("button", {
+        name: "Pesquisa avançada",
+      });
+      expect(botao.getAttribute("aria-expanded")).toBe("false");
+      expect(painel().hidden).toBe(true);
+    }
+  });
+});
+
+describe("chips do recorte efetivo (ticket 50)", () => {
+  function grupo(): HTMLElement {
+    return screen.getByRole("group", { name: "Filtros ativos" });
+  }
+
+  function chips(): HTMLElement[] {
+    return within(grupo()).queryAllByRole("button");
+  }
+
+  it("mostra o 220 V implícito, e o × desliga o padrão gravando tensao=", async () => {
+    await montar(curadoria, "/", { abrir: false });
+
+    expect(chips()).toHaveLength(1);
+    expect(chips()[0]?.textContent).toBe("Tensão: 220 V×");
+    expect(chips()[0]?.getAttribute("aria-label")).toBe(
+      "Remover filtro Tensão: 220 V",
+    );
+
+    fireEvent.click(chips()[0] as HTMLElement);
+    await waitFor(() => expect(window.location.search).toBe("?tensao="));
+    expect(screen.getAllByRole("link")).toHaveLength(8);
+    expect(chips()).toHaveLength(0);
+    expect(within(grupo()).getByText("Nenhum filtro ativo.")).toBeDefined();
+    // A URL sem o padrão mostra todos; o painel continua fechado.
     expect(
-      screen.getByRole("button", { name: "Ocultar filtros" }),
-    ).toBeDefined();
+      screen
+        .getByRole("button", { name: "Pesquisa avançada" })
+        .getAttribute("aria-expanded"),
+    ).toBe("false");
+  });
+
+  it("resume todos os filtros efetivos, inclusive a busca", async () => {
+    await montar(
+      curadoria,
+      "/?marca=LG&btu=9000&funcao=Frio&tensao=220&tipo=Split+Hi-Wall&classe=A&q=inverter",
+      { abrir: false },
+    );
+
+    expect(chips().map((chip) => chip.textContent)).toEqual([
+      "Busca: inverter×",
+      "Marca: LG×",
+      "Capacidade: 9.000 BTU/h×",
+      "Função: Frio×",
+      "Tensão: 220 V×",
+      "Tipo: Split Hi-Wall×",
+      "Classe: A×",
+    ]);
+  });
+
+  it("o × remove só aquele filtro e mantém a ordenação", async () => {
+    await montar(curadoria, "/?marca=LG&ordem=consumo", { abrir: false });
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remover filtro Marca: LG" }),
+    );
+
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("marca")).toBeNull();
+    expect(busca.get("ordem")).toBe("consumo");
   });
 });
 
@@ -896,43 +1030,6 @@ describe("layout compacto dos filtros (ticket 45)", () => {
       /\.consulta \.campo-classe \.chips\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/,
     );
   });
-
-  it("não usa rolagem interna na barra lateral", () => {
-    const css = cssDaConsulta();
-    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*overflow-y/);
-    expect(css).not.toMatch(/\.filtros-sidebar\s*\{[^}]*max-height/);
-    // Sticky por padrão; estática quando o componente mede o painel e ele não cabe.
-    expect(css).toMatch(/\.filtros-sidebar\s*\{[^}]*position:\s*sticky/);
-    expect(css).toMatch(
-      /\.filtros-sidebar-estatica\s*\{[^}]*position:\s*static/,
-    );
-  });
-
-  it("fica estática quando o painel é mais alto que a janela", async () => {
-    const alturaOriginal = window.innerHeight;
-    const alturaPainel = vi
-      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
-      .mockReturnValue(900);
-    Object.defineProperty(window, "innerHeight", {
-      configurable: true,
-      value: 600,
-    });
-
-    try {
-      await montar(curadoria);
-      expect(
-        document
-          .querySelector(".filtros-sidebar")
-          ?.classList.contains("filtros-sidebar-estatica"),
-      ).toBe(true);
-    } finally {
-      alturaPainel.mockRestore();
-      Object.defineProperty(window, "innerHeight", {
-        configurable: true,
-        value: alturaOriginal,
-      });
-    }
-  });
 });
 
 describe("Aparelhos analisados na tabela (ticket 44)", () => {
@@ -959,22 +1056,27 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
   }
 
-  it("mostra o selo 'Análise' com link para a Análise na coluna Marca", async () => {
+  it("mostra o selo 'Análise' com link para a Análise, fora da célula de Marca", async () => {
     await montarComAnalisados();
     const tabela = screen.getByRole("table");
-    const selos = within(tabela).getAllByText("Análise");
-    expect(selos).toHaveLength(2);
+    const links = within(tabela).getAllByRole("link", { name: "Análise" });
+    expect(links).toHaveLength(2);
     // O texto "Análise" está dentro do <a> da etiqueta de contorno.
-    const link = selos[0].closest("a");
-    expect(link?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
-    expect(link?.classList.contains("analisado-etiqueta")).toBe(true);
+    expect(links[0]?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
+    expect(links[0]?.classList.contains("analisado-etiqueta")).toBe(true);
+    // O selo saiu da primeira coluna (Marca) e vive na última (Análise).
+    const linha = links[0]?.closest("tr") as HTMLElement;
+    const celulas = [...linha.querySelectorAll("td")];
+    expect(celulas[0]?.querySelector(".analisado-selo")).toBeNull();
+    expect(celulas.at(-1)?.getAttribute("data-campo")).toBe("analise");
+    expect(celulas.at(-1)?.querySelector(".analisado-selo")).not.toBeNull();
   });
 
   it("o tooltip do selo traz apenas o título da Análise", async () => {
     await montarComAnalisados();
     const tabela = screen.getByRole("table");
     const selo = within(tabela)
-      .getAllByText("Análise")[0]
+      .getAllByRole("link", { name: "Análise" })[0]
       ?.closest(".analisado-selo");
     expect(selo).not.toBeNull();
     const tooltip = selo?.querySelector('[role="tooltip"]');
@@ -1160,5 +1262,82 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(screen.queryByText("Análise")).toBeNull();
     expect(screen.queryByText("Aparelhos com análise")).toBeNull();
     expect(document.querySelector(".com-analise")).toBeNull();
+  });
+});
+
+describe("coluna Análise (ticket 50)", () => {
+  const analisadosMap = new Map<string, { titulo: string; url: string }>([
+    [
+      "lg-split",
+      {
+        titulo: "Análise do LG Dual Inverter",
+        url: "/analises/lg-dual-inverter/",
+      },
+    ],
+  ]);
+
+  function camposDoCabecalho(): (string | null)[] {
+    return screen
+      .getAllByRole("columnheader")
+      .map((th) => th.getAttribute("data-campo"));
+  }
+
+  async function montarComAnalise(url = TODOS) {
+    window.history.replaceState(null, "", url);
+    render(<Consulta opcoes={opcoesDe(itens)} analisados={analisadosMap} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+  }
+
+  it("é a última coluna quando há ao menos uma Análise publicada", async () => {
+    await montarComAnalise();
+
+    expect(camposDoCabecalho()).toEqual([
+      "marca",
+      "modelo",
+      "tipo",
+      "btu",
+      "consumo",
+      "idrs",
+      "classe",
+      "analise",
+    ]);
+    const ultimo = screen.getAllByRole("columnheader").at(-1);
+    expect(ultimo?.textContent).toBe("Análise");
+    expect(ultimo?.querySelector("button")).toBeNull();
+  });
+
+  it("não existe sem Análise publicada", async () => {
+    await montar();
+
+    expect(camposDoCabecalho()).toEqual([
+      "marca",
+      "modelo",
+      "tipo",
+      "btu",
+      "consumo",
+      "idrs",
+      "classe",
+    ]);
+    expect(screen.queryByRole("columnheader", { name: "Análise" })).toBeNull();
+  });
+
+  it("marca a célula vazia para o cartão do celular esconder a linha", async () => {
+    await montarComAnalise();
+
+    const linha = screen
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes("Dual Inverter"));
+    const celulas = [...(linha?.querySelectorAll("td") ?? [])];
+    expect(celulas.at(-1)?.getAttribute("data-campo")).toBe("analise");
+    expect(celulas.at(-1)?.classList.contains("celula-analise-vazia")).toBe(
+      false,
+    );
+
+    const outra = screen
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes("Classe E"));
+    const ultimaOutra = [...(outra?.querySelectorAll("td") ?? [])].at(-1);
+    expect(ultimaOutra?.classList.contains("celula-analise-vazia")).toBe(true);
+    expect(ultimaOutra?.textContent).toBe("—");
   });
 });
