@@ -9,6 +9,13 @@ import {
 } from "@especialista-do-ar/api/consulta";
 import { useCallback, useEffect, useState } from "react";
 import {
+  escreverIds,
+  lerIds,
+  lerIdsBrutos,
+  MAXIMO_COMPARACAO,
+  textoDescartes,
+} from "../lib/comparacao";
+import {
   escreverEstado,
   FILTROS_PADRAO,
   lerEstado,
@@ -276,6 +283,11 @@ export default function Consulta({
   /** O painel "Pesquisa avançada" começa fechado e abre sozinho quando a URL
    *  traz um filtro avançado (ticket 50). */
   const [painelAberto, setPainelAberto] = useState(false);
+  /** A seleção para comparar (ticket 51): o mesmo contrato `?ids=` da página
+   *  `/comparar/` (ADR-0021), separado dos filtros. */
+  const [selecao, setSelecao] = useState<string[]>([]);
+  /** Quantos ids da URL caíram na leitura: repetidos, desconhecidos ou além do limite. */
+  const [descartadosSelecao, setDescartadosSelecao] = useState(0);
 
   useEffect(() => {
     let cancelado = false;
@@ -317,9 +329,54 @@ export default function Consulta({
     return () => window.removeEventListener("popstate", lerDaUrl);
   }, []);
 
-  const atualizar = useCallback((parcial: FiltrosConsulta) => {
-    setEstado((anterior) => {
-      const proximo: FiltrosConsulta = { ...anterior, ...parcial };
+  // A seleção só pode ser validada depois que o dataset chega: ids fora da base
+  // são descartados com aviso (ticket 51), como em `/comparar/`.
+  useEffect(() => {
+    if (itens === null) {
+      return;
+    }
+    const conhecidos = new Set(itens.map((item) => item.id));
+    const lerSelecao = () => {
+      const lidos = lerIds(
+        new URLSearchParams(window.location.search),
+        conhecidos,
+      );
+      setSelecao(lidos.ids);
+      setDescartadosSelecao(lidos.descartados);
+    };
+    lerSelecao();
+    window.addEventListener("popstate", lerSelecao);
+    return () => window.removeEventListener("popstate", lerSelecao);
+  }, [itens]);
+
+  /**
+   * Escreve o estado na URL preservando a seleção: `ids` é um eixo separado dos
+   * filtros (ADR-0021), então toda mudança de recorte, busca ou ordenação — e o
+   * "Limpar filtros" — carrega a seleção atual junto.
+   */
+  const escreverUrl = useCallback(
+    (filtros: FiltrosConsulta, ids: readonly string[]) => {
+      const busca = escreverEstado(filtros);
+      // Antes de a base chegar a seleção ainda não foi validada: preserva os ids
+      // que já estão na URL em vez de apagar o `?ids=` de um link compartilhado.
+      const idsDaSelecao = escreverIds(
+        itens === null
+          ? lerIdsBrutos(new URLSearchParams(window.location.search))
+          : ids,
+      ).get("ids");
+      if (idsDaSelecao !== null) {
+        busca.set("ids", idsDaSelecao);
+      }
+      const texto = busca.toString();
+      const url = `${window.location.pathname}${texto === "" ? "" : `?${texto}`}`;
+      window.history.replaceState(null, "", url);
+    },
+    [itens],
+  );
+
+  const atualizar = useCallback(
+    (parcial: FiltrosConsulta) => {
+      const proximo: FiltrosConsulta = { ...estado, ...parcial };
       // Um campo passado como `undefined` desliga o filtro — o merge sozinho
       // manteria o valor antigo (é assim que o "×" dos chips funciona).
       for (const campo of Object.keys(parcial) as (keyof FiltrosConsulta)[]) {
@@ -327,26 +384,45 @@ export default function Consulta({
           delete proximo[campo];
         }
       }
-      const busca = escreverEstado(proximo).toString();
-      const url = `${window.location.pathname}${busca === "" ? "" : `?${busca}`}`;
-      window.history.replaceState(null, "", url);
-      return proximo;
-    });
-  }, []);
+      setEstado(proximo);
+      escreverUrl(proximo, selecao);
+    },
+    [estado, selecao, escreverUrl],
+  );
 
   const limpar = useCallback(() => {
     // "Limpar filtros" volta ao recorte padrão (ticket 38) e mantém a ordenação
     // — a ordem escolhida não é um filtro (e o botão só aparece fora do padrão).
+    // A seleção para comparar também fica (ticket 51).
     const restante: FiltrosConsulta = {
       ...FILTROS_PADRAO,
       ...(estado.ordem === undefined ? {} : { ordem: estado.ordem }),
       ...(estado.dir === undefined ? {} : { dir: estado.dir }),
     };
-    const busca = escreverEstado(restante).toString();
-    const url = `${window.location.pathname}${busca === "" ? "" : `?${busca}`}`;
-    window.history.replaceState(null, "", url);
+    escreverUrl(restante, selecao);
     setEstado(restante);
-  }, [estado]);
+  }, [estado, selecao, escreverUrl]);
+
+  /** Marca ou desmarca um Aparelho, respeitando o limite de 3. */
+  const alternarSelecao = (id: string) => {
+    const selecionado = selecao.includes(id);
+    if (!selecionado && selecao.length >= MAXIMO_COMPARACAO) {
+      return;
+    }
+    const proximo = selecionado
+      ? selecao.filter((atual) => atual !== id)
+      : [...selecao, id];
+    setSelecao(proximo);
+    setDescartadosSelecao(0);
+    escreverUrl(estado, proximo);
+  };
+
+  /** "Limpar seleção" remove só `ids`; filtros, busca e ordenação continuam. */
+  const limparSelecao = () => {
+    setSelecao([]);
+    setDescartadosSelecao(0);
+    escreverUrl(estado, []);
+  };
 
   /** O "×" de um chip: desliga só aquele filtro. Sem a Tensão do padrão, o
    *  estado vazio grava `tensao=` e a URL reconstrói o recorte sem o padrão. */
@@ -471,6 +547,15 @@ export default function Consulta({
 
   const colunas = colunasDaTabela(analisados.size > 0);
   const resumo = resumoDosFiltros(estado, opcoes);
+
+  // Seleção para comparar (ticket 51): a barra de ação e os checkboxes leem
+  // daqui; o link leva para `/comparar/` com a mesma ordem de `?ids=`.
+  const selecionados = new Set(selecao);
+  const selecaoCheia = selecao.length >= MAXIMO_COMPARACAO;
+  const podeComparar = selecao.length >= 2;
+  const hrefComparar = podeComparar
+    ? `/comparar/?${escreverIds(selecao).toString()}`
+    : undefined;
 
   return (
     <section className="consulta">
@@ -666,33 +751,72 @@ export default function Consulta({
         <>
           {motor === null ? (
             <p role="status">Carregando a base…</p>
-          ) : comAnalise.length === 0 ? null : (
-            <section
-              className="com-analise"
-              aria-labelledby="com-analise-titulo"
-            >
-              <h2 id="com-analise-titulo">Aparelhos com análise</h2>
-              <ul>
-                {comAnalise.map((item) => {
-                  const analise = analisados.get(item.id);
-                  return analise === undefined ? null : (
-                    <li key={item.id}>
-                      <a className="com-analise-item" href={analise.url}>
-                        <span className="analisado-etiqueta">Análise</span>
-                        <span className="com-analise-texto">
-                          <span className="com-analise-marca">
-                            {item.marcaCatalogo}
-                          </span>
-                          <span className="com-analise-titulo">
-                            {analise.titulo}
-                          </span>
-                        </span>
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
+          ) : (
+            <>
+              <section
+                className="barra-selecao"
+                aria-label="Seleção para comparar"
+              >
+                <p className="selecao-contagem" role="status">
+                  {selecao.length} de {MAXIMO_COMPARACAO} modelos selecionados
+                </p>
+                {selecaoCheia ? (
+                  <p className="selecao-limite">
+                    Limite de {MAXIMO_COMPARACAO} modelos por comparação.
+                  </p>
+                ) : null}
+                {descartadosSelecao > 0 ? (
+                  <p className="selecao-aviso" role="status">
+                    {textoDescartes(descartadosSelecao)}
+                  </p>
+                ) : null}
+                <div className="barra-selecao-acoes">
+                  {selecao.length > 0 ? (
+                    <button type="button" onClick={limparSelecao}>
+                      Limpar seleção
+                    </button>
+                  ) : null}
+                  {hrefComparar === undefined ? (
+                    <button type="button" className="botao" disabled>
+                      Comparar
+                    </button>
+                  ) : (
+                    <a className="botao" href={hrefComparar}>
+                      Comparar
+                    </a>
+                  )}
+                </div>
+              </section>
+
+              {comAnalise.length === 0 ? null : (
+                <section
+                  className="com-analise"
+                  aria-labelledby="com-analise-titulo"
+                >
+                  <h2 id="com-analise-titulo">Aparelhos com análise</h2>
+                  <ul>
+                    {comAnalise.map((item) => {
+                      const analise = analisados.get(item.id);
+                      return analise === undefined ? null : (
+                        <li key={item.id}>
+                          <a className="com-analise-item" href={analise.url}>
+                            <span className="analisado-etiqueta">Análise</span>
+                            <span className="com-analise-texto">
+                              <span className="com-analise-marca">
+                                {item.marcaCatalogo}
+                              </span>
+                              <span className="com-analise-titulo">
+                                {analise.titulo}
+                              </span>
+                            </span>
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              )}
+            </>
           )}
 
           <div className="linha-ordenacao">
@@ -748,12 +872,16 @@ export default function Consulta({
                   Aparelhos de ar-condicionado, uma linha por Aparelho
                 </caption>
                 <colgroup>
+                  <col className="col-selecao" />
                   {colunas.map((coluna) => (
                     <col key={coluna.campo} className={`col-${coluna.campo}`} />
                   ))}
                 </colgroup>
                 <thead>
                   <tr>
+                    <th scope="col" data-campo="selecao">
+                      Comparar
+                    </th>
                     {colunas.map((coluna) =>
                       CAMPOS_ORDENAVEIS.has(coluna.campo) ? (
                         <Cabecalho
@@ -785,6 +913,17 @@ export default function Consulta({
                           analise === undefined ? undefined : "linha-analisado"
                         }
                       >
+                        <td data-campo="selecao" data-label="Comparar">
+                          <input
+                            type="checkbox"
+                            checked={selecionados.has(item.id)}
+                            disabled={
+                              !selecionados.has(item.id) && selecaoCheia
+                            }
+                            aria-label={`Comparar ${item.marcaCatalogo} ${item.modelo}`}
+                            onChange={() => alternarSelecao(item.id)}
+                          />
+                        </td>
                         {colunas.map((coluna) => {
                           const campo = coluna.campo;
                           if (campo === "analise") {

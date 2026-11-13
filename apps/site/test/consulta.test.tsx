@@ -245,7 +245,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
-  it("mostra uma linha por Aparelho com as 7 colunas da tabela", async () => {
+  it("mostra uma linha por Aparelho com as colunas da tabela", async () => {
     await montar();
     const [primeira] = screen.getAllByRole("row").slice(1);
     expect(primeira?.textContent).toContain("DAIKIN");
@@ -264,6 +264,7 @@ describe("ilha de consulta (ADR-0008)", () => {
       (celula) => celula.getAttribute("data-label"),
     );
     expect(rotulos).toEqual([
+      "Comparar",
       "Marca",
       "Modelo",
       "Tipo",
@@ -571,7 +572,16 @@ describe("colunas e setas de ordenação (ticket 43)", () => {
       screen
         .getAllByRole("columnheader")
         .map((th) => th.getAttribute("data-campo")),
-    ).toEqual(["marca", "modelo", "tipo", "btu", "consumo", "idrs", "classe"]);
+    ).toEqual([
+      "selecao",
+      "marca",
+      "modelo",
+      "tipo",
+      "btu",
+      "consumo",
+      "idrs",
+      "classe",
+    ]);
 
     const tipo = cabecalho(/^Tipo$/);
     expect(tipo.querySelector("button")).toBeNull();
@@ -1292,6 +1302,7 @@ describe("coluna Análise (ticket 50)", () => {
     await montarComAnalise();
 
     expect(camposDoCabecalho()).toEqual([
+      "selecao",
       "marca",
       "modelo",
       "tipo",
@@ -1310,6 +1321,7 @@ describe("coluna Análise (ticket 50)", () => {
     await montar();
 
     expect(camposDoCabecalho()).toEqual([
+      "selecao",
       "marca",
       "modelo",
       "tipo",
@@ -1339,5 +1351,212 @@ describe("coluna Análise (ticket 50)", () => {
     const ultimaOutra = [...(outra?.querySelectorAll("td") ?? [])].at(-1);
     expect(ultimaOutra?.classList.contains("celula-analise-vazia")).toBe(true);
     expect(ultimaOutra?.textContent).toBe("—");
+  });
+});
+
+/**
+ * Ticket 51: a tabela ganha a coluna de seleção à esquerda e a barra de ação
+ * acima da vitrine. A seleção é o mesmo contrato `?ids=` de `/comparar/`
+ * (ADR-0021), separado dos filtros, e sobrevive a qualquer mudança de recorte.
+ */
+describe("seleção para comparar (ticket 51)", () => {
+  function caixas(): HTMLInputElement[] {
+    return screen.getAllByRole("checkbox") as HTMLInputElement[];
+  }
+
+  function caixa(modelo: string): HTMLInputElement {
+    return screen.getByRole("checkbox", {
+      name: new RegExp(modelo),
+    }) as HTMLInputElement;
+  }
+
+  function idsDaUrl(): string | null {
+    return new URLSearchParams(window.location.search).get("ids");
+  }
+
+  it("mostra a coluna Comparar como a primeira, sem 'selecionar todos'", async () => {
+    await montar();
+
+    const cabecalhos = screen.getAllByRole("columnheader");
+    expect(cabecalhos[0]?.getAttribute("data-campo")).toBe("selecao");
+    expect(cabecalhos[0]?.textContent).toBe("Comparar");
+
+    const [primeira] = screen.getAllByRole("row").slice(1);
+    const primeiraCelula = primeira?.querySelector("td");
+    expect(primeiraCelula?.getAttribute("data-campo")).toBe("selecao");
+    // O rótulo é o que o cartão do celular mostra na primeira linha.
+    expect(primeiraCelula?.getAttribute("data-label")).toBe("Comparar");
+
+    expect(caixas()).toHaveLength(itens.length);
+    expect(screen.queryByRole("checkbox", { name: /todos/i })).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /selecionar todos/i }),
+    ).toBeNull();
+  });
+
+  it("marca e desmarca, atualizando `ids` na ordem de seleção", async () => {
+    await montar();
+
+    fireEvent.click(caixa("Classe F"));
+    expect(idsDaUrl()).toBe("daikin-f");
+    expect(caixa("Classe F").checked).toBe(true);
+
+    fireEvent.click(caixa("Classe E"));
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+
+    fireEvent.click(caixa("Classe F"));
+    expect(idsDaUrl()).toBe("hitachi-e");
+    expect(caixa("Classe F").checked).toBe(false);
+  });
+
+  it("mostra a contagem e só habilita Comparar com 2 ou 3", async () => {
+    await montar();
+
+    expect(screen.getByText("0 de 3 modelos selecionados")).toBeDefined();
+    expect(
+      (screen.getByRole("button", { name: "Comparar" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+
+    fireEvent.click(caixa("Classe F"));
+    expect(screen.getByText("1 de 3 modelos selecionados")).toBeDefined();
+    expect(
+      (screen.getByRole("button", { name: "Comparar" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true);
+
+    fireEvent.click(caixa("Classe E"));
+    expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined();
+    const comparar = screen.getByRole("link", { name: "Comparar" });
+    expect(comparar.getAttribute("href")).toBe(
+      "/comparar/?ids=daikin-f%2Chitachi-e",
+    );
+  });
+
+  it("com 3 selecionados desabilita os demais e explica o limite", async () => {
+    await montar(undefined, "/?ids=daikin-f,hitachi-e,elgin-d");
+
+    await waitFor(() =>
+      expect(screen.getByText("3 de 3 modelos selecionados")).toBeDefined(),
+    );
+    expect(caixa("Classe F").checked).toBe(true);
+    expect(caixa("Classe F").disabled).toBe(false);
+    expect(caixa("Classe E").disabled).toBe(false);
+    expect(caixa("Classe D").disabled).toBe(false);
+
+    // Os não selecionados ficam desabilitados, com a explicação à vista.
+    expect(caixa("G-Top Inverter").disabled).toBe(true);
+    expect(caixa("Dual Inverter").disabled).toBe(true);
+    expect(
+      screen.getByText("Limite de 3 modelos por comparação."),
+    ).toBeDefined();
+  });
+
+  it("preserva `ids` ao mudar filtro, busca e ordenação", async () => {
+    await montar(undefined, "/?ids=daikin-f,hitachi-e");
+
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+
+    fireEvent.change(screen.getByLabelText("Outras marcas"), {
+      target: { value: "LG" },
+    });
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    fireEvent.change(screen.getByLabelText("Busca"), {
+      target: { value: "dual" },
+    });
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    // O "×" do chip desliga um filtro por outro caminho: a seleção continua.
+    fireEvent.click(
+      screen.getByRole("button", { name: /Remover filtro Marca/ }),
+    );
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+    expect(new URLSearchParams(window.location.search).get("marca")).toBeNull();
+
+    // Inverter a direção da ordenação também é uma mudança de estado.
+    fireEvent.click(screen.getByRole("button", { name: /Ordenar de forma/ }));
+    await waitFor(() => expect(idsDaUrl()).toBe("daikin-f,hitachi-e"));
+
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("marca")).toBeNull();
+    expect(busca.get("q")).toBe("dual");
+    expect(busca.get("ordem")).toBe("consumo");
+    expect(busca.get("dir")).toBe("desc");
+  });
+
+  it("reconstrói a seleção ao voltar ou avançar no navegador", async () => {
+    await montar(undefined, "/?ids=daikin-f");
+
+    await waitFor(() => expect(caixa("Classe F").checked).toBe(true));
+
+    window.history.pushState(null, "", "/?ids=hitachi-e");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+
+    await waitFor(() => expect(caixa("Classe E").checked).toBe(true));
+    expect(caixa("Classe F").checked).toBe(false);
+    expect(idsDaUrl()).toBe("hitachi-e");
+  });
+
+  it("preserva `ids` mesmo quando a base ainda não terminou de carregar", async () => {
+    window.history.replaceState(null, "", "/?ids=daikin-f,hitachi-e");
+    render(<Consulta opcoes={opcoesDe(itens)} />);
+
+    // A busca pode ser usada antes do `consulta.json` chegar; a seleção da URL
+    // não pode ser apagada só porque ainda não foi validada contra a base.
+    fireEvent.change(screen.getByLabelText("Busca"), {
+      target: { value: "dual" },
+    });
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+    expect(new URLSearchParams(window.location.search).get("q")).toBe("dual");
+  });
+
+  it("'Limpar filtros' não apaga a seleção; 'Limpar seleção' remove só `ids`", async () => {
+    await montar(undefined, "/?ids=daikin-f,hitachi-e&marca=LG");
+
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpar filtros" }));
+    await waitFor(() =>
+      expect(
+        new URLSearchParams(window.location.search).get("marca"),
+      ).toBeNull(),
+    );
+    expect(idsDaUrl()).toBe("daikin-f,hitachi-e");
+
+    fireEvent.click(screen.getByRole("button", { name: "Limpar seleção" }));
+    await waitFor(() => expect(idsDaUrl()).toBeNull());
+    expect(window.location.search).toBe("");
+    // O recorte voltou ao padrão, sem a seleção levar os filtros junto.
+    expect(
+      (screen.getByLabelText("Tensão (V)") as HTMLSelectElement).value,
+    ).toBe("220");
+  });
+
+  it("reconstrói a seleção da URL e avisa quantos ids foram descartados", async () => {
+    await montar(undefined, "/?ids=daikin-f,ap-desconhecido,daikin-f");
+
+    await waitFor(() =>
+      expect(screen.getByText("1 de 3 modelos selecionados")).toBeDefined(),
+    );
+    expect(caixa("Classe F").checked).toBe(true);
+    expect(
+      screen.getByText(
+        "2 ids repetidos ou desconhecidos foram descartados do link.",
+      ),
+    ).toBeDefined();
   });
 });

@@ -617,6 +617,22 @@ body.ampla footer {
   font-weight: 600;
 }
 
+/* O checkbox da seleção (ticket 51) ocupa o centro da coluna estreita. */
+.consulta .tabela-aparelhos td[data-campo="selecao"] input {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--primaria);
+  cursor: pointer;
+}
+
+.consulta .tabela-aparelhos td[data-campo="selecao"] input:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 /* Linha do analisado (ticket 44): fundo levemente destacado e borda de acento
    à esquerda, para a linha se distinguir sem virar um grupo à parte. */
 .consulta .tabela-aparelhos tbody tr.linha-analisado td {
@@ -670,6 +686,53 @@ body.ampla footer {
 .consulta a.analisado-etiqueta:focus-visible {
   outline: 2px solid var(--primaria);
   outline-offset: 2px;
+}
+
+/* Barra de seleção para comparar (ticket 51): entre os filtros e a vitrine,
+   com a contagem à esquerda, os avisos no meio e as ações à direita. */
+.consulta .barra-selecao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-block: 0 1.25rem;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.consulta .selecao-contagem {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.consulta .selecao-limite,
+.consulta .selecao-aviso {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.consulta .selecao-aviso {
+  color: #b45309;
+}
+
+.consulta .barra-selecao-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+/* "Comparar" desabilitado continua com a forma de botão, mas apagado: só 2 ou 3
+   selecionados habilitam a ida para `/comparar/`. */
+.consulta .barra-selecao-acoes .botao:disabled {
+  border-color: var(--borda);
+  background: var(--fundo);
+  color: var(--texto-suave);
+  cursor: not-allowed;
 }
 
 /* Bloco "Aparelhos com análise" (ticket 44, revisto): um destaque **fora** da
@@ -1110,6 +1173,20 @@ body.ampla footer {
     content: attr(data-label);
     color: var(--texto-suave);
     font-size: 0.8rem;
+  }
+
+  /* O checkbox abre o cartão (ticket 51): primeira linha, com o rótulo
+     "Comparar" e uma borda separando da ficha do Aparelho. */
+  .consulta .tabela-aparelhos td[data-campo="selecao"] {
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    margin-bottom: 0.35rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .consulta .tabela-aparelhos td[data-campo="selecao"]::before {
+    font-weight: 600;
   }
 
   /* O cartão termina com o selo "Análise" (ticket 50), sem repetir o rótulo

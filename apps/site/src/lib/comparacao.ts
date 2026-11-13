@@ -12,12 +12,32 @@ import { formatarFaixa } from "./ficha.ts";
 /** O número máximo de Aparelhos por comparação. */
 export const MAXIMO_COMPARACAO = 3;
 
+/** O aviso de descarte concorda em número com o que foi descartado. */
+export function textoDescartes(descartados: number): string {
+  return descartados === 1
+    ? "Um id repetido ou desconhecido foi descartado do link."
+    : `${descartados} ids repetidos ou desconhecidos foram descartados do link.`;
+}
+
 /** Os Aparelhos válidos de uma URL `?ids=`, na ordem escolhida. */
 export interface IdsComparacao {
   /** Ids válidos, sem repetição, na ordem da URL e no máximo 3. */
   ids: string[];
   /** Quantos ids foram descartados: repetidos, desconhecidos ou além do limite. */
   descartados: number;
+}
+
+/**
+ * Os ids crus de `?ids=`, sem validar contra a base: deduplica, tira vazios e
+ * corta no limite. Serve para não perder a seleção antes de o dataset chegar,
+ * quando ainda não há como saber quais ids são conhecidos.
+ */
+export function lerIdsBrutos(busca: URLSearchParams): string[] {
+  const brutos = (busca.get("ids") ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id !== "");
+  return [...new Set(brutos)].slice(0, MAXIMO_COMPARACAO);
 }
 
 /**

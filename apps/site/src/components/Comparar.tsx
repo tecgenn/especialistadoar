@@ -16,6 +16,7 @@ import {
   linhasDaComparacao,
   MAXIMO_COMPARACAO,
   resumoDaSugestao,
+  textoDescartes,
 } from "../lib/comparacao";
 
 /**
@@ -42,13 +43,6 @@ const MAXIMO_SUGESTOES = 8;
 const ROTULOS_CAMPOS = ["Modelo 1", "Modelo 2", "Modelo 3"] as const;
 
 const ID_DICA = "comparar-dica";
-
-/** O aviso de descarte concorda em número com o que foi descartado. */
-function textoDescartes(descartados: number): string {
-  return descartados === 1
-    ? "Um id repetido ou desconhecido foi descartado do link."
-    : `${descartados} ids repetidos ou desconhecidos foram descartados do link.`;
-}
 
 export default function Comparar({
   consultaUrl = "/consulta.json",

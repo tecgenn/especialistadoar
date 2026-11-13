@@ -4,17 +4,17 @@
 
 **Blocked by:** 49 — Comparação: Contrato `ids` e Página `/comparar/`; 50 — Tabela Central: Busca, Pesquisa Avançada e Coluna Análise
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Checkbox como primeira coluna da tabela, com cabeçalho "Comparar"
-- [ ] Marcar e desmarcar atualiza a seleção e a URL em `?ids=`, na ordem de seleção
-- [ ] Com 3 selecionados, os demais checkboxes ficam desabilitados e uma mensagem explica o limite
-- [ ] Sem "selecionar todos"
-- [ ] Barra de ação acima da vitrine: contagem de modelos, "Comparar" habilitado apenas com 2 ou 3, e "Limpar seleção"
-- [ ] "Comparar" navega para `/comparar/?ids=...` com a mesma ordem
-- [ ] Mudar filtro, busca ou ordenação preserva `?ids=`
-- [ ] "Limpar filtros" não apaga a seleção; "Limpar seleção" remove só `ids`
-- [ ] Recarregar a página reconstrói a seleção a partir da URL, inclusive ids descartados com aviso
-- [ ] No celular, o checkbox é a primeira linha do cartão, com o rótulo "Comparar"
-- [ ] Testes da ilha cobrem seleção, limite, desabilitação, barra, navegação e preservação de `ids` em cada mudança de estado
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Checkbox como primeira coluna da tabela, com cabeçalho "Comparar"
+- [x] Marcar e desmarcar atualiza a seleção e a URL em `?ids=`, na ordem de seleção
+- [x] Com 3 selecionados, os demais checkboxes ficam desabilitados e uma mensagem explica o limite
+- [x] Sem "selecionar todos"
+- [x] Barra de ação acima da vitrine: contagem de modelos, "Comparar" habilitado apenas com 2 ou 3, e "Limpar seleção"
+- [x] "Comparar" navega para `/comparar/?ids=...` com a mesma ordem
+- [x] Mudar filtro, busca ou ordenação preserva `?ids=`
+- [x] "Limpar filtros" não apaga a seleção; "Limpar seleção" remove só `ids`
+- [x] Recarregar a página reconstrói a seleção a partir da URL, inclusive ids descartados com aviso
+- [x] No celular, o checkbox é a primeira linha do cartão, com o rótulo "Comparar"
+- [x] Testes da ilha cobrem seleção, limite, desabilitação, barra, navegação e preservação de `ids` em cada mudança de estado
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   escreverIds,
   lerIds,
+  lerIdsBrutos,
   linhasDaComparacao,
   MAXIMO_COMPARACAO,
   resumoDaSugestao,
@@ -85,6 +86,18 @@ describe("contrato `ids` da Comparação", () => {
       ids: ["ap-aaaaaaaaaaaa", "ap-bbbbbbbbbbbb"],
       descartados: 0,
     });
+  });
+
+  it("lê os ids crus sem validar contra a base, para não perder a seleção antes do dataset", () => {
+    expect(
+      lerIdsBrutos(
+        new URLSearchParams(
+          "ids=ap-aaaaaaaaaaaa,ap-aaaaaaaaaaaa,ap-zzzzzzzzzzzz,ap-bbbbbbbbbbbb,ap-cccccccccccc",
+        ),
+      ),
+    ).toEqual(["ap-aaaaaaaaaaaa", "ap-zzzzzzzzzzzz", "ap-bbbbbbbbbbbb"]);
+    expect(lerIdsBrutos(new URLSearchParams(""))).toEqual([]);
+    expect(lerIdsBrutos(new URLSearchParams("ids="))).toEqual([]);
   });
 
   it("escreve a chave separada dos filtros, com ordem, limite e sem vazios", () => {
