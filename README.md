@@ -154,6 +154,17 @@ Texto editorial, com números próprios...
 - `data` pode ficar sem aspas; o build normaliza para `YYYY-MM-DD`.
 - Imagens entram pelo componente de imagem do Astro (`astro:assets`), com `alt`.
 - O **template da Análise monta os CTAs** — o MDX não repete Oferta nem CTA.
+
+## Comparar aparelhos
+
+A Comparação (`/comparar/`, item "Comparar" no menu entre Aparelhos e Assistente) coloca até três modelos lado a lado numa matriz neutra de atributos — Tipo, Função, Capacidade, Tensão, Consumo anual, IDRS e Classe — lidos dos Dados declarados do INMETRO. Não destaca "melhor valor": a leitura editorial fica nas Análises.
+
+Duas portas de entrada compartilham o mesmo contrato de URL, `?ids=id1,id2,id3` (máximo de 3, ordem preservada, separado dos filtros da tabela):
+
+- **Na tabela**: coluna "Comparar" com checkbox como primeira coluna, barra de ação com a contagem, "Comparar" (habilitado com 2 ou 3) e "Limpar seleção"; a seleção sobrevive a filtro, busca, ordenação e "Limpar filtros", e navega para `/comparar/?ids=...`.
+- **Na página `/comparar/`**: três comboboxes com sugestões, cartões com "Trocar"/"Remover", estado vazio, convite com 1 modelo, matriz com 2 ou 3, aviso de ids descartados e "Limpar comparação".
+
+A comparação é estado de interface: recarregar ou compartilhar o link abre a mesma seleção em outro navegador, e a página publica canonical sem `ids`.
   Toda Análise abre com o **banner de transparência** e ganha **3 cartões**
   (ficha técnica no topo, Assistente depois do corpo e "Continue a pesquisa" no
   fim) ou **4** quando o Aparelho tem Oferta em `apps/site/ofertas.json` ("Ver
@@ -176,7 +187,7 @@ Rode a suíte completa **e** o build antes de enviar qualquer mudança:
 pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 ```
 
-No fechamento de cada fase, confirme também: `pnpm build` reproduz `data/build` + `reports` byte a byte, `pnpm build:site` gera o número esperado de páginas (2.232 com a Fase 9) e `pnpm test` está verde.
+No fechamento de cada fase, confirme também: `pnpm build` reproduz `data/build` + `reports` byte a byte, `pnpm build:site` gera o número esperado de páginas (2.233 com a Fase 10, incluindo `/comparar/`) e `pnpm test` está verde.
 
 E **commite os artefatos gerados junto com a mudança** sempre que ela tocar o CSV
 bruto (`data/raw/`) ou a camada curada (`data/excecoes-manuais.jsonl`,

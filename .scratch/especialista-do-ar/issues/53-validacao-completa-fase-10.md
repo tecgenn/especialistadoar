@@ -4,7 +4,7 @@
 
 **Blocked by:** 49 — Comparação: Contrato `ids` e Página `/comparar/`; 50 — Tabela Central: Busca, Pesquisa Avançada e Coluna Análise; 51 — Tabela: Seleção de até 3 Aparelhos para Comparar; 52 — Vitrine "Aparelhos com análise" sempre visível, com similares
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [ ] `docs/agents/architecture.md` descreve a Comparação, a nova ilha e o contrato `?ids=`
 - [ ] `README.md` cita a rota `/comparar/`, a seleção na tabela e o comando de validação da fase
