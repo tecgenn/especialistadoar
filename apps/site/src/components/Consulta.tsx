@@ -8,6 +8,7 @@ import {
   ordenar,
 } from "@especialista-do-ar/api/consulta";
 import { useCallback, useEffect, useState } from "react";
+import { type AnalisadoVitrine, montarVitrine } from "../lib/analises";
 import {
   escreverIds,
   lerIds,
@@ -22,6 +23,7 @@ import {
   temFiltroAtivo,
   temFiltroAvancado,
 } from "../lib/estado";
+import { formatarFaixa } from "../lib/ficha";
 import type { OpcoesConsulta } from "../lib/opcoes";
 import {
   type CampoResumoFiltro,
@@ -54,12 +56,6 @@ export interface PropsConsulta {
 
 /** Quantas linhas aparecem por vez na tabela. */
 const TAMANHO_PAGINA = 50;
-
-/** Quantos cartões a vitrine "Aparelhos com análise" exibe no máximo. */
-const VITRINE_MAXIMO = 6;
-
-/** Capacidades mais compradas: os analisados delas abrem a vitrine. */
-const CAPACIDADES_DESTAQUE = [9000, 12000, 18000];
 
 /** Os campos que a tabela sabe ordenar (as colunas ordenáveis do ticket 31). */
 const CAMPOS_ORDENAVEIS = new Set<string>(ORDENS_CONSULTA);
@@ -468,44 +464,40 @@ export default function Consulta({
     ? ordenar(filtrados, estado)
     : filtrados;
 
-  // Divide em dois grupos: analisados primeiro (ordenados dentro do grupo), depois demais.
-  const analisadosIds = new Set(analisados.keys());
-  const grupoAnalisados: ItemConsulta[] = [];
-  const grupoDemais: ItemConsulta[] = [];
-  for (const item of resultadosOrdenados) {
-    if (analisadosIds.has(item.id)) {
-      grupoAnalisados.push(item);
-    } else {
-      grupoDemais.push(item);
-    }
-  }
-  const resultados = [...grupoAnalisados, ...grupoDemais];
+  // A tabela respeita sempre a ordenação escolhida: os analisados não são mais
+  // puxados para o topo (ticket 52), só destacados e com o selo à direita.
+  const resultados = resultadosOrdenados;
 
-  // A vitrine "Aparelhos com análise" (ticket 44, revisto) fica **fora** da
-  // tabela, acima dela, e não entra na contagem, na paginação nem na ordenação.
-  // Ela acompanha os filtros ativos: mostra os analisados que passam no recorte
-  // (os mesmos que aparecem destacados na tabela). As capacidades mais
-  // compradas abrem a lista e as demais completam, na ordem das Análises (da
-  // mais recente para a mais antiga), até VITRINE_MAXIMO cartões.
+  // A vitrine "Aparelhos com análise" (ticket 44, revisto no 52) fica **fora**
+  // da tabela, acima dela, e não entra na contagem, na paginação nem na
+  // ordenação. Ela é sempre renderizada quando há ao menos uma Análise: primeiro
+  // os analisados que passam no recorte, depois similares de outras marcas até
+  // seis cartões. A ordenação dos similares é a do módulo puro `montarVitrine`.
   const temFiltro = temFiltroAtivo(estado);
-  const filtradosIds = new Set(filtrados.map((item) => item.id));
   const itensPorId = new Map((itens ?? []).map((item) => [item.id, item]));
-  const analisadosFiltrados: ItemConsulta[] = [];
-  for (const id of analisados.keys()) {
+  const analisadosVitrine: AnalisadoVitrine[] = [];
+  for (const [id, analise] of analisados) {
     const item = itensPorId.get(id);
-    if (item !== undefined && filtradosIds.has(id)) {
-      analisadosFiltrados.push(item);
+    if (item !== undefined) {
+      analisadosVitrine.push({
+        item,
+        titulo: analise.titulo,
+        url: analise.url,
+      });
     }
   }
-  const emDestaque = analisadosFiltrados.filter((item) =>
-    item.capacidadesBtu.some((capacidade) =>
-      CAPACIDADES_DESTAQUE.includes(capacidade),
-    ),
-  );
-  const demais = analisadosFiltrados.filter(
-    (item) => !emDestaque.includes(item),
-  );
-  const comAnalise = [...emDestaque, ...demais].slice(0, VITRINE_MAXIMO);
+  const comAnalise = montarVitrine(analisadosVitrine, {
+    filtrados,
+    recorte: estado,
+    marcasConhecidas: opcoes.marcasChip.map((marca) => marca.valor),
+  });
+  const somenteForaDoRecorte =
+    comAnalise.length > 0 && comAnalise.every((cartao) => cartao.foraDoRecorte);
+  const rotuloDaMarcaFiltrada =
+    estado.marca === undefined
+      ? undefined
+      : (opcoes.marcasChip.find((marca) => marca.valor === estado.marca)
+          ?.rotulo ?? estado.marca);
 
   // Mudar filtro ou ordem volta para o início; "Mostrar mais" só cresce a
   // quantidade dentro do mesmo estado.
@@ -794,25 +786,39 @@ export default function Consulta({
                   aria-labelledby="com-analise-titulo"
                 >
                   <h2 id="com-analise-titulo">Aparelhos com análise</h2>
+                  {somenteForaDoRecorte ? (
+                    <p className="com-analise-legenda">
+                      {rotuloDaMarcaFiltrada === undefined
+                        ? "Nenhum Aparelho analisado passa no recorte atual. Os cartões abaixo são alternativas fora do recorte."
+                        : `Nenhum Aparelho analisado da marca ${rotuloDaMarcaFiltrada} no recorte atual. Os cartões abaixo são alternativas fora do recorte.`}
+                    </p>
+                  ) : null}
                   <ul>
-                    {comAnalise.map((item) => {
-                      const analise = analisados.get(item.id);
-                      return analise === undefined ? null : (
-                        <li key={item.id}>
-                          <a className="com-analise-item" href={analise.url}>
-                            <span className="analisado-etiqueta">Análise</span>
-                            <span className="com-analise-texto">
-                              <span className="com-analise-marca">
-                                {item.marcaCatalogo}
-                              </span>
-                              <span className="com-analise-titulo">
-                                {analise.titulo}
-                              </span>
+                    {comAnalise.map((cartao) => (
+                      <li key={cartao.item.id}>
+                        <a className="com-analise-item" href={cartao.url}>
+                          <span className="analisado-etiqueta">Análise</span>
+                          <span className="com-analise-texto">
+                            <span className="com-analise-marca">
+                              {cartao.item.marcaCatalogo}
                             </span>
-                          </a>
-                        </li>
-                      );
-                    })}
+                            <span className="com-analise-titulo">
+                              {cartao.titulo}
+                            </span>
+                            <span className="com-analise-detalhe">
+                              {formatarFaixa(
+                                cartao.item.capacidadesBtu,
+                                " BTU/h",
+                              )}
+                              {cartao.item.tipo === null ||
+                              cartao.item.tipo.trim() === ""
+                                ? ""
+                                : ` · ${cartao.item.tipo}`}
+                            </span>
+                          </span>
+                        </a>
+                      </li>
+                    ))}
                   </ul>
                 </section>
               )}

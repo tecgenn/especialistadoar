@@ -278,13 +278,17 @@ nova exportação CSV
   de Análises em destaque (`AnalisesDestaque`, montado no build — o cliente não
   baixa `analises.json` nem `ofertas.json`). A ilha da tabela recebe no build o
   mapa `aparelhoId → { titulo, url }`; o selo "Análise" (etiqueta de contorno)
-  linka a Análise, as linhas analisadas ganham destaque e os analisados que
-  passam nos filtros viram a vitrine "Aparelhos com análise" **fora** da
-  `<table>`, com cartões que mostram a Marca e o título da Análise — até 6, as
-  capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) primeiro e as demais
-  completando na ordem das Análises —, sem entrar na contagem, na ordenação nem
-  no "Mostrar mais". Os cartões repetem os analisados que também aparecem,
-  destacados, na tabela. O `/assistente/`
+  linka a Análise, as linhas analisadas ganham destaque e a tabela respeita a
+  ordenação escolhida — sem promover analisados ao topo. Os analisados viram a
+  vitrine "Aparelhos com análise" **fora** da `<table>`, sempre visível quando há
+  ao menos uma Análise: primeiro os que passam no recorte (até 6, as capacidades
+  mais compradas — 9.000, 12.000 e 18.000 BTU/h — primeiro, depois a recência) e,
+  completando as vagas, Aparelhos similares de fora do recorte por capacidade,
+  marca conhecida, atributos em comum e recência; cada cartão mostra a Marca, o
+  título da Análise, a capacidade e o Tipo, e uma legenda explica quando só há
+  similares. O bloco não entra na contagem, na ordenação nem no "Mostrar mais".
+  Os cartões repetem os analisados que também aparecem, destacados, na tabela. O
+  `/assistente/`
   recebe no build o mapa capacidade → analisados e só consulta o valor
   recomendado, sem busca no cliente (ticket 42).
   Um `aparelhoId` ausente da base servida **não** falha o build: a página degrada

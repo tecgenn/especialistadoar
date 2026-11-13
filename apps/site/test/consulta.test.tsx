@@ -1096,13 +1096,23 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(link?.getAttribute("aria-describedby")).toBe(tooltip?.id);
   });
 
-  it("destaca as linhas dos analisados", async () => {
+  it("destaca as linhas dos analisados onde quer que a ordenação os ponha", async () => {
     await montarComAnalisados();
     const linhas = screen.getAllByRole("row").slice(1);
-    // Sem filtros, os dois analisados são as primeiras linhas de dados.
-    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(true);
-    expect(linhas[1]?.classList.contains("linha-analisado")).toBe(true);
-    expect(linhas[2]?.classList.contains("linha-analisado")).toBe(false);
+
+    // A ordem padrão é A–Z de Marca: o Daikin abre a tabela, não um analisado
+    // (ticket 52: a tabela deixou de puxar os analisados para o topo).
+    expect(linhas[0]?.textContent).toContain("Classe F");
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(false);
+
+    const dual = linhas.find((linha) =>
+      linha.textContent?.includes("Dual Inverter"),
+    );
+    const xtreme = linhas.find((linha) =>
+      linha.textContent?.includes("Xtreme Save"),
+    );
+    expect(dual?.classList.contains("linha-analisado")).toBe(true);
+    expect(xtreme?.classList.contains("linha-analisado")).toBe(true);
   });
 
   it("não mostra mais os cabeçalhos de grupo nem o aviso de afiliado", async () => {
@@ -1112,16 +1122,25 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(screen.queryByText(/links de afiliado/)).toBeNull();
   });
 
-  it("analisados aparecem antes dos demais, qualquer que seja a ordenação", async () => {
+  it("respeita a ordenação escolhida em vez de promover os analisados", async () => {
     await montarComAnalisados();
-    // Ordena por consumo: dentro dos analisados, o Xtreme Save (200)
-    // vem antes do Dual Inverter (300).
+    // Consumo crescente: a ordem vem do motor de consulta, e o Dual Inverter
+    // (300 kWh) fica no meio da tabela, atrás de cinco aparelhos.
     fireEvent.click(screen.getByRole("button", { name: /Consumo/ }));
-    await waitFor(() => {
-      const linhas = screen.getAllByRole("row").slice(1);
-      expect(linhas[0]?.textContent).toContain("Xtreme Save");
-      expect(linhas[1]?.textContent).toContain("Dual Inverter");
-    });
+    await waitFor(() =>
+      expect(modelosVisiveis()).toEqual([
+        "Janela",
+        "G-Top Inverter",
+        "Classe D",
+        "Xtreme Save",
+        "Classe E",
+        "Dual Inverter",
+        "Classe F",
+        "Springer Inverter",
+      ]),
+    );
+    const linhas = screen.getAllByRole("row").slice(1);
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(false);
   });
 
   it("no recorte inicial, a vitrine mostra os analisados do recorte, fora da tabela", async () => {
@@ -1146,34 +1165,79 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(links[0]?.textContent).toContain("LG");
     expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
     expect(links[1]?.textContent).toContain("Análise do Midea Xtreme Save");
+
+    // Cada cartão traz capacidade e Tipo: dá para avaliar sem abrir a ficha.
+    expect(links[0]?.textContent).toContain("9.000 BTU/h · Split Hi-Wall");
+    expect(links[1]?.textContent).toContain("12.000 BTU/h · Split Hi-Wall");
+    // Nenhum cartão está fora do recorte, então não há legenda de similares.
+    expect(bloco.querySelector(".com-analise-legenda")).toBeNull();
   });
 
-  it("com filtro ativo, a vitrine acompanha o recorte e repete o analisado da tabela", async () => {
+  it("com filtro ativo, completa a vitrine com similares fora do recorte", async () => {
     await montarComAnalisados("/?marca=LG");
 
-    // O bloco mostra o analisado que passa no filtro...
     const bloco = document.querySelector(".com-analise") as HTMLElement;
     expect(bloco).not.toBeNull();
     const links = within(bloco).getAllByRole("link");
-    expect(links).toHaveLength(1);
+    // O LG passa no recorte e abre a vitrine; o Midea, de outra marca, entra
+    // como similar (mesma capacidade do recorte: 12.000 BTU/h).
+    expect(links).toHaveLength(2);
     expect(links[0]?.textContent).toContain("Análise do LG Dual Inverter");
+    expect(links[1]?.textContent).toContain("Análise do Midea Xtreme Save");
 
-    // ...e ele também aparece, destacado, na tabela: a repetição é intencional.
+    // Como há ao menos um compatível, não é preciso explicar a exceção.
+    expect(bloco.querySelector(".com-analise-legenda")).toBeNull();
+
+    // ...e o analisado compatível continua, destacado, na tabela.
     const linha = screen
       .getAllByRole("row")
       .find((row) => row.textContent?.includes("Dual Inverter"));
     expect(linha?.classList.contains("linha-analisado")).toBe(true);
   });
 
-  it("esconde a vitrine quando nenhum analisado passa no filtro", async () => {
+  it("com filtro de marca sem Análise, mostra similares e cita a marca na legenda", async () => {
     await montarComAnalisados("/?marca=GREE");
 
-    // O filtro é GREE e os analisados são LG e MIDEA: não há o que vitrinear.
-    expect(document.querySelector(".com-analise")).toBeNull();
-    expect(screen.queryByText("Aparelhos com análise")).toBeNull();
+    // Os analisados são LG e MIDEA: nenhum passa no filtro GREE, mas a vitrine
+    // continua visível como alternativa.
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    expect(within(bloco).getByText("Aparelhos com análise")).toBeDefined();
+
+    const links = within(bloco).getAllByRole("link");
+    expect(links).toHaveLength(2);
+    // A capacidade do recorte (12.000 BTU/h do GREE) puxa o Midea para cima.
+    expect(links[0]?.textContent).toContain("Análise do Midea Xtreme Save");
+    expect(links[1]?.textContent).toContain("Análise do LG Dual Inverter");
+
+    // A legenda explica que os cartões estão fora do recorte e nomeia o GREE,
+    // para a exceção não parecer um erro de filtro.
+    const legenda = bloco.querySelector(".com-analise-legenda");
+    expect(legenda?.textContent).toContain("fora do recorte");
+    expect(legenda?.textContent).toContain("GREE");
+
     // O bloco não entra na contagem: só o GREE passou nos filtros.
     expect(
       screen.getByText("1 aparelho(s) com Dados declarados."),
+    ).toBeDefined();
+    const linhas = screen.getAllByRole("row").slice(1);
+    expect(linhas).toHaveLength(1);
+    expect(linhas[0]?.classList.contains("linha-analisado")).toBe(false);
+  });
+
+  it("num recorte vazio sem marca, explica os cartões sem citar marca", async () => {
+    // A busca sem resultado esvazia o recorte sem apontar uma marca: a legenda
+    // genérica ainda explica por que os cartões estão ali.
+    await montarComAnalisados("/?q=zzzzzz");
+
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    expect(bloco).not.toBeNull();
+    expect(within(bloco).getAllByRole("link")).toHaveLength(2);
+    const legenda = bloco.querySelector(".com-analise-legenda");
+    expect(legenda?.textContent).toContain("fora do recorte");
+    expect(legenda?.textContent).not.toContain("marca");
+    expect(
+      screen.getByText("0 aparelho(s) com Dados declarados."),
     ).toBeDefined();
   });
 

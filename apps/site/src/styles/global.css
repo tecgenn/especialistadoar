@@ -735,10 +735,11 @@ body.ampla footer {
   cursor: not-allowed;
 }
 
-/* Bloco "Aparelhos com análise" (ticket 44, revisto): um destaque **fora** da
-   tabela, acima dela, com cartões próprios — outro material, outra leitura. No
-   recorte inicial mostra todos os analisados; com um filtro ativo, só os que
-   ficam de fora. Nunca mexe em contagem, paginação nem ordenação. */
+/* Bloco "Aparelhos com análise" (ticket 44, revisto no 52): um destaque **fora**
+   da tabela, acima dela, com cartões próprios — outro material, outra leitura.
+   Sempre visível quando há Análise: mostra primeiro os analisados que passam no
+   recorte e completa com similares; a legenda explica quando só há similares.
+   Nunca mexe em contagem, paginação nem ordenação. */
 .consulta .com-analise {
   margin-block: 0 1.25rem;
   padding: 1rem 1.25rem 1.25rem;
@@ -806,6 +807,21 @@ body.ampla footer {
 .consulta .com-analise-titulo {
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+/* Capacidade e Tipo no cartão (ticket 52): o suficiente para avaliar a
+   alternativa sem abrir a ficha. */
+.consulta .com-analise-detalhe {
+  color: var(--texto-suave);
+  font-size: 0.78rem;
+}
+
+/* Legenda da vitrine quando só há similares: o recorte não foi ignorado, e a
+   marca filtrada é citada para não parecer um erro. */
+.consulta .com-analise-legenda {
+  margin: 0 0 0.75rem;
+  color: var(--texto-suave);
+  font-size: 0.82rem;
 }
 
 .consulta .com-analise-item:hover .com-analise-titulo {
