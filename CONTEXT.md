@@ -44,6 +44,14 @@ _Avoid_: Artigo, review, resenha
 Aparelho que tem uma Análise publicada. Na tabela de Aparelhos, ganha o selo "Análise" — etiqueta de contorno, com link para a Análise e tooltip com o título dela — e a linha destacada. É derivado da Análise, no build do site: a base servida e o dataset de consulta nunca carregam essa marca. Acima da tabela, fora dela e com cartões próprios, a vitrine **"Aparelhos com análise"** acompanha os filtros ativos (inclusive o padrão de Tensão 220 V): mostra até **6** analisados que passam no recorte — as capacidades mais compradas (9.000, 12.000 e 18.000 BTU/h) abrem a lista e as demais completam, na ordem das Análises, da mais recente para a mais antiga. Cada item mostra a Marca e o **título da Análise** (não o modelo). Os cartões repetem aparelhos que também aparecem, destacados, na tabela; o bloco não altera contagem, ordenação nem paginação. Sem analisado no recorte, a vitrine não aparece. Os analisados que passam nos filtros aparecem antes dos demais na tabela. A tabela não exibe aviso de afiliado: o aviso de transparência fica no topo da Análise e em cada Oferta.
 _Avoid_: Recomendado, indicado, patrocinado, destaque (prometem uma garantia de qualidade ou escondem a relação comercial); selo "Analisado" (nome antigo)
 
+**Aparelho similar**:
+Aparelho analisado que **não** passa no recorte ativo da tabela, mas é oferecido na vitrine "Aparelhos com análise" como alternativa: primeiro pela capacidade mais próxima do recorte, depois pela Marca de catálogo conhecida, pelos atributos em comum (Tipo, Função, Classe, Tensão) e pela recência da Análise. Não é uma recomendação de compra.
+_Avoid_: Recomendado, melhor opção, substituto
+
+**Comparação**:
+A seleção de até **3** Aparelhos e a matriz neutra de atributos que os confronta — Tipo, Função, Capacidade, Tensão, Consumo anual, IDRS e Classe, como faixa quando o Aparelho tem mais de uma Variante. Vive em `/comparar/` e é endereçável por `?ids=id1,id2,id3`, com a ordem escolhida, no **mesmo contrato** da tabela; a chave é estado de interface, separada de `FiltrosConsulta`, e a página publica canonical sem ela. Nenhum valor é destacado como melhor: a leitura editorial fica nas Análises (ADR-0021).
+_Avoid_: Ranking, ranking de aparelhos, cesta (sugerem ordem ou recomendação)
+
 **Assistente**:
 O configurador determinístico do site (`/assistente/`) que traduz cinco perguntas sobre o ambiente — tipo de ambiente, área, incidência de sol, pessoas e equipamentos/lâmpadas/janelas — numa capacidade comercial de ar-condicionado. Não usa IA em runtime, LLM nem Worker: a inteligência está na árvore de perguntas e nos coeficientes fixos e auditáveis. O estado inteiro vive na URL, então o resultado é compartilhável.
 _Avoid_: Chat, robô, calculadora de carga térmica (não é cálculo de engenharia)

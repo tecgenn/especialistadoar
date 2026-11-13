@@ -1,0 +1,39 @@
+---
+import consultaJson from "@dados/consulta.json";
+import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import Comparar from "../../components/Comparar.tsx";
+import { carregarAnalises, mapaAnalisados } from "../../conteudo/analises.ts";
+import Base from "../../layouts/Base.astro";
+
+// A comparação é uma ilha (ticket 49): baixa o `consulta.json` publicado e
+// monta a seleção no cliente. O build só resolve o mapa de Aparelhos
+// analisados, para o selo "Análise" do cabeçalho de cada coluna.
+const dataset = consultaJson as ItemConsulta[];
+const { analises } = await carregarAnalises();
+const idsDaBase = new Set(dataset.map((item) => item.id));
+const analisados = mapaAnalisados(analises, idsDaBase);
+
+const descricao =
+  "Compare até três aparelhos de ar-condicionado lado a lado: capacidade, consumo anual, IDRS, Classe e tensão nos dados oficiais do INMETRO, com a comparação salva na URL.";
+
+// A seleção vive em `?ids=`, que é estado de interface: o canonical aponta para
+// `/comparar/` sem a chave e a página não indexa uma comparação específica.
+const canonical = Astro.site
+  ? new URL("/comparar/", Astro.site).href
+  : "/comparar/";
+---
+
+<Base
+  titulo="Comparar aparelhos de ar-condicionado — Especialista do Ar"
+  descricao={descricao}
+  canonical={canonical}
+>
+  <h1>Comparar aparelhos</h1>
+  <p class="intro">
+    Escolha até três modelos e veja os dados oficiais do INMETRO lado a lado —
+    capacidade, tensão, consumo anual, IDRS e Classe. A comparação fica na URL,
+    então recarregar ou compartilhar o link abre a mesma seleção.
+  </p>
+
+  <Comparar client:load analisados={analisados} />
+</Base>
