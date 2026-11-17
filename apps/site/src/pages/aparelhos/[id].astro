@@ -1,12 +1,15 @@
 ---
 import aparelhosJson from "@dados/aparelhos.json";
 import type { Aparelho } from "@especialista-do-ar/pipeline";
+import CalculadoraCusto from "../../components/CalculadoraCusto.tsx";
 import OfertaFaixa from "../../components/OfertaFaixa.astro";
 import { carregarAnalises } from "../../conteudo/analises.ts";
 import { marcaCatalogoDo } from "../../conteudo/marcas-catalogo.ts";
 import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
+import { carregarTarifas } from "../../conteudo/tarifas.ts";
 import Base from "../../layouts/Base.astro";
 import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
+import { HORAS_ANO } from "../../lib/custo.ts";
 import {
   agruparVariantes,
   descreverCapacidade,
@@ -54,6 +57,10 @@ const marcaCatalogo = marcaCatalogoDo(aparelho);
 const blocos = agruparVariantes(aparelho.variantes);
 const resumo = resumoDaFicha(blocos);
 const titulos = titulosDosBlocos(blocos);
+
+// As tarifas de referência são curadoria do site (ADR-0022), validadas no build
+// e cacheadas por caminho: a mesma leitura serve as 2.460 fichas.
+const tarifas = carregarTarifas();
 
 const identificacao: Array<[string, string | null]> = [
   ["Tipo", aparelho.tipo],
@@ -109,6 +116,47 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       <dt>Potência em espera</dt>
       <dd>{formatarFaixa(resumo.potenciasEsperaW, " W")}</dd>
     </dl>
+
+    <section id="consumo-e-custo" class="secao-consumo-custo">
+      <h2>Consumo e custo</h2>
+      <p class="intro">
+        Quanto este Aparelho pesa na conta de luz no seu uso. O consumo anual do
+        INMETRO é medido em {HORAS_ANO} horas por ano (cerca de 5,7 h/dia);
+        aqui ele é convertido para horas, dias e a tarifa da sua conta.
+      </p>
+
+      <CalculadoraCusto
+        client:load
+        consumosAnuaisKwh={resumo.consumosKwh}
+        tarifas={tarifas}
+      />
+
+      <div class="como-calculamos">
+        <h3>Como calculamos</h3>
+        <p>
+          O INMETRO mede o consumo no ciclo de {HORAS_ANO} horas por ano — o
+          equivalente a cerca de 5,7 h/dia. A conta parte desse número:
+        </p>
+        <ol>
+          <li>consumo por hora = consumo anual ÷ {HORAS_ANO};</li>
+          <li>consumo mensal = consumo por hora × horas por dia × dias por mês;</li>
+          <li>custo mensal = consumo mensal × tarifa (R$/kWh);</li>
+          <li>custo anual = custo mensal × 12.</li>
+        </ol>
+        <p>
+          O custo anual considera 12 meses iguais, sem sazonalidade nem bandeiras
+          tarifárias. Assim, o seu uso pode custar diferente: o resultado é uma
+          estimativa, calculada no seu navegador, com as entradas que você
+          informa.
+        </p>
+        <p>
+          Exemplo com valores redondos: um Aparelho de 416 kWh/ano consome 0,2
+          kWh por hora (416 ÷ {HORAS_ANO}); em 8 h/dia por 30 dias, são 48 kWh no
+          mês; com tarifa de R$ 0,85/kWh, o custo é de R$ 40,80 por mês e R$ 489,60
+          por ano.
+        </p>
+      </div>
+    </section>
 
     <h2>Condições de ensaio</h2>
     <p class="intro">

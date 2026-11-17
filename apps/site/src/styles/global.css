@@ -491,6 +491,122 @@ body.ampla footer {
   border-bottom: 1px solid var(--borda);
 }
 
+/* Calculadora de custo de energia (ticket 55): campos à esquerda e resultado à
+   direita no desktop; empilhados na ordem de leitura no celular. O número
+   principal é o custo por mês, com a conta aberta em texto menor abaixo. */
+.calculadora {
+  display: grid;
+  grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+  gap: 1.25rem;
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.calculadora-campos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.calculadora-campos label {
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.calculadora-campos select,
+.calculadora-campos input {
+  width: 100%;
+  margin-bottom: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+  font: inherit;
+}
+
+.calculadora-referencia {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--texto-suave);
+}
+
+.calculadora-sem-dados {
+  color: var(--texto-suave);
+}
+
+.calculadora-rotulo {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.calculadora-principal {
+  margin: 0.2rem 0 0.35rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--primaria);
+}
+
+.calculadora-secundario {
+  margin: 0.15rem 0;
+}
+
+.calculadora-conta-titulo {
+  margin: 1rem 0 0.35rem;
+  font-size: 1rem;
+}
+
+.calculadora-conta {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.calculadora-aviso {
+  margin: 0.9rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--borda);
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+}
+
+.como-calculamos {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--fundo);
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
+
+.como-calculamos h3 {
+  margin-top: 0;
+  color: var(--texto);
+}
+
+.como-calculamos ol {
+  padding-left: 1.25rem;
+}
+
+@media (max-width: 40rem) {
+  .calculadora {
+    grid-template-columns: 1fr;
+  }
+
+  .calculadora-principal {
+    font-size: 1.8rem;
+  }
+}
+
 /* Tabela de dados da Análise: mesma leitura da tabela de Aparelhos, sem
    depender do layout da consulta. */
 .analise-corpo table {
