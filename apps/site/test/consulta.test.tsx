@@ -892,6 +892,68 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
     ).toBe("");
   });
 
+  it("o contador de resultados é coerente ao trocar faixa por exata e vice-versa", async () => {
+    await montar(curadoria);
+
+    // Sem filtro: todos os 8 aparelhos da base.
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+
+    // Abre a faixa 9.001–12.000: 3 aparelhos entram (12.000 x3).
+    fireEvent.click(chip("9.001–12.000 BTU/h"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("true");
+
+    // Escolhe a exata 9.000: o contador desce para 1 e a faixa se apaga.
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
+      target: { value: "9000" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("false");
+    expect(
+      (screen.getByLabelText("Capacidade exata") as HTMLSelectElement).value,
+    ).toBe("9000");
+
+    // Volta a "Todas as capacidades": o contador volta para 8.
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
+      target: { value: "" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("false");
+  });
+
+  it("o chip de faixa acende quando a URL traz btuMin/btuMax", async () => {
+    window.history.replaceState(null, "", "/?btuMin=12001&btuMax=18000");
+    render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    abrirPesquisaAvancada();
+
+    // O useEffect de leitura da URL roda no mount e define btuMin/btuMax;
+    // o chip deve refletir o recorte.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const chipFaixa = screen.getByRole("button", {
+      name: "12.001–18.000 BTU/h",
+    });
+    expect(chipFaixa.getAttribute("aria-pressed")).toBe("true");
+    // As outras faixas renderizadas na base não estão pressionadas.
+    for (const faixa of [
+      "Até 9.000 BTU/h",
+      "9.001–12.000 BTU/h",
+      "24.001–30.000 BTU/h",
+    ]) {
+      expect(pressionado(faixa)).toBe("false");
+    }
+    // Faixas sem aparelho na base não são renderizadas.
+    expect(
+      screen.queryByRole("button", { name: "18.001–24.000 BTU/h" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Acima de 30.000 BTU/h" }),
+    ).toBeNull();
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("btuMin")).toBe("12001");
+    expect(busca.get("btuMax")).toBe("18000");
+  });
+
   it("um link antigo com o valor oficial não acende nem some do select", async () => {
     window.history.replaceState(null, "", "/?marca=SPRINGER%20MIDEA");
     render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);

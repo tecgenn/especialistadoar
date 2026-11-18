@@ -25,6 +25,7 @@ import {
 } from "../lib/estado";
 import {
   estadoNaFaixa,
+  type FaixaCapacidade,
   faixasDeCapacidade,
   rotuloDaFaixa,
 } from "../lib/faixas-capacidade";
@@ -327,7 +328,8 @@ export default function Consulta({
   useEffect(() => {
     const lerDaUrl = () => {
       const busca = new URLSearchParams(window.location.search);
-      setEstado(lerEstado(busca));
+      const proximo = lerEstado(busca);
+      setEstado(proximo);
       // O painel abre para não esconder um recorte vindo de um link. O padrão
       // implícito de 220 V não conta: a URL limpa abre com o painel fechado.
       if (temFiltroAvancado(busca)) {
@@ -539,6 +541,13 @@ export default function Consulta({
     (a, b) => a - b,
   );
   const faixas = faixasDeCapacidade(capacidades);
+  /** A faixa cujo rótulo corresponde ao `valor` do chip. */
+  function faixaPorRotulo(
+    faixas: FaixaCapacidade[],
+    valor: string,
+  ): FaixaCapacidade | undefined {
+    return faixas.find((candidata) => rotuloDaFaixa(candidata) === valor);
+  }
   const marcaDoSelect =
     estado.marca !== undefined && marcasDoSelect.includes(estado.marca)
       ? estado.marca
@@ -661,17 +670,11 @@ export default function Consulta({
                 rotulo: rotuloDaFaixa(faixa),
               }))}
               estaAtivo={(valor) => {
-                const faixa = faixas.find(
-                  (candidata) => rotuloDaFaixa(candidata) === valor,
-                );
-                return faixa === undefined
-                  ? false
-                  : estadoNaFaixa(estado, faixa);
+                const faixa = faixaPorRotulo(faixas, valor);
+                return faixa !== undefined && estadoNaFaixa(estado, faixa);
               }}
               selecionar={(valor) => {
-                const faixa = faixas.find(
-                  (candidata) => rotuloDaFaixa(candidata) === valor,
-                );
+                const faixa = faixaPorRotulo(faixas, valor);
                 if (faixa === undefined) {
                   return;
                 }
