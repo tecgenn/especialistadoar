@@ -3,12 +3,14 @@ import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import Comparar from "../../components/Comparar.tsx";
 import { carregarAnalises, mapaAnalisados } from "../../conteudo/analises.ts";
+import { ofertasPublicadas } from "../../conteudo/ofertas.ts";
 import { carregarTarifas } from "../../conteudo/tarifas.ts";
 import Base from "../../layouts/Base.astro";
 
 // A comparação é uma ilha (ticket 49): baixa o `consulta.json` publicado e
-// monta a seleção no cliente. O build só resolve o mapa de Aparelhos
-// analisados, para o selo "Análise" do cabeçalho de cada coluna.
+// monta a seleção no cliente. O build resolve o mapa de Aparelhos analisados,
+// para o selo "Análise" do cabeçalho de cada coluna, e as Ofertas publicadas
+// (ticket 59), já validadas, para o CTA do cartão — sem chamada de rede nova.
 const dataset = consultaJson as ItemConsulta[];
 const { analises } = await carregarAnalises();
 const idsDaBase = new Set(dataset.map((item) => item.id));
@@ -36,5 +38,10 @@ const canonical = Astro.site
     então recarregar ou compartilhar o link abre a mesma seleção.
   </p>
 
-  <Comparar client:load analisados={analisados} tarifas={carregarTarifas()} />
+  <Comparar
+    client:load
+    analisados={analisados}
+    ofertas={ofertasPublicadas()}
+    tarifas={carregarTarifas()}
+  />
 </Base>

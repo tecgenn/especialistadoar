@@ -19,15 +19,32 @@ const ofertas = JSON.parse(readFileSync(caminho, "utf8")) as Oferta[];
 let indice: Map<string, Oferta[]> | undefined;
 
 /**
- * As Ofertas do Aparelho, na ordem do arquivo; lista vazia quando não há
- * Oferta. A validação (inclusive de Oferta órfã) roda uma vez, no primeiro uso
- * do build e antes de qualquer Oferta ser renderizada.
+ * Valida os insumos uma vez, no primeiro uso do build, antes de qualquer
+ * Oferta ser renderizada (inclusive a guarda de Oferta órfã).
  */
-export function ofertasDoAparelho(aparelhoId: string): Oferta[] {
+function carregarIndice(): Map<string, Oferta[]> {
   if (indice === undefined) {
     const ids = new Set((aparelhosJson as Aparelho[]).map((item) => item.id));
     validarOfertas(ofertas, ids);
     indice = indexarOfertas(ofertas);
   }
-  return indice.get(aparelhoId) ?? [];
+  return indice;
+}
+
+/**
+ * As Ofertas do Aparelho, na ordem do arquivo; lista vazia quando não há
+ * Oferta.
+ */
+export function ofertasDoAparelho(aparelhoId: string): Oferta[] {
+  return carregarIndice().get(aparelhoId) ?? [];
+}
+
+/**
+ * Todas as Ofertas publicadas, na ordem do arquivo. A Comparação é uma ilha e
+ * resolve o CTA no cliente, então recebe a lista inteira já validada pelo build
+ * — sem chamada de rede nova (ticket 59).
+ */
+export function ofertasPublicadas(): Oferta[] {
+  carregarIndice();
+  return ofertas;
 }

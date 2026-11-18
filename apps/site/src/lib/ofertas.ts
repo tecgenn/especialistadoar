@@ -11,6 +11,22 @@
  */
 export const ROTULO_OFERTA_PADRAO = "Ver oferta";
 
+/**
+ * O marcador discreto de divulgação que acompanha todo link de Oferta (ticket
+ * 58). Fica numa constante para a ficha, a Análise e a Comparação falarem a
+ * mesma língua.
+ */
+export const MARCADOR_OFERTA = "link de afiliado";
+
+/**
+ * Os atributos que o programa de afiliados exige no link (ADR-0010). Ficam
+ * aqui, uma vez só, para o CTA em Astro e o da ilha React não divergirem.
+ */
+export const ATRIBUTOS_OFERTA = {
+  rel: "sponsored nofollow noopener",
+  target: "_blank",
+} as const;
+
 export interface Oferta {
   /** O `id` do Aparelho (`ap-<12 hex>`) ao qual a Oferta pertence. */
   aparelhoId: string;

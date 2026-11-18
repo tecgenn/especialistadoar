@@ -3,7 +3,9 @@ import { fileURLToPath } from "node:url";
 import type { Aparelho } from "@especialista-do-ar/pipeline";
 import { describe, expect, it } from "vitest";
 import {
+  ATRIBUTOS_OFERTA,
   indexarOfertas,
+  MARCADOR_OFERTA,
   type Oferta,
   ROTULO_OFERTA_PADRAO,
   rotuloDaOferta,
@@ -77,6 +79,22 @@ describe("rotuloDaOferta", () => {
     expect(rotuloDaOferta({ titulo: "Ver oferta na loja" })).toBe(
       "Ver oferta na loja",
     );
+  });
+});
+
+/**
+ * Os atributos e o marcador do link comercial ficam num lugar só (ticket 59),
+ * para a ficha, a Análise e a Comparação não divergirem.
+ */
+describe("constantes do link de Oferta", () => {
+  it("exige `sponsored nofollow noopener` e abre em outra aba", () => {
+    expect(ATRIBUTOS_OFERTA.rel).toBe("sponsored nofollow noopener");
+    expect(ATRIBUTOS_OFERTA.target).toBe("_blank");
+  });
+
+  it("identifica o link como de afiliado, sem prometer preço", () => {
+    expect(MARCADOR_OFERTA).toBe("link de afiliado");
+    expect(MARCADOR_OFERTA).not.toMatch(/pre[çc]o|desconto/i);
   });
 });
 

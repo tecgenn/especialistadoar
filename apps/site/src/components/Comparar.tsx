@@ -22,6 +22,13 @@ import {
   resumoDaSugestao,
   textoDescartes,
 } from "../lib/comparacao";
+import {
+  ATRIBUTOS_OFERTA,
+  indexarOfertas,
+  MARCADOR_OFERTA,
+  type Oferta,
+  rotuloDaOferta,
+} from "../lib/ofertas.ts";
 import type { TarifasCuradas } from "../lib/tarifas.ts";
 import { caminhoComBusca, mesclarChaves } from "../lib/url.ts";
 import CamposCusto from "./CamposCusto.tsx";
@@ -42,6 +49,12 @@ export interface PropsComparar {
   consultaUrl?: string;
   /** Mapa de Aparelhos analisados: aparelhoId → { titulo, url }. */
   analisados?: Map<string, { titulo: string; url: string }>;
+  /**
+   * Ofertas publicadas, resolvidas e validadas no build (ticket 59). O cartão
+   * de cada modelo mostra o CTA só quando há Oferta para o Aparelho; a matriz
+   * nunca recebe nada comercial.
+   */
+  ofertas?: Oferta[];
   /** Tarifas de referência da calculadora (curadoria do site, ADR-0022). */
   tarifas: TarifasCuradas;
 }
@@ -57,6 +70,7 @@ const ID_DICA = "comparar-dica";
 export default function Comparar({
   consultaUrl = "/consulta.json",
   analisados = new Map(),
+  ofertas = [],
   tarifas,
 }: PropsComparar) {
   // O cenário da calculadora é o mesmo da ficha (ticket 56): as chaves `uf`,
@@ -246,6 +260,7 @@ export default function Comparar({
     () => new Map((itens ?? []).map((item) => [item.id, item])),
     [itens],
   );
+  const ofertasPorAparelho = useMemo(() => indexarOfertas(ofertas), [ofertas]);
   const selecionados = ids
     .map((id) => itensPorId.get(id))
     .filter((item): item is ItemConsulta => item !== undefined);
@@ -329,6 +344,26 @@ export default function Comparar({
                   </>
                 ) : null}
                 <div className="comparar-cartao-acoes">
+                  {(ofertasPorAparelho.get(item.id) ?? []).map((oferta) => (
+                    // Mesmo CTA da ficha, em React: mesmas classes, mesmo
+                    // rótulo e mesmo marcador, com os atributos de afiliado
+                    // vindos do módulo puro.
+                    <a
+                      className="oferta-cartao"
+                      href={oferta.url}
+                      key={`${oferta.aparelhoId}-${oferta.url}`}
+                      {...ATRIBUTOS_OFERTA}
+                    >
+                      <span className="oferta-titulo">
+                        {rotuloDaOferta(oferta)}
+                      </span>
+                      {" — "}
+                      <span className="oferta-loja">{oferta.loja}</span>{" "}
+                      <span className="oferta-marcador">
+                        · {MARCADOR_OFERTA}
+                      </span>
+                    </a>
+                  ))}
                   <button
                     type="button"
                     aria-label={`Trocar ${item.marcaCatalogo} ${item.modelo}`}

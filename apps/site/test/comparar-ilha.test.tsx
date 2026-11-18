@@ -12,6 +12,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Comparar from "../src/components/Comparar.tsx";
+import type { Oferta } from "../src/lib/ofertas.ts";
 import {
   type TarifasCuradas,
   UFS,
@@ -124,6 +125,18 @@ const analisados = new Map([
   ],
 ]);
 
+/**
+ * A Oferta de fixture (ticket 59): só o primeiro modelo da base tem uma. A
+ * lista chega já resolvida e validada pelo build — a ilha não baixa nada.
+ */
+const ofertas: Oferta[] = [
+  {
+    aparelhoId: "ap-aaaaaaaaaaaa",
+    loja: "Loja do teste",
+    url: "https://loja.example.com/windfree",
+  },
+];
+
 function servirConsulta(dataset: ItemConsulta[] = itens) {
   vi.stubGlobal(
     "fetch",
@@ -132,9 +145,15 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
 }
 
 /** Renderiza a ilha na URL dada e espera o dataset; o resto é comportamento. */
-async function montar(url = "/comparar/") {
+async function montar(url = "/comparar/", ofertasDaIlha = ofertas) {
   window.history.replaceState(null, "", url);
-  render(<Comparar analisados={analisados} tarifas={tarifas} />);
+  render(
+    <Comparar
+      analisados={analisados}
+      ofertas={ofertasDaIlha}
+      tarifas={tarifas}
+    />,
+  );
   await waitFor(() =>
     expect(screen.queryByText("Carregando a base…")).toBeNull(),
   );
@@ -667,5 +686,84 @@ describe("custo estimado na comparação", () => {
 
     await waitFor(() => expect(idsDaUrl()).toBe("ap-aaaaaaaaaaaa"));
     expect(busca().get("uf")).toBe("RJ");
+  });
+});
+
+/**
+ * O CTA de Oferta no cartão de cada modelo (ticket 59): mesma linguagem e mesmo
+ * marcador da ficha, dentro da área de ações. A matriz continua neutra.
+ */
+describe("CTA de Oferta no cartão", () => {
+  it("mostra 'Ver oferta' com loja e marcador no modelo que tem Oferta", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const comOferta = cartoes()[0] as HTMLElement;
+    const cta = within(comOferta).getByRole("link", {
+      name: "Ver oferta — Loja do teste · link de afiliado",
+    });
+    expect(cta.getAttribute("href")).toBe("https://loja.example.com/windfree");
+    expect(cta.getAttribute("rel")).toBe("sponsored nofollow noopener");
+    expect(cta.getAttribute("target")).toBe("_blank");
+    expect(cta.className).toBe("oferta-cartao");
+  });
+
+  it("fica na área de ações do cartão, junto de Trocar e Remover", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const acoes = cartoes()[0]?.querySelector(
+      ".comparar-cartao-acoes",
+    ) as HTMLElement;
+    expect(
+      within(acoes).getByRole("link", { name: /Ver oferta/ }),
+    ).toBeDefined();
+    expect(
+      within(acoes).getByRole("button", {
+        name: "Trocar SAMSUNG WindFree AI Pro",
+      }),
+    ).toBeDefined();
+    expect(
+      within(acoes).getByRole("button", {
+        name: "Remover SAMSUNG WindFree AI Pro",
+      }),
+    ).toBeDefined();
+  });
+
+  it("não renderiza CTA, espaço reservado nem botão desabilitado sem Oferta", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const semOferta = cartoes()[1] as HTMLElement;
+    expect(within(semOferta).queryByRole("link")).toBeNull();
+    expect(
+      within(semOferta).queryByRole("button", { name: /oferta/i }),
+    ).toBeNull();
+    expect(
+      within(semOferta)
+        .getAllByRole("button")
+        .map((botao) => botao.textContent),
+    ).toEqual(["Trocar", "Remover"]);
+    // Só o modelo com Oferta ganha um CTA — nada é reservado no outro cartão.
+    expect(screen.getAllByRole("link", { name: /Ver oferta/ })).toHaveLength(1);
+  });
+
+  it("sem nenhuma Oferta publicada não há CTA em cartão nenhum", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb", []);
+
+    expect(screen.queryByRole("link", { name: /Ver oferta/ })).toBeNull();
+    expect(screen.queryByText(/link de afiliado/)).toBeNull();
+  });
+
+  it("a matriz de atributos não ganha linha, coluna nem link comercial", async () => {
+    await montar(
+      "/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb,ap-cccccccccccc",
+    );
+
+    const matriz = within(tabela());
+    expect(matriz.queryByRole("link", { name: /Ver oferta/ })).toBeNull();
+    expect(tabela().textContent).not.toMatch(/oferta|afiliado/i);
+    expect(tabela().querySelector('[rel~="sponsored"]')).toBeNull();
+    // Os únicos links da matriz continuam sendo os internos de ficha e Análise.
+    for (const link of matriz.getAllByRole("link")) {
+      expect(link.getAttribute("href")).not.toContain("loja.example.com");
+    }
   });
 });

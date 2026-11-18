@@ -1,5 +1,10 @@
 ---
-import { type Oferta, rotuloDaOferta } from "../lib/ofertas.ts";
+import {
+  ATRIBUTOS_OFERTA,
+  MARCADOR_OFERTA,
+  type Oferta,
+  rotuloDaOferta,
+} from "../lib/ofertas.ts";
 
 /**
  * Um único CTA de Oferta. Puro e reutilizável: recebe a `Oferta` e não sabe de
@@ -14,8 +19,8 @@ interface Props {
 const { oferta } = Astro.props;
 ---
 
-<a class="oferta-cartao" href={oferta.url} rel="sponsored nofollow noopener" target="_blank">
+<a class="oferta-cartao" href={oferta.url} {...ATRIBUTOS_OFERTA}>
   <span class="oferta-titulo">{rotuloDaOferta(oferta)}</span>{' — '}
   <span class="oferta-loja">{oferta.loja}</span>{' '}
-  <span class="oferta-marcador">· link de afiliado</span>
+  <span class="oferta-marcador">· {MARCADOR_OFERTA}</span>
 </a>

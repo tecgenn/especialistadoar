@@ -745,9 +745,15 @@ describe("build com uma Análise de fixture", () => {
     expect(posicaoVersao).toBeGreaterThanOrEqual(0);
     expect(posicaoAfiliado).toBeGreaterThan(posicaoVersao);
 
-    // Ofertas são site-only: não viram arquivo servido nem entram na ilha.
+    // Ofertas são site-only: não viram arquivo servido. A Comparação (ticket
+    // 59) recebe as Ofertas já resolvidas no build, nas props da ilha: o
+    // cliente não baixa `ofertas.json` (e os bundles em `_astro` não carregam
+    // a URL comercial).
     expect(existsSync(join(distDir, "ofertas.json"))).toBe(false);
     expect(scripts.some((texto) => texto.includes(oferta.url))).toBe(false);
+    const htmlComparar = lerHtml("comparar");
+    expect(htmlComparar).toContain(oferta.loja);
+    expect(htmlComparar).not.toContain("ofertas.json");
 
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.

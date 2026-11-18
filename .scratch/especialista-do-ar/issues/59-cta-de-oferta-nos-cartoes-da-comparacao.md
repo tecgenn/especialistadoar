@@ -4,13 +4,13 @@
 
 **Blocked by:** 56 — Calculadora na Comparação; 58 — Ofertas: Rótulo "Ver oferta" e Divulgação em Três Níveis
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Cartão de cada modelo na comparação mostra o CTA "Ver oferta" quando o Aparelho tem Oferta publicada
-- [ ] O CTA usa a mesma linguagem e o mesmo marcador "link de afiliado" da ficha
-- [ ] O CTA fica na área de ações do cartão, junto de "Trocar" e "Remover", fora da matriz
-- [ ] Modelo sem Oferta não renderiza CTA, nem espaço reservado, nem botão desabilitado
-- [ ] A matriz de atributos não ganha linha, coluna ou célula com Oferta, preço ou link comercial
-- [ ] As Ofertas são resolvidas no build, como na ficha e na Análise, sem chamada de rede nova no cliente
-- [ ] Testes de ilha cobrem presença do CTA no modelo com Oferta, ausência no modelo sem Oferta e ausência de CTA na matriz
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Cartão de cada modelo na comparação mostra o CTA "Ver oferta" quando o Aparelho tem Oferta publicada
+- [x] O CTA usa a mesma linguagem e o mesmo marcador "link de afiliado" da ficha
+- [x] O CTA fica na área de ações do cartão, junto de "Trocar" e "Remover", fora da matriz
+- [x] Modelo sem Oferta não renderiza CTA, nem espaço reservado, nem botão desabilitado
+- [x] A matriz de atributos não ganha linha, coluna ou célula com Oferta, preço ou link comercial
+- [x] As Ofertas são resolvidas no build, como na ficha e na Análise, sem chamada de rede nova no cliente
+- [x] Testes de ilha cobrem presença do CTA no modelo com Oferta, ausência no modelo sem Oferta e ausência de CTA na matriz
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes

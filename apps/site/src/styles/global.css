@@ -2038,8 +2038,17 @@ body.ampla footer {
 
 .comparar-cartao-acoes {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0.5rem;
   margin-top: 0.4rem;
+}
+
+/* O CTA de Oferta no cartão (ticket 59) usa o mesmo visual da ficha; na barra
+   de ações ele divide espaço com "Trocar" e "Remover". */
+.comparar-cartao-acoes .oferta-cartao {
+  margin-inline-end: auto;
+  font-size: 0.85rem;
 }
 
 .comparar-cartao-acoes button,
