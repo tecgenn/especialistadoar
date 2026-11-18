@@ -1,0 +1,52 @@
+---
+import Base from "../../layouts/Base.astro";
+import {
+  ASSUNTOS_CONTATO,
+  canonicalInstitucional,
+  EMAIL_CONTATO,
+  linkMailto,
+  PAGINAS_INSTITUCIONAIS,
+} from "../../lib/institucionais.ts";
+
+const pagina = PAGINAS_INSTITUCIONAIS.contato;
+const canonical = canonicalInstitucional(pagina, Astro.site);
+---
+
+<Base titulo={pagina.titulo} descricao={pagina.descricao} canonical={canonical}>
+  <article class="pagina-institucional">
+    <h1>Contato</h1>
+    <p class="intro">
+      O Especialista do Ar é mantido por uma pessoa. Para falar com a gente,
+      escolha um dos assuntos abaixo: seu aplicativo de e-mail abre com o
+      assunto já preenchido.
+    </p>
+
+    <section aria-labelledby="assuntos-contato">
+      <h2 id="assuntos-contato">Escolha um assunto</h2>
+      <ul class="assuntos-contato">
+        {
+          ASSUNTOS_CONTATO.map((assunto) => (
+            <li>
+              <a href={linkMailto(assunto.assunto)}>{assunto.rotulo}</a>
+              <p>{assunto.descricao}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <p>
+        Se preferir, escreva diretamente para
+        <a href={`mailto:${EMAIL_CONTATO}`}>{EMAIL_CONTATO}</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>Antes de escrever</h2>
+      <p>
+        Os dados técnicos publicados no site vêm da exportação oficial de
+        produtos do INMETRO, e o Especialista do Ar é independente do INMETRO.
+        Alguns links podem levar a lojas parceiras: eles são identificados como
+        links de afiliado, e a compra acontece na loja.
+      </p>
+    </section>
+  </article>
+</Base>

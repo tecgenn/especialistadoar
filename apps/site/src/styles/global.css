@@ -2305,3 +2305,43 @@ body.ampla footer {
     display: block;
   }
 }
+
+/* ticket 57: páginas institucionais no layout de leitura. */
+.pagina-institucional {
+  max-width: 46rem;
+}
+
+.pagina-institucional section {
+  margin-top: 2rem;
+}
+
+.pagina-institucional section p {
+  color: var(--texto-suave);
+}
+
+.assuntos-contato {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assuntos-contato li {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.375rem;
+  background: var(--superficie);
+}
+
+.assuntos-contato li p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+.rodape-institucional {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem;
+}

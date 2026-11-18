@@ -1,0 +1,84 @@
+---
+import Base from "../../layouts/Base.astro";
+import {
+  canonicalInstitucional,
+  PAGINAS_INSTITUCIONAIS,
+} from "../../lib/institucionais.ts";
+
+const pagina = PAGINAS_INSTITUCIONAIS.termos;
+const canonical = canonicalInstitucional(pagina, Astro.site);
+---
+
+<Base titulo={pagina.titulo} descricao={pagina.descricao} canonical={canonical}>
+  <article class="pagina-institucional">
+    <h1>Termos de Uso</h1>
+    <p class="intro">
+      Regras para usar o Especialista do Ar e o que você pode fazer com a base
+      publicada.
+    </p>
+
+    <section>
+      <h2>Finalidade e independência</h2>
+      <p>
+        O Especialista do Ar é um site informativo e independente. Organizamos a
+        exportação oficial de produtos do INMETRO para consulta e comparação de
+        aparelhos de ar-condicionado. Não temos vínculo com o INMETRO, com
+        fabricantes nem com lojas, e não indicamos um modelo como escolha: a
+        decisão é de quem consulta.
+      </p>
+    </section>
+
+    <section>
+      <h2>Valores oficiais e Valores calculados</h2>
+      <p>
+        Capacidade, consumo anual, IDRS, Classe, tensão e condições de ensaio
+        são Valores oficiais: vêm da exportação do INMETRO e só passam por
+        padronização de formato. O custo estimado de energia, a capacidade
+        indicada pelo Assistente e as diferenças mostradas na comparação são
+        Valores calculados: derivados de dados oficiais e de entradas
+        informadas por você, sempre acompanhados da fórmula e das entradas
+        usados. Eles não são Valores oficiais nem previsão de gasto.
+      </p>
+    </section>
+
+    <section>
+      <h2>Ofertas</h2>
+      <p>
+        Alguns links levam a lojas parceiras e são identificados como links de
+        afiliado. Nós não vendemos produtos, não exibimos preços e não
+        processamos pedidos ou pagamentos: a compra acontece na loja. Se houver
+        comissão, ela é paga pela loja e não custa nada adicional a você.
+      </p>
+    </section>
+
+    <section>
+      <h2>Uso da base</h2>
+      <p>
+        Os dados oficiais do INMETRO são públicos e podem ser usados
+        livremente. A organização que fazemos desses dados — Aparelhos,
+        Variantes, ids, Marca de catálogo e Análises — é de autoria do site. O
+        uso da base é livre, inclusive de forma automatizada, com atribuição ao
+        Especialista do Ar como fonte.
+      </p>
+    </section>
+
+    <section>
+      <h2>Limitação de responsabilidade</h2>
+      <p>
+        As informações são fornecidas como estão. Conferimos a base contra a
+        exportação oficial, mas não garantimos que ela esteja livre de erros ou
+        atualizada em tempo real. A escolha, a compra e a instalação do aparelho
+        são de responsabilidade de quem as faz; confira sempre os dados na
+        ficha e as condições oferecidas pela loja.
+      </p>
+    </section>
+
+    <section>
+      <h2>Legislação aplicável</h2>
+      <p>
+        Estes termos são regidos pela legislação brasileira. Em caso de dúvida,
+        fale com a gente pela página de contato.
+      </p>
+    </section>
+  </article>
+</Base>

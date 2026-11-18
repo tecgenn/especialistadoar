@@ -12,6 +12,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 import type { AnaliseFrontmatter } from "../src/lib/analises.ts";
+import { PAGINAS_INSTITUCIONAIS } from "../src/lib/institucionais.ts";
 import type { Oferta } from "../src/lib/ofertas.ts";
 
 /**
@@ -66,14 +67,19 @@ function lerHtml(...partes: string[]): string {
   return readFileSync(join(distDir, ...partes, "index.html"), "utf8");
 }
 
+/** O HTML de uma rota do site a partir do href canônico (`/contato/`). */
+function lerHtmlInstitucional(href: string): string {
+  return lerHtml(...href.split("/").filter((parte) => parte !== ""));
+}
+
 /**
  * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/` +
- * `/assistente/` (ticket 41) + `/comparar/` (ticket 49). Caiu de 2.460 fichas
- * quando a pipeline passou a excluir Model Status = "Excluído" (ticket 31); a
- * curadoria de Análises pode apontar para um id fora da base, então o número é
- * o que o build realmente gera.
+ * `/assistente/` (ticket 41) + `/comparar/` (ticket 49) + as três institucionais
+ * (ticket 57). Caiu de 2.460 fichas quando a pipeline passou a excluir Model
+ * Status = "Excluído" (ticket 31); a curadoria de Análises pode apontar para um
+ * id fora da base, então o número é o que o build realmente gera.
  */
-const PAGINAS_BASE = 2231;
+const PAGINAS_BASE = 2234;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -121,6 +127,94 @@ function jsonLdDaPagina(html: string): Record<string, unknown> {
   const [primeiro] = jsonLdsDaPagina(html);
   expect(primeiro).toBeDefined();
   return primeiro as Record<string, unknown>;
+}
+
+/**
+ * Seam de build das páginas institucionais (ticket 57): as três rotas saem no
+ * `dist/`, cada uma com título/descrição/canonical próprios no layout de leitura,
+ * entram no sitemap e no rodapé e dizem só o que é verdade hoje.
+ */
+function conferirPaginasInstitucionais(): void {
+  const site = "https://especialista-do-ar.pages.dev";
+  const paginas = Object.values(PAGINAS_INSTITUCIONAIS);
+
+  for (const pagina of paginas) {
+    const html = lerHtmlInstitucional(pagina.href);
+    expect(html).toContain(`<title>${pagina.titulo}</title>`);
+    expect(html).toContain(
+      `<meta name="description" content="${pagina.descricao}">`,
+    );
+    expect(html).toContain(
+      `<link rel="canonical" href="${site}${pagina.href}">`,
+    );
+    expect(html).not.toContain('<body class="ampla">');
+    expect(html).toContain("<h1>");
+  }
+
+  const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
+  const home = lerHtml("");
+  for (const pagina of paginas) {
+    expect(sitemap).toContain(`<loc>${site}${pagina.href}</loc>`);
+    expect(home).toContain(`href="${pagina.href}"`);
+  }
+
+  const contato = textoDaPagina(lerHtml("contato"));
+  expect(contato).toContain("tecgenn@gmail.com");
+  expect(contato).toContain("mailto:tecgenn@gmail.com?subject=D%C3%BAvida");
+  expect(contato).toContain(
+    "mailto:tecgenn@gmail.com?subject=Corre%C3%A7%C3%A3o%20de%20dado%20do%20INMETRO",
+  );
+  expect(contato).toContain("mailto:tecgenn@gmail.com?subject=Parceria");
+  expect(contato).toContain("INMETRO");
+  expect(contato).toContain("lojas parceiras");
+
+  const privacidade = textoDaPagina(lerHtml("politica-de-privacidade"));
+  for (const trecho of [
+    "Quem somos",
+    "independente do INMETRO",
+    "não coletamos",
+    "sem cadastro",
+    "sem cookies próprios",
+    "Cloudflare Web Analytics",
+    "Cloudflare Pages",
+    "lojas parceiras",
+    "navegador",
+    "URL",
+    "LGPD",
+    "tecgenn@gmail.com",
+  ]) {
+    expect(privacidade).toContain(trecho);
+  }
+  expect(privacidade).not.toContain("GA4");
+  expect(privacidade).not.toContain("AdSense");
+
+  const termos = textoDaPagina(lerHtml("termos-de-uso"));
+  for (const trecho of [
+    "Finalidade e independência",
+    "INMETRO",
+    "Valores oficiais",
+    "Valores calculados",
+    "não vendemos",
+    "não exibimos preços",
+    "não processamos pedidos",
+    "comissão",
+    "Variantes",
+    "Marca de catálogo",
+    "Análises",
+    "atribuição",
+    "responsabilidade",
+    "legislação brasileira",
+  ]) {
+    expect(termos).toContain(trecho);
+  }
+
+  // Nenhuma das três promete preço, economia ou um modelo como escolha.
+  for (const pagina of paginas) {
+    const html = lerHtmlInstitucional(pagina.href);
+    expect(html).not.toContain("R$");
+    expect(html).not.toContain("economize");
+    expect(html).not.toContain("recomendamos");
+  }
 }
 
 /**
@@ -629,7 +723,7 @@ describe("build com uma Análise de fixture", () => {
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.231 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As 2.234 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -658,10 +752,11 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2.231 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2.234 páginas e omite seção, menu e analises.json", () => {
     // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
     buildarSite(criarDiretorioTemporario());
 
+    conferirPaginasInstitucionais();
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE);
     expect(existsSync(join(distDir, "analises"))).toBe(false);
     expect(existsSync(join(distDir, "analises.json"))).toBe(false);

@@ -4,6 +4,7 @@ import type { Manifest } from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { secaoVisivel } from "../lib/analises.ts";
+import { PAGINAS_INSTITUCIONAIS } from "../lib/institucionais.ts";
 import "../styles/global.css";
 
 interface Props {
@@ -68,6 +69,13 @@ const { analises } = await carregarAnalises();
           ) : null
         }
       </p>
+      <nav class="rodape-institucional" aria-label="Páginas institucionais">
+        {
+          Object.values(PAGINAS_INSTITUCIONAIS).map((pagina) => (
+            <a href={pagina.href}>{pagina.rotuloRodape}</a>
+          ))
+        }
+      </nav>
     </footer>
   </body>
 </html>
