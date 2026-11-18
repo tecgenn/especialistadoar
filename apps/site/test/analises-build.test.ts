@@ -465,7 +465,6 @@ const semOferta: AnaliseFixture = {
 const oferta: Oferta = {
   aparelhoId: aparelho.id,
   loja: "Loja Fixture",
-  titulo: "Comprar o aparelho de fixture",
   url: "https://loja.example.com/aparelho-fixture",
 };
 
@@ -551,8 +550,17 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlValida).toContain(`href="${oferta.url}"`);
     expect(htmlValida).toContain('rel="sponsored nofollow noopener"');
     expect(htmlValida).toContain('target="_blank"');
-    // O cartão comercial se identifica como link de afiliado (ADR-0010).
+    // O cartão comercial se identifica como link de afiliado (ADR-0010): o
+    // marcador discreto fica na mesma linha da loja e o rótulo padrão é
+    // "Ver oferta" — sem promessa de preço (ticket 58).
     expect(htmlValida).toContain("Link de afiliado");
+    const cartaoOferta =
+      htmlValida.match(/<a class="oferta-cartao"[\s\S]*?<\/a>/)?.[0] ?? "";
+    expect(cartaoOferta).toContain("Ver oferta");
+    expect(cartaoOferta).toContain(oferta.loja);
+    expect(cartaoOferta).toContain("· link de afiliado");
+    expect(cartaoOferta).toContain('rel="sponsored nofollow noopener"');
+    expect(cartaoOferta).toContain('target="_blank"');
     // O MDX não repete a Oferta: só os dois cartões do template a exibem.
     expect(htmlValida.match(/rel="sponsored/g) ?? []).toHaveLength(2);
     expect(htmlValida).not.toContain("Oferta no meio do texto");
@@ -570,6 +578,14 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlFicha).toContain(`href="${oferta.url}"`);
     expect(htmlFicha).toContain('rel="sponsored nofollow noopener"');
     expect(htmlFicha).toContain("Links comerciais");
+    // A faixa troca o parágrafo longo por uma frase curta: link comercial,
+    // compra na loja e comissão sem custo ao visitante (ticket 58).
+    expect(textoDaPagina(htmlFicha)).toContain(
+      "a compra acontece na loja e a comissão, se houver, não custa nada a você",
+    );
+    expect(htmlFicha).not.toContain(
+      "Não fazem parte dos dados técnicos do INMETRO",
+    );
 
     expect(lerHtml("analises")).toContain(`href="/analises/${valida.slug}/"`);
 
@@ -715,6 +731,19 @@ describe("build com uma Análise de fixture", () => {
     );
     expect(htmlSemOferta).not.toContain("Onde comprar");
     expect(htmlSemOferta).not.toContain('rel="sponsored');
+
+    // O rodapé ganha a linha de afiliado ao lado da Versão da tabela, com link
+    // para os Termos — e ela aparece mesmo sem Oferta na página (ticket 58).
+    const textoSemOferta = textoDaPagina(htmlSemOferta);
+    expect(textoSemOferta).toContain("Alguns links deste site são de afiliado");
+    expect(textoSemOferta).toContain("saiba mais nos Termos de Uso");
+    expect(htmlSemOferta).toContain('href="/termos-de-uso/"');
+    const posicaoVersao = textoSemOferta.indexOf("Versão da tabela");
+    const posicaoAfiliado = textoSemOferta.indexOf(
+      "Alguns links deste site são de afiliado",
+    );
+    expect(posicaoVersao).toBeGreaterThanOrEqual(0);
+    expect(posicaoAfiliado).toBeGreaterThan(posicaoVersao);
 
     // Ofertas são site-only: não viram arquivo servido nem entram na ilha.
     expect(existsSync(join(distDir, "ofertas.json"))).toBe(false);

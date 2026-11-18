@@ -1,10 +1,11 @@
 ---
-import type { Oferta } from "../lib/ofertas.ts";
+import { type Oferta, rotuloDaOferta } from "../lib/ofertas.ts";
 
 /**
  * Um único CTA de Oferta. Puro e reutilizável: recebe a `Oferta` e não sabe de
  * onde ela veio. Os atributos que o programa de afiliados exige ficam aqui, uma
- * vez só (ADR-0010).
+ * vez só (ADR-0010), e a identificação "link de afiliado" acompanha o cartão em
+ * todos os lugares — em texto pequeno e cor secundária, sem destaque (ticket 58).
  */
 interface Props {
   oferta: Oferta;
@@ -14,5 +15,7 @@ const { oferta } = Astro.props;
 ---
 
 <a class="oferta-cartao" href={oferta.url} rel="sponsored nofollow noopener" target="_blank">
-  <span class="oferta-titulo">{oferta.titulo}</span> — <span class="oferta-loja">{oferta.loja}</span>
+  <span class="oferta-titulo">{rotuloDaOferta(oferta)}</span>{' — '}
+  <span class="oferta-loja">{oferta.loja}</span>{' '}
+  <span class="oferta-marcador">· link de afiliado</span>
 </a>

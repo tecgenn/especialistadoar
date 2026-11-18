@@ -1053,6 +1053,14 @@ body.ampla footer {
   font-weight: 400;
 }
 
+/* Divulgação junto do link (ticket 58): texto pequeno e cor secundária, na
+   mesma linha da loja. Sem ícone, selo ou cor de destaque. */
+.oferta-marcador {
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
 .analise-corpo {
   margin-block: 1.5rem;
 }

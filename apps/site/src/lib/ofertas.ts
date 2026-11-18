@@ -5,15 +5,27 @@
  * módulo é a parte pura: validação e indexação por Aparelho, sem I/O.
  */
 
+/**
+ * Rótulo padrão do link de uma Oferta. Não promete preço — o site não exibe
+ * preços —, apenas leva à loja. Uma Oferta pode sobrescrevê-lo com `titulo`.
+ */
+export const ROTULO_OFERTA_PADRAO = "Ver oferta";
+
 export interface Oferta {
   /** O `id` do Aparelho (`ap-<12 hex>`) ao qual a Oferta pertence. */
   aparelhoId: string;
   /** A loja (ou programa de afiliados) do link. */
   loja: string;
-  /** O rótulo do link exibido na página do Aparelho. */
-  titulo: string;
+  /** Rótulo do link; ausente, vale `ROTULO_OFERTA_PADRAO`. */
+  titulo?: string;
   /** O endereço comercial (http/https). */
   url: string;
+}
+
+/** O rótulo exibido da Oferta: o próprio, quando informado, ou o padrão. */
+export function rotuloDaOferta(oferta: Pick<Oferta, "titulo">): string {
+  const titulo = oferta.titulo?.trim();
+  return titulo === undefined || titulo === "" ? ROTULO_OFERTA_PADRAO : titulo;
 }
 
 function campoEmBranco(valor: unknown): boolean {
@@ -52,8 +64,8 @@ export function validarOfertas(
     if (campoEmBranco(oferta?.loja)) {
       throw new Error(`${onde}: \`loja\` é obrigatório.`);
     }
-    if (campoEmBranco(oferta?.titulo)) {
-      throw new Error(`${onde}: \`titulo\` é obrigatório.`);
+    if (oferta?.titulo !== undefined && campoEmBranco(oferta.titulo)) {
+      throw new Error(`${onde}: \`titulo\` não pode ficar em branco.`);
     }
     if (campoEmBranco(oferta?.url)) {
       throw new Error(`${onde}: \`url\` é obrigatório.`);
