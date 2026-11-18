@@ -909,19 +909,23 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(jsonLdTabela["@type"]).toBe("CollectionPage");
     expect(jsonLdTabela.name).toBe("Aparelhos de ar-condicionado");
 
-    // As opções do filtro trazem a Marca de catálogo (uma por família); as 10
-    // marcas conhecidas e as 6 capacidades comuns são chips curados (ticket 22)
-    // e não se repetem no `<select>`. Eles vivem na tabela, não na home.
+    // As opções do filtro trazem a Marca de catálogo (uma por família) e as 10
+    // marcas conhecidas como chips curados (ticket 22), sem se repetirem no
+    // `<select>`. A Capacidade, desde o ticket 60, é chip de **faixa** e guarda
+    // todas as capacidades exatas no `<select>` do mesmo campo.
     expect(htmlTabela).toContain(">Midea</button>");
     expect(htmlTabela).toContain(">Samsung</button>");
-    expect(htmlTabela).toContain(">36.000</button>");
+    expect(htmlTabela).toContain(">Até 9.000 BTU/h</button>");
+    expect(htmlTabela).toContain(">Acima de 30.000 BTU/h</button>");
+    expect(htmlTabela).toContain('aria-label="Capacidade exata"');
+    expect(htmlTabela).toContain('<option value="36000">36.000</option>');
     expect(htmlTabela).not.toContain('<option value="MIDEA">MIDEA</option>');
     expect(htmlTabela).not.toContain(
       '<option value="SPRINGER MIDEA">SPRINGER MIDEA</option>',
     );
     expect(htmlTabela).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
     expect(htmlHome).not.toContain(">Midea</button>");
-    expect(htmlHome).not.toContain(">36.000</button>");
+    expect(htmlHome).not.toContain(">Até 9.000 BTU/h</button>");
 
     expect(cssDaPagina(htmlTabela)).toMatch(
       /@media \(width<=40rem\)\{[^@]*\.consulta \.tabela-aparelhos td\{[^}]*display:grid/,

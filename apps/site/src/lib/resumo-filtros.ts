@@ -1,4 +1,5 @@
 import type { FiltrosConsulta } from "@especialista-do-ar/api/consulta";
+import { faixaDoEstado, rotuloDaFaixa } from "./faixas-capacidade.ts";
 import type { OpcoesConsulta } from "./opcoes.ts";
 
 /**
@@ -11,6 +12,7 @@ export type CampoResumoFiltro =
   | "q"
   | "marca"
   | "btu"
+  | "btuFaixa"
   | "funcao"
   | "tensao"
   | "tipo"
@@ -29,6 +31,7 @@ const ORDEM_DOS_CHIPS: readonly CampoResumoFiltro[] = [
   "q",
   "marca",
   "btu",
+  "btuFaixa",
   "funcao",
   "tensao",
   "tipo",
@@ -39,7 +42,8 @@ const ORDEM_DOS_CHIPS: readonly CampoResumoFiltro[] = [
  * O rótulo de cada filtro já formatado para leitura. A Marca sai da curadoria
  * quando o valor está entre os chips (um link antigo com a Marca oficial usa o
  * próprio valor); a capacidade leva o separador de milhar pt-BR e a Tensão leva
- * a unidade, porque "220" sozinho não diz nada.
+ * a unidade, porque "220" sozinho não diz nada. A faixa de capacidade
+ * (ticket 60) aparece com o intervalo legível do módulo das faixas.
  */
 function rotuloDoFiltro(
   estado: FiltrosConsulta,
@@ -63,6 +67,12 @@ function rotuloDoFiltro(
       return estado.btu === undefined
         ? undefined
         : `Capacidade: ${estado.btu.toLocaleString("pt-BR")} BTU/h`;
+    case "btuFaixa": {
+      const faixa = faixaDoEstado(estado);
+      return faixa === undefined
+        ? undefined
+        : `Capacidade: ${rotuloDaFaixa(faixa)}`;
+    }
     case "funcao": {
       const funcao = estado.funcao?.trim();
       return funcao === undefined || funcao === ""

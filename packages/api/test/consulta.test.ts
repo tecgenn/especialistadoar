@@ -109,6 +109,61 @@ describe("módulo de consulta — filtros por campo", () => {
   });
 });
 
+describe("módulo de consulta — faixas de capacidade (ticket 60)", () => {
+  function item(id: string, capacidadesBtu: number[]): ItemConsulta {
+    return {
+      id,
+      marca: "TESTE",
+      marcaCatalogo: "TESTE",
+      modelo: id,
+      tipo: null,
+      funcao: null,
+      capacidadesBtu,
+      tensoes: [220],
+      classes: [],
+      idrs: [],
+      consumosKwh: [],
+    };
+  }
+
+  const faixas = criarConsulta([
+    item("nove", [9000]),
+    item("nove-um", [9001]),
+    item("doze", [12000]),
+    item("duas-variantes", [9000, 18000]),
+  ]);
+
+  it("casa os limites do intervalo, inclusive", () => {
+    expect(ids(faixas.filtrar({ btuMin: 9001, btuMax: 12000 }))).toEqual([
+      "doze",
+      "nove-um",
+    ]);
+    expect(ids(faixas.filtrar({ btuMax: 9000 }))).toEqual([
+      "duas-variantes",
+      "nove",
+    ]);
+  });
+
+  it("filtra pela Variante: um Aparelho entra por qualquer capacidade", () => {
+    expect(ids(faixas.filtrar({ btuMin: 12001 }))).toEqual(["duas-variantes"]);
+  });
+
+  it("sem teto, a faixa vai até o fim da base", () => {
+    expect(ids(faixas.filtrar({ btuMin: 9001 }))).toEqual([
+      "doze",
+      "duas-variantes",
+      "nove-um",
+    ]);
+  });
+
+  it("com capacidade exata, a faixa é ignorada", () => {
+    expect(ids(faixas.filtrar({ btu: 9000, btuMin: 12001 }))).toEqual([
+      "duas-variantes",
+      "nove",
+    ]);
+  });
+});
+
 describe("módulo de consulta — busca textual", () => {
   it("encontra Aparelhos por marca", () => {
     expect(ids(criarConsulta(dataset).filtrar({ q: "kenne" }))).toEqual([

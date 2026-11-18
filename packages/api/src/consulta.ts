@@ -38,6 +38,17 @@ export interface FiltrosConsulta extends OrdenacaoConsulta {
   tipo?: string;
   /** Capacidade nominal em BTU/h; casa com qualquer Variante do Aparelho. */
   btu?: number;
+  /**
+   * Piso da faixa de capacidade em BTU/h (ticket 60); casa com qualquer Variante
+   * cuja capacidade esteja no intervalo, incluindo o limite. Ignorado quando
+   * `btu` está presente — capacidade exata e faixa são exclusivas.
+   */
+  btuMin?: number;
+  /**
+   * Teto da faixa de capacidade em BTU/h; ausente significa **sem teto** (a
+   * faixa "acima de X"). Mesma exclusividade de `btuMin`.
+   */
+  btuMax?: number;
   /** Voltagem em V; casa com qualquer Variante do Aparelho. */
   tensao?: number;
   /** Função do Aparelho (ex.: `Frio`, `Quente/Frio`). */
@@ -98,6 +109,22 @@ function combinaCampos(item: ItemConsulta, filtros: FiltrosConsulta): boolean {
   }
   if (filtros.btu !== undefined && !item.capacidadesBtu.includes(filtros.btu)) {
     return false;
+  }
+  // A faixa só vale sem capacidade exata: `?btu=` continua mandando sozinho
+  // (links antigos) e escolher uma faixa limpa `btu` no estado do site.
+  if (filtros.btu === undefined) {
+    const min = filtros.btuMin ?? -Infinity;
+    const max = filtros.btuMax ?? Infinity;
+    const temFaixa =
+      filtros.btuMin !== undefined || filtros.btuMax !== undefined;
+    if (
+      temFaixa &&
+      !item.capacidadesBtu.some(
+        (capacidade) => capacidade >= min && capacidade <= max,
+      )
+    ) {
+      return false;
+    }
   }
   if (filtros.tensao !== undefined && !item.tensoes.includes(filtros.tensao)) {
     return false;

@@ -10,6 +10,11 @@ import {
  * querystring, para o resultado ficar na URL (`?marca=&tipo=&btu=&tensao=&q=`)
  * e ser compartilhável/favoritável (ADR-0008). Puro, sem DOM.
  *
+ * **Faixa de capacidade (ticket 60).** `?btuMin=&btuMax=` guarda a faixa como
+ * recorte; `btuMax` ausente significa sem teto. Faixa e capacidade exata são
+ * mutuamente exclusivas: `btu` vence na leitura (links antigos continuam
+ * abrindo o recorte exato) e a ilha limpa uma chave ao escolher a outra.
+ *
  * **Filtros padrão (ticket 38, revisto no 44).** Abrir `/aparelhos/` sem nenhum
  * filtro na URL aplica só a Tensão 220 V — o recorte mais comum da rede
  * brasileira —, sem sujar a URL. O padrão é implícito: uma URL que traga
@@ -30,6 +35,8 @@ const CAMPOS_DE_FILTRO = [
   "marca",
   "tipo",
   "btu",
+  "btuMin",
+  "btuMax",
   "tensao",
   "funcao",
   "classe",
@@ -106,6 +113,8 @@ export function temFiltroAtivo(estado: FiltrosConsulta): boolean {
 const CAMPOS_AVANCADOS = [
   "marca",
   "btu",
+  "btuMin",
+  "btuMax",
   "tensao",
   "funcao",
   "tipo",
@@ -126,6 +135,10 @@ function lerFiltros(busca: URLSearchParams): FiltrosConsulta {
   const marca = texto(busca.get("marca"))?.toUpperCase();
   const tipo = texto(busca.get("tipo"));
   const btu = numero(busca.get("btu"));
+  // Capacidade exata e faixa não se somam: o link antigo `?btu=` vence e as
+  // chaves da faixa são descartadas (o motor também ignora a faixa com `btu`).
+  const btuMin = btu === undefined ? numero(busca.get("btuMin")) : undefined;
+  const btuMax = btu === undefined ? numero(busca.get("btuMax")) : undefined;
   const tensao = numero(busca.get("tensao"));
   const funcao = texto(busca.get("funcao"));
   const classe = texto(busca.get("classe"))?.toUpperCase();
@@ -134,6 +147,8 @@ function lerFiltros(busca: URLSearchParams): FiltrosConsulta {
     ...(marca === undefined ? {} : { marca }),
     ...(tipo === undefined ? {} : { tipo }),
     ...(btu === undefined ? {} : { btu }),
+    ...(btuMin === undefined ? {} : { btuMin }),
+    ...(btuMax === undefined ? {} : { btuMax }),
     ...(tensao === undefined ? {} : { tensao }),
     ...(funcao === undefined ? {} : { funcao }),
     ...(classe === undefined ? {} : { classe }),
@@ -173,6 +188,13 @@ function escreverFiltros(
   }
   if (estado.btu !== undefined) {
     busca.set("btu", String(estado.btu));
+  } else {
+    if (estado.btuMin !== undefined) {
+      busca.set("btuMin", String(estado.btuMin));
+    }
+    if (estado.btuMax !== undefined) {
+      busca.set("btuMax", String(estado.btuMax));
+    }
   }
   if (estado.tensao !== undefined) {
     busca.set("tensao", String(estado.tensao));

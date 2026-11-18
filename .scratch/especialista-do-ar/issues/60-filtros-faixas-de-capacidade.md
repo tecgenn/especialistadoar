@@ -4,17 +4,17 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] O contrato de consulta aceita `btuMin` e `btuMax` (números opcionais; `btuMax` ausente significa sem teto)
-- [ ] A faixa casa qualquer Variante do Aparelho cuja capacidade esteja no intervalo, incluindo os limites
-- [ ] Quando `btu` está presente, as faixas são ignoradas; escolher faixa limpa `btu`
-- [ ] Escolher capacidade exata limpa `btuMin` e `btuMax`
-- [ ] As seis faixas aparecem como chips na ordem comercial, e uma faixa sem nenhum Aparelho na base não é renderizada
-- [ ] O select de capacidade exata continua no mesmo campo dos chips, sem repetir as faixas
-- [ ] O resumo do recorte mostra a faixa como chip legível ("12.001–18.000 BTU/h") com "×" que a desfaz
-- [ ] O chip de faixa aceso reflete o recorte vindo da URL, e desligar por "×" limpa as duas chaves
-- [ ] `?btu=12000` continua abrindo o recorte antigo, com o select marcado e nenhum chip de faixa aceso
-- [ ] O contador de resultados continua coerente ao trocar de faixa para exata e vice-versa
-- [ ] Testes cobrem os limites (9.000 entra em "até 9.000", 9.001 entra na faixa seguinte), a exclusividade entre faixa e exata, o `?btu=` preservado e o chip de resumo
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] O contrato de consulta aceita `btuMin` e `btuMax` (números opcionais; `btuMax` ausente significa sem teto)
+- [x] A faixa casa qualquer Variante do Aparelho cuja capacidade esteja no intervalo, incluindo os limites
+- [x] Quando `btu` está presente, as faixas são ignoradas; escolher faixa limpa `btu`
+- [x] Escolher capacidade exata limpa `btuMin` e `btuMax`
+- [x] As seis faixas aparecem como chips na ordem comercial, e uma faixa sem nenhum Aparelho na base não é renderizada
+- [x] O select de capacidade exata continua no mesmo campo dos chips, sem repetir as faixas
+- [x] O resumo do recorte mostra a faixa como chip legível ("12.001–18.000 BTU/h") com "×" que a desfaz
+- [x] O chip de faixa aceso reflete o recorte vindo da URL, e desligar por "×" limpa as duas chaves
+- [x] `?btu=12000` continua abrindo o recorte antigo, com o select marcado e nenhum chip de faixa aceso
+- [x] O contador de resultados continua coerente ao trocar de faixa para exata e vice-versa
+- [x] Testes cobrem os limites (9.000 entra em "até 9.000", 9.001 entra na faixa seguinte), a exclusividade entre faixa e exata, o `?btu=` preservado e o chip de resumo
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes

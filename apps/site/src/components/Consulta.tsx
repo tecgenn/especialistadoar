@@ -23,6 +23,11 @@ import {
   temFiltroAtivo,
   temFiltroAvancado,
 } from "../lib/estado";
+import {
+  estadoNaFaixa,
+  faixasDeCapacidade,
+  rotuloDaFaixa,
+} from "../lib/faixas-capacidade";
 import { formatarFaixa } from "../lib/ficha";
 import type { OpcoesConsulta } from "../lib/opcoes";
 import {
@@ -194,6 +199,8 @@ const FILTRO_DESLIGADO: Record<CampoResumoFiltro, FiltrosConsulta> = {
   q: { q: undefined },
   marca: { marca: undefined },
   btu: { btu: undefined },
+  // A faixa vive em duas chaves: o "×" limpa as duas de uma vez.
+  btuFaixa: { btuMin: undefined, btuMax: undefined },
   funcao: { funcao: undefined },
   tensao: { tensao: undefined },
   tipo: { tipo: undefined },
@@ -236,11 +243,14 @@ function SelectOutras({
   valor,
   opcoes,
   onChange,
+  vazio,
 }: {
   rotulo: string;
   valor: string;
   opcoes: { valor: string; rotulo: string }[];
   onChange: (valor: string) => void;
+  /** Rótulo de uma opção vazia **selecionável**, para limpar o filtro aqui mesmo. */
+  vazio?: string;
 }) {
   return (
     <label className="select-outras">
@@ -249,9 +259,13 @@ function SelectOutras({
         value={valor}
         onChange={(evento) => onChange(evento.target.value)}
       >
-        <option value="" disabled hidden>
-          {rotulo}
-        </option>
+        {vazio === undefined ? (
+          <option value="" disabled hidden>
+            {rotulo}
+          </option>
+        ) : (
+          <option value="">{vazio}</option>
+        )}
         {opcoes.map((opcao) => (
           <option key={opcao.valor} value={opcao.valor}>
             {opcao.rotulo}
@@ -518,12 +532,19 @@ export default function Consulta({
     !opcoes.marcas.includes(estado.marca)
       ? [...opcoes.marcas, estado.marca].sort()
       : opcoes.marcas;
+  // Capacidade exata e faixa dividem o mesmo campo (ticket 60): os chips são as
+  // seis faixas comerciais e o `<select>` guarda **todas** as capacidades
+  // exatas — inclusive as curadas, que antes eram chips.
+  const capacidades = [...new Set([...opcoes.btusChip, ...opcoes.btus])].sort(
+    (a, b) => a - b,
+  );
+  const faixas = faixasDeCapacidade(capacidades);
   const marcaDoSelect =
     estado.marca !== undefined && marcasDoSelect.includes(estado.marca)
       ? estado.marca
       : "";
   const btuDoSelect =
-    estado.btu !== undefined && opcoes.btus.includes(estado.btu)
+    estado.btu !== undefined && capacidades.includes(estado.btu)
       ? String(estado.btu)
       : "";
 
@@ -635,26 +656,48 @@ export default function Consulta({
           <fieldset className="campo-chips campo-capacidade">
             <legend>Capacidade</legend>
             <Chips
-              opcoes={opcoes.btusChip.map((btu) => ({
-                valor: String(btu),
-                rotulo: btu.toLocaleString("pt-BR"),
+              opcoes={faixas.map((faixa) => ({
+                valor: rotuloDaFaixa(faixa),
+                rotulo: rotuloDaFaixa(faixa),
               }))}
-              estaAtivo={(valor) => estado.btu === Number(valor)}
+              estaAtivo={(valor) => {
+                const faixa = faixas.find(
+                  (candidata) => rotuloDaFaixa(candidata) === valor,
+                );
+                return faixa === undefined
+                  ? false
+                  : estadoNaFaixa(estado, faixa);
+              }}
               selecionar={(valor) => {
-                const btu = Number(valor);
-                atualizar({ btu: estado.btu === btu ? undefined : btu });
+                const faixa = faixas.find(
+                  (candidata) => rotuloDaFaixa(candidata) === valor,
+                );
+                if (faixa === undefined) {
+                  return;
+                }
+                // Faixa e capacidade exata são exclusivas: escolher a faixa (ou
+                // desligá-la) sempre limpa `btu`.
+                atualizar({
+                  btu: undefined,
+                  btuMin: estadoNaFaixa(estado, faixa) ? undefined : faixa.min,
+                  btuMax: estadoNaFaixa(estado, faixa) ? undefined : faixa.max,
+                });
               }}
             />
             <SelectOutras
-              rotulo="Outras capacidades"
+              rotulo="Capacidade exata"
+              vazio="Todas as capacidades"
               valor={btuDoSelect}
-              opcoes={opcoes.btus.map((btu) => ({
+              opcoes={capacidades.map((btu) => ({
                 valor: String(btu),
                 rotulo: btu.toLocaleString("pt-BR"),
               }))}
               onChange={(valor) =>
+                // Escolher a exata limpa as duas chaves da faixa.
                 atualizar({
                   btu: valor === "" ? undefined : Number(valor),
+                  btuMin: undefined,
+                  btuMax: undefined,
                 })
               }
             />
