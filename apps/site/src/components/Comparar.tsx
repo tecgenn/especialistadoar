@@ -11,13 +11,21 @@ import {
   useState,
 } from "react";
 import {
+  capacidadesDiferem,
+  custosDaComparacao,
   escreverIds,
+  fraseDiferencaCustoAnual,
   lerIds,
   linhasDaComparacao,
+  linhasDeCustoComparacao,
   MAXIMO_COMPARACAO,
   resumoDaSugestao,
   textoDescartes,
 } from "../lib/comparacao";
+import type { TarifasCuradas } from "../lib/tarifas.ts";
+import { caminhoComBusca, mesclarChaves } from "../lib/url.ts";
+import CamposCusto from "./CamposCusto.tsx";
+import { useCusto } from "./useCusto.ts";
 
 /**
  * A ilha da Comparação (ticket 49): três campos de busca que viram cartões e
@@ -34,6 +42,8 @@ export interface PropsComparar {
   consultaUrl?: string;
   /** Mapa de Aparelhos analisados: aparelhoId → { titulo, url }. */
   analisados?: Map<string, { titulo: string; url: string }>;
+  /** Tarifas de referência da calculadora (curadoria do site, ADR-0022). */
+  tarifas: TarifasCuradas;
 }
 
 /** Quantas sugestões o combobox exibe por vez. */
@@ -47,7 +57,11 @@ const ID_DICA = "comparar-dica";
 export default function Comparar({
   consultaUrl = "/consulta.json",
   analisados = new Map(),
+  tarifas,
 }: PropsComparar) {
+  // O cenário da calculadora é o mesmo da ficha (ticket 56): as chaves `uf`,
+  // `tarifa`, `horas` e `dias` convivem com `?ids=` na mesma URL.
+  const campos = useCusto(tarifas);
   const [itens, setItens] = useState<ItemConsulta[] | null>(null);
   const [motor, setMotor] = useState<MotorConsulta | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -148,11 +162,15 @@ export default function Comparar({
     setTextos(["", "", ""]);
     setCampoAtivo(null);
     setAtivo(-1);
-    const busca = escreverIds(validos).toString();
+    const busca = mesclarChaves(
+      new URLSearchParams(window.location.search),
+      ["ids"],
+      escreverIds(validos),
+    );
     window.history.replaceState(
       null,
       "",
-      `${window.location.pathname}${busca === "" ? "" : `?${busca}`}`,
+      caminhoComBusca(window.location.pathname, busca),
     );
     if (validos.length < MAXIMO_COMPARACAO) {
       pedirFoco(validos.length);
@@ -233,6 +251,15 @@ export default function Comparar({
     .filter((item): item is ItemConsulta => item !== undefined);
   const linhas = linhasDaComparacao(selecionados);
 
+  // Custo estimado (ticket 56): o mesmo cenário da ficha aplicado a todos os
+  // modelos. Nada aqui elege um "melhor valor" — só números e uma diferença
+  // factual, com o aviso quando as capacidades não coincidem.
+  const custos = custosDaComparacao(selecionados, campos.estado);
+  const linhasCusto = linhasDeCustoComparacao(custos);
+  const fraseCusto = fraseDiferencaCustoAnual(custos);
+  const capacidadesDiferentes = capacidadesDiferem(selecionados);
+  const mostrarCusto = selecionados.length >= 2;
+
   const textoAtivo = campoAtivo === null ? "" : (textos[campoAtivo] ?? "");
   const sugestoes =
     motor === null || campoAtivo === null || textoAtivo.trim() === ""
@@ -248,6 +275,28 @@ export default function Comparar({
 
   return (
     <section className="comparar">
+      {mostrarCusto ? (
+        <section
+          className="comparar-painel-custo"
+          aria-labelledby="comparar-custo-titulo"
+        >
+          <h2 id="comparar-custo-titulo">Custo estimado — seu cenário</h2>
+          <p className="comparar-painel-intro">
+            O mesmo cenário da ficha vale para todos os modelos abaixo.
+          </p>
+          <CamposCusto
+            campos={campos}
+            tarifas={tarifas}
+            idPrefix="comparar-custo"
+          />
+          <p className="comparar-painel-metodo">
+            Método: consumo declarado no INMETRO ÷ 2.080 h/ano (≈ 5,7 h/dia) ×
+            horas × dias × tarifa, em 12 meses iguais. É uma estimativa com as
+            entradas informadas, não um Valor oficial nem promessa de economia.
+          </p>
+        </section>
+      ) : null}
+
       <div className="comparar-campos">
         {ROTULOS_CAMPOS.map((rotulo, slot) => {
           const item = selecionados[slot];
@@ -262,6 +311,23 @@ export default function Comparar({
                   <span aria-hidden="true"> · </span>
                   {resumo.tipo}
                 </p>
+                {mostrarCusto ? (
+                  <>
+                    <dl className="comparar-cartao-custo">
+                      {linhasCusto.map((linha) => (
+                        <div key={linha.campo}>
+                          <dt>{linha.rotulo}</dt>
+                          <dd>{linha.valores[slot] ?? "—"}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    {custos[slot] === null ? (
+                      <p className="comparar-cartao-sem-custo">
+                        Sem consumo declarado no INMETRO.
+                      </p>
+                    ) : null}
+                  </>
+                ) : null}
                 <div className="comparar-cartao-acoes">
                   <button
                     type="button"
@@ -474,14 +540,54 @@ export default function Comparar({
                     </tr>
                   ))}
                 </tbody>
+                {mostrarCusto ? (
+                  <tbody className="comparar-tbody-custo">
+                    <tr>
+                      <td
+                        className="comparar-secao"
+                        colSpan={selecionados.length + 1}
+                      >
+                        Custo estimado (seu uso)
+                      </td>
+                    </tr>
+                    {linhasCusto.map((linha) => (
+                      <tr key={linha.campo}>
+                        <th scope="row" className="comparar-atributo">
+                          {linha.rotulo}
+                        </th>
+                        {linha.valores.map((valor, indice) => (
+                          <td
+                            key={selecionados[indice]?.id}
+                            data-campo={linha.campo}
+                          >
+                            {valor}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                ) : null}
               </table>
             </section>
           </div>
 
+          {fraseCusto === null ? null : (
+            <p className="comparar-diferenca" role="status">
+              {fraseCusto}
+            </p>
+          )}
+          {capacidadesDiferentes ? (
+            <p className="comparar-aviso-capacidade">
+              Os modelos comparados têm capacidades diferentes. Um custo mais
+              baixo não significa maior eficiência: o IDRS é a medida de
+              eficiência — compare o de cada modelo.
+            </p>
+          ) : null}
+
           <p className="comparar-nota">
-            Os valores são os Dados declarados do INMETRO, reproduzidos como
-            Valores oficiais. A comparação é neutra: nenhum valor é destacado
-            como melhor.
+            Os dados técnicos são os Dados declarados do INMETRO, reproduzidos
+            como Valores oficiais; os custos acima são estimativas do cenário
+            informado. A comparação é neutra, sem destaques ou vereditos.
           </p>
         </>
       )}

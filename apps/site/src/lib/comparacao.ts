@@ -7,6 +7,14 @@
  */
 
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
+import {
+  calcularCusto,
+  type EstadoCusto,
+  formatarFaixa as formatarFaixaCusto,
+  formatarKwh,
+  formatarReais,
+  type ResultadoCusto,
+} from "./custo.ts";
 import { formatarFaixa } from "./ficha.ts";
 
 /** O número máximo de Aparelhos por comparação. */
@@ -86,8 +94,8 @@ export function escreverIds(ids: readonly string[]): URLSearchParams {
   return busca;
 }
 
-/** As linhas da matriz, na ordem em que aparecem na tela. */
-export type CampoComparacao =
+/** As sete linhas técnicas, direto dos Dados declarados do INMETRO. */
+export type CampoComparacaoTecnico =
   | "tipo"
   | "funcao"
   | "capacidade"
@@ -95,6 +103,13 @@ export type CampoComparacao =
   | "consumo"
   | "idrs"
   | "classe";
+
+/** As linhas da matriz, na ordem em que aparecem na tela. */
+export type CampoComparacao =
+  | CampoComparacaoTecnico
+  | "consumoMensal"
+  | "custoMensal"
+  | "custoAnual";
 
 export interface LinhaComparacao {
   campo: CampoComparacao;
@@ -104,7 +119,7 @@ export interface LinhaComparacao {
 }
 
 export const LINHAS_COMPARACAO: readonly {
-  campo: CampoComparacao;
+  campo: CampoComparacaoTecnico;
   rotulo: string;
 }[] = [
   { campo: "tipo", rotulo: "Tipo" },
@@ -127,7 +142,7 @@ function textoOuTravessao(valor: string | null): string {
  */
 export function valorDaComparacao(
   item: ItemConsulta,
-  campo: CampoComparacao,
+  campo: CampoComparacaoTecnico,
 ): string {
   switch (campo) {
     case "tipo":
@@ -179,4 +194,95 @@ export function resumoDaSugestao(item: ItemConsulta): ResumoSugestao {
     capacidade: capacidade === "—" ? "—" : `${capacidade} BTU/h`,
     tipo: textoOuTravessao(item.tipo),
   };
+}
+
+/**
+ * O custo estimado de cada Aparelho no cenário da calculadora (ticket 56). A
+ * aritmética continua só no módulo puro `custo.ts`; aqui só se alinha o resultado
+ * com a ordem das colunas da matriz.
+ */
+export function custosDaComparacao(
+  itens: readonly ItemConsulta[],
+  estado: EstadoCusto,
+): (ResultadoCusto | null)[] {
+  return itens.map((item) =>
+    calcularCusto({
+      consumosAnuaisKwh: item.consumosKwh,
+      tarifa: estado.tarifa,
+      horas: estado.horas,
+      dias: estado.dias,
+    }),
+  );
+}
+
+/**
+ * As três linhas da seção "Custo estimado (seu uso)" da matriz, na ordem em que
+ * a ficha mostra os números: consumo mensal, custo mensal e custo anual. Um
+ * Aparelho sem consumo declarado aparece como travessão, sem mudar a forma da
+ * matriz. Nenhum valor é comparado ou marcado como melhor.
+ */
+export function linhasDeCustoComparacao(
+  custos: readonly (ResultadoCusto | null)[],
+): LinhaComparacao[] {
+  const valores = (
+    campo: "consumoMensalKwh" | "custoMensal" | "custoAnual",
+    formatar: (valor: number) => string,
+  ) =>
+    custos.map((custo) =>
+      custo === null ? "—" : formatarFaixaCusto(custo[campo], formatar),
+    );
+
+  return [
+    {
+      campo: "consumoMensal",
+      rotulo: "Consumo mensal",
+      valores: valores("consumoMensalKwh", formatarKwh),
+    },
+    {
+      campo: "custoMensal",
+      rotulo: "Custo mensal",
+      valores: valores("custoMensal", formatarReais),
+    },
+    {
+      campo: "custoAnual",
+      rotulo: "Custo anual",
+      valores: valores("custoAnual", formatarReais),
+    },
+  ];
+}
+
+/**
+ * A frase factual abaixo da matriz: o menor e o maior custo anual estimado no
+ * cenário informado e a diferença entre eles. Ela não diz qual modelo é qual,
+ * não elege vencedor e não promete economia — só dimensiona a dispersão dos
+ * números. Sem pelo menos dois custos, não há diferença a mostrar.
+ */
+export function fraseDiferencaCustoAnual(
+  custos: readonly (ResultadoCusto | null)[],
+): string | null {
+  const faixas = custos
+    .filter((custo): custo is ResultadoCusto => custo !== null)
+    .map((custo) => custo.custoAnual);
+  if (faixas.length < 2) {
+    return null;
+  }
+
+  const menor = Math.min(...faixas.map((faixa) => faixa.minimo));
+  const maior = Math.max(...faixas.map((faixa) => faixa.maximo));
+  return `Neste cenário, o custo anual estimado varia de ${formatarReais(menor)} a ${formatarReais(maior)} entre os modelos — diferença de ${formatarReais(maior - menor)}/ano.`;
+}
+
+/**
+ * As capacidades dos modelos deixam de coincidir quando a lista de BTUs (por
+ * Variante) não é a mesma. Um custo menor entre capacidades diferentes não
+ * autoriza concluir que o Aparelho é mais eficiente — daí o aviso na tela.
+ */
+export function capacidadesDiferem(itens: readonly ItemConsulta[]): boolean {
+  if (itens.length < 2) {
+    return false;
+  }
+  const chaves = itens.map((item) =>
+    [...new Set(item.capacidadesBtu)].sort((a, b) => a - b).join(","),
+  );
+  return new Set(chaves).size > 1;
 }

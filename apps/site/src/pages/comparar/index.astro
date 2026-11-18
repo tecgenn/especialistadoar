@@ -3,6 +3,7 @@ import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import Comparar from "../../components/Comparar.tsx";
 import { carregarAnalises, mapaAnalisados } from "../../conteudo/analises.ts";
+import { carregarTarifas } from "../../conteudo/tarifas.ts";
 import Base from "../../layouts/Base.astro";
 
 // A comparação é uma ilha (ticket 49): baixa o `consulta.json` publicado e
@@ -35,5 +36,5 @@ const canonical = Astro.site
     então recarregar ou compartilhar o link abre a mesma seleção.
   </p>
 
-  <Comparar client:load analisados={analisados} />
+  <Comparar client:load analisados={analisados} tarifas={carregarTarifas()} />
 </Base>
