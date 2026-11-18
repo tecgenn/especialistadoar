@@ -208,17 +208,35 @@ body.ampla footer {
   font-weight: 700;
 }
 
-.consulta .limpar-filtros {
-  margin-left: auto;
+/* O rodapé do painel (ticket 61): contagem do recorte e "Limpar filtros"
+   juntos, separados da linha dos chips do recorte efetivo. */
+.consulta .rodape-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--borda);
+}
+
+.consulta .contagem-recorte {
+  margin: 0;
+  color: var(--texto-suave);
   font-size: 0.85rem;
 }
 
-/* O painel avançado (ticket 50): os seis filtros em grade, recolhido por
-   `hidden` até o botão abrir — ou até a URL trazer um filtro avançado. */
+.consulta .limpar-filtros {
+  font-size: 0.85rem;
+}
+
+/* O painel avançado (ticket 61): duas faixas nomeadas, empilhadas, com os
+   campos em largura total. Recolhido por `hidden` até o botão abrir — ou até a
+   URL trazer um filtro avançado. */
 .consulta .filtros-avancados {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   padding: 1rem;
   border: 1px solid var(--borda);
   border-radius: 0.5rem;
@@ -229,16 +247,23 @@ body.ampla footer {
   display: none;
 }
 
-@media (max-width: 56rem) {
-  .consulta .filtros-avancados {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.consulta .faixa-filtros {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
-@media (max-width: 40rem) {
-  .consulta .filtros-avancados {
-    grid-template-columns: 1fr;
-  }
+.consulta .faixa-filtros > legend {
+  margin: 0 0 0.15rem;
+  padding: 0;
+  color: var(--primaria);
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 /* Um campo com chips: legenda, chips que quebram linha e, quando há valores
@@ -247,6 +272,7 @@ body.ampla footer {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  width: 100%;
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -293,26 +319,29 @@ body.ampla footer {
   line-height: 1.3;
 }
 
-/* Ticket 45: barra densa em blocos — Marca em 2 colunas, Capacidade em 3, Tipo
-   em 2 e a Classe numa única fileira de seis letras. */
-.consulta .campo-marca .chips,
-.consulta .campo-tipo .chips {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.consulta .campo-capacidade .chips {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
+/* Ticket 61: os chips quebram linha naturalmente, sem grade de colunas. As seis
+   letras de Classe ficam juntas, com um espaçamento um pouco maior. */
 .consulta .campo-classe .chips {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.25rem;
+  gap: 0.35rem;
+}
+
+/* "Outras marcas" (ticket 61): campo de busca em largura total, no lugar do
+   select longo. */
+.consulta .campo-busca-marca {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  font-size: 0.85rem;
+  color: var(--texto-suave);
+}
+
+.campo-busca-marca input {
+  width: 100%;
 }
 
 .consulta .campo-tensao {
+  width: 100%;
   min-width: 0;
 }
 
@@ -364,8 +393,11 @@ body.ampla footer {
 }
 
 .consulta .campo-classe .chips button {
+  min-width: 2.75rem;
+  padding-block: 0.4rem;
   padding-inline: 0;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .consulta .chips button[aria-pressed="true"] {
