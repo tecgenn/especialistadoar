@@ -202,10 +202,13 @@ nova exportação CSV
   entrar no bundle). Ver ADR-0008 e ADR-0018.
 - **site** — em `apps/site`, o catálogo Astro como **build estático**: páginas de
   detalhe pré-renderizadas por Aparelho (`getStaticPaths` sobre `aparelhos.json`) +
-  **duas ilhas React**: a de consulta (`Consulta.tsx`) baixa `consulta.json` e
+  **quatro ilhas React**: a de consulta (`Consulta.tsx`) baixa `consulta.json` e
   filtra/busca **no cliente** pelo módulo isomórfico (08), com o estado na URL
   (`?marca=&tipo=&btu=&tensao=&funcao=&classe=&ordem=&dir=&q=`); a do Assistente
-  está no bullet próprio mais abaixo.
+  está no bullet próprio mais abaixo. As outras duas — `CalculadoraCusto.tsx` na
+  ficha e `Comparar.tsx` em `/comparar/` — compartilham o cenário de custo
+  (ticket 56) via `useCusto.ts`/`CamposCusto.tsx`, como detalhado no bullet da
+  comparação.
   Em `/aparelhos/` a ilha rende a **tabela** de Aparelhos (ticket 27): uma linha
   por Aparelho, cabeçalhos `<button>` com `aria-sort`, ordenação por `ordenar` do
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
@@ -299,7 +302,7 @@ nova exportação CSV
 
 - **assistente** — em `apps/site/src/lib/assistente.ts`, o motor puro do Assistente de dimensionamento (ticket 41): recebe as respostas das cinco telas do wizard (`/assistente/`) e devolve a Recomendação do Assistente — capacidade comercial recomendada, fatores usados, nível de confiança, explicação curta e orientações. Coeficientes fixos e auditáveis: base por m² conforme incidência solar (600/650/750/800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima (9.000 a 60.000 BTU/h), teto de 60.000 com alternativa dividida (2 × metade da capacidade quando for comercial e ≥ 9.000). A ilha React `Assistente.tsx` apenas coleta respostas e renderiza; não calcula. Todo o estado vive na URL, então recarregar e compartilhar preservam o resultado. No build, o mapa capacidade → analisados (ticket 42) é montado a partir das Análises publicadas e das `capacidadesBtu` do `consulta.json`, e só o valor recomendado é consultado — sem busca no cliente. ADR-0020 registra a decisão (heurística de mercado, sem LLM/Worker, Valor calculado nunca oficial, acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica).
 
-- **comparação** — em `apps/site`, a sessão de Comparação (tickets 49–52): a página `/comparar/` (item "Comparar" no menu, entre Aparelhos e Assistente) e a ilha `Comparar.tsx`. Três campos de busca posicionais (`Modelo 1`, `Modelo 2`, `Modelo 3`) são comboboxes acessíveis sobre o mesmo `consulta.json` e motor MiniSearch da tabela (~8 sugestões com marca, modelo, capacidade e tipo); a escolha vira um cartão com "Trocar"/"Remover" e os campos aproximam ao remover o do meio. A seleção vive em `?ids=id1,id2,id3` — mesmo contrato da tabela, máximo de 3, ordem preservada, ids repetidos/desconhecidos descartados com aviso — separada de `FiltrosConsulta`, então nunca se mistura com filtros, busca ou ordenação. A página abre vazia (estado que explica a ferramenta), mostra um convite com 1 modelo e a matriz neutra de atributos (Tipo, Função, Capacidade, Tensão, Consumo anual, IDRS e Classe, como faixa quando há mais de uma Variante) com 2 ou 3 modelos; sem destaque de "melhor valor". O contrato puro `?ids=` vive em `apps/site/src/lib/comparacao.ts` (`lerIds`, `escreverIds`, `linhasDaComparacao`, `MAXIMO_COMPARACAO`), sem DOM, e a página publica canonical sem `ids` (não indexada). Ver ADR-0021.
+- **comparação** — em `apps/site`, a sessão de Comparação (tickets 49–52, 56): a página `/comparar/` (item "Comparar" no menu, entre Aparelhos e Assistente) e a ilha `Comparar.tsx`. Três campos de busca posicionais (`Modelo 1`, `Modelo 2`, `Modelo 3`) são comboboxes acessíveis sobre o mesmo `consulta.json` e motor MiniSearch da tabela (~8 sugestões com marca, modelo, capacidade e tipo); a escolha vira um cartão com "Trocar"/"Remover" e os campos aproximam ao remover o do meio. A seleção vive em `?ids=id1,id2,id3` — mesmo contrato da tabela, máximo de 3, ordem preservada, ids repetidos/desconhecidos descartados com aviso — separada de `FiltrosConsulta`, então nunca se mistura com filtros, busca ou ordenação. A página abre vazia (estado que explica a ferramenta), mostra um convite com 1 modelo e a matriz neutra de atributos (Tipo, Função, Capacidade, Tensão, Consumo anual, IDRS e Classe, como faixa quando há mais de uma Variante) com 2 ou 3 modelos; sem destaque de "melhor valor". Com 2 ou 3 modelos, um painel no topo repete os quatro campos da calculadora da ficha — UF, tarifa, horas e dias — e cada cartão ganha Consumo mensal, Custo mensal e Custo anual; a matriz abre uma segunda seção "Custo estimado (seu uso)" com essas três linhas depois das técnicas, e uma frase abaixo dá o menor e o maior custo anual e a diferença, sem apontar modelo nem eleger vencedor. Quando as capacidades diferem, um aviso explica que custo menor não implica maior eficiência e remete ao IDRS; o rodapé separa os Dados declarados do INMETRO das estimativas. Os quatro campos e a escrita na URL são compartilhados com a ficha pelo hook `useCusto.ts` e pelo componente `CamposCusto.tsx` (a aritmética continua só no módulo puro `src/lib/custo.ts`), e `src/lib/url.ts` (`mesclarChaves`, `caminhoComBusca`) junta as chaves da calculadora com `?ids=` para uma ilha não apagar o estado da outra — um link da ficha abre a comparação no mesmo cenário. O contrato puro vive em `apps/site/src/lib/comparacao.ts` (`lerIds`, `escreverIds`, `linhasDaComparacao`, `custosDaComparacao`, `linhasDeCustoComparacao`, `fraseDiferencaCustoAnual`, `capacidadesDiferem`, `MAXIMO_COMPARACAO`), sem DOM, e a página publica canonical sem `ids` (não indexada). Ver ADR-0021.
 - **aparelho:buscar** — `apps/site/src/lib/buscar-aparelho.ts` (busca pura) + `apps/site/scripts/buscar-aparelho.ts` (CLI, `pnpm aparelho:buscar`): procura na base servida por marca ou modelo (trecho, sem caixa nem acento) ou por potência exata em BTU e imprime marca, modelo, potência e `id` — o valor do `aparelhoId` de uma Análise (ticket 16). Só leitura: não cria artefato nem toca no pipeline.
 
 ## Interfaces
@@ -362,9 +365,12 @@ Ver ADR-0003 e ADR-0011.
 - **Testes:** Vitest, incluindo snapshots golden dos JSONL e do relatório.
 - **Lint/format:** Biome.
 - **Site:** Astro, **build estático**: páginas de detalhe pré-renderizadas para
-  cada Aparelho + **duas ilhas React** — `Consulta.tsx` (filtros combináveis e
-  busca textual no cliente, estado na URL) e `Assistente.tsx` (wizard de 5
-  telas do Assistente, estado na URL, sem cálculo). O
+  cada Aparelho + **quatro ilhas React** — `Consulta.tsx` (filtros combináveis e
+  busca textual no cliente, estado na URL), `Assistente.tsx` (wizard de 5
+  telas do Assistente, estado na URL, sem cálculo), `CalculadoraCusto.tsx` e
+  `Comparar.tsx` (o mesmo cenário de custo na ficha e na comparação, campos
+  compartilhados por `useCusto.ts`/`CamposCusto.tsx` e chaves na URL juntas por
+  `src/lib/url.ts`). O
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
