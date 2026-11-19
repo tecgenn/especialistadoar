@@ -14,6 +14,7 @@ import {
   agruparVariantes,
   cartoesDeDestaque,
   descreverCapacidade,
+  EXPLICADORES_DA_FICHA,
   etiquetasDaFicha,
   formatarCelula,
   formatarFaixa,
@@ -82,6 +83,7 @@ const identificacao: Array<[string, string | null]> = [
 
 const secoesPresentes = new Set([
   "resumo",
+  "entenda-os-numeros",
   "consumo-e-custo",
   "condicoes-de-ensaio",
   ...(identificacao.length > 0 ? ["especificacoes"] : []),
@@ -183,6 +185,20 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
         <dt>Potência em espera</dt>
         <dd>{formatarFaixa(resumo.potenciasEsperaW, " W")}</dd>
       </dl>
+    </section>
+
+    <section id="entenda-os-numeros" tabindex="-1">
+      <h2>Entenda os números</h2>
+      <div class="explicadores">
+        {
+          EXPLICADORES_DA_FICHA.map((explicador) => (
+            <details class="explicador">
+              <summary>{explicador.titulo}</summary>
+              {explicador.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}
+            </details>
+          ))
+        }
+      </div>
     </section>
 
     <section id="consumo-e-custo" tabindex="-1" class="secao-consumo-custo">

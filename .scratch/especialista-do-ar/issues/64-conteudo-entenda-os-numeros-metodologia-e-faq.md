@@ -4,19 +4,19 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Seção "Entenda os números" na ficha, depois do Resumo, com quatro blocos recolhíveis (`<details>`) fechados por padrão
-- [ ] Explicador de IDRS: o que mede, que quanto maior mais eficiente e que é Valor oficial
-- [ ] Explicador de Classe: faixa A–F declarada pelo INMETRO, não recalculada a partir do IDRS
-- [ ] Explicador de Consumo anual: as 2.080 horas/ano de referência e o que isso significa em horas por dia
-- [ ] Explicador da situação do Registro: o que significam Ativo, Cancelado e Inativo e como a situação do Aparelho é derivada deles
-- [ ] Nenhum explicador promete economia, recomenda compra ou contradiz o Valor oficial
-- [ ] Home: "Metodologia e INMETRO" ganha as três condições de ensaio (carga total a 35 °C, carga parcial a 35 °C, carga parcial a 29 °C)
-- [ ] Home: a seção informa que a classificação vigente entrou em vigor em 1º de janeiro de 2023, pela Portaria INMETRO 269/2021
-- [ ] Home: a seção ganha a nota sobre tecnologia Inverter e por que dois modelos de mesma capacidade consomem diferente
-- [ ] FAQ: pergunta "O que é BTU/h?" respondida em linguagem de quem está começando
-- [ ] FAQ: pergunta "Qual tensão escolher: 127 V ou 220 V?" respondida com o critério da instalação disponível
-- [ ] As duas perguntas entram no `FAQPage` do JSON-LD da home, com o mesmo texto visível
-- [ ] As perguntas existentes e o tom do FAQ são preservados
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Seção "Entenda os números" na ficha, depois do Resumo, com quatro blocos recolhíveis (`<details>`) fechados por padrão
+- [x] Explicador de IDRS: o que mede, que quanto maior mais eficiente e que é Valor oficial
+- [x] Explicador de Classe: faixa A–F declarada pelo INMETRO, não recalculada a partir do IDRS
+- [x] Explicador de Consumo anual: as 2.080 horas/ano de referência e o que isso significa em horas por dia
+- [x] Explicador da situação do Registro: o que significam Ativo, Cancelado e Inativo e como a situação do Aparelho é derivada deles
+- [x] Nenhum explicador promete economia, recomenda compra ou contradiz o Valor oficial
+- [x] Home: "Metodologia e INMETRO" ganha as três condições de ensaio (carga total a 35 °C, carga parcial a 35 °C, carga parcial a 29 °C)
+- [x] Home: a seção informa que a classificação vigente entrou em vigor em 1º de janeiro de 2023, pela Portaria INMETRO 269/2021
+- [x] Home: a seção ganha a nota sobre tecnologia Inverter e por que dois modelos de mesma capacidade consomem diferente
+- [x] FAQ: pergunta "O que é BTU/h?" respondida em linguagem de quem está começando
+- [x] FAQ: pergunta "Qual tensão escolher: 127 V ou 220 V?" respondida com o critério da instalação disponível
+- [x] As duas perguntas entram no `FAQPage` do JSON-LD da home, com o mesmo texto visível
+- [x] As perguntas existentes e o tom do FAQ são preservados
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes

@@ -60,6 +60,11 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
       "Como referência de mercado, um ambiente residencial pede cerca de 600 a 800 BTU/h por m², conforme a incidência de sol, mais um adicional por pessoa, eletrônicos e janelas. Use o Assistente para responder cinco perguntas e chegar à capacidade comercial mais próxima.",
   },
   {
+    pergunta: "O que é BTU/h?",
+    resposta:
+      "BTU/h é a unidade de capacidade de refrigeração: quanto calor o aparelho consegue remover do ambiente em uma hora. Quanto maior o número de BTU/h, maior o ambiente que ele atende. É capacidade, não consumo de energia — o consumo vem em kWh na ficha de cada aparelho.",
+  },
+  {
     pergunta: "O que é o IDRS?",
     resposta:
       "É o Índice de Desempenho de Refrigeração Sazonal: a razão entre o calor removido e a energia elétrica consumida (Wh/Wh) que o INMETRO declara para cada aparelho. Quanto maior, mais eficiente — e o valor é sempre o oficial, nunca recalculado pelo site.",
@@ -73,6 +78,11 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
     pergunta: "Split ou ar-condicionado de janela?",
     resposta:
       "O Split Hi-Wall costuma ser mais eficiente e silencioso, e é a primeira escolha para quartos, salas e escritórios. O modelo de janela atende casos específicos de instalação; compare sempre capacidade, consumo e IDRS na tabela antes de decidir.",
+  },
+  {
+    pergunta: "Qual tensão escolher: 127 V ou 220 V?",
+    resposta:
+      "Escolha a tensão da instalação disponível no local: se a tomada é de 127 V, use um aparelho de 127 V; se é de 220 V, use um de 220 V. Muitos modelos são bivolt (127/220 V) e atendem às duas. Não escolha pela conta de luz — o critério é a rede elétrica do imóvel. Em caso de dúvida, confirme com um eletricista.",
   },
   {
     pergunta: "Como comparar o consumo de energia?",

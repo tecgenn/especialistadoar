@@ -9,6 +9,7 @@ import {
   agruparVariantes,
   cartoesDeDestaque,
   descreverCapacidade,
+  EXPLICADORES_DA_FICHA,
   etiquetasDaFicha,
   formatarCelula,
   formatarFaixa,
@@ -338,11 +339,17 @@ describe("cartoesDeDestaque", () => {
 describe("indiceDaFicha", () => {
   it("lista apenas as seções que existem, na ordem de leitura", () => {
     const indice = indiceDaFicha(
-      new Set(["resumo", "consumo-e-custo", "proveniencia"]),
+      new Set([
+        "resumo",
+        "entenda-os-numeros",
+        "consumo-e-custo",
+        "proveniencia",
+      ]),
     );
 
     expect(indice).toEqual([
       { id: "resumo", rotulo: "Resumo" },
+      { id: "entenda-os-numeros", rotulo: "Entenda os números" },
       { id: "consumo-e-custo", rotulo: "Consumo e custo" },
       { id: "proveniencia", rotulo: "Proveniência" },
     ]);
@@ -352,6 +359,7 @@ describe("indiceDaFicha", () => {
     const completo = indiceDaFicha(
       new Set([
         "resumo",
+        "entenda-os-numeros",
         "consumo-e-custo",
         "condicoes-de-ensaio",
         "especificacoes",
@@ -363,6 +371,7 @@ describe("indiceDaFicha", () => {
 
     expect(completo.map((secao) => secao.id)).toEqual([
       "resumo",
+      "entenda-os-numeros",
       "consumo-e-custo",
       "condicoes-de-ensaio",
       "especificacoes",
@@ -421,5 +430,67 @@ describe("gradeDeCondicoes", () => {
     expect(grade.linhas).toEqual([]);
     expect(grade.mostrarTotal).toBe(false);
     expect(grade.mostrarParcial).toBe(false);
+  });
+});
+
+describe("EXPLICADORES_DA_FICHA", () => {
+  function textoDe(
+    explicador: (typeof EXPLICADORES_DA_FICHA)[number] | undefined,
+  ): string {
+    return explicador?.paragrafos.join(" ") ?? "";
+  }
+
+  it("explica IDRS, Classe, Consumo anual e status do Registro", () => {
+    expect(
+      EXPLICADORES_DA_FICHA.map((explicador) => explicador.titulo),
+    ).toEqual([
+      "IDRS",
+      "Classe energética",
+      "Consumo anual",
+      "Status do Registro",
+    ]);
+    for (const explicador of EXPLICADORES_DA_FICHA) {
+      expect(explicador.paragrafos.length).toBeGreaterThan(0);
+      for (const paragrafo of explicador.paragrafos) {
+        expect(paragrafo.trim().length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("traz os fatos que cada número pede", () => {
+    const [idrs, classe, consumo, registro] = EXPLICADORES_DA_FICHA;
+
+    expect(textoDe(idrs)).toContain("eficiência");
+    expect(textoDe(idrs)).toContain("maior");
+    expect(textoDe(idrs)).toContain("Valor oficial");
+
+    expect(textoDe(classe)).toContain("A a F");
+    expect(textoDe(classe)).toContain("INMETRO");
+    expect(textoDe(classe)).toContain("não é recalculada");
+
+    expect(textoDe(consumo)).toContain("2.080");
+    expect(textoDe(consumo)).toContain("5,7");
+
+    expect(textoDe(registro)).toContain("Ativo");
+    expect(textoDe(registro)).toContain("Cancelado");
+    expect(textoDe(registro)).toContain("Inativo");
+    expect(textoDe(registro)).toContain("ao menos um");
+  });
+
+  it("não promete economia nem recomenda compra", () => {
+    for (const explicador of EXPLICADORES_DA_FICHA) {
+      const texto = explicador.paragrafos.join(" ").toLowerCase();
+      for (const termo of [
+        "economize",
+        "economia",
+        "recomenda",
+        "melhor",
+        "mais barato",
+        "menor preço",
+        "r$",
+      ]) {
+        expect(texto).not.toContain(termo);
+      }
+    }
   });
 });

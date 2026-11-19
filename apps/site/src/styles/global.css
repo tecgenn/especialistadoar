@@ -1243,6 +1243,30 @@ body.ampla footer {
   font-size: 0.9rem;
 }
 
+/* "Entenda os números" (ticket 64): explicadores recolhidos por padrão, com o
+   título sempre visível e o texto curto aparecendo só quando aberto. */
+.explicadores {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.explicador {
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.explicador summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.explicador p {
+  margin: 0.6rem 0 0;
+  color: var(--texto-suave);
+}
+
 .ofertas {
   margin-block: 1.5rem 1rem;
   padding: 1rem;

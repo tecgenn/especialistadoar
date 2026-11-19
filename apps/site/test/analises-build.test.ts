@@ -348,8 +348,11 @@ function conferirHomeHub(html: string): void {
     name: string;
     acceptedAnswer: { "@type": string; text: string };
   }>;
-  expect(entidades.length).toBeGreaterThanOrEqual(5);
-  expect(entidades.length).toBeLessThanOrEqual(6);
+  expect(entidades.length).toBeGreaterThanOrEqual(7);
+  expect(entidades.length).toBeLessThanOrEqual(8);
+  const nomes = entidades.map((entidade) => entidade.name);
+  expect(nomes).toContain("O que é BTU/h?");
+  expect(nomes).toContain("Qual tensão escolher: 127 V ou 220 V?");
   for (const entidade of entidades) {
     expect(entidade["@type"]).toBe("Question");
     expect(entidade.name.length).toBeGreaterThan(0);
@@ -365,6 +368,23 @@ function conferirHomeHub(html: string): void {
   expect(html).toContain("IDRS");
   expect(html).toContain("Classe");
   expect(html).toContain("estimat");
+  // As três condições de ensaio, a vigência da classificação e a nota sobre
+  // Inverter (ticket 64), no mesmo bloco de metodologia.
+  const textoHome = textoDaPagina(html);
+  const metodologia = textoHome.slice(
+    textoHome.indexOf("Metodologia e INMETRO"),
+  );
+  for (const trecho of [
+    "carga total a 35 °C",
+    "carga parcial a 35 °C",
+    "carga parcial a 29 °C",
+    "1º de janeiro de 2023",
+    "Portaria INMETRO 269/2021",
+    "Inverter",
+    "mesma capacidade",
+  ]) {
+    expect(metodologia).toContain(trecho);
+  }
 
   // A home continua sem baixar JSON no cliente.
   expect(html).not.toContain("consulta.json");
@@ -1002,6 +1022,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlGree).toContain('<nav class="ficha-indice"');
     for (const ancora of [
       "#resumo",
+      "#entenda-os-numeros",
       "#consumo-e-custo",
       "#condicoes-de-ensaio",
       "#especificacoes",
@@ -1017,6 +1038,32 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // com o Aparelho já no primeiro campo (`?ids=`).
     expect(htmlGree).toContain(`href="/comparar/?ids=${gree?.id as string}"`);
     expect(textoGree).toContain("Comparar este modelo");
+
+    // "Entenda os números" (ticket 64): quatro explicadores recolhidos por
+    // padrão, logo depois do Resumo, sem promessa de economia.
+    const posicaoResumoFicha = htmlGree.indexOf('<section id="resumo"');
+    const posicaoEntenda = htmlGree.indexOf('id="entenda-os-numeros"');
+    const posicaoConsumo = htmlGree.indexOf('id="consumo-e-custo"');
+    expect(posicaoEntenda).toBeGreaterThan(posicaoResumoFicha);
+    expect(posicaoEntenda).toBeLessThan(posicaoConsumo);
+    expect(htmlGree).toContain("<h2>Entenda os números</h2>");
+    expect(htmlGree.match(/<details class="explicador"/g) ?? []).toHaveLength(
+      4,
+    );
+    expect(htmlGree).not.toMatch(/<details[^>]*\bopen\b/);
+    for (const titulo of [
+      "IDRS",
+      "Classe energética",
+      "Consumo anual",
+      "Status do Registro",
+    ]) {
+      expect(htmlGree).toContain(`<summary>${titulo}</summary>`);
+    }
+    const secaoEntenda = htmlGree.slice(posicaoEntenda, posicaoConsumo);
+    expect(secaoEntenda).toContain("2.080");
+    expect(secaoEntenda).toContain("5,7");
+    expect(secaoEntenda).toContain("Cancelado");
+    expect(secaoEntenda).toContain("Inativo");
 
     // Etiqueta de Classe em faixa quando as Variantes divergem (ticket 62).
     const vix = aparelhosDaBase().find((item) =>

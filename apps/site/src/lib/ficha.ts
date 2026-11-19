@@ -336,6 +336,7 @@ export interface SecaoDaFicha {
 /** A ordem de leitura da ficha (ticket 62). */
 export const SECOES_DA_FICHA: readonly SecaoDaFicha[] = [
   { id: "resumo", rotulo: "Resumo" },
+  { id: "entenda-os-numeros", rotulo: "Entenda os números" },
   { id: "consumo-e-custo", rotulo: "Consumo e custo" },
   { id: "condicoes-de-ensaio", rotulo: "Condições de ensaio" },
   { id: "especificacoes", rotulo: "Especificações" },
@@ -442,3 +443,45 @@ export function titulosDosBlocos(blocos: readonly BlocoVariante[]): string[] {
     return `Tensão: ${rotulo} · declaração ${posicao} de ${total}`;
   });
 }
+
+/** Um explicador da seção "Entenda os números" da ficha (ticket 64). */
+export interface ExplicadorFicha {
+  titulo: string;
+  paragrafos: string[];
+}
+
+/**
+ * Os quatro explicadores da seção "Entenda os números". Texto curto e factual:
+ * cada número é um Valor oficial declarado pelo INMETRO, sem promessa de
+ * economia, recomendação de compra ou recálculo pelo site.
+ */
+export const EXPLICADORES_DA_FICHA: readonly ExplicadorFicha[] = [
+  {
+    titulo: "IDRS",
+    paragrafos: [
+      "O IDRS (Índice de Desempenho de Refrigeração Sazonal) é a razão entre o calor removido e a energia elétrica consumida pelo aparelho, em Wh/Wh. Ele mede a eficiência energética do equipamento.",
+      "Quanto maior o IDRS, mais eficiente o aparelho. O número mostrado na ficha é o Valor oficial declarado pelo INMETRO: o site não o recalcula.",
+    ],
+  },
+  {
+    titulo: "Classe energética",
+    paragrafos: [
+      "A Classe é a faixa de eficiência de A a F que o INMETRO declara na coluna “Faixa de Classificação” da tabela.",
+      "Ela é um Valor oficial e não é recalculada a partir do IDRS, porque as duas medidas não andam juntas entre os tipos de aparelho. Quando as Variantes divergem, a ficha mostra a faixa declarada (por exemplo, A – C).",
+    ],
+  },
+  {
+    titulo: "Consumo anual",
+    paragrafos: [
+      "O consumo anual em kWh é medido pelo INMETRO em um ciclo de referência de 2.080 horas por ano — cerca de 5,7 horas por dia ao longo de 12 meses iguais.",
+      "É um Valor oficial obtido em condições de ensaio, não a sua conta de luz. O uso real pode ser diferente: a seção “Consumo e custo” mostra o que muda quando você informa horas, dias e tarifa.",
+    ],
+  },
+  {
+    titulo: "Status do Registro",
+    paragrafos: [
+      "O Registro INMETRO pode estar Ativo (o Aparelho segue no programa), Cancelado (o registro foi encerrado) ou Inativo (o registro deixou de constar como ativo).",
+      "A Situação do Aparelho é Ativo quando ao menos um dos seus Registros está Ativo. Se nenhum estiver, a ficha mostra os status encontrados; sem Registro, não há Situação a exibir.",
+    ],
+  },
+];
