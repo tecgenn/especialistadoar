@@ -283,11 +283,22 @@ describe("reset e base", () => {
     expect(baseCss).toMatch(/::selection\s*{/);
   });
 
+  it("não usa a serifa em navegação, tabela nem campo", () => {
+    const bloco =
+      /nav,\s*label,[\s\S]*?font-family:\s*var\(--fonte-interface\);/.exec(
+        baseCss,
+      );
+    expect(bloco?.[0]).toContain("table");
+    expect(bloco?.[0]).toContain("input");
+  });
+
   it("mostra foco de 2 px âmbar com afastamento e âncoras sob a barra", () => {
     expect(baseCss).toMatch(
       /:focus-visible\s*{[\s\S]*outline:\s*2px solid var\(--sinal\)[\s\S]*outline-offset:\s*2px/,
     );
     expect(baseCss).toMatch(/scroll-margin-top:\s*calc\(/);
+    expect(baseCss).toContain('[data-superficie="escura"] :focus-visible');
+    expect(baseCss).not.toMatch(/footer\s*:focus-visible/);
   });
 
   it("desliga movimento e preserva bordas no alto contraste", () => {

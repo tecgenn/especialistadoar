@@ -34,5 +34,8 @@ Validação executada: `pnpm build` sem diff em `data/build`/`reports`;
 `noImportantStyles` na guarda de `prefers-reduced-motion`); `pnpm typecheck`
 OK; `pnpm test` **690/690** em 47 arquivos, incluindo os 26 testes puros de
 `tokens.test.ts` (tokens, contraste, subset/orçamento de fontes, reset e
-acessibilidade). Não há navegador no ambiente, então a conferência visual
-fica para a QA da fase.
+acessibilidade). A conferência visual foi feita com o agent-browser no preview
+(1440×900 e 390×844): as fontes grotesca e serifa aparecem `loaded`, o foco de
+teclado é âmbar de 2 px com afastamento e não há overflow horizontal; a revisão
+corrigiu a tabela/navegação herdeiras da serifa e restringiu o contorno giz ao
+`data-superficie="escura"`.

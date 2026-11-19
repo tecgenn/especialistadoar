@@ -131,10 +131,16 @@ canvas {
   height: auto;
 }
 
+/* A serifa lê; a grotesca opera. Tabela, campo e navegação nunca em serifa. */
+nav,
+label,
 button,
 input,
 select,
-textarea {
+textarea,
+table,
+th,
+td {
   font-family: var(--fonte-interface);
 }
 
@@ -160,7 +166,6 @@ fieldset {
   outline-offset: 2px;
 }
 
-footer :focus-visible,
 [data-superficie="escura"] :focus-visible {
   outline-color: var(--giz);
 }
