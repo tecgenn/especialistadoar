@@ -7,3 +7,5 @@ coverage/
 .astro/
 .analises-fixture-*
 .worktree
+__pycache__/
+*.pyc
