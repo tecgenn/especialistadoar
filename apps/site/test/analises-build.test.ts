@@ -348,8 +348,8 @@ function conferirHomeHub(html: string): void {
     name: string;
     acceptedAnswer: { "@type": string; text: string };
   }>;
-  expect(entidades.length).toBeGreaterThanOrEqual(7);
-  expect(entidades.length).toBeLessThanOrEqual(8);
+  expect(entidades.length).toBeGreaterThanOrEqual(9);
+  expect(entidades.length).toBeLessThanOrEqual(10);
   const nomes = entidades.map((entidade) => entidade.name);
   expect(nomes).toContain("O que é BTU/h?");
   expect(nomes).toContain("Qual tensão escolher: 127 V ou 220 V?");
@@ -382,6 +382,9 @@ function conferirHomeHub(html: string): void {
     "Portaria INMETRO 269/2021",
     "Inverter",
     "mesma capacidade",
+    "descartadas ao montar a tabela",
+    "está ausente",
+    "Cancelado e Inativo são status do Registro INMETRO",
   ]) {
     expect(metodologia).toContain(trecho);
   }
@@ -720,6 +723,13 @@ describe("build com uma Análise de fixture", () => {
 
     const htmlAusente = lerHtml("analises", ausente.slug);
     expect(htmlAusente).toContain("não consta na Versão atual");
+    for (const trecho of [
+      "descartadas ao montar a tabela",
+      "está ausente",
+      "não o removem da tabela",
+    ]) {
+      expect(textoDaPagina(htmlAusente)).toContain(trecho);
+    }
     expect(htmlAusente).not.toContain("Dados declarados por Variante");
     expect(htmlAusente).not.toContain("Ver ficha técnica");
     expect(htmlAusente).not.toContain("Onde comprar");

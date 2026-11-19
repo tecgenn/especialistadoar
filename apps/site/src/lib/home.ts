@@ -49,6 +49,15 @@ export interface PerguntaFrequente {
 }
 
 /**
+ * O critério de recorte da tabela, num só texto: a pergunta do FAQ, a
+ * metodologia da home e o aviso das Análises dizem a mesma coisa. Separa a
+ * Linha excluída (nunca entra na base) do Aparelho ausente (sumiu entre
+ * Versões) e dos status do Registro, que não removem ninguém da tabela.
+ */
+export const EXPLICACAO_DO_RECORTE =
+  "A tabela é um recorte da exportação do INMETRO. Linhas marcadas como excluídas são descartadas ao montar a tabela, para evitar duplicatas e versões antigas de um mesmo modelo. Um aparelho que constava em uma Versão anterior e não aparece na atual está ausente, sem que a tabela diga o motivo. Já Cancelado e Inativo são status do Registro INMETRO — quando o aparelho está na base, a ficha os mostra; eles não o removem da tabela.";
+
+/**
  * Perguntas reais de quem procura ar-condicionado, com respostas curtas. O FAQ
  * é conteúdo de busca: as respostas explicam os conceitos do site sem prometer
  * economia nem substituir o Valor oficial do INMETRO.
@@ -93,6 +102,10 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
     pergunta: "Os dados do site são oficiais?",
     resposta:
       "Os dados técnicos vêm da exportação oficial de produtos do INMETRO e são reproduzidos como Valores oficiais. Já a recomendação do Assistente é uma estimativa calculada por heurística, não um cálculo de carga térmica nem um Valor oficial.",
+  },
+  {
+    pergunta: "Por que um modelo não aparece na tabela?",
+    resposta: EXPLICACAO_DO_RECORTE,
   },
 ];
 

@@ -19,6 +19,7 @@ import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
 import Base from "../../layouts/Base.astro";
 import type { Analise } from "../../lib/analises.ts";
 import { linksDaTabelaPorCapacidade } from "../../lib/analises.ts";
+import { EXPLICACAO_DO_RECORTE } from "../../lib/home.ts";
 import type { Oferta } from "../../lib/ofertas.ts";
 import { ROTULO_OFERTA_PADRAO } from "../../lib/ofertas.ts";
 
@@ -182,6 +183,7 @@ const jsonLd: Record<string, unknown> = {
             {versao ? ` (${versao.obtidoEm})` : ""}. A análise continua
             publicada, mas não há dados técnicos oficiais para exibir.
           </p>
+          <p>{EXPLICACAO_DO_RECORTE}</p>
         </section>
       ) : (
         <section class="analise-ficha">
