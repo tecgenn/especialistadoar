@@ -1055,6 +1055,177 @@ body.ampla footer {
   margin: 0;
 }
 
+/* Topo da ficha (ticket 62): as âncoras do índice não podem esconder o título
+   atrás do topo da tela, e a seção alcançada mostra o foco pelo contorno. */
+.aparelho [id] {
+  scroll-margin-top: 1.5rem;
+}
+
+.aparelho section[id]:target,
+.aparelho section[id]:focus {
+  outline: 2px solid var(--primaria);
+  outline-offset: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.ficha-topo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-block: 0.75rem 1.25rem;
+}
+
+.ficha-etiquetas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha-etiqueta {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
+  background: var(--superficie);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+/* A Classe usa a mesma cor curada dos selos da tabela (ticket 36). */
+.ficha-etiqueta-classe {
+  border-color: transparent;
+  background: #16a34a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.ficha-etiqueta-classe[data-classe="B"] {
+  background: #2563eb;
+}
+.ficha-etiqueta-classe[data-classe="C"] {
+  background: #ca8a04;
+}
+.ficha-etiqueta-classe[data-classe="D"] {
+  background: #ea580c;
+}
+.ficha-etiqueta-classe[data-classe="E"],
+.ficha-etiqueta-classe[data-classe="F"] {
+  background: #dc2626;
+}
+
+.ficha-etiqueta-classe:not([data-classe]) {
+  border-color: var(--borda);
+  background: var(--superficie);
+  color: var(--texto);
+}
+
+.ficha-acoes {
+  margin: 0;
+}
+
+.ficha-comparar {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--primaria);
+  border-radius: 999px;
+  background: var(--superficie);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ficha-comparar:hover {
+  border-color: #075985;
+  background: color-mix(in srgb, var(--primaria) 8%, var(--superficie));
+}
+
+.ficha-destaques {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.ficha-destaque {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.ficha-destaque-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.ficha-destaque-rotulo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ficha-destaque-valor {
+  margin: 0.15rem 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.ficha-destaque-link:hover .ficha-destaque-valor {
+  color: var(--primaria);
+}
+
+.ficha-destaque-legenda {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+}
+
+.ficha-destaque-acao {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ficha-indice {
+  margin-block: 0 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--borda);
+  border-radius: 0.5rem;
+  background: var(--superficie);
+}
+
+.ficha-indice-rotulo {
+  margin: 0 0 0.4rem;
+  color: var(--texto-suave);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ficha-indice ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+}
+
 .ofertas {
   margin-block: 1.5rem 1rem;
   padding: 1rem;
@@ -1284,6 +1455,16 @@ body.ampla footer {
   .aparelho dl {
     grid-template-columns: 1fr;
     gap: 0.15rem;
+  }
+
+  /* Os três cartões de destaque empilham e o índice segue utilizável. */
+  .ficha-destaques {
+    grid-template-columns: 1fr;
+  }
+
+  .ficha-topo {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .aparelho dt {

@@ -1,18 +1,23 @@
 import type {
   DadosDeclarados,
+  RegistroInmetro,
   Tensao,
   Variante,
 } from "@especialista-do-ar/pipeline";
 import { describe, expect, it } from "vitest";
 import {
   agruparVariantes,
+  cartoesDeDestaque,
   descreverCapacidade,
+  etiquetasDaFicha,
   formatarCelula,
   formatarFaixa,
   type GradeCondicoes,
   gradeDeCondicoes,
+  indiceDaFicha,
   type LinhaCondicoes,
   resumoDaFicha,
+  situacaoDosRegistros,
   titulosDosBlocos,
 } from "../src/lib/ficha.ts";
 
@@ -228,6 +233,145 @@ describe("titulosDosBlocos", () => {
 
     expect(titulosDosBlocos(blocos)).toEqual([
       "Tensão: 127 / 220 V · monofásico",
+    ]);
+  });
+});
+
+function registro(numero: string, status: string): RegistroInmetro {
+  return { numero, status };
+}
+
+describe("etiquetasDaFicha", () => {
+  it("mostra a Classe única e a situação Ativo quando um Registro está Ativo", () => {
+    const resumo = resumoDaFicha([
+      { tensao: null, dados: dadosCheios, linhas: [] },
+    ]);
+    const etiquetas = etiquetasDaFicha(resumo, [
+      registro("000377/2021", "Ativo"),
+      registro("004629/2020", "Inativo"),
+    ]);
+
+    expect(etiquetas.classe).toBe("A");
+    expect(etiquetas.classes).toEqual(["A"]);
+    expect(etiquetas.situacao).toBe("Ativo");
+    expect(etiquetas.registros).toEqual(["000377/2021", "004629/2020"]);
+  });
+
+  it("mostra a Classe em faixa quando as Variantes divergem", () => {
+    const resumo = resumoDaFicha([
+      { tensao: null, dados: dadosCheios, linhas: [] },
+      {
+        tensao: null,
+        dados: dados({ ...dadosCheios, classe: "C" }),
+        linhas: [],
+      },
+    ]);
+
+    expect(etiquetasDaFicha(resumo, []).classe).toBe("A – C");
+  });
+
+  it("mostra Inativo quando nenhum Registro está Ativo e — sem Classe", () => {
+    const resumo = resumoDaFicha([
+      { tensao: null, dados: dados({ classe: null }), linhas: [] },
+    ]);
+    const etiquetas = etiquetasDaFicha(resumo, [
+      registro("000945/2021", "Inativo"),
+    ]);
+
+    expect(etiquetas.situacao).toBe("Inativo");
+    expect(etiquetas.classe).toBe("—");
+    expect(etiquetas.registros).toEqual(["000945/2021"]);
+  });
+
+  it("não inventa situação nem Registro quando não há Registro", () => {
+    const resumo = resumoDaFicha([
+      { tensao: null, dados: dadosCheios, linhas: [] },
+    ]);
+
+    expect(situacaoDosRegistros([])).toBe("—");
+    expect(etiquetasDaFicha(resumo, []).registros).toEqual([]);
+  });
+});
+
+describe("cartoesDeDestaque", () => {
+  it("traz IDRS, Consumo anual e Capacidade com unidade e legenda", () => {
+    const resumo = resumoDaFicha([
+      { tensao: null, dados: dadosCheios, linhas: [] },
+    ]);
+    const cartoes = cartoesDeDestaque(resumo);
+
+    expect(cartoes.map((cartao) => cartao.chave)).toEqual([
+      "idrs",
+      "consumo",
+      "capacidade",
+    ]);
+    expect(cartoes[0]?.valor).toBe("2,97");
+    expect(cartoes[0]?.legenda).toContain("eficiência");
+    expect(cartoes[1]?.valor).toBe("15,5 kWh/ano");
+    expect(cartoes[1]?.legenda).toContain("2.080 h/ano");
+    expect(cartoes[1]?.ancora).toBe("#consumo-e-custo");
+    expect(cartoes[2]?.valor).toBe("7.500 BTU/h");
+  });
+
+  it("vira faixa quando o Aparelho tem mais de uma Variante", () => {
+    const resumo = resumoDaFicha([
+      { tensao: null, dados: dadosCheios, linhas: [] },
+      {
+        tensao: null,
+        dados: dados({
+          ...dadosCheios,
+          idrs: 3.5,
+          consumoAnualKwh: 18,
+          capacidadeNominalBtu: 9000,
+        }),
+        linhas: [],
+      },
+    ]);
+    const cartoes = cartoesDeDestaque(resumo);
+
+    expect(cartoes[0]?.valor).toBe("2,97 – 3,5");
+    expect(cartoes[1]?.valor).toBe("15,5 – 18 kWh/ano");
+    expect(cartoes[2]?.valor).toBe("7.500 – 9.000 BTU/h");
+  });
+});
+
+describe("indiceDaFicha", () => {
+  it("lista apenas as seções que existem, na ordem de leitura", () => {
+    const indice = indiceDaFicha(
+      new Set(["resumo", "consumo-e-custo", "proveniencia"]),
+    );
+
+    expect(indice).toEqual([
+      { id: "resumo", rotulo: "Resumo" },
+      { id: "consumo-e-custo", rotulo: "Consumo e custo" },
+      { id: "proveniencia", rotulo: "Proveniência" },
+    ]);
+  });
+
+  it("inclui Ofertas e Registros só quando presentes", () => {
+    const completo = indiceDaFicha(
+      new Set([
+        "resumo",
+        "consumo-e-custo",
+        "condicoes-de-ensaio",
+        "especificacoes",
+        "registros",
+        "proveniencia",
+        "ofertas",
+      ]),
+    );
+
+    expect(completo.map((secao) => secao.id)).toEqual([
+      "resumo",
+      "consumo-e-custo",
+      "condicoes-de-ensaio",
+      "especificacoes",
+      "registros",
+      "proveniencia",
+      "ofertas",
+    ]);
+    expect(indiceDaFicha(new Set(["resumo"]))).toEqual([
+      { id: "resumo", rotulo: "Resumo" },
     ]);
   });
 });

@@ -18,9 +18,11 @@ interface Props {
   titulo?: string;
   /** Nível do título, para respeitar a hierarquia da página que recebe a faixa. */
   nivelTitulo?: 2 | 3 | 4;
+  /** Âncora da seção, para o índice da ficha apontar para ela (ticket 62). */
+  id?: string;
 }
 
-const { aparelhoId, titulo = "Ofertas", nivelTitulo = 2 } = Astro.props;
+const { aparelhoId, titulo = "Ofertas", nivelTitulo = 2, id } = Astro.props;
 const ofertas =
   Astro.props.ofertas ??
   (aparelhoId === undefined ? [] : ofertasDoAparelho(aparelhoId));
@@ -29,7 +31,7 @@ const Titulo = `h${nivelTitulo}`;
 
 {
   ofertas.length > 0 ? (
-    <section class="ofertas">
+    <section class="ofertas" id={id}>
       <Titulo>{titulo}</Titulo>
       <p class="intro">
         Links comerciais (de afiliado): a compra acontece na loja e a comissão,

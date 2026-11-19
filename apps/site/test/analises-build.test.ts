@@ -578,6 +578,9 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlFicha).toContain(`href="${oferta.url}"`);
     expect(htmlFicha).toContain('rel="sponsored nofollow noopener"');
     expect(htmlFicha).toContain("Links comerciais");
+    // A seção "Ofertas" entra no índice de seções (ticket 62).
+    expect(htmlFicha).toContain('href="#ofertas"');
+    expect(htmlFicha).toContain('<section class="ofertas" id="ofertas">');
     // A faixa troca o parágrafo longo por uma frase curta: link comercial,
     // compra na loja e comissão sem custo ao visitante (ticket 58).
     expect(textoDaPagina(htmlFicha)).toContain(
@@ -966,6 +969,69 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const cssDaFicha = cssDaPagina(htmlGree);
     expect(cssDaFicha).toMatch(/@media[^{]*\{[^}]*\.aparelho dl\{[^}]*1fr/);
     expect(cssDaFicha).toContain("overflow-wrap:anywhere");
+
+    // O topo da ficha (ticket 62): etiquetas de Classe, situação e Registros
+    // logo abaixo do `<h1>`, antes de qualquer seção.
+    const textoGree = textoDaPagina(htmlGree);
+    const posicaoH1 = htmlGree.indexOf("</h1>");
+    const posicaoEtiquetas = htmlGree.indexOf("ficha-etiquetas");
+    const posicaoResumo = htmlGree.indexOf("<h2>Resumo</h2>");
+    expect(posicaoEtiquetas).toBeGreaterThan(posicaoH1);
+    expect(posicaoEtiquetas).toBeLessThan(posicaoResumo);
+    expect(textoGree).toContain("Classe A");
+    expect(htmlGree).toContain('data-classe="A"');
+    expect(textoGree).toContain("Situação: Ativo");
+    expect(textoGree).toContain("Registros 000377/2021, 004629/2020");
+
+    // Três cartões de destaque com unidade e legenda; o de Consumo anual leva
+    // à seção "Consumo e custo".
+    expect(htmlGree).toContain('data-destaque="idrs"');
+    expect(htmlGree).toContain('data-destaque="consumo"');
+    expect(htmlGree).toContain('data-destaque="capacidade"');
+    expect(htmlGree).toContain('<p class="ficha-destaque-valor">2,97</p>');
+    expect(htmlGree).toContain(
+      '<p class="ficha-destaque-valor">15,5 kWh/ano</p>',
+    );
+    expect(htmlGree).toContain(
+      '<p class="ficha-destaque-valor">7.500 BTU/h</p>',
+    );
+    expect(htmlGree).toContain("Ver consumo e custo");
+
+    // O índice só lista seções que existem e leva às âncoras certas; o Gree não
+    // tem Oferta, então não há entrada para "Ofertas".
+    expect(htmlGree).toContain('<nav class="ficha-indice"');
+    for (const ancora of [
+      "#resumo",
+      "#consumo-e-custo",
+      "#condicoes-de-ensaio",
+      "#especificacoes",
+      "#registros",
+      "#proveniencia",
+    ]) {
+      expect(htmlGree).toContain(`href="${ancora}"`);
+      expect(htmlGree).toContain(`id="${ancora.slice(1)}"`);
+    }
+    expect(htmlGree).not.toContain('href="#ofertas"');
+
+    // "Comparar este modelo" é a ação secundária do topo e abre a comparação
+    // com o Aparelho já no primeiro campo (`?ids=`).
+    expect(htmlGree).toContain(`href="/comparar/?ids=${gree?.id as string}"`);
+    expect(textoGree).toContain("Comparar este modelo");
+
+    // Etiqueta de Classe em faixa quando as Variantes divergem (ticket 62).
+    const vix = aparelhosDaBase().find((item) =>
+      item.modelo.includes("AS-24TW2RBBDK03_IDU"),
+    );
+    expect(vix).toBeDefined();
+    const htmlVix = lerHtml("aparelhos", vix?.id as string);
+    expect(textoDaPagina(htmlVix)).toContain("Classe A – C");
+
+    // As âncoras não escondem o título atrás do topo da tela e os cartões
+    // empilham no celular.
+    expect(cssDaFicha).toContain("scroll-margin-top:1.5rem");
+    expect(cssDaFicha).toMatch(
+      /@media[^{]*\{[^@]*\.ficha-destaques\{[^}]*grid-template-columns:1fr/,
+    );
 
     const consultaPublicada = JSON.parse(
       readFileSync(join(distDir, "consulta.json"), "utf8"),

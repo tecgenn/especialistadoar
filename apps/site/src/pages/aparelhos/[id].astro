@@ -12,10 +12,13 @@ import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
 import { HORAS_ANO } from "../../lib/custo.ts";
 import {
   agruparVariantes,
+  cartoesDeDestaque,
   descreverCapacidade,
+  etiquetasDaFicha,
   formatarCelula,
   formatarFaixa,
   gradeDeCondicoes,
+  indiceDaFicha,
   resumoDaFicha,
   titulosDosBlocos,
 } from "../../lib/ficha.ts";
@@ -58,6 +61,12 @@ const blocos = agruparVariantes(aparelho.variantes);
 const resumo = resumoDaFicha(blocos);
 const titulos = titulosDosBlocos(blocos);
 
+// O topo da ficha (ticket 62): as etiquetas de identificação e os três cartões
+// de destaque saem do mesmo resumo que as seções, com faixa quando as Variantes
+// divergem. O índice só lista seções que existem nesta página.
+const etiquetas = etiquetasDaFicha(resumo, aparelho.registros);
+const cartoes = cartoesDeDestaque(resumo);
+
 // As tarifas de referência são curadoria do site (ADR-0022), validadas no build
 // e cacheadas por caminho: a mesma leitura serve as 2.460 fichas.
 const tarifas = carregarTarifas();
@@ -69,7 +78,18 @@ const identificacao: Array<[string, string | null]> = [
   ["Unidade externa", aparelho.unidadeExterna],
   ["Fluido refrigerante", aparelho.fluidoRefrigerante],
   ["Fluido especificado", aparelho.fluidoEspecificado],
-];
+].filter(([, valor]) => valor !== null && valor !== "");
+
+const secoesPresentes = new Set([
+  "resumo",
+  "consumo-e-custo",
+  "condicoes-de-ensaio",
+  ...(identificacao.length > 0 ? ["especificacoes"] : []),
+  ...(aparelho.registros.length > 0 ? ["registros"] : []),
+  "proveniencia",
+  ...(ofertas.length > 0 ? ["ofertas"] : []),
+]);
+const indice = indiceDaFicha(secoesPresentes);
 
 const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, IDRS e tensão conforme os Dados declarados do INMETRO.`;
 ---
@@ -79,45 +99,93 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
     <p><a href="/aparelhos/">← Voltar aos aparelhos</a></p>
     <h1>{aparelho.marca} — {aparelho.modelo}</h1>
 
-    <dl>
-      {
-        identificacao
-          .filter(([, valor]) => valor !== null && valor !== "")
-          .map(([rotulo, valor]) => (
-            <>
-              <dt>{rotulo}</dt>
-              <dd>{valor}</dd>
-            </>
-          ))
-      }
-    </dl>
+    <div class="ficha-topo">
+      <ul class="ficha-etiquetas">
+        <li
+          class="ficha-etiqueta ficha-etiqueta-classe"
+          data-classe={etiquetas.classes.length === 1
+            ? etiquetas.classes[0]
+            : undefined}
+        >
+          Classe {etiquetas.classe}
+        </li>
+        {
+          etiquetas.registros.length > 0 ? (
+            <li class="ficha-etiqueta">Situação: {etiquetas.situacao}</li>
+          ) : null
+        }
+        {
+          etiquetas.registros.length > 0 ? (
+            <li class="ficha-etiqueta ficha-etiqueta-registro">
+              {etiquetas.registros.length === 1 ? "Registro" : "Registros"}{" "}
+              {etiquetas.registros.join(", ")}
+            </li>
+          ) : null
+        }
+      </ul>
+      <p class="ficha-acoes">
+        <a
+          class="ficha-comparar"
+          href={`/comparar/?ids=${encodeURIComponent(aparelho.id)}`}
+        >
+          Comparar este modelo
+        </a>
+      </p>
+    </div>
 
-    <h2>Registros INMETRO</h2>
-    <ul>
+    <ul class="ficha-destaques">
       {
-        aparelho.registros.map((registro) => (
-          <li>
-            {registro.numero} · {registro.status}
+        cartoes.map((cartao) => (
+          <li class="ficha-destaque" data-destaque={cartao.chave}>
+            {cartao.ancora === null ? (
+              <>
+                <p class="ficha-destaque-rotulo">{cartao.rotulo}</p>
+                <p class="ficha-destaque-valor">{cartao.valor}</p>
+                <p class="ficha-destaque-legenda">{cartao.legenda}</p>
+              </>
+            ) : (
+              <a class="ficha-destaque-link" href={cartao.ancora}>
+                <p class="ficha-destaque-rotulo">{cartao.rotulo}</p>
+                <p class="ficha-destaque-valor">{cartao.valor}</p>
+                <p class="ficha-destaque-legenda">{cartao.legenda}</p>
+                <span class="ficha-destaque-acao">Ver consumo e custo</span>
+              </a>
+            )}
           </li>
         ))
       }
     </ul>
 
-    <h2>Resumo</h2>
-    <dl>
-      <dt>Capacidade nominal</dt>
-      <dd>{descreverCapacidade(resumo)}</dd>
-      <dt>IDRS</dt>
-      <dd>{formatarFaixa(resumo.idrs)}</dd>
-      <dt>Classe</dt>
-      <dd>{resumo.classes.join(", ") || "—"}</dd>
-      <dt>Consumo anual</dt>
-      <dd>{formatarFaixa(resumo.consumosKwh, " kWh/ano")}</dd>
-      <dt>Potência em espera</dt>
-      <dd>{formatarFaixa(resumo.potenciasEsperaW, " W")}</dd>
-    </dl>
+    <nav class="ficha-indice" aria-label="Seções desta ficha">
+      <p class="ficha-indice-rotulo">Nesta ficha</p>
+      <ul>
+        {
+          indice.map((secao) => (
+            <li>
+              <a href={`#${secao.id}`}>{secao.rotulo}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
 
-    <section id="consumo-e-custo" class="secao-consumo-custo">
+    <section id="resumo" tabindex="-1">
+      <h2>Resumo</h2>
+      <dl>
+        <dt>Capacidade nominal</dt>
+        <dd>{descreverCapacidade(resumo)}</dd>
+        <dt>IDRS</dt>
+        <dd>{formatarFaixa(resumo.idrs)}</dd>
+        <dt>Classe</dt>
+        <dd>{resumo.classes.join(", ") || "—"}</dd>
+        <dt>Consumo anual</dt>
+        <dd>{formatarFaixa(resumo.consumosKwh, " kWh/ano")}</dd>
+        <dt>Potência em espera</dt>
+        <dd>{formatarFaixa(resumo.potenciasEsperaW, " W")}</dd>
+      </dl>
+    </section>
+
+    <section id="consumo-e-custo" tabindex="-1" class="secao-consumo-custo">
       <h2>Consumo e custo</h2>
       <p class="intro">
         Quanto este Aparelho pesa na conta de luz no seu uso. O consumo anual do
@@ -158,59 +226,94 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       </div>
     </section>
 
-    <h2>Condições de ensaio</h2>
-    <p class="intro">
-      As condições de ensaio combinam a temperatura externa (35 °C e 29 °C) com a
-      carga (total e parcial). Cada célula mostra a capacidade e a potência
-      elétrica declaradas pelo INMETRO, em W.
-    </p>
-    {
-      blocos.map((bloco, indice) => {
-        const grade = gradeDeCondicoes(bloco.dados);
-        return (
-          <section class="variante">
-            <h3>{titulos[indice]}</h3>
-            {grade.linhas.length === 0 ? (
-              <p class="intro">Sem dados nas condições de ensaio.</p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th scope="col">Condição</th>
-                    {grade.mostrarTotal ? <th scope="col">Carga total</th> : null}
-                    {grade.mostrarParcial ? (
-                      <th scope="col">Carga parcial</th>
-                    ) : null}
-                  </tr>
-                </thead>
-                <tbody>
-                  {grade.linhas.map((linha) => (
+    <section id="condicoes-de-ensaio" tabindex="-1">
+      <h2>Condições de ensaio</h2>
+      <p class="intro">
+        As condições de ensaio combinam a temperatura externa (35 °C e 29 °C) com a
+        carga (total e parcial). Cada célula mostra a capacidade e a potência
+        elétrica declaradas pelo INMETRO, em W.
+      </p>
+      {
+        blocos.map((bloco, indiceBloco) => {
+          const grade = gradeDeCondicoes(bloco.dados);
+          return (
+            <section class="variante">
+              <h3>{titulos[indiceBloco]}</h3>
+              {grade.linhas.length === 0 ? (
+                <p class="intro">Sem dados nas condições de ensaio.</p>
+              ) : (
+                <table>
+                  <thead>
                     <tr>
-                      <th scope="row">{linha.temperatura} °C</th>
-                      {grade.mostrarTotal ? (
-                        <td>{formatarCelula(linha.total)}</td>
-                      ) : null}
+                      <th scope="col">Condição</th>
+                      {grade.mostrarTotal ? <th scope="col">Carga total</th> : null}
                       {grade.mostrarParcial ? (
-                        <td>{formatarCelula(linha.parcial)}</td>
+                        <th scope="col">Carga parcial</th>
                       ) : null}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-            <p class="intro">
-              Linhas da tabela: {bloco.linhas.join(", ")}.
-            </p>
-          </section>
-        );
-      })
+                  </thead>
+                  <tbody>
+                    {grade.linhas.map((linha) => (
+                      <tr>
+                        <th scope="row">{linha.temperatura} °C</th>
+                        {grade.mostrarTotal ? (
+                          <td>{formatarCelula(linha.total)}</td>
+                        ) : null}
+                        {grade.mostrarParcial ? (
+                          <td>{formatarCelula(linha.parcial)}</td>
+                        ) : null}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+              <p class="intro">
+                Linhas da tabela: {bloco.linhas.join(", ")}.
+              </p>
+            </section>
+          );
+        })
+      }
+    </section>
+
+    {
+      identificacao.length > 0 ? (
+        <section id="especificacoes" tabindex="-1">
+          <h2>Especificações</h2>
+          <dl>
+            {identificacao.map(([rotulo, valor]) => (
+              <>
+                <dt>{rotulo}</dt>
+                <dd>{valor}</dd>
+              </>
+            ))}
+          </dl>
+        </section>
+      ) : null
     }
 
-    <h2>Proveniência</h2>
-    <p class="intro">
-      Linhas da tabela: {aparelho.linhas.join(", ")}. Os valores acima são
-      Valores oficiais, padronizados apenas quanto ao formato.
-    </p>
+    {
+      aparelho.registros.length > 0 ? (
+        <section id="registros" tabindex="-1">
+          <h2>Registros INMETRO</h2>
+          <ul>
+            {aparelho.registros.map((registro) => (
+              <li>
+                {registro.numero} · {registro.status}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null
+    }
+
+    <section id="proveniencia" tabindex="-1">
+      <h2>Proveniência</h2>
+      <p class="intro">
+        Linhas da tabela: {aparelho.linhas.join(", ")}. Os valores acima são
+        Valores oficiais, padronizados apenas quanto ao formato.
+      </p>
+    </section>
 
     {
       analise ? (
@@ -224,7 +327,7 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       ) : null
     }
 
-    <OfertaFaixa ofertas={ofertas} />
+    <OfertaFaixa ofertas={ofertas} id="ofertas" />
 
     <p>
       <a href={`/aparelhos/?marca=${encodeURIComponent(marcaCatalogo)}`}>
