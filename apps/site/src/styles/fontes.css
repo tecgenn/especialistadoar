@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Fontes — três vozes, self-hosted via Fontsource, apenas o subset latin.
+
+   A grotesca opera, a serifa lê, o mono mede. Cada família tem um único
+   arquivo variável latin (sem latin-ext, cirílico, grego ou vietnamita) e
+   uma face de fallback com métricas ajustadas para o texto não pular quando
+   a fonte real chega. Nenhuma requisição a CDN de fontes.
+   ========================================================================== */
+
+/* --- Schibsted Grotesk: interface, títulos e navegação ----------------- */
+@font-face {
+  font-family: "Schibsted Grotesk Variable";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
+
+@font-face {
+  font-family: "Grotesca Fallback";
+  font-style: normal;
+  font-weight: 400 900;
+  size-adjust: 101.7%;
+  ascent-override: 96.03%;
+  descent-override: 25.35%;
+  line-gap-override: 0%;
+  src: local("Arial"), local("Helvetica Neue"), local("Liberation Sans");
+}
+
+/* --- Source Serif 4: corpo de leitura e análise ------------------------ */
+@font-face {
+  font-family: "Source Serif 4 Variable";
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
+
+@font-face {
+  font-family: "Serifa Fallback";
+  font-style: normal;
+  font-weight: 200 900;
+  size-adjust: 98.66%;
+  ascent-override: 105%;
+  descent-override: 33.96%;
+  line-gap-override: 0%;
+  src: local("Georgia"), local("Times New Roman"), local("Liberation Serif");
+}
+
+/* --- Azeret Mono: rótulos, unidades e números -------------------------- */
+@font-face {
+  font-family: "Azeret Mono Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../../node_modules/@fontsource-variable/azeret-mono/files/azeret-mono-latin-wght-normal.woff2")
+    format("woff2-variations");
+}
+
+@font-face {
+  font-family: "Mono Fallback";
+  font-style: normal;
+  font-weight: 100 900;
+  size-adjust: 121.62%;
+  ascent-override: 77.04%;
+  descent-override: 18.91%;
+  line-gap-override: 0%;
+  src: local("Courier New"), local("Liberation Mono");
+}

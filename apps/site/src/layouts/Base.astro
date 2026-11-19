@@ -6,6 +6,7 @@ import { carregarAnalises } from "../conteudo/analises.ts";
 import { secaoVisivel } from "../lib/analises.ts";
 import { PAGINAS_INSTITUCIONAIS } from "../lib/institucionais.ts";
 import "../styles/global.css";
+import grotescaLatim from "@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url";
 
 interface Props {
   titulo: string;
@@ -35,6 +36,13 @@ const { analises } = await carregarAnalises();
     <title>{titulo}</title>
     {descricao ? <meta name="description" content={descricao} /> : null}
     <link rel="canonical" href={canonical ?? Astro.url.href} />
+    <link
+      rel="preload"
+      href={grotescaLatim}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     {
       blocosJsonLd.map((bloco) => (
         <script type="application/ld+json" set:html={JSON.stringify(bloco)} />

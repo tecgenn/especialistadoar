@@ -1,30 +1,6 @@
-:root {
-  --texto: #0f172a;
-  --texto-suave: #475569;
-  --borda: #e2e8f0;
-  --fundo: #f8fafc;
-  --superficie: #ffffff;
-  --primaria: #0369a1;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.5;
-  color: var(--texto);
-  background: var(--fundo);
-}
-
-body {
-  margin: 0;
-}
-
-a {
-  color: var(--primaria);
-}
+@import "./tokens.css";
+@import "./fontes.css";
+@import "./base.css";
 
 header,
 main,
@@ -90,8 +66,8 @@ body.ampla footer {
 }
 
 .botao:hover {
-  background: #0284c7;
-  color: #fff;
+  background: var(--petroleo-profundo);
+  color: var(--giz);
 }
 
 /* Layout da consulta (ticket 50): sem barra lateral — busca, Pesquisa
