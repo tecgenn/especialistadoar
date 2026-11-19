@@ -13,6 +13,14 @@ by `/grill-with-docs`.
 - `docs/agents/issue-tracker.md` — where issues live and how to interact with them
 - `docs/agents/ci-cd-setup.md` — the manual GitHub + Cloudflare setup the CI/publication needs (read when touching CI, secrets or deploy)
 
+### Design skills
+
+Design tickets declare the skills they need on a `**Skills:**` line, with the
+exact reference files and searches. When executing a ticket, load those skills
+from `.agents/skills/` and follow the listed references before editing UI code.
+The ticket line is the instruction: the user does not need to name the skill
+again in the request.
+
 ### Issue tracker
 
 Issues and PRDs live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
