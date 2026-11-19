@@ -179,6 +179,49 @@ A comparação é estado de interface: recarregar ou compartilhar o link abre a 
 - Se o Aparelho sair da tabela, a Análise continua publicada em estado degradado:
   aviso de que ele não consta na Versão atual, sem bloco de dados e sem CTA.
 
+## Custo estimado de energia
+
+A calculadora traduz o consumo declarado pelo INMETRO em reais. O motor puro
+(`apps/site/src/lib/custo.ts`) segue o ciclo de medição do órgão — **2.080 h/ano**
+(≈ 5,7 h/dia):
+
+```
+consumo por hora  = consumo anual ÷ 2.080
+consumo mensal    = consumo por hora × horas/dia × dias/mês
+custo mensal      = consumo mensal × tarifa (R$/kWh)
+custo anual       = custo mensal × 12
+```
+
+Ela vive em dois lugares, com o mesmo cenário e o mesmo contrato de URL:
+
+- **na ficha** do Aparelho, na seção "Consumo e custo", já preenchida com São
+  Paulo, 8 h/dia e 30 dias, com o custo por mês como número principal, a conta
+  aberta, a data de referência e a fonte da tarifa;
+- **na comparação**, num painel único no topo (só com 2 ou 3 modelos), com os três
+  números em cada cartão e a seção "Custo estimado (seu uso)" na matriz — sem ★,
+  sem "menor custo" e sem vencedor (ADR-0021 e ADR-0022).
+
+As chaves são `uf`, `tarifa`, `horas` e `dias`; os padrões (`SP`, `8`, `30`) **não**
+aparecem na URL, `uf=` vazia é "Tarifa informada" e um valor inválido cai no padrão
+em silêncio. As tarifas de referência são uma curadoria **do site**
+(`apps/site/tarifas.json`, uma entrada por UF com `tarifa`, `referencia` e `fonte`),
+validadas no build: faltar uma UF, repetir, tarifa não positiva ou `fonte` em branco
+falha o build. Elas nunca entram em `data/build/`.
+
+O resultado é um **Valor calculado**, não um Valor oficial: anda sempre com as
+entradas, a fórmula e o aviso de estimativa, e não promete economia. Um Aparelho com
+Variantes de consumo divergente mostra **faixa** (mínimo–máximo).
+
+## Páginas institucionais
+
+`/contato/`, `/politica-de-privacidade/` e `/termos-de-uso/` ficam no rodapé de todas
+as páginas e no sitemap. O e-mail é uma constante única (`EMAIL_CONTATO`, em
+`apps/site/src/lib/institucionais.ts`), a política descreve só o que existe hoje
+(sem cadastro, login, cookies próprios ou formulário; Cloudflare Web Analytics sem
+cookies; calculadora e Assistente no navegador) e os termos separam Valores oficiais
+de Valores calculados e explicam as Ofertas de afiliado. O site não vende, não
+exibe preços e não processa pedidos.
+
 ## ⚠️ Antes de dar push
 
 Rode a suíte completa **e** o build antes de enviar qualquer mudança:
@@ -187,7 +230,12 @@ Rode a suíte completa **e** o build antes de enviar qualquer mudança:
 pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 ```
 
-No fechamento de cada fase, confirme também: `pnpm build` reproduz `data/build` + `reports` byte a byte, `pnpm build:site` gera o número esperado de páginas (2.233 com a Fase 10, incluindo `/comparar/`) e `pnpm test` está verde.
+Esse é o **comando de validação da fase**: no fechamento de cada fase, confirme
+também que `pnpm build` reproduz `data/build` + `reports` byte a byte, que
+`pnpm build:site` gera o número esperado de páginas (**2.236** com a Fase 11 —
+2.234 base + a Análise publicada + o índice, incluindo `/comparar/` e as três
+institucionais `/contato/`, `/politica-de-privacidade/` e `/termos-de-uso/`) e que
+`pnpm test`, `pnpm typecheck` e `pnpm lint` estão verdes.
 
 E **commite os artefatos gerados junto com a mudança** sempre que ela tocar o CSV
 bruto (`data/raw/`) ou a camada curada (`data/excecoes-manuais.jsonl`,
