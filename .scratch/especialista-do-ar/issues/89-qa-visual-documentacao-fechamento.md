@@ -16,5 +16,7 @@
 - [ ] `DESIGN.md` reflete o sistema construído (tokens, componentes, medidas reais), sem divergir do CSS.
 - [ ] ADR-0024 registra a direção "Instrumento de climatização", o sistema de três vozes, a régua de capacidade e as decisões de contenção (sem dark mode, sem biblioteca de animação).
 - [ ] `docs/agents/architecture.md`, `docs/agents/project-state.md` e `README.md` descrevem o novo sistema e a validação.
+- [ ] `CONTEXT.md` ganha entradas para os termos que o redesign fixa na interface — "Instrumento de climatização", "Régua de capacidade" e "Datasheet" — na linguagem ubíqua do projeto, sem renomear termos existentes.
+- [ ] `PRODUCT.md` é revisado para continuar descrevendo o produto real depois do redesign, sem prometer o que a fase não entrega.
 - [ ] `pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test` passam; `data/build` e `reports` sem diff; a contagem de páginas inclui o 404.
 - [ ] Os tickets 66–88 e 90 estão `done` e não há pendência aberta; riscos residuais são registrados.
