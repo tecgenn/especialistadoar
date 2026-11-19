@@ -12,6 +12,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 import type { AnaliseFrontmatter } from "../src/lib/analises.ts";
+import { PAGINAS_INSTITUCIONAIS } from "../src/lib/institucionais.ts";
 import type { Oferta } from "../src/lib/ofertas.ts";
 
 /**
@@ -66,14 +67,19 @@ function lerHtml(...partes: string[]): string {
   return readFileSync(join(distDir, ...partes, "index.html"), "utf8");
 }
 
+/** O HTML de uma rota do site a partir do href canônico (`/contato/`). */
+function lerHtmlInstitucional(href: string): string {
+  return lerHtml(...href.split("/").filter((parte) => parte !== ""));
+}
+
 /**
  * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/` +
- * `/assistente/` (ticket 41) + `/comparar/` (ticket 49). Caiu de 2.460 fichas
- * quando a pipeline passou a excluir Model Status = "Excluído" (ticket 31); a
- * curadoria de Análises pode apontar para um id fora da base, então o número é
- * o que o build realmente gera.
+ * `/assistente/` (ticket 41) + `/comparar/` (ticket 49) + as três institucionais
+ * (ticket 57). Caiu de 2.460 fichas quando a pipeline passou a excluir Model
+ * Status = "Excluído" (ticket 31); a curadoria de Análises pode apontar para um
+ * id fora da base, então o número é o que o build realmente gera.
  */
-const PAGINAS_BASE = 2231;
+const PAGINAS_BASE = 2234;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -121,6 +127,94 @@ function jsonLdDaPagina(html: string): Record<string, unknown> {
   const [primeiro] = jsonLdsDaPagina(html);
   expect(primeiro).toBeDefined();
   return primeiro as Record<string, unknown>;
+}
+
+/**
+ * Seam de build das páginas institucionais (ticket 57): as três rotas saem no
+ * `dist/`, cada uma com título/descrição/canonical próprios no layout de leitura,
+ * entram no sitemap e no rodapé e dizem só o que é verdade hoje.
+ */
+function conferirPaginasInstitucionais(): void {
+  const site = "https://especialista-do-ar.pages.dev";
+  const paginas = Object.values(PAGINAS_INSTITUCIONAIS);
+
+  for (const pagina of paginas) {
+    const html = lerHtmlInstitucional(pagina.href);
+    expect(html).toContain(`<title>${pagina.titulo}</title>`);
+    expect(html).toContain(
+      `<meta name="description" content="${pagina.descricao}">`,
+    );
+    expect(html).toContain(
+      `<link rel="canonical" href="${site}${pagina.href}">`,
+    );
+    expect(html).not.toContain('<body class="ampla">');
+    expect(html).toContain("<h1>");
+  }
+
+  const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
+  const home = lerHtml("");
+  for (const pagina of paginas) {
+    expect(sitemap).toContain(`<loc>${site}${pagina.href}</loc>`);
+    expect(home).toContain(`href="${pagina.href}"`);
+  }
+
+  const contato = textoDaPagina(lerHtml("contato"));
+  expect(contato).toContain("tecgenn@gmail.com");
+  expect(contato).toContain("mailto:tecgenn@gmail.com?subject=D%C3%BAvida");
+  expect(contato).toContain(
+    "mailto:tecgenn@gmail.com?subject=Corre%C3%A7%C3%A3o%20de%20dado%20do%20INMETRO",
+  );
+  expect(contato).toContain("mailto:tecgenn@gmail.com?subject=Parceria");
+  expect(contato).toContain("INMETRO");
+  expect(contato).toContain("lojas parceiras");
+
+  const privacidade = textoDaPagina(lerHtml("politica-de-privacidade"));
+  for (const trecho of [
+    "Quem somos",
+    "independente do INMETRO",
+    "não coletamos",
+    "sem cadastro",
+    "sem cookies próprios",
+    "Cloudflare Web Analytics",
+    "Cloudflare Pages",
+    "lojas parceiras",
+    "navegador",
+    "URL",
+    "LGPD",
+    "tecgenn@gmail.com",
+  ]) {
+    expect(privacidade).toContain(trecho);
+  }
+  expect(privacidade).not.toContain("GA4");
+  expect(privacidade).not.toContain("AdSense");
+
+  const termos = textoDaPagina(lerHtml("termos-de-uso"));
+  for (const trecho of [
+    "Finalidade e independência",
+    "INMETRO",
+    "Valores oficiais",
+    "Valores calculados",
+    "não vendemos",
+    "não exibimos preços",
+    "não processamos pedidos",
+    "comissão",
+    "Variantes",
+    "Marca de catálogo",
+    "Análises",
+    "atribuição",
+    "responsabilidade",
+    "legislação brasileira",
+  ]) {
+    expect(termos).toContain(trecho);
+  }
+
+  // Nenhuma das três promete preço, economia ou um modelo como escolha.
+  for (const pagina of paginas) {
+    const html = lerHtmlInstitucional(pagina.href);
+    expect(html).not.toContain("R$");
+    expect(html).not.toContain("economize");
+    expect(html).not.toContain("recomendamos");
+  }
 }
 
 /**
@@ -254,8 +348,11 @@ function conferirHomeHub(html: string): void {
     name: string;
     acceptedAnswer: { "@type": string; text: string };
   }>;
-  expect(entidades.length).toBeGreaterThanOrEqual(5);
-  expect(entidades.length).toBeLessThanOrEqual(6);
+  expect(entidades.length).toBeGreaterThanOrEqual(7);
+  expect(entidades.length).toBeLessThanOrEqual(8);
+  const nomes = entidades.map((entidade) => entidade.name);
+  expect(nomes).toContain("O que é BTU/h?");
+  expect(nomes).toContain("Qual tensão escolher: 127 V ou 220 V?");
   for (const entidade of entidades) {
     expect(entidade["@type"]).toBe("Question");
     expect(entidade.name.length).toBeGreaterThan(0);
@@ -271,6 +368,23 @@ function conferirHomeHub(html: string): void {
   expect(html).toContain("IDRS");
   expect(html).toContain("Classe");
   expect(html).toContain("estimat");
+  // As três condições de ensaio, a vigência da classificação e a nota sobre
+  // Inverter (ticket 64), no mesmo bloco de metodologia.
+  const textoHome = textoDaPagina(html);
+  const metodologia = textoHome.slice(
+    textoHome.indexOf("Metodologia e INMETRO"),
+  );
+  for (const trecho of [
+    "carga total a 35 °C",
+    "carga parcial a 35 °C",
+    "carga parcial a 29 °C",
+    "1º de janeiro de 2023",
+    "Portaria INMETRO 269/2021",
+    "Inverter",
+    "mesma capacidade",
+  ]) {
+    expect(metodologia).toContain(trecho);
+  }
 
   // A home continua sem baixar JSON no cliente.
   expect(html).not.toContain("consulta.json");
@@ -371,7 +485,6 @@ const semOferta: AnaliseFixture = {
 const oferta: Oferta = {
   aparelhoId: aparelho.id,
   loja: "Loja Fixture",
-  titulo: "Comprar o aparelho de fixture",
   url: "https://loja.example.com/aparelho-fixture",
 };
 
@@ -457,8 +570,17 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlValida).toContain(`href="${oferta.url}"`);
     expect(htmlValida).toContain('rel="sponsored nofollow noopener"');
     expect(htmlValida).toContain('target="_blank"');
-    // O cartão comercial se identifica como link de afiliado (ADR-0010).
+    // O cartão comercial se identifica como link de afiliado (ADR-0010): o
+    // marcador discreto fica na mesma linha da loja e o rótulo padrão é
+    // "Ver oferta" — sem promessa de preço (ticket 58).
     expect(htmlValida).toContain("Link de afiliado");
+    const cartaoOferta =
+      htmlValida.match(/<a class="oferta-cartao"[\s\S]*?<\/a>/)?.[0] ?? "";
+    expect(cartaoOferta).toContain("Ver oferta");
+    expect(cartaoOferta).toContain(oferta.loja);
+    expect(cartaoOferta).toContain("· link de afiliado");
+    expect(cartaoOferta).toContain('rel="sponsored nofollow noopener"');
+    expect(cartaoOferta).toContain('target="_blank"');
     // O MDX não repete a Oferta: só os dois cartões do template a exibem.
     expect(htmlValida.match(/rel="sponsored/g) ?? []).toHaveLength(2);
     expect(htmlValida).not.toContain("Oferta no meio do texto");
@@ -476,6 +598,17 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlFicha).toContain(`href="${oferta.url}"`);
     expect(htmlFicha).toContain('rel="sponsored nofollow noopener"');
     expect(htmlFicha).toContain("Links comerciais");
+    // A seção "Ofertas" entra no índice de seções (ticket 62).
+    expect(htmlFicha).toContain('href="#ofertas"');
+    expect(htmlFicha).toContain('<section class="ofertas" id="ofertas">');
+    // A faixa troca o parágrafo longo por uma frase curta: link comercial,
+    // compra na loja e comissão sem custo ao visitante (ticket 58).
+    expect(textoDaPagina(htmlFicha)).toContain(
+      "a compra acontece na loja e a comissão, se houver, não custa nada a você",
+    );
+    expect(htmlFicha).not.toContain(
+      "Não fazem parte dos dados técnicos do INMETRO",
+    );
 
     expect(lerHtml("analises")).toContain(`href="/analises/${valida.slug}/"`);
 
@@ -622,14 +755,33 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlSemOferta).not.toContain("Onde comprar");
     expect(htmlSemOferta).not.toContain('rel="sponsored');
 
-    // Ofertas são site-only: não viram arquivo servido nem entram na ilha.
+    // O rodapé ganha a linha de afiliado ao lado da Versão da tabela, com link
+    // para os Termos — e ela aparece mesmo sem Oferta na página (ticket 58).
+    const textoSemOferta = textoDaPagina(htmlSemOferta);
+    expect(textoSemOferta).toContain("Alguns links deste site são de afiliado");
+    expect(textoSemOferta).toContain("saiba mais nos Termos de Uso");
+    expect(htmlSemOferta).toContain('href="/termos-de-uso/"');
+    const posicaoVersao = textoSemOferta.indexOf("Versão da tabela");
+    const posicaoAfiliado = textoSemOferta.indexOf(
+      "Alguns links deste site são de afiliado",
+    );
+    expect(posicaoVersao).toBeGreaterThanOrEqual(0);
+    expect(posicaoAfiliado).toBeGreaterThan(posicaoVersao);
+
+    // Ofertas são site-only: não viram arquivo servido. A Comparação (ticket
+    // 59) recebe as Ofertas já resolvidas no build, nas props da ilha: o
+    // cliente não baixa `ofertas.json` (e os bundles em `_astro` não carregam
+    // a URL comercial).
     expect(existsSync(join(distDir, "ofertas.json"))).toBe(false);
     expect(scripts.some((texto) => texto.includes(oferta.url))).toBe(false);
+    const htmlComparar = lerHtml("comparar");
+    expect(htmlComparar).toContain(oferta.loja);
+    expect(htmlComparar).not.toContain("ofertas.json");
 
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.231 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As 2.234 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -658,10 +810,11 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2.231 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as 2.234 páginas e omite seção, menu e analises.json", () => {
     // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
     buildarSite(criarDiretorioTemporario());
 
+    conferirPaginasInstitucionais();
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE);
     expect(existsSync(join(distDir, "analises"))).toBe(false);
     expect(existsSync(join(distDir, "analises.json"))).toBe(false);
@@ -779,19 +932,24 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(jsonLdTabela["@type"]).toBe("CollectionPage");
     expect(jsonLdTabela.name).toBe("Aparelhos de ar-condicionado");
 
-    // As opções do filtro trazem a Marca de catálogo (uma por família); as 10
-    // marcas conhecidas e as 6 capacidades comuns são chips curados (ticket 22)
-    // e não se repetem no `<select>`. Eles vivem na tabela, não na home.
+    // As 10 marcas conhecidas são chips curados (ticket 22); desde o ticket 61,
+    // o antigo `<select>` longo deu lugar ao campo de busca "Outras marcas". A
+    // Capacidade, desde o ticket 60, é chip de **faixa** e guarda todas as
+    // capacidades exatas no `<select>` do mesmo campo.
     expect(htmlTabela).toContain(">Midea</button>");
     expect(htmlTabela).toContain(">Samsung</button>");
-    expect(htmlTabela).toContain(">36.000</button>");
+    expect(htmlTabela).toContain(">Até 9.000 BTU/h</button>");
+    expect(htmlTabela).toContain(">Acima de 30.000 BTU/h</button>");
+    expect(htmlTabela).toContain('aria-label="Capacidade exata"');
+    expect(htmlTabela).toContain('<option value="36000">36.000</option>');
+    expect(htmlTabela).toContain(">Outras marcas</span>");
+    expect(htmlTabela).toContain('placeholder="Digite o nome da marca"');
     expect(htmlTabela).not.toContain('<option value="MIDEA">MIDEA</option>');
     expect(htmlTabela).not.toContain(
       '<option value="SPRINGER MIDEA">SPRINGER MIDEA</option>',
     );
-    expect(htmlTabela).toContain('<option value="BRITÂNIA">BRITÂNIA</option>');
     expect(htmlHome).not.toContain(">Midea</button>");
-    expect(htmlHome).not.toContain(">36.000</button>");
+    expect(htmlHome).not.toContain(">Até 9.000 BTU/h</button>");
 
     expect(cssDaPagina(htmlTabela)).toMatch(
       /@media \(width<=40rem\)\{[^@]*\.consulta \.tabela-aparelhos td\{[^}]*display:grid/,
@@ -831,6 +989,96 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const cssDaFicha = cssDaPagina(htmlGree);
     expect(cssDaFicha).toMatch(/@media[^{]*\{[^}]*\.aparelho dl\{[^}]*1fr/);
     expect(cssDaFicha).toContain("overflow-wrap:anywhere");
+
+    // O topo da ficha (ticket 62): etiquetas de Classe, situação e Registros
+    // logo abaixo do `<h1>`, antes de qualquer seção.
+    const textoGree = textoDaPagina(htmlGree);
+    const posicaoH1 = htmlGree.indexOf("</h1>");
+    const posicaoEtiquetas = htmlGree.indexOf("ficha-etiquetas");
+    const posicaoResumo = htmlGree.indexOf("<h2>Resumo</h2>");
+    expect(posicaoEtiquetas).toBeGreaterThan(posicaoH1);
+    expect(posicaoEtiquetas).toBeLessThan(posicaoResumo);
+    expect(textoGree).toContain("Classe A");
+    expect(htmlGree).toContain('data-classe="A"');
+    expect(textoGree).toContain("Situação: Ativo");
+    expect(textoGree).toContain("Registros 000377/2021, 004629/2020");
+
+    // Três cartões de destaque com unidade e legenda; o de Consumo anual leva
+    // à seção "Consumo e custo".
+    expect(htmlGree).toContain('data-destaque="idrs"');
+    expect(htmlGree).toContain('data-destaque="consumo"');
+    expect(htmlGree).toContain('data-destaque="capacidade"');
+    expect(htmlGree).toContain('<p class="ficha-destaque-valor">2,97</p>');
+    expect(htmlGree).toContain(
+      '<p class="ficha-destaque-valor">15,5 kWh/ano</p>',
+    );
+    expect(htmlGree).toContain(
+      '<p class="ficha-destaque-valor">7.500 BTU/h</p>',
+    );
+    expect(htmlGree).toContain("Ver consumo e custo");
+
+    // O índice só lista seções que existem e leva às âncoras certas; o Gree não
+    // tem Oferta, então não há entrada para "Ofertas".
+    expect(htmlGree).toContain('<nav class="ficha-indice"');
+    for (const ancora of [
+      "#resumo",
+      "#entenda-os-numeros",
+      "#consumo-e-custo",
+      "#condicoes-de-ensaio",
+      "#especificacoes",
+      "#registros",
+      "#proveniencia",
+    ]) {
+      expect(htmlGree).toContain(`href="${ancora}"`);
+      expect(htmlGree).toContain(`id="${ancora.slice(1)}"`);
+    }
+    expect(htmlGree).not.toContain('href="#ofertas"');
+
+    // "Comparar este modelo" é a ação secundária do topo e abre a comparação
+    // com o Aparelho já no primeiro campo (`?ids=`).
+    expect(htmlGree).toContain(`href="/comparar/?ids=${gree?.id as string}"`);
+    expect(textoGree).toContain("Comparar este modelo");
+
+    // "Entenda os números" (ticket 64): quatro explicadores recolhidos por
+    // padrão, logo depois do Resumo, sem promessa de economia.
+    const posicaoResumoFicha = htmlGree.indexOf('<section id="resumo"');
+    const posicaoEntenda = htmlGree.indexOf('id="entenda-os-numeros"');
+    const posicaoConsumo = htmlGree.indexOf('id="consumo-e-custo"');
+    expect(posicaoEntenda).toBeGreaterThan(posicaoResumoFicha);
+    expect(posicaoEntenda).toBeLessThan(posicaoConsumo);
+    expect(htmlGree).toContain("<h2>Entenda os números</h2>");
+    expect(htmlGree.match(/<details class="explicador"/g) ?? []).toHaveLength(
+      4,
+    );
+    expect(htmlGree).not.toMatch(/<details[^>]*\bopen\b/);
+    for (const titulo of [
+      "IDRS",
+      "Classe energética",
+      "Consumo anual",
+      "Status do Registro",
+    ]) {
+      expect(htmlGree).toContain(`<summary>${titulo}</summary>`);
+    }
+    const secaoEntenda = htmlGree.slice(posicaoEntenda, posicaoConsumo);
+    expect(secaoEntenda).toContain("2.080");
+    expect(secaoEntenda).toContain("5,7");
+    expect(secaoEntenda).toContain("Cancelado");
+    expect(secaoEntenda).toContain("Inativo");
+
+    // Etiqueta de Classe em faixa quando as Variantes divergem (ticket 62).
+    const vix = aparelhosDaBase().find((item) =>
+      item.modelo.includes("AS-24TW2RBBDK03_IDU"),
+    );
+    expect(vix).toBeDefined();
+    const htmlVix = lerHtml("aparelhos", vix?.id as string);
+    expect(textoDaPagina(htmlVix)).toContain("Classe A – C");
+
+    // As âncoras não escondem o título atrás do topo da tela e os cartões
+    // empilham no celular.
+    expect(cssDaFicha).toContain("scroll-margin-top:1.5rem");
+    expect(cssDaFicha).toMatch(
+      /@media[^{]*\{[^@]*\.ficha-destaques\{[^}]*grid-template-columns:1fr/,
+    );
 
     const consultaPublicada = JSON.parse(
       readFileSync(join(distDir, "consulta.json"), "utf8"),

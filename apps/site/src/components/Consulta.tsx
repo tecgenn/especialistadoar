@@ -23,13 +23,23 @@ import {
   temFiltroAtivo,
   temFiltroAvancado,
 } from "../lib/estado";
+import {
+  estadoNaFaixa,
+  type FaixaCapacidade,
+  faixasDeCapacidade,
+  rotuloDaFaixa,
+} from "../lib/faixas-capacidade";
 import { formatarFaixa } from "../lib/ficha";
 import type { OpcoesConsulta } from "../lib/opcoes";
 import {
   type CampoResumoFiltro,
   resumoDosFiltros,
 } from "../lib/resumo-filtros";
-import { colunasDaTabela, valorDaColuna } from "../lib/tabela";
+import {
+  colunasDaTabela,
+  detalheDoAparelho,
+  valorDaColuna,
+} from "../lib/tabela";
 
 /**
  * A ilha de consulta do site (ADR-0008): a tabela de Aparelhos com filtros
@@ -41,9 +51,11 @@ import { colunasDaTabela, valorDaColuna } from "../lib/tabela";
  * O layout (ticket 50) é uma coluna central de até 72 rem, sem barra lateral:
  * busca em largura total, a linha de "Pesquisa avançada" com os chips do recorte
  * efetivo (inclusive o padrão implícito de 220 V), o painel avançado recolhível
- * com Marca, Capacidade, Função, Tensão, Tipo e Classe, a vitrine de Análises e,
- * por fim, a linha de ordenação acima da tabela. A coluna "Análise" é a última e
- * só existe quando há ao menos uma Análise publicada.
+ * e, por fim, a linha de ordenação acima da tabela. O painel (ticket 61) tem duas
+ * faixas nomeadas — Aparelho (Marca, Tipo, Função) e Desempenho (Capacidade,
+ * Classe, Tensão) —, campos em largura total e rodapé com contagem e "Limpar
+ * filtros". A coluna "Análise" é a última e só existe quando há ao menos uma
+ * Análise publicada.
  */
 export interface PropsConsulta {
   /** Opções dos filtros, derivadas do dataset no build do site. */
@@ -145,6 +157,32 @@ function ChipsClass({
 }
 
 /**
+ * "Outras marcas" (ticket 61): um campo de busca no lugar do `<select>` com a
+ * lista longa. O valor digitado é o próprio filtro `marca` — escrito na URL e
+ * aplicado pelo motor na hora, como a busca principal escreve `q`. Quando a
+ * marca ativa vem dos chips curados, o campo fica vazio: um valor por vez.
+ */
+function BuscaMarca({
+  valor,
+  onChange,
+}: {
+  valor: string;
+  onChange: (valor: string) => void;
+}) {
+  return (
+    <label className="campo-busca-marca">
+      <span>Outras marcas</span>
+      <input
+        type="search"
+        value={valor}
+        placeholder="Digite o nome da marca"
+        onChange={(evento) => onChange(evento.target.value)}
+      />
+    </label>
+  );
+}
+
+/**
  * Um cabeçalho ordenável (ticket 43): as duas setas ficam **sempre visíveis**,
  * a direção ativa em destaque e a outra apagada — assim se descobre que o
  * cabeçalho é clicável. O botão alterna a direção; `aria-sort` fica no `th`.
@@ -194,6 +232,8 @@ const FILTRO_DESLIGADO: Record<CampoResumoFiltro, FiltrosConsulta> = {
   q: { q: undefined },
   marca: { marca: undefined },
   btu: { btu: undefined },
+  // A faixa vive em duas chaves: o "×" limpa as duas de uma vez.
+  btuFaixa: { btuMin: undefined, btuMax: undefined },
   funcao: { funcao: undefined },
   tensao: { tensao: undefined },
   tipo: { tipo: undefined },
@@ -236,11 +276,14 @@ function SelectOutras({
   valor,
   opcoes,
   onChange,
+  vazio,
 }: {
   rotulo: string;
   valor: string;
   opcoes: { valor: string; rotulo: string }[];
   onChange: (valor: string) => void;
+  /** Rótulo de uma opção vazia **selecionável**, para limpar o filtro aqui mesmo. */
+  vazio?: string;
 }) {
   return (
     <label className="select-outras">
@@ -249,9 +292,13 @@ function SelectOutras({
         value={valor}
         onChange={(evento) => onChange(evento.target.value)}
       >
-        <option value="" disabled hidden>
-          {rotulo}
-        </option>
+        {vazio === undefined ? (
+          <option value="" disabled hidden>
+            {rotulo}
+          </option>
+        ) : (
+          <option value="">{vazio}</option>
+        )}
         {opcoes.map((opcao) => (
           <option key={opcao.valor} value={opcao.valor}>
             {opcao.rotulo}
@@ -313,7 +360,8 @@ export default function Consulta({
   useEffect(() => {
     const lerDaUrl = () => {
       const busca = new URLSearchParams(window.location.search);
-      setEstado(lerEstado(busca));
+      const proximo = lerEstado(busca);
+      setEstado(proximo);
       // O painel abre para não esconder um recorte vindo de um link. O padrão
       // implícito de 220 V não conta: a URL limpa abre com o painel fechado.
       if (temFiltroAvancado(busca)) {
@@ -506,24 +554,31 @@ export default function Consulta({
     paginacao.chave === chaveEstado ? paginacao.quantidade : TAMANHO_PAGINA;
   const exibidos = resultados.slice(0, mostrados);
 
-  // O chip aceso **é** o valor do filtro: o `<select>` "Outras…" não repete esse
-  // valor, então mostra o placeholder enquanto o chip estiver ativo (um valor
-  // por vez). Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER
-  // MIDEA`), fora dos chips: ela continua valendo e ganha uma opção própria no
-  // `<select>` (ADR-0016).
+  // O chip aceso **é** o valor do filtro: o campo de busca "Outras marcas" não
+  // repete esse valor e fica vazio enquanto o chip estiver ativo (um valor por
+  // vez). Um link antigo pode trazer a Marca oficial (`?marca=SPRINGER MIDEA`),
+  // fora dos chips: ela continua valendo e aparece no campo (ADR-0016).
   const valoresChip = new Set(opcoes.marcasChip.map((marca) => marca.valor));
-  const marcasDoSelect =
-    estado.marca !== undefined &&
-    !valoresChip.has(estado.marca) &&
-    !opcoes.marcas.includes(estado.marca)
-      ? [...opcoes.marcas, estado.marca].sort()
-      : opcoes.marcas;
-  const marcaDoSelect =
-    estado.marca !== undefined && marcasDoSelect.includes(estado.marca)
+  const marcaDaBusca =
+    estado.marca !== undefined && !valoresChip.has(estado.marca)
       ? estado.marca
       : "";
+  // Capacidade exata e faixa dividem o mesmo campo (ticket 60): os chips são as
+  // seis faixas comerciais e o `<select>` guarda **todas** as capacidades
+  // exatas — inclusive as curadas, que antes eram chips.
+  const capacidades = [...new Set([...opcoes.btusChip, ...opcoes.btus])].sort(
+    (a, b) => a - b,
+  );
+  const faixas = faixasDeCapacidade(capacidades);
+  /** A faixa cujo rótulo corresponde ao `valor` do chip. */
+  function faixaPorRotulo(
+    faixas: FaixaCapacidade[],
+    valor: string,
+  ): FaixaCapacidade | undefined {
+    return faixas.find((candidata) => rotuloDaFaixa(candidata) === valor);
+  }
   const btuDoSelect =
-    estado.btu !== undefined && opcoes.btus.includes(estado.btu)
+    estado.btu !== undefined && capacidades.includes(estado.btu)
       ? String(estado.btu)
       : "";
 
@@ -597,12 +652,6 @@ export default function Consulta({
               ))
             )}
           </fieldset>
-
-          {temFiltro ? (
-            <button type="button" className="limpar-filtros" onClick={limpar}>
-              Limpar filtros
-            </button>
-          ) : null}
         </div>
 
         <div
@@ -610,130 +659,170 @@ export default function Consulta({
           id="pesquisa-avancada"
           hidden={!painelAberto}
         >
-          <fieldset className="campo-chips campo-marca">
-            <legend>Marca</legend>
-            <Chips
-              opcoes={opcoes.marcasChip}
-              estaAtivo={(valor) => estado.marca === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  marca: estado.marca === valor ? undefined : valor,
-                })
-              }
-            />
-            <SelectOutras
-              rotulo="Outras marcas"
-              valor={marcaDoSelect}
-              opcoes={marcasDoSelect.map((marca) => ({
-                valor: marca,
-                rotulo: marca,
-              }))}
-              onChange={(valor) => atualizar({ marca: valor || undefined })}
-            />
-          </fieldset>
+          <fieldset className="faixa-filtros faixa-aparelho">
+            <legend>Aparelho</legend>
 
-          <fieldset className="campo-chips campo-capacidade">
-            <legend>Capacidade</legend>
-            <Chips
-              opcoes={opcoes.btusChip.map((btu) => ({
-                valor: String(btu),
-                rotulo: btu.toLocaleString("pt-BR"),
-              }))}
-              estaAtivo={(valor) => estado.btu === Number(valor)}
-              selecionar={(valor) => {
-                const btu = Number(valor);
-                atualizar({ btu: estado.btu === btu ? undefined : btu });
-              }}
-            />
-            <SelectOutras
-              rotulo="Outras capacidades"
-              valor={btuDoSelect}
-              opcoes={opcoes.btus.map((btu) => ({
-                valor: String(btu),
-                rotulo: btu.toLocaleString("pt-BR"),
-              }))}
-              onChange={(valor) =>
-                atualizar({
-                  btu: valor === "" ? undefined : Number(valor),
-                })
-              }
-            />
-          </fieldset>
-
-          <fieldset className="campo-chips campo-funcao">
-            <legend>Função</legend>
-            <Chips
-              opcoes={funcoes}
-              estaAtivo={(valor) => estado.funcao === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  funcao: estado.funcao === valor ? undefined : valor,
-                })
-              }
-            />
-          </fieldset>
-
-          <label className="campo-tensao">
-            <span>Tensão (V)</span>
-            <select
-              value={estado.tensao === undefined ? "" : String(estado.tensao)}
-              onChange={(evento) =>
-                atualizar({
-                  tensao:
-                    evento.target.value === ""
-                      ? undefined
-                      : Number(evento.target.value),
-                })
-              }
-            >
-              <option value="">Todas</option>
-              {opcoes.tensoes.map((tensao) => (
-                <option key={tensao} value={tensao}>
-                  {tensao}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <fieldset className="campo-chips campo-tipo">
-            <legend>Tipo</legend>
-            <Chips
-              opcoes={tipos}
-              estaAtivo={(valor) => estado.tipo === valor}
-              selecionar={(valor) =>
-                atualizar({ tipo: estado.tipo === valor ? undefined : valor })
-              }
-            />
-          </fieldset>
-
-          <fieldset className="campo-chips campo-classe">
-            <legend>Classe</legend>
-            <ChipsClass
-              opcoes={opcoes.classesChip}
-              estaAtivo={(valor) => estado.classe === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  classe: estado.classe === valor ? undefined : valor,
-                })
-              }
-            />
-            {classesExtras.length > 0 ? (
-              <SelectOutras
-                rotulo="Outras classes"
-                valor={
-                  estado.classe !== undefined &&
-                  classesExtras.includes(estado.classe)
-                    ? estado.classe
-                    : ""
+            <fieldset className="campo-chips campo-marca">
+              <legend>Marca</legend>
+              <Chips
+                opcoes={opcoes.marcasChip}
+                estaAtivo={(valor) => estado.marca === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    marca: estado.marca === valor ? undefined : valor,
+                  })
                 }
-                opcoes={classesExtras.map((classe) => ({
-                  valor: classe,
-                  rotulo: classe,
-                }))}
-                onChange={(valor) => atualizar({ classe: valor || undefined })}
               />
-            ) : null}
+              <BuscaMarca
+                valor={marcaDaBusca}
+                onChange={(valor) =>
+                  atualizar({ marca: valor === "" ? undefined : valor })
+                }
+              />
+            </fieldset>
+
+            <fieldset className="campo-chips campo-tipo">
+              <legend>Tipo</legend>
+              <Chips
+                opcoes={tipos}
+                estaAtivo={(valor) => estado.tipo === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    tipo: estado.tipo === valor ? undefined : valor,
+                  })
+                }
+              />
+            </fieldset>
+
+            <fieldset className="campo-chips campo-funcao">
+              <legend>Função</legend>
+              <Chips
+                opcoes={funcoes}
+                estaAtivo={(valor) => estado.funcao === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    funcao: estado.funcao === valor ? undefined : valor,
+                  })
+                }
+              />
+            </fieldset>
           </fieldset>
+
+          <fieldset className="faixa-filtros faixa-desempenho">
+            <legend>Desempenho</legend>
+
+            <fieldset className="campo-chips campo-capacidade">
+              <legend>Capacidade</legend>
+              <Chips
+                opcoes={faixas.map((faixa) => ({
+                  valor: rotuloDaFaixa(faixa),
+                  rotulo: rotuloDaFaixa(faixa),
+                }))}
+                estaAtivo={(valor) => {
+                  const faixa = faixaPorRotulo(faixas, valor);
+                  return faixa !== undefined && estadoNaFaixa(estado, faixa);
+                }}
+                selecionar={(valor) => {
+                  const faixa = faixaPorRotulo(faixas, valor);
+                  if (faixa === undefined) {
+                    return;
+                  }
+                  // Faixa e capacidade exata são exclusivas: escolher a faixa
+                  // (ou desligá-la) sempre limpa `btu`.
+                  atualizar({
+                    btu: undefined,
+                    btuMin: estadoNaFaixa(estado, faixa)
+                      ? undefined
+                      : faixa.min,
+                    btuMax: estadoNaFaixa(estado, faixa)
+                      ? undefined
+                      : faixa.max,
+                  });
+                }}
+              />
+              <SelectOutras
+                rotulo="Capacidade exata"
+                vazio="Todas as capacidades"
+                valor={btuDoSelect}
+                opcoes={capacidades.map((btu) => ({
+                  valor: String(btu),
+                  rotulo: btu.toLocaleString("pt-BR"),
+                }))}
+                onChange={(valor) =>
+                  // Escolher a exata limpa as duas chaves da faixa.
+                  atualizar({
+                    btu: valor === "" ? undefined : Number(valor),
+                    btuMin: undefined,
+                    btuMax: undefined,
+                  })
+                }
+              />
+            </fieldset>
+
+            <fieldset className="campo-chips campo-classe">
+              <legend>Classe</legend>
+              <ChipsClass
+                opcoes={opcoes.classesChip}
+                estaAtivo={(valor) => estado.classe === valor}
+                selecionar={(valor) =>
+                  atualizar({
+                    classe: estado.classe === valor ? undefined : valor,
+                  })
+                }
+              />
+              {classesExtras.length > 0 ? (
+                <SelectOutras
+                  rotulo="Outras classes"
+                  valor={
+                    estado.classe !== undefined &&
+                    classesExtras.includes(estado.classe)
+                      ? estado.classe
+                      : ""
+                  }
+                  opcoes={classesExtras.map((classe) => ({
+                    valor: classe,
+                    rotulo: classe,
+                  }))}
+                  onChange={(valor) =>
+                    atualizar({ classe: valor || undefined })
+                  }
+                />
+              ) : null}
+            </fieldset>
+
+            <label className="campo-tensao">
+              <span>Tensão (V)</span>
+              <select
+                value={estado.tensao === undefined ? "" : String(estado.tensao)}
+                onChange={(evento) =>
+                  atualizar({
+                    tensao:
+                      evento.target.value === ""
+                        ? undefined
+                        : Number(evento.target.value),
+                  })
+                }
+              >
+                <option value="">Todas</option>
+                {opcoes.tensoes.map((tensao) => (
+                  <option key={tensao} value={tensao}>
+                    {tensao}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </fieldset>
+
+          <div className="rodape-filtros">
+            <p className="contagem-recorte">
+              {resultados.length} resultado(s) no recorte
+            </p>
+            {temFiltro ? (
+              <button type="button" className="limpar-filtros" onClick={limpar}>
+                Limpar filtros
+              </button>
+            ) : null}
+          </div>
         </div>
       </form>
 
@@ -910,6 +999,7 @@ export default function Consulta({
                 <tbody>
                   {exibidos.map((item) => {
                     const analise = analisados.get(item.id);
+                    const detalhe = detalheDoAparelho(item);
                     return (
                       <tr
                         key={item.id}
@@ -943,7 +1033,14 @@ export default function Consulta({
                               }
                             >
                               {campo === "modelo" ? (
-                                <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                                <span className="celula-modelo">
+                                  <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                                  {detalhe === null ? null : (
+                                    <span className="modelo-detalhe">
+                                      {detalhe}
+                                    </span>
+                                  )}
+                                </span>
                               ) : campo === "classe" ? (
                                 item.classes.length === 0 ? (
                                   "—"

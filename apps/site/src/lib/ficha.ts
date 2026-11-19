@@ -10,9 +10,11 @@
 
 import type {
   DadosDeclarados,
+  RegistroInmetro,
   Tensao,
   Variante,
 } from "@especialista-do-ar/pipeline";
+import { HORAS_ANO } from "./custo.ts";
 
 /**
  * As tensões de um bloco: as voltagens unidas e as fases declaradas **por
@@ -240,6 +242,120 @@ function numero(valor: number): string {
   return valor.toLocaleString("pt-BR");
 }
 
+/** As etiquetas de identificação do topo da ficha (ticket 62). */
+export interface EtiquetasFicha {
+  /** As Classes únicas, na ordem A–F. */
+  classes: string[];
+  /** "A" · "A – C" · "—" — faixa quando o Aparelho declara mais de uma. */
+  classe: string;
+  /** Ativo quando ao menos um Registro está Ativo; senão, os status únicos. */
+  situacao: string;
+  /** Os números de Registro, na ordem da base; vazio quando não há. */
+  registros: string[];
+}
+
+/**
+ * A situação do Aparelho a partir dos Registros INMETRO: **Ativo** quando ao
+ * menos um Registro está Ativo (o Aparelho continua no programa); senão, os
+ * status presentes (hoje, "Inativo"). Sem Registro, "—".
+ */
+export function situacaoDosRegistros(
+  registros: readonly RegistroInmetro[],
+): string {
+  if (registros.some((registro) => registro.status === "Ativo")) {
+    return "Ativo";
+  }
+  const status = ordenarUnicos(
+    registros
+      .map((registro) => registro.status.trim())
+      .filter((valor) => valor !== ""),
+  );
+  return status.length === 0 ? "—" : status.join(", ");
+}
+
+/** As etiquetas do topo: Classe (faixa quando divergente), situação e Registros. */
+export function etiquetasDaFicha(
+  resumo: ResumoFicha,
+  registros: readonly RegistroInmetro[],
+): EtiquetasFicha {
+  return {
+    classes: resumo.classes,
+    classe: resumo.classes.length === 0 ? "—" : resumo.classes.join(" – "),
+    situacao: situacaoDosRegistros(registros),
+    registros: registros.map((registro) => registro.numero),
+  };
+}
+
+/** Um cartão de destaque do topo da ficha (ticket 62). */
+export interface CartaoDeDestaque {
+  chave: "idrs" | "consumo" | "capacidade";
+  rotulo: string;
+  valor: string;
+  legenda: string;
+  /** Seção para onde o cartão leva; null quando não há seção associada. */
+  ancora: `#${string}` | null;
+}
+
+/**
+ * Os três cartões de destaque: IDRS, Consumo anual e Capacidade. Cada um traz a
+ * unidade no valor e uma legenda curta; com mais de uma Variante, o valor vira
+ * faixa (mínimo–máximo). O de Consumo anual leva a "Consumo e custo".
+ */
+export function cartoesDeDestaque(resumo: ResumoFicha): CartaoDeDestaque[] {
+  return [
+    {
+      chave: "idrs",
+      rotulo: "IDRS",
+      valor: formatarFaixa(resumo.idrs),
+      legenda: "Índice de eficiência energética (W/W)",
+      ancora: null,
+    },
+    {
+      chave: "consumo",
+      rotulo: "Consumo anual",
+      valor: formatarFaixa(resumo.consumosKwh, " kWh/ano"),
+      legenda: `Medido pelo INMETRO em ${numero(HORAS_ANO)} h/ano`,
+      ancora: "#consumo-e-custo",
+    },
+    {
+      chave: "capacidade",
+      rotulo: "Capacidade",
+      valor: formatarFaixa(resumo.capacidadesBtu, " BTU/h"),
+      legenda: "Capacidade nominal",
+      ancora: null,
+    },
+  ];
+}
+
+/** Uma seção do índice da ficha, com a âncora que a abre. */
+export interface SecaoDaFicha {
+  id: string;
+  rotulo: string;
+}
+
+/** A ordem de leitura da ficha (ticket 62). */
+export const SECOES_DA_FICHA: readonly SecaoDaFicha[] = [
+  { id: "resumo", rotulo: "Resumo" },
+  { id: "entenda-os-numeros", rotulo: "Entenda os números" },
+  { id: "consumo-e-custo", rotulo: "Consumo e custo" },
+  { id: "condicoes-de-ensaio", rotulo: "Condições de ensaio" },
+  { id: "especificacoes", rotulo: "Especificações" },
+  { id: "registros", rotulo: "Registros" },
+  { id: "proveniencia", rotulo: "Proveniência" },
+  { id: "ofertas", rotulo: "Ofertas" },
+];
+
+/**
+ * O índice de seções com âncoras apenas para as seções que existem na página —
+ * sem Oferta publicada não há link para "Ofertas", e um Aparelho sem
+ * Especificações ou sem Registros não ganha âncora vazia.
+ */
+export function indiceDaFicha(presentes: ReadonlySet<string>): SecaoDaFicha[] {
+  return SECOES_DA_FICHA.filter((secao) => presentes.has(secao.id)).map(
+    (secao) => ({ ...secao }),
+  );
+}
+
 /** "12.000" · "5.500 – 5.900" · "—" quando não há valor. */
 export function formatarFaixa(valores: readonly number[], sufixo = ""): string {
   const primeiro = valores.at(0);
@@ -327,3 +443,45 @@ export function titulosDosBlocos(blocos: readonly BlocoVariante[]): string[] {
     return `Tensão: ${rotulo} · declaração ${posicao} de ${total}`;
   });
 }
+
+/** Um explicador da seção "Entenda os números" da ficha (ticket 64). */
+export interface ExplicadorFicha {
+  titulo: string;
+  paragrafos: string[];
+}
+
+/**
+ * Os quatro explicadores da seção "Entenda os números". Texto curto e factual:
+ * cada número é um Valor oficial declarado pelo INMETRO, sem promessa de
+ * economia, recomendação de compra ou recálculo pelo site.
+ */
+export const EXPLICADORES_DA_FICHA: readonly ExplicadorFicha[] = [
+  {
+    titulo: "IDRS",
+    paragrafos: [
+      "O IDRS (Índice de Desempenho de Refrigeração Sazonal) é a razão entre o calor removido e a energia elétrica consumida pelo aparelho, em Wh/Wh. Ele mede a eficiência energética do equipamento.",
+      "Quanto maior o IDRS, mais eficiente o aparelho. O número mostrado na ficha é o Valor oficial declarado pelo INMETRO: o site não o recalcula.",
+    ],
+  },
+  {
+    titulo: "Classe energética",
+    paragrafos: [
+      "A Classe é a faixa de eficiência de A a F que o INMETRO declara na coluna “Faixa de Classificação” da tabela.",
+      "Ela é um Valor oficial e não é recalculada a partir do IDRS, porque as duas medidas não andam juntas entre os tipos de aparelho. Quando as Variantes divergem, a ficha mostra a faixa declarada (por exemplo, A – C).",
+    ],
+  },
+  {
+    titulo: "Consumo anual",
+    paragrafos: [
+      "O consumo anual em kWh é medido pelo INMETRO em um ciclo de referência de 2.080 horas por ano — cerca de 5,7 horas por dia ao longo de 12 meses iguais.",
+      "É um Valor oficial obtido em condições de ensaio, não a sua conta de luz. O uso real pode ser diferente: a seção “Consumo e custo” mostra o que muda quando você informa horas, dias e tarifa.",
+    ],
+  },
+  {
+    titulo: "Status do Registro",
+    paragrafos: [
+      "O Registro INMETRO pode estar Ativo (o Aparelho segue no programa), Cancelado (o registro foi encerrado) ou Inativo (o registro deixou de constar como ativo).",
+      "A Situação do Aparelho é Ativo quando ao menos um dos seus Registros está Ativo. Se nenhum estiver, a ficha mostra os status encontrados; sem Registro, não há Situação a exibir.",
+    ],
+  },
+];

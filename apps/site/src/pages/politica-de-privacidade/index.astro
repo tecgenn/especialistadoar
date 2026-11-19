@@ -1,0 +1,85 @@
+---
+import Base from "../../layouts/Base.astro";
+import {
+  canonicalInstitucional,
+  EMAIL_CONTATO,
+  PAGINAS_INSTITUCIONAIS,
+} from "../../lib/institucionais.ts";
+
+const pagina = PAGINAS_INSTITUCIONAIS.privacidade;
+const canonical = canonicalInstitucional(pagina, Astro.site);
+---
+
+<Base titulo={pagina.titulo} descricao={pagina.descricao} canonical={canonical}>
+  <article class="pagina-institucional">
+    <h1>Política de Privacidade</h1>
+    <p class="intro">
+      O que o Especialista do Ar faz — e não faz — com dados quando você visita
+      o site.
+    </p>
+
+    <section>
+      <h2>Quem somos</h2>
+      <p>
+        O Especialista do Ar é um site informativo mantido de forma independente
+        do INMETRO, sem vínculo com fabricantes ou lojas. Ele organiza a
+        exportação oficial de produtos do INMETRO para que qualquer pessoa
+        possa consultar e comparar aparelhos de ar-condicionado.
+      </p>
+    </section>
+
+    <section>
+      <h2>O que não coletamos</h2>
+      <p>
+        O site funciona sem cadastro, sem login, sem cookies próprios e sem
+        formulário: você consulta e compara aparelhos sem informar quem é. Não
+        coletamos nome, e-mail, CPF, endereço, localização nem dados de
+        pagamento. Se você escolher escrever para nós, a mensagem fica no seu
+        aplicativo de e-mail, fora do site.
+      </p>
+    </section>
+
+    <section>
+      <h2>Métricas e hospedagem</h2>
+      <p>
+        O site é hospedado no Cloudflare Pages. Usamos apenas as métricas do
+        Cloudflare Web Analytics, que não usam cookies e não identificam
+        visitantes individualmente: elas contam visitas de forma agregada para
+        sabermos quais páginas são lidas.
+      </p>
+    </section>
+
+    <section>
+      <h2>Ofertas e lojas parceiras</h2>
+      <p>
+        Alguns links levam a lojas parceiras e aparecem identificados como links
+        de afiliado. A compra acontece na loja: o site não recebe seus dados de
+        pedido nem de pagamento. A comissão, quando há, é paga pela loja.
+      </p>
+    </section>
+
+    <section>
+      <h2>Calculadora e Assistente</h2>
+      <p>
+        A calculadora de custo de energia e o Assistente rodam no seu navegador.
+        O que você digita — UF, tarifa, horas e dias na calculadora, respostas
+        sobre o ambiente no Assistente — vai apenas para a URL da página, para
+        que você possa conferir e compartilhar o cenário. Nada disso é enviado a
+        um servidor nosso nem guardado pelo site.
+      </p>
+    </section>
+
+    <section>
+      <h2>Seus direitos e contato</h2>
+      <p>
+        A Lei Geral de Proteção de Dados (LGPD, Lei nº 13.709/2018) garante
+        direitos como acesso, correção, anonimização, bloqueio e eliminação de
+        dados pessoais, além de informação sobre seu tratamento. Como o site
+        não coleta dados pessoais, não guardamos nada sobre você. Para dúvidas
+        sobre privacidade ou para exercer seus direitos, escreva para
+        <a href={`mailto:${EMAIL_CONTATO}`}>{EMAIL_CONTATO}</a> — o mesmo
+        endereço está na página de contato.
+      </p>
+    </section>
+  </article>
+</Base>

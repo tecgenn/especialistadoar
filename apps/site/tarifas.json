@@ -1,0 +1,193 @@
+{
+  "ufs": [
+    {
+      "uf": "AC",
+      "nome": "Acre",
+      "tarifa": 0.83,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "AL",
+      "nome": "Alagoas",
+      "tarifa": 0.851,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "AP",
+      "nome": "Amapá",
+      "tarifa": 0.825,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "AM",
+      "nome": "Amazonas",
+      "tarifa": 0.876,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "BA",
+      "nome": "Bahia",
+      "tarifa": 0.878,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "CE",
+      "nome": "Ceará",
+      "tarifa": 0.702,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "DF",
+      "nome": "Distrito Federal",
+      "tarifa": 0.834,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "ES",
+      "nome": "Espírito Santo",
+      "tarifa": 0.834,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "GO",
+      "nome": "Goiás",
+      "tarifa": 0.887,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "MA",
+      "nome": "Maranhão",
+      "tarifa": 0.889,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "MT",
+      "nome": "Mato Grosso",
+      "tarifa": 0.899,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "MS",
+      "nome": "Mato Grosso do Sul",
+      "tarifa": 0.987,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "MG",
+      "nome": "Minas Gerais",
+      "tarifa": 0.813,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "PA",
+      "nome": "Pará",
+      "tarifa": 1.043,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "PB",
+      "nome": "Paraíba",
+      "tarifa": 0.71,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "PR",
+      "nome": "Paraná",
+      "tarifa": 0.757,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "PE",
+      "nome": "Pernambuco",
+      "tarifa": 0.844,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "PI",
+      "nome": "Piauí",
+      "tarifa": 0.947,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "RJ",
+      "nome": "Rio de Janeiro",
+      "tarifa": 0.971,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "RN",
+      "nome": "Rio Grande do Norte",
+      "tarifa": 0.776,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "RS",
+      "nome": "Rio Grande do Sul",
+      "tarifa": 0.811,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "RO",
+      "nome": "Rondônia",
+      "tarifa": 0.762,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "RR",
+      "nome": "Roraima",
+      "tarifa": 0.673,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "SC",
+      "nome": "Santa Catarina",
+      "tarifa": 0.776,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "SP",
+      "nome": "São Paulo",
+      "tarifa": 0.846,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "SE",
+      "nome": "Sergipe",
+      "tarifa": 0.737,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    },
+    {
+      "uf": "TO",
+      "nome": "Tocantins",
+      "tarifa": 0.993,
+      "referencia": "2026-11",
+      "fonte": "ANEEL — Ranking das Tarifas (tarifa residencial B1 homologada, TUSD + TE sem tributos), média das distribuidoras da UF: https://www.gov.br/aneel/pt-br/assuntos/tarifas/ranking-das-tarifas"
+    }
+  ]
+}

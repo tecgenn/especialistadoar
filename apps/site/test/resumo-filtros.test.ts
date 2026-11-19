@@ -68,6 +68,25 @@ describe("resumo do recorte efetivo (ticket 50)", () => {
     ]);
   });
 
+  it("mostra a faixa de capacidade com o intervalo legível (ticket 60)", () => {
+    expect(resumoDosFiltros({ btuMin: 12001, btuMax: 18000 }, opcoes)).toEqual([
+      {
+        campo: "btuFaixa",
+        rotulo: "Capacidade: 12.001–18.000 BTU/h",
+        remover: "Remover filtro Capacidade: 12.001–18.000 BTU/h",
+      },
+    ]);
+    expect(resumoDosFiltros({ btuMin: 30001 }, opcoes)[0]?.rotulo).toBe(
+      "Capacidade: Acima de 30.000 BTU/h",
+    );
+    // Com capacidade exata, a faixa não entra no resumo.
+    expect(
+      resumoDosFiltros({ btu: 12000, btuMin: 9001, btuMax: 12000 }, opcoes).map(
+        (filtro) => filtro.campo,
+      ),
+    ).toEqual(["btu"]);
+  });
+
   it("usa o valor oficial da Marca quando ela está fora da curadoria", () => {
     expect(
       resumoDosFiltros({ marca: "SPRINGER MIDEA" }, opcoes)[0]?.rotulo,

@@ -20,6 +20,7 @@ import Base from "../../layouts/Base.astro";
 import type { Analise } from "../../lib/analises.ts";
 import { linksDaTabelaPorCapacidade } from "../../lib/analises.ts";
 import type { Oferta } from "../../lib/ofertas.ts";
+import { ROTULO_OFERTA_PADRAO } from "../../lib/ofertas.ts";
 
 export async function getStaticPaths() {
   const aparelhos = aparelhosJson as Aparelho[];
@@ -138,8 +139,8 @@ const jsonLd: Record<string, unknown> = {
         </CtaCartao>
       ) : ofertas.length > 0 ? (
         <OfertaCta
-          titulo="Ver oferta"
-          descricao="Onde encontrar este modelo — o preço é o do dia."
+          titulo={ROTULO_OFERTA_PADRAO}
+          descricao="Onde encontrar este modelo — a compra acontece na loja."
           ofertas={ofertas}
         />
       ) : (
@@ -201,7 +202,7 @@ const jsonLd: Record<string, unknown> = {
       ofertas.length > 0 ? (
         <OfertaCta
           titulo="Onde comprar"
-          descricao="O preço é o do dia; confira a tensão e a instalação antes."
+          descricao="Confira a tensão e a instalação antes de comprar na loja."
           ofertas={ofertas}
         />
       ) : null

@@ -112,13 +112,30 @@ describe("formatação pt-BR", () => {
 });
 
 describe("FAQ e JSON-LD", () => {
-  it("tem 5–6 perguntas reais com resposta curta", () => {
-    expect(PERGUNTAS_FREQUENTES.length).toBeGreaterThanOrEqual(5);
-    expect(PERGUNTAS_FREQUENTES.length).toBeLessThanOrEqual(6);
+  it("tem 7–8 perguntas reais com resposta curta", () => {
+    expect(PERGUNTAS_FREQUENTES.length).toBeGreaterThanOrEqual(7);
+    expect(PERGUNTAS_FREQUENTES.length).toBeLessThanOrEqual(8);
     for (const { pergunta, resposta } of PERGUNTAS_FREQUENTES) {
       expect(pergunta.trim().length).toBeGreaterThan(0);
       expect(resposta.trim().length).toBeGreaterThan(0);
     }
+  });
+
+  it("responde o que é BTU/h e como escolher a tensão pela instalação", () => {
+    const btu = PERGUNTAS_FREQUENTES.find(
+      ({ pergunta }) => pergunta === "O que é BTU/h?",
+    );
+    expect(btu).toBeDefined();
+    expect(btu?.resposta).toContain("capacidade");
+    expect(btu?.resposta).toContain("calor");
+
+    const tensao = PERGUNTAS_FREQUENTES.find(
+      ({ pergunta }) => pergunta === "Qual tensão escolher: 127 V ou 220 V?",
+    );
+    expect(tensao).toBeDefined();
+    expect(tensao?.resposta).toContain("instalação");
+    expect(tensao?.resposta).toContain("127 V");
+    expect(tensao?.resposta).toContain("220 V");
   });
 
   it("publica um FAQPage válido com as mesmas perguntas e respostas", () => {

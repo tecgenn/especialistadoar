@@ -1,14 +1,18 @@
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
 import {
+  capacidadesDiferem,
   escreverIds,
+  fraseDiferencaCustoAnual,
   lerIds,
   lerIdsBrutos,
   linhasDaComparacao,
+  linhasDeCustoComparacao,
   MAXIMO_COMPARACAO,
   resumoDaSugestao,
   valorDaComparacao,
 } from "../src/lib/comparacao.ts";
+import { calcularCusto, type ResultadoCusto } from "../src/lib/custo.ts";
 
 function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
   return {
@@ -203,5 +207,114 @@ describe("sugestão do combobox", () => {
     expect(resumo.marca).toBe("MIDEA");
     expect(resumo.capacidade).toBe("9.000 – 12.000 BTU/h");
     expect(resumo.tipo).toBe("—");
+  });
+});
+
+/** O cenário padrão da ficha, para os testes do custo na comparação. */
+function custo(itemComparado: ItemConsulta): ResultadoCusto | null {
+  return calcularCusto({
+    consumosAnuaisKwh: itemComparado.consumosKwh,
+    tarifa: 0.85,
+    horas: 8,
+    dias: 30,
+  });
+}
+
+describe("linhas de custo estimado da matriz de Comparação", () => {
+  it("são três — consumo mensal, custo mensal e custo anual — no formato da ficha", () => {
+    const linhas = linhasDeCustoComparacao([custo(item())]);
+
+    expect(linhas.map((linha) => linha.campo)).toEqual([
+      "consumoMensal",
+      "custoMensal",
+      "custoAnual",
+    ]);
+    expect(linhas.map((linha) => linha.rotulo)).toEqual([
+      "Consumo mensal",
+      "Custo mensal",
+      "Custo anual",
+    ]);
+    // 300 kWh/ano ÷ 2.080 × 8 × 30 = 34,62 kWh/mês; × 0,85 = R$ 29,42; × 12.
+    expect(linhas.map((linha) => linha.valores[0])).toEqual([
+      "34,62 kWh",
+      "R$ 29,42",
+      "R$ 353,08",
+    ]);
+  });
+
+  it("um valor por Aparelho, na ordem das colunas, com travessão sem consumo", () => {
+    const semConsumo = item({ consumosKwh: [] });
+    const linhas = linhasDeCustoComparacao([
+      custo(item({ consumosKwh: [416] })),
+      custo(semConsumo),
+    ]);
+
+    expect(linhas.every((linha) => linha.valores.length === 2)).toBe(true);
+    expect(linhas[2]?.valores).toEqual(["R$ 489,60", "—"]);
+  });
+
+  it("faixa de Variantes aparece nas três linhas", () => {
+    const [consumo, mensal, anual] = linhasDeCustoComparacao([
+      custo(item({ consumosKwh: [350, 818] })),
+    ]);
+
+    expect(consumo?.valores[0]).toBe("40,38 kWh – 94,38 kWh");
+    expect(mensal?.valores[0]).toBe("R$ 34,33 – R$ 80,23");
+    expect(anual?.valores[0]).toBe("R$ 411,92 – R$ 962,72");
+  });
+});
+
+describe("frase factual da diferença de custo anual", () => {
+  it("dá o menor, o maior e a diferença, sem eleger um vencedor", () => {
+    const frase = fraseDiferencaCustoAnual([
+      custo(item({ consumosKwh: [300] })),
+      custo(item({ consumosKwh: [350] })),
+    ]);
+
+    expect(frase).toBe(
+      "Neste cenário, o custo anual estimado varia de R$ 353,08 a R$ 411,92 entre os modelos — diferença de R$ 58,85/ano.",
+    );
+    expect(frase).not.toMatch(/melhor/i);
+    expect(frase).not.toMatch(/vencedor/i);
+    expect(frase).not.toContain("★");
+  });
+
+  it("com um modelo só, ou sem consumo, não há diferença a mostrar", () => {
+    expect(fraseDiferencaCustoAnual([custo(item())])).toBeNull();
+    expect(fraseDiferencaCustoAnual([custo(item()), null])).toBeNull();
+    expect(fraseDiferencaCustoAnual([])).toBeNull();
+  });
+});
+
+describe("aviso de capacidades diferentes", () => {
+  it("dispara quando as capacidades não coincidem", () => {
+    expect(
+      capacidadesDiferem([
+        item({ capacidadesBtu: [12000] }),
+        item({ capacidadesBtu: [30000] }),
+      ]),
+    ).toBe(true);
+    expect(
+      capacidadesDiferem([
+        item({ capacidadesBtu: [12000] }),
+        item({ capacidadesBtu: [9000, 12000] }),
+      ]),
+    ).toBe(true);
+  });
+
+  it("não dispara com capacidades iguais, na ordem que vierem", () => {
+    expect(
+      capacidadesDiferem([
+        item({ capacidadesBtu: [12000] }),
+        item({ capacidadesBtu: [12000] }),
+      ]),
+    ).toBe(false);
+    expect(
+      capacidadesDiferem([
+        item({ capacidadesBtu: [9000, 12000] }),
+        item({ capacidadesBtu: [12000, 9000] }),
+      ]),
+    ).toBe(false);
+    expect(capacidadesDiferem([item()])).toBe(false);
   });
 });

@@ -12,6 +12,13 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Comparar from "../src/components/Comparar.tsx";
+import type { Oferta } from "../src/lib/ofertas.ts";
+import {
+  type TarifasCuradas,
+  UFS,
+  validarTarifas,
+} from "../src/lib/tarifas.ts";
+import { mesclarChaves } from "../src/lib/url.ts";
 
 /**
  * A ilha da Comparação (ticket 49): três campos de busca que viram cartões, a
@@ -84,7 +91,31 @@ const itens: ItemConsulta[] = [
     idrs: [2],
     consumosKwh: [150],
   },
+  {
+    id: "ap-ffffffffffff",
+    marca: "PHILCO",
+    marcaCatalogo: "PHILCO",
+    modelo: "Sem consumo",
+    tipo: "Split Hi-Wall",
+    funcao: "Frio",
+    capacidadesBtu: [12000],
+    tensoes: [220],
+    classes: ["A"],
+    idrs: [5],
+    consumosKwh: [],
+  },
 ];
+
+/** A curadoria do teste, a mesma da ficha: SP a R$ 0,85/kWh. */
+const tarifas: TarifasCuradas = validarTarifas({
+  ufs: UFS.map(({ uf, nome }) => ({
+    uf,
+    nome,
+    tarifa: uf === "SP" ? 0.85 : uf === "RJ" ? 0.95 : 0.9,
+    referencia: "2026-11",
+    fonte: "ANEEL",
+  })),
+});
 
 /** Um Aparelho tem Análise: o selo aparece no cabeçalho da coluna. */
 const analisados = new Map([
@@ -94,6 +125,18 @@ const analisados = new Map([
   ],
 ]);
 
+/**
+ * A Oferta de fixture (ticket 59): só o primeiro modelo da base tem uma. A
+ * lista chega já resolvida e validada pelo build — a ilha não baixa nada.
+ */
+const ofertas: Oferta[] = [
+  {
+    aparelhoId: "ap-aaaaaaaaaaaa",
+    loja: "Loja do teste",
+    url: "https://loja.example.com/windfree",
+  },
+];
+
 function servirConsulta(dataset: ItemConsulta[] = itens) {
   vi.stubGlobal(
     "fetch",
@@ -102,9 +145,15 @@ function servirConsulta(dataset: ItemConsulta[] = itens) {
 }
 
 /** Renderiza a ilha na URL dada e espera o dataset; o resto é comportamento. */
-async function montar(url = "/comparar/") {
+async function montar(url = "/comparar/", ofertasDaIlha = ofertas) {
   window.history.replaceState(null, "", url);
-  render(<Comparar analisados={analisados} />);
+  render(
+    <Comparar
+      analisados={analisados}
+      ofertas={ofertasDaIlha}
+      tarifas={tarifas}
+    />,
+  );
   await waitFor(() =>
     expect(screen.queryByText("Carregando a base…")).toBeNull(),
   );
@@ -114,8 +163,32 @@ function idsDaUrl(): string | null {
   return new URLSearchParams(window.location.search).get("ids");
 }
 
+function busca(): URLSearchParams {
+  return new URLSearchParams(window.location.search);
+}
+
+/**
+ * Só os campos de busca, pelos rótulos visíveis — o `<select>` de UF do painel
+ * também tem papel de combobox e não entra aqui.
+ */
+const ROTULOS_BUSCA = ["Modelo 1", "Modelo 2", "Modelo 3"] as const;
+
 function campos(): HTMLElement[] {
-  return screen.queryAllByRole("combobox");
+  return ROTULOS_BUSCA.map((rotulo) =>
+    screen.queryByRole("combobox", { name: rotulo }),
+  ).filter((campo): campo is HTMLElement => campo !== null);
+}
+
+/** O painel de custo pelo título, sem depender de classe. */
+function painelCusto(): HTMLElement | null {
+  return screen.queryByRole("region", {
+    name: /custo estimado — seu cenário/i,
+  });
+}
+
+/** Os cartões de modelo são os `<article>` da ilha. */
+function cartoes(): HTMLElement[] {
+  return screen.queryAllByRole("article");
 }
 
 function tabela(): HTMLElement {
@@ -283,6 +356,9 @@ describe("estados de 2 e 3 modelos", () => {
       "Consumo anual",
       "IDRS",
       "Classe",
+      "Consumo mensal",
+      "Custo mensal",
+      "Custo anual",
     ]);
     const texto = tabela().textContent ?? "";
     expect(texto).toContain("Split Hi-Wall");
@@ -421,5 +497,273 @@ describe("contrato `ids` na URL", () => {
     expect(
       screen.getByRole("heading", { name: /nada para comparar/i }),
     ).toBeDefined();
+  });
+});
+
+/** O custo de energia na comparação (ticket 56), no mesmo cenário da ficha. */
+describe("custo estimado na comparação", () => {
+  it("com um modelo só não há painel: permanece só o convite", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa");
+
+    expect(screen.queryByLabelText("Estado (UF)")).toBeNull();
+    expect(painelCusto()).toBeNull();
+    expect(screen.getByText(/Adicione um segundo modelo/)).toBeDefined();
+  });
+
+  it("com 2 modelos o painel de quatro campos fica acima dos cartões", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    for (const rotulo of [
+      "Estado (UF)",
+      "Tarifa (R$/kWh)",
+      "Horas por dia",
+      "Dias por mês",
+    ]) {
+      expect(screen.getByLabelText(rotulo)).toBeDefined();
+    }
+    const painel = painelCusto() as HTMLElement;
+    const primeiroCartao = cartoes()[0] as HTMLElement;
+    expect(painel).not.toBeNull();
+    expect(
+      painel.compareDocumentPosition(primeiroCartao) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("com 3 modelos o painel continua acima dos cartões", async () => {
+    await montar(
+      "/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb,ap-cccccccccccc",
+    );
+
+    expect(painelCusto()).not.toBeNull();
+    expect(cartoes()).toHaveLength(3);
+    const painel = painelCusto() as HTMLElement;
+    const primeiroCartao = cartoes()[0] as HTMLElement;
+    expect(
+      painel.compareDocumentPosition(primeiroCartao) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it("explica o método e deixa claro que o custo é estimativa, não Valor oficial", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const metodo = screen.getByText(/2\.080 h\/ano/);
+    expect(metodo.textContent).toContain("12 meses iguais");
+    expect(metodo.textContent).toContain("estimativa");
+    expect(metodo.textContent).toContain("não um Valor oficial");
+    expect(screen.getByText(/custos acima são estimativas/)).toBeDefined();
+  });
+
+  it("cada cartão mostra consumo mensal, custo mensal e custo anual", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const modelos = cartoes();
+    expect(modelos).toHaveLength(2);
+    // 320 kWh/ano no cenário padrão: 36,92 kWh/mês, R$ 31,38/mês, R$ 376,62/ano.
+    expect(modelos[0]?.textContent).toContain("Consumo mensal");
+    expect(modelos[0]?.textContent).toContain("36,92 kWh");
+    expect(modelos[0]?.textContent).toContain("R$ 31,38");
+    expect(modelos[0]?.textContent).toContain("R$ 376,62");
+    // 350 kWh/ano: R$ 34,33/mês e R$ 411,92/ano.
+    expect(modelos[1]?.textContent).toContain("40,38 kWh");
+    expect(modelos[1]?.textContent).toContain("R$ 34,33");
+    expect(modelos[1]?.textContent).toContain("R$ 411,92");
+  });
+
+  it("mostra as três linhas com travessão quando o modelo não declara consumo", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-ffffffffffff");
+
+    const semConsumo = cartoes()[1] as HTMLElement;
+    expect(semConsumo.textContent).toContain("Consumo mensal");
+    expect(semConsumo.textContent).toContain("Custo mensal");
+    expect(semConsumo.textContent).toContain("Custo anual");
+    expect(semConsumo.textContent).toContain("Sem consumo declarado");
+    expect(semConsumo.textContent?.match(/—/g)).toHaveLength(3);
+  });
+
+  it("a matriz ganha a seção 'Custo estimado (seu uso)' com as três linhas", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    expect(tabela().textContent).toContain("Custo estimado (seu uso)");
+    expect(linhas().slice(-3)).toEqual([
+      "Consumo mensal",
+      "Custo mensal",
+      "Custo anual",
+    ]);
+    expect(tabela().textContent).toContain("R$ 376,62");
+    expect(tabela().textContent).toContain("R$ 411,92");
+  });
+
+  it("mostra a frase factual com a diferença entre o maior e o menor custo anual", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const frase = screen.getByText(/diferença de R\$/);
+    expect(frase.textContent).toContain("R$ 376,62");
+    expect(frase.textContent).toContain("R$ 411,92");
+    expect(frase.textContent).toContain("R$ 35,31");
+  });
+
+  it("avisa quando as capacidades diferem, apontando o IDRS", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-eeeeeeeeeeee");
+
+    const aviso = screen.getByText(/capacidades diferentes/i);
+    expect(aviso.textContent).toContain("IDRS");
+    expect(aviso.textContent).toContain("eficiência");
+  });
+
+  it("não avisa quando as capacidades são iguais", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    expect(screen.queryByText(/capacidades diferentes/i)).toBeNull();
+  });
+
+  it("não marca nenhum valor como melhor, ★ ou vencedor", async () => {
+    await montar(
+      "/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb,ap-cccccccccccc",
+    );
+
+    const texto =
+      tabela().textContent +
+      cartoes()
+        .map((cartao) => cartao.textContent)
+        .join("") +
+      (screen.getByText(/dados técnicos são os Dados declarados/).textContent ??
+        "");
+    expect(texto).not.toMatch(/melhor/i);
+    expect(texto).not.toMatch(/vencedor/i);
+    expect(texto).not.toMatch(/menor custo/i);
+    expect(texto).not.toContain("★");
+  });
+
+  it("abre um link vindo da ficha com o mesmo recorte de tarifa e uso", async () => {
+    // O cenário é o que a ficha escreve na própria URL; a comparação só junta
+    // `ids` às mesmas chaves, sem recalcular nem trocar os padrões.
+    const daFicha = new URLSearchParams("uf=RJ&tarifa=1.2&horas=6&dias=22");
+    const busca = mesclarChaves(
+      daFicha,
+      ["ids"],
+      new URLSearchParams("ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb"),
+    );
+    await montar(`/comparar/?${busca.toString()}`);
+
+    expect(
+      (screen.getByLabelText("Estado (UF)") as HTMLSelectElement).value,
+    ).toBe("RJ");
+    expect(
+      (screen.getByLabelText("Tarifa (R$/kWh)") as HTMLInputElement).value,
+    ).toBe("1,2");
+    expect(
+      (screen.getByLabelText("Horas por dia") as HTMLInputElement).value,
+    ).toBe("6");
+    expect(
+      (screen.getByLabelText("Dias por mês") as HTMLInputElement).value,
+    ).toBe("22");
+  });
+
+  it("muda os números de todos os modelos de uma vez e mantém ids na URL", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    fireEvent.change(screen.getByLabelText("Horas por dia"), {
+      target: { value: "4" },
+    });
+
+    // 320 kWh/ano a 4 h/dia: 18,46 kWh/mês, R$ 15,69/mês.
+    const modelos = cartoes();
+    expect(modelos[0]?.textContent).toContain("18,46 kWh");
+    expect(modelos[0]?.textContent).toContain("R$ 15,69");
+    expect(modelos[1]?.textContent).toContain("R$ 17,16");
+    expect(busca().get("ids")).toBe("ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+    expect(busca().get("horas")).toBe("4");
+  });
+
+  it("trocar a seleção não apaga o recorte da calculadora da URL", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb&uf=RJ");
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Remover LG Dual Inverter" }),
+    );
+
+    await waitFor(() => expect(idsDaUrl()).toBe("ap-aaaaaaaaaaaa"));
+    expect(busca().get("uf")).toBe("RJ");
+  });
+});
+
+/**
+ * O CTA de Oferta no cartão de cada modelo (ticket 59): mesma linguagem e mesmo
+ * marcador da ficha, dentro da área de ações. A matriz continua neutra.
+ */
+describe("CTA de Oferta no cartão", () => {
+  it("mostra 'Ver oferta' com loja e marcador no modelo que tem Oferta", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const comOferta = cartoes()[0] as HTMLElement;
+    const cta = within(comOferta).getByRole("link", {
+      name: "Ver oferta — Loja do teste · link de afiliado",
+    });
+    expect(cta.getAttribute("href")).toBe("https://loja.example.com/windfree");
+    expect(cta.getAttribute("rel")).toBe("sponsored nofollow noopener");
+    expect(cta.getAttribute("target")).toBe("_blank");
+    expect(cta.className).toBe("oferta-cartao");
+  });
+
+  it("fica na área de ações do cartão, junto de Trocar e Remover", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const acoes = cartoes()[0]?.querySelector(
+      ".comparar-cartao-acoes",
+    ) as HTMLElement;
+    expect(
+      within(acoes).getByRole("link", { name: /Ver oferta/ }),
+    ).toBeDefined();
+    expect(
+      within(acoes).getByRole("button", {
+        name: "Trocar SAMSUNG WindFree AI Pro",
+      }),
+    ).toBeDefined();
+    expect(
+      within(acoes).getByRole("button", {
+        name: "Remover SAMSUNG WindFree AI Pro",
+      }),
+    ).toBeDefined();
+  });
+
+  it("não renderiza CTA, espaço reservado nem botão desabilitado sem Oferta", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb");
+
+    const semOferta = cartoes()[1] as HTMLElement;
+    expect(within(semOferta).queryByRole("link")).toBeNull();
+    expect(
+      within(semOferta).queryByRole("button", { name: /oferta/i }),
+    ).toBeNull();
+    expect(
+      within(semOferta)
+        .getAllByRole("button")
+        .map((botao) => botao.textContent),
+    ).toEqual(["Trocar", "Remover"]);
+    // Só o modelo com Oferta ganha um CTA — nada é reservado no outro cartão.
+    expect(screen.getAllByRole("link", { name: /Ver oferta/ })).toHaveLength(1);
+  });
+
+  it("sem nenhuma Oferta publicada não há CTA em cartão nenhum", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb", []);
+
+    expect(screen.queryByRole("link", { name: /Ver oferta/ })).toBeNull();
+    expect(screen.queryByText(/link de afiliado/)).toBeNull();
+  });
+
+  it("a matriz de atributos não ganha linha, coluna nem link comercial", async () => {
+    await montar(
+      "/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb,ap-cccccccccccc",
+    );
+
+    const matriz = within(tabela());
+    expect(matriz.queryByRole("link", { name: /Ver oferta/ })).toBeNull();
+    expect(tabela().textContent).not.toMatch(/oferta|afiliado/i);
+    expect(tabela().querySelector('[rel~="sponsored"]')).toBeNull();
+    // Os únicos links da matriz continuam sendo os internos de ficha e Análise.
+    for (const link of matriz.getAllByRole("link")) {
+      expect(link.getAttribute("href")).not.toContain("loja.example.com");
+    }
   });
 });

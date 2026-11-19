@@ -1,10 +1,14 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Aparelho } from "@especialista-do-ar/pipeline";
 import { describe, expect, it } from "vitest";
 import {
+  ATRIBUTOS_OFERTA,
   indexarOfertas,
+  MARCADOR_OFERTA,
   type Oferta,
+  ROTULO_OFERTA_PADRAO,
+  rotuloDaOferta,
   validarOfertas,
 } from "../src/lib/ofertas.ts";
 
@@ -32,8 +36,17 @@ describe("validarOfertas", () => {
       /aparelhoId/,
     );
     expect(() => validarOfertas([oferta({ loja: "" })])).toThrow(/loja/);
-    expect(() => validarOfertas([oferta({ titulo: "" })])).toThrow(/titulo/);
     expect(() => validarOfertas([oferta({ url: "" })])).toThrow(/url/);
+  });
+
+  it("aceita Oferta sem titulo — o rótulo padrão cobre", () => {
+    const semTitulo = { ...oferta() };
+    delete semTitulo.titulo;
+    expect(() => validarOfertas([semTitulo])).not.toThrow();
+  });
+
+  it("recusa titulo em branco quando informado", () => {
+    expect(() => validarOfertas([oferta({ titulo: "  " })])).toThrow(/titulo/);
   });
 
   it("recusa url que não seja http(s)", () => {
@@ -52,6 +65,36 @@ describe("validarOfertas", () => {
 
   it("recusa Oferta duplicada para o mesmo Aparelho", () => {
     expect(() => validarOfertas([oferta(), oferta()])).toThrow(/duplicada/);
+  });
+});
+
+describe("rotuloDaOferta", () => {
+  it("usa 'Ver oferta' como rótulo padrão e não promete preço", () => {
+    expect(ROTULO_OFERTA_PADRAO).toBe("Ver oferta");
+    expect(rotuloDaOferta({})).toBe("Ver oferta");
+    expect(rotuloDaOferta({ titulo: "  " })).toBe("Ver oferta");
+  });
+
+  it("respeita o rótulo próprio quando informado", () => {
+    expect(rotuloDaOferta({ titulo: "Ver oferta na loja" })).toBe(
+      "Ver oferta na loja",
+    );
+  });
+});
+
+/**
+ * Os atributos e o marcador do link comercial ficam num lugar só (ticket 59),
+ * para a ficha, a Análise e a Comparação não divergirem.
+ */
+describe("constantes do link de Oferta", () => {
+  it("exige `sponsored nofollow noopener` e abre em outra aba", () => {
+    expect(ATRIBUTOS_OFERTA.rel).toBe("sponsored nofollow noopener");
+    expect(ATRIBUTOS_OFERTA.target).toBe("_blank");
+  });
+
+  it("identifica o link como de afiliado, sem prometer preço", () => {
+    expect(MARCADOR_OFERTA).toBe("link de afiliado");
+    expect(MARCADOR_OFERTA).not.toMatch(/pre[çc]o|desconto/i);
   });
 });
 
@@ -104,6 +147,51 @@ describe("Ofertas nunca vazam para a base servida", () => {
       ),
     ) as Oferta[];
     validarOfertas(ofertas, new Set(aparelhos.map((aparelho) => aparelho.id)));
+  });
+
+  it("a Oferta de produção usa 'Ver oferta' e não promete preço", () => {
+    const ofertas = JSON.parse(
+      readFileSync(
+        fileURLToPath(new URL("../ofertas.json", import.meta.url)),
+        "utf8",
+      ),
+    ) as Oferta[];
+    // A Oferta de produção pode omitir `titulo`: o rótulo padrão cobre.
+    expect(ofertas.map(rotuloDaOferta)).toContain(ROTULO_OFERTA_PADRAO);
+    for (const oferta of ofertas) {
+      expect(rotuloDaOferta(oferta)).not.toMatch(/pre[çc]o|desconto/i);
+    }
+  });
+});
+
+/**
+ * A divulgação da Oferta é discreta e não promete preço (ticket 58): os
+ * componentes do CTA e o texto das Análises não podem trazer "Ver preço",
+ * "preço do dia", "menor preço" nem desconto.
+ */
+describe("a divulgação da Oferta não promete preço", () => {
+  const textosComOferta = [
+    "../src/components/OfertaCartao.astro",
+    "../src/components/OfertaFaixa.astro",
+    "../src/components/OfertaCta.astro",
+    "../src/pages/aparelhos/[id].astro",
+    "../src/pages/analises/[slug].astro",
+  ];
+  const diretorioAnalises = fileURLToPath(
+    new URL("../src/content/analises/", import.meta.url),
+  );
+  const analises = readdirSync(diretorioAnalises)
+    .filter((nome) => nome.endsWith(".mdx"))
+    .map((nome) => `../src/content/analises/${nome}`);
+
+  it("nenhum texto do CTA ou das Análises promete preço, desconto ou economia", () => {
+    for (const caminho of [...textosComOferta, ...analises]) {
+      expect(
+        readFileSync(new URL(caminho, import.meta.url), "utf8"),
+      ).not.toMatch(
+        /ver pre[çc]o|menor pre[çc]o|pre[çc]o do dia|valor do dia|desconto/i,
+      );
+    }
   });
 });
 

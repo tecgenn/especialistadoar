@@ -35,6 +35,21 @@ export function colunasDaTabela(): ColunaTabela[] {
 }
 
 /**
+ * A segunda linha da célula do Modelo (ticket 63): Função e Tensões do
+ * Aparelho, dados que eram só filtro. `Frio · 220 V` num modelo simples e
+ * `Frio · 127 · 220 V` num bivolt. Função ou Tensão ausente não deixa separador
+ * solto; sem nenhuma das duas, não há segunda linha.
+ */
+export function detalheDoAparelho(item: ItemConsulta): string | null {
+  const funcao = item.funcao?.trim() ?? "";
+  const tensoes = [...item.tensoes].sort((a, b) => a - b);
+  const textoDasTensoes =
+    tensoes.length === 0 ? "" : `${tensoes.join(" · ")} V`;
+  const partes = [funcao, textoDasTensoes].filter((parte) => parte !== "");
+  return partes.length === 0 ? null : partes.join(" · ");
+}
+
+/**
  * O texto de uma célula. Listas viram faixa quando têm mais de um valor
  * ("9.000 – 12.000"); dado ausente aparece como travessão.
  */

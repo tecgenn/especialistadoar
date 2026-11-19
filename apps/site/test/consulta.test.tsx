@@ -282,9 +282,59 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
-  it("filtra por marca pelo select 'Outras marcas'", async () => {
+  describe("segunda linha Função · Tensão (ticket 63)", () => {
+    /** O texto da segunda linha do Aparelho de dado modelo. */
+    function detalheDaLinha(modelo: string): string | null {
+      const link = screen.getByRole("link", { name: modelo });
+      const celula = link.closest("td");
+      return celula?.querySelector(".modelo-detalhe")?.textContent ?? null;
+    }
+
+    it("mostra Função e Tensão sob o modelo, na mesma célula", async () => {
+      await montar();
+      const link = screen.getByRole("link", { name: "Classe F" });
+      expect(link.closest("td")?.getAttribute("data-campo")).toBe("modelo");
+      expect(detalheDaLinha("Classe F")).toBe("Frio · 220 V");
+    });
+
+    it("lista as duas tensões do Aparelho bivolt", async () => {
+      await montar();
+      expect(detalheDaLinha("Janela")).toBe("Frio · 127 · 220 V");
+    });
+
+    it("não deixa separador solto quando falta Função ou Tensão", async () => {
+      const base: ItemConsulta = {
+        id: "sem-detalhe",
+        marca: "LG",
+        marcaCatalogo: "LG",
+        modelo: "Sem Detalhe",
+        tipo: "Split Hi-Wall",
+        funcao: null,
+        capacidadesBtu: [9000],
+        tensoes: [],
+        classes: ["A"],
+        idrs: [5],
+        consumosKwh: [300],
+      };
+      servirConsulta([
+        base,
+        { ...base, id: "so-funcao", modelo: "Só Função", funcao: "Frio" },
+      ]);
+      await montar();
+
+      expect(
+        screen
+          .getByRole("link", { name: "Sem Detalhe" })
+          .closest("td")
+          ?.querySelector(".modelo-detalhe"),
+      ).toBeNull();
+      expect(detalheDaLinha("Só Função")).toBe("Frio");
+    });
+  });
+
+  it("filtra por marca pelo campo de busca 'Outras marcas'", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Outras marcas"), {
+    fireEvent.change(screen.getByRole("searchbox", { name: "Outras marcas" }), {
       target: { value: "GREE" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
@@ -296,10 +346,8 @@ describe("ilha de consulta (ADR-0008)", () => {
     // As Marcas oficiais são MIDEA e SPRINGER MIDEA; o catálogo exibe o grupo.
     expect(screen.getByText("Springer Inverter")).toBeDefined();
     expect(screen.getByText("Xtreme Save")).toBeDefined();
-    expect(screen.getByRole("option", { name: "MIDEA" })).toBeDefined();
-    expect(screen.queryByRole("option", { name: "SPRINGER MIDEA" })).toBeNull();
 
-    fireEvent.change(screen.getByLabelText("Outras marcas"), {
+    fireEvent.change(screen.getByRole("searchbox", { name: "Outras marcas" }), {
       target: { value: "MIDEA" },
     });
     // O filtro da família traz a marca oficial e o alias, não um só.
@@ -313,9 +361,13 @@ describe("ilha de consulta (ADR-0008)", () => {
     render(<Consulta opcoes={opcoesDe(itens)} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
-    // O filtro continua valendo (67 na base real) e o `<select>` não mente.
+    // O filtro continua valendo (67 na base real) e o campo de busca não mente.
     expect(
-      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+      (
+        screen.getByRole("searchbox", {
+          name: "Outras marcas",
+        }) as HTMLInputElement
+      ).value,
     ).toBe("SPRINGER MIDEA");
     expect(screen.getByText("Springer Inverter")).toBeDefined();
   });
@@ -327,9 +379,9 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(screen.getByRole("link", { name: "Janela" })).toBeDefined();
   });
 
-  it("filtra por capacidade pelo select 'Outras capacidades'", async () => {
+  it("filtra por capacidade exata pelo select do campo Capacidade", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Outras capacidades"), {
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
       target: { value: "9000" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
@@ -364,7 +416,7 @@ describe("ilha de consulta (ADR-0008)", () => {
 
   it("combina filtro por campo com a busca textual (MiniSearch)", async () => {
     await montar();
-    fireEvent.change(screen.getByLabelText("Outras capacidades"), {
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
       target: { value: "12000" },
     });
     fireEvent.change(screen.getByLabelText("Busca"), {
@@ -407,7 +459,7 @@ describe("ilha de consulta (ADR-0008)", () => {
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
     expect(
-      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+      (screen.getByLabelText("Outras marcas") as HTMLInputElement).value,
     ).toBe("GREE");
   });
 });
@@ -729,24 +781,42 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
     return chip(nome).getAttribute("aria-pressed");
   }
 
-  it("mostra as marcas e capacidades conhecidas como chips, sem as repetir no select", async () => {
+  it("mostra as faixas de capacidade como chips e todas as exatas no select", async () => {
     await montar(curadoria);
 
     expect(chip("Midea")).toBeDefined();
     expect(chip("LG")).toBeDefined();
-    expect(chip("12.000")).toBeDefined();
+    // As quatro faixas com Aparelho na base; as vazias não são renderizadas.
+    for (const faixa of [
+      "Até 9.000 BTU/h",
+      "9.001–12.000 BTU/h",
+      "12.001–18.000 BTU/h",
+      "24.001–30.000 BTU/h",
+    ]) {
+      expect(chip(faixa)).toBeDefined();
+    }
+    expect(
+      screen.queryByRole("button", { name: "18.001–24.000 BTU/h" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Acima de 30.000 BTU/h" }),
+    ).toBeNull();
     expect(screen.queryByRole("button", { name: "Samsung" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "24.000" })).toBeNull();
 
-    // O `<select>` "Outras…" guarda só o resto, sem duplicar o chip nem "Todas".
-    const marcas = opcoesDoSelect("Outras marcas");
-    expect(marcas).not.toContain("MIDEA");
-    expect(marcas).not.toContain("Todas");
-    expect(marcas).toContain("GREE");
-    const capacidades = opcoesDoSelect("Outras capacidades");
-    expect(capacidades).not.toContain("12.000");
-    expect(capacidades).not.toContain("Todas");
-    expect(capacidades).toContain("18.000");
+    // A Marca fora da curadoria é um campo de busca (ticket 61), sem a lista
+    // longa do `<select>` antigo; o `<select>` do campo Capacidade guarda todas
+    // as exatas — inclusive as que antes eram chips —, sem repetir as faixas.
+    expect(
+      screen.getByRole("searchbox", { name: "Outras marcas" }).tagName,
+    ).toBe("INPUT");
+    const capacidades = opcoesDoSelect("Capacidade exata");
+    expect(capacidades).toEqual([
+      "Todas as capacidades",
+      "9.000",
+      "12.000",
+      "18.000",
+      "30.000",
+    ]);
 
     expect(pressionado("Midea")).toBe("false");
   });
@@ -793,12 +863,12 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
     ).toBeDefined();
   });
 
-  it("escolher no select desliga o chip (um valor de marca por vez)", async () => {
+  it("buscar outra marca desliga o chip (um valor de marca por vez)", async () => {
     await montar(curadoria);
     fireEvent.click(chip("Midea"));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
 
-    fireEvent.change(screen.getByLabelText("Outras marcas"), {
+    fireEvent.change(screen.getByRole("searchbox", { name: "Outras marcas" }), {
       target: { value: "GREE" },
     });
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
@@ -808,28 +878,132 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
     );
   });
 
-  it("restaura da URL o chip aceso", async () => {
+  it("restaura da URL a capacidade exata no select, sem acender faixa", async () => {
     window.history.replaceState(null, "", "/?marca=MIDEA&btu=12000");
     render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
 
     expect(pressionado("Midea")).toBe("true");
-    expect(pressionado("12.000")).toBe("true");
+    expect(
+      (screen.getByLabelText("Capacidade exata") as HTMLSelectElement).value,
+    ).toBe("12000");
+    for (const faixa of [
+      "Até 9.000 BTU/h",
+      "9.001–12.000 BTU/h",
+      "12.001–18.000 BTU/h",
+    ]) {
+      expect(pressionado(faixa)).toBe("false");
+    }
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
   });
 
-  it("filtra por capacidade no chip e limpa no segundo clique", async () => {
+  it("filtra pela faixa de capacidade e limpa no segundo clique", async () => {
     await montar(curadoria);
-    fireEvent.click(chip("12.000"));
+    fireEvent.click(chip("9.001–12.000 BTU/h"));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
-    expect(pressionado("12.000")).toBe("true");
-    expect(new URLSearchParams(window.location.search).get("btu")).toBe(
-      "12000",
-    );
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("true");
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("btuMin")).toBe("9001");
+    expect(busca.get("btuMax")).toBe("12000");
+    expect(busca.get("btu")).toBeNull();
 
-    fireEvent.click(chip("12.000"));
+    fireEvent.click(chip("9.001–12.000 BTU/h"));
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
-    expect(pressionado("12.000")).toBe("false");
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("false");
+    const depois = new URLSearchParams(window.location.search);
+    expect(depois.get("btuMin")).toBeNull();
+    expect(depois.get("btuMax")).toBeNull();
+  });
+
+  it("faixa e capacidade exata são exclusivas nos dois sentidos", async () => {
+    await montar(curadoria);
+
+    fireEvent.click(chip("12.001–18.000 BTU/h"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
+
+    // Escolher a exata limpa as duas chaves da faixa.
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
+      target: { value: "9000" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    const comExata = new URLSearchParams(window.location.search);
+    expect(comExata.get("btu")).toBe("9000");
+    expect(comExata.get("btuMin")).toBeNull();
+    expect(comExata.get("btuMax")).toBeNull();
+    expect(pressionado("12.001–18.000 BTU/h")).toBe("false");
+
+    // E escolher a faixa limpa a exata.
+    fireEvent.click(chip("9.001–12.000 BTU/h"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
+    const comFaixa = new URLSearchParams(window.location.search);
+    expect(comFaixa.get("btu")).toBeNull();
+    expect(comFaixa.get("btuMin")).toBe("9001");
+    expect(comFaixa.get("btuMax")).toBe("12000");
+    expect(
+      (screen.getByLabelText("Capacidade exata") as HTMLSelectElement).value,
+    ).toBe("");
+  });
+
+  it("o contador de resultados é coerente ao trocar faixa por exata e vice-versa", async () => {
+    await montar(curadoria);
+
+    // Sem filtro: todos os 8 aparelhos da base.
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+
+    // Abre a faixa 9.001–12.000: 3 aparelhos entram (12.000 x3).
+    fireEvent.click(chip("9.001–12.000 BTU/h"));
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(3));
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("true");
+
+    // Escolhe a exata 9.000: o contador desce para 1 e a faixa se apaga.
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
+      target: { value: "9000" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(1));
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("false");
+    expect(
+      (screen.getByLabelText("Capacidade exata") as HTMLSelectElement).value,
+    ).toBe("9000");
+
+    // Volta a "Todas as capacidades": o contador volta para 8.
+    fireEvent.change(screen.getByLabelText("Capacidade exata"), {
+      target: { value: "" },
+    });
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    expect(pressionado("9.001–12.000 BTU/h")).toBe("false");
+  });
+
+  it("o chip de faixa acende quando a URL traz btuMin/btuMax", async () => {
+    window.history.replaceState(null, "", "/?btuMin=12001&btuMax=18000");
+    render(<Consulta opcoes={opcoesDe(itens, curadoria)} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    abrirPesquisaAvancada();
+
+    // O useEffect de leitura da URL roda no mount e define btuMin/btuMax;
+    // o chip deve refletir o recorte.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const chipFaixa = screen.getByRole("button", {
+      name: "12.001–18.000 BTU/h",
+    });
+    expect(chipFaixa.getAttribute("aria-pressed")).toBe("true");
+    // As outras faixas renderizadas na base não estão pressionadas.
+    for (const faixa of [
+      "Até 9.000 BTU/h",
+      "9.001–12.000 BTU/h",
+      "24.001–30.000 BTU/h",
+    ]) {
+      expect(pressionado(faixa)).toBe("false");
+    }
+    // Faixas sem aparelho na base não são renderizadas.
+    expect(
+      screen.queryByRole("button", { name: "18.001–24.000 BTU/h" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Acima de 30.000 BTU/h" }),
+    ).toBeNull();
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("btuMin")).toBe("12001");
+    expect(busca.get("btuMax")).toBe("18000");
   });
 
   it("um link antigo com o valor oficial não acende nem some do select", async () => {
@@ -840,7 +1014,7 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
 
     expect(pressionado("Midea")).toBe("false");
     expect(
-      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+      (screen.getByLabelText("Outras marcas") as HTMLInputElement).value,
     ).toBe("SPRINGER MIDEA");
   });
 
@@ -851,20 +1025,25 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
 
     expect(pressionado("Midea")).toBe("true");
     await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(2));
-    expect(screen.queryByRole("option", { name: "midea" })).toBeNull();
     expect(
-      (screen.getByLabelText("Outras marcas") as HTMLSelectElement).value,
+      (
+        screen.getByRole("searchbox", {
+          name: "Outras marcas",
+        }) as HTMLInputElement
+      ).value,
     ).toBe("");
   });
 
-  it("os selects 'Outras…' não têm a opção 'Todas'", async () => {
+  it("o select de capacidade não tem a opção 'Todas'", async () => {
     await montar(curadoria);
-    for (const rotulo of ["Outras marcas", "Outras capacidades"]) {
-      const select = screen.getByLabelText(rotulo) as HTMLSelectElement;
-      expect(
-        within(select).queryByRole("option", { name: "Todas" }),
-      ).toBeNull();
-    }
+    const select = screen.getByLabelText(
+      "Capacidade exata",
+    ) as HTMLSelectElement;
+    expect(within(select).queryByRole("option", { name: "Todas" })).toBeNull();
+    // 'Outras marcas' é busca, não select (ticket 61): não há opção alguma.
+    expect(
+      screen.queryByRole("combobox", { name: "Outras marcas" }),
+    ).toBeNull();
   });
 });
 
@@ -958,6 +1137,203 @@ describe("Pesquisa avançada (ticket 50)", () => {
   });
 });
 
+/**
+ * Ticket 61: o painel deixa a grade de três colunas iguais e passa a duas
+ * faixas nomeadas, com os campos em largura total e o rodapé próprio. O
+ * comportamento (aplicar na hora, escrever na URL, abrir sozinho) é o mesmo.
+ */
+describe("Pesquisa avançada em duas faixas (ticket 61)", () => {
+  function painel(): HTMLElement {
+    return document.getElementById("pesquisa-avancada") as HTMLElement;
+  }
+
+  function faixas(): HTMLElement[] {
+    return [...painel().querySelectorAll<HTMLElement>(".faixa-filtros")];
+  }
+
+  function rodape(): HTMLElement {
+    return painel().querySelector(".rodape-filtros") as HTMLElement;
+  }
+
+  function nomesDosCampos(faixa: HTMLElement): string[] {
+    return [
+      ...faixa.querySelectorAll<HTMLElement>(
+        ".campo-chips > legend, .campo-tensao > span",
+      ),
+    ].map((rotulo) => rotulo.textContent ?? "");
+  }
+
+  it("tem duas faixas nomeadas, na ordem Aparelho e Desempenho", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    expect(
+      faixas().map((faixa) => faixa.querySelector("legend")?.textContent),
+    ).toEqual(["Aparelho", "Desempenho"]);
+    expect(nomesDosCampos(faixas()[0] as HTMLElement)).toEqual([
+      "Marca",
+      "Tipo",
+      "Função",
+    ]);
+    expect(nomesDosCampos(faixas()[1] as HTMLElement)).toEqual([
+      "Capacidade",
+      "Classe",
+      "Tensão (V)",
+    ]);
+  });
+
+  it("dá largura total aos campos e deixa os chips quebrarem linha", () => {
+    const css = cssDaConsulta();
+    expect(css).toMatch(
+      /\.consulta \.filtros-avancados\s*\{[^}]*flex-direction:\s*column/,
+    );
+    expect(css).toMatch(/\.consulta \.faixa-filtros\s*\{[^}]*width:\s*100%/);
+    expect(css).toMatch(/\.consulta \.campo-chips\s*\{[^}]*width:\s*100%/);
+    expect(css).toMatch(/\.consulta \.chips\s*\{[^}]*flex-wrap:\s*wrap/);
+    // As faixas empilham em qualquer largura, inclusive no celular: não voltam
+    // a uma grade de colunas — cada campo ocupa a largura do painel.
+    expect(css).not.toMatch(
+      /\.consulta \.filtros-avancados\s*\{[^}]*grid-template-columns/,
+    );
+  });
+
+  it("busca 'Outras marcas' num campo de busca, sem select longo, e escreve na URL", async () => {
+    await montar(curadoria, TODOS, { abrir: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    const buscaMarca = screen.getByRole("searchbox", { name: "Outras marcas" });
+    expect(buscaMarca.tagName).toBe("INPUT");
+    expect(
+      screen.queryByRole("combobox", { name: "Outras marcas" }),
+    ).toBeNull();
+
+    fireEvent.change(buscaMarca, { target: { value: "GREE" } });
+    await waitFor(() =>
+      expect(new URLSearchParams(window.location.search).get("marca")).toBe(
+        "GREE",
+      ),
+    );
+    expect(screen.getAllByRole("link")).toHaveLength(1);
+    expect((buscaMarca as HTMLInputElement).value).toBe("GREE");
+  });
+
+  it("deixa o campo de busca vazio quando a marca ativa vem dos chips", async () => {
+    await montar(curadoria, "/?marca=MIDEA", { abrir: false });
+
+    expect(
+      (
+        screen.getByRole("searchbox", {
+          name: "Outras marcas",
+        }) as HTMLInputElement
+      ).value,
+    ).toBe("");
+    expect(
+      screen
+        .getByRole("button", { name: "Midea" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+  });
+
+  it("mantém o valor de um link antigo no campo de busca", async () => {
+    await montar(curadoria, "/?marca=SPRINGER%20MIDEA", { abrir: false });
+
+    expect(
+      (
+        screen.getByRole("searchbox", {
+          name: "Outras marcas",
+        }) as HTMLInputElement
+      ).value,
+    ).toBe("SPRINGER MIDEA");
+  });
+
+  it("mostra a Classe como seis letras grandes com a cor da curadoria", async () => {
+    await montar(curadoria, TODOS, { abrir: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    const grupo = screen.getByRole("group", { name: "Classe" });
+    const letras = within(grupo).getAllByRole("button");
+
+    expect(letras.map((letra) => letra.textContent)).toEqual([
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+    ]);
+    for (const [indice, letra] of letras.entries()) {
+      expect(letra.getAttribute("aria-label")).toBe(
+        `Classe ${letras[indice]?.textContent}`,
+      );
+      expect(letra.style.getPropertyValue("--cor-classe")).toBe(
+        curadoria.classes[indice]?.cor ?? "",
+      );
+    }
+    expect(cssDaConsulta()).toMatch(
+      /\.consulta \.campo-classe \.chips button\s*\{[^}]*font-size:\s*1\.1rem/,
+    );
+  });
+
+  it("mostra a contagem do recorte no rodapé e reage sem fechar o painel", async () => {
+    await montar(curadoria, TODOS, { abrir: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    expect(
+      within(rodape()).getByText(/resultado\(s\) no recorte/).textContent,
+    ).toBe("8 resultado(s) no recorte");
+    fireEvent.click(screen.getByRole("button", { name: "Classe B" }));
+    await waitFor(() =>
+      expect(
+        within(rodape()).getByText(/resultado\(s\) no recorte/).textContent,
+      ).toBe("1 resultado(s) no recorte"),
+    );
+    expect(painel().hidden).toBe(false);
+
+    fireEvent.click(screen.getByRole("button", { name: "Classe B" }));
+    await waitFor(() =>
+      expect(
+        within(rodape()).getByText(/resultado\(s\) no recorte/).textContent,
+      ).toBe("8 resultado(s) no recorte"),
+    );
+    expect(painel().hidden).toBe(false);
+  });
+
+  it("coloca 'Limpar filtros' no rodapé, só fora do padrão, e preserva a ordenação", async () => {
+    await montar(curadoria, "/?marca=LG&ordem=consumo", { abrir: false });
+    expect(painel().hidden).toBe(false);
+
+    fireEvent.click(
+      within(rodape()).getByRole("button", { name: "Limpar filtros" }),
+    );
+    await waitFor(() => {
+      const busca = new URLSearchParams(window.location.search);
+      expect(busca.get("marca")).toBeNull();
+      expect(busca.get("ordem")).toBe("consumo");
+    });
+    expect(
+      within(rodape()).queryByRole("button", { name: "Limpar filtros" }),
+    ).toBeNull();
+  });
+
+  it("abre sozinha com filtro avançado na URL, com as duas faixas", async () => {
+    await montar(curadoria, "/?classe=A", { abrir: false });
+
+    expect(painel().hidden).toBe(false);
+    expect(faixas()).toHaveLength(2);
+  });
+
+  it("mantém os chips do recorte efetivo fora do painel", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    const resumo = screen.getByRole("group", { name: "Filtros ativos" });
+
+    expect(resumo.textContent).toContain("Tensão: 220 V");
+    expect(painel().contains(resumo)).toBe(false);
+    expect(
+      within(painel()).queryByRole("group", { name: "Filtros ativos" }),
+    ).toBeNull();
+  });
+});
+
 describe("chips do recorte efetivo (ticket 50)", () => {
   function grupo(): HTMLElement {
     return screen.getByRole("group", { name: "Filtros ativos" });
@@ -1007,6 +1383,26 @@ describe("chips do recorte efetivo (ticket 50)", () => {
     ]);
   });
 
+  it("resume a faixa de capacidade e o × limpa as duas chaves", async () => {
+    await montar(curadoria, "/?btuMin=12001&btuMax=18000", { abrir: false });
+
+    expect(chips().map((chip) => chip.textContent)).toEqual([
+      "Capacidade: 12.001–18.000 BTU/h×",
+    ]);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
+
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Remover filtro Capacidade: 12.001–18.000 BTU/h",
+      }),
+    );
+    await waitFor(() => expect(screen.getAllByRole("link")).toHaveLength(8));
+    const busca = new URLSearchParams(window.location.search);
+    expect(busca.get("btuMin")).toBeNull();
+    expect(busca.get("btuMax")).toBeNull();
+    expect(chips()).toHaveLength(0);
+  });
+
   it("o × remove só aquele filtro e mantém a ordenação", async () => {
     await montar(curadoria, "/?marca=LG&ordem=consumo", { abrir: false });
 
@@ -1038,13 +1434,16 @@ describe("layout compacto dos filtros (ticket 45)", () => {
     }
   });
 
-  it("mantém os seis chips de Classe numa única fileira (grade de 6)", async () => {
+  it("mantém as seis letras de Classe juntas, quebrando linha sem espremer", async () => {
     await montar(curadoria);
 
     const grupo = screen.getByRole("group", { name: "Classe" });
     expect(within(grupo).getAllByRole("button")).toHaveLength(6);
     expect(cssDaConsulta()).toMatch(
-      /\.consulta \.campo-classe \.chips\s*\{[^}]*grid-template-columns:\s*repeat\(6,\s*minmax\(0,\s*1fr\)\)/,
+      /\.consulta \.campo-classe \.chips\s*\{[^}]*\}/,
+    );
+    expect(cssDaConsulta()).not.toMatch(
+      /\.consulta \.campo-classe \.chips\s*\{[^}]*grid-template-columns/,
     );
   });
 });

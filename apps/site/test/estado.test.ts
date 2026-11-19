@@ -87,6 +87,39 @@ describe("estado da consulta na URL", () => {
     ).toEqual({ tipo: "Janela" });
   });
 
+  it("lê a faixa de capacidade, com teto opcional", () => {
+    expect(lerEstado(new URLSearchParams("btuMin=9001&btuMax=12000"))).toEqual({
+      btuMin: 9001,
+      btuMax: 12000,
+    });
+    expect(lerEstado(new URLSearchParams("btuMin=30001"))).toEqual({
+      btuMin: 30001,
+    });
+    expect(lerEstado(new URLSearchParams("btuMax=9000"))).toEqual({
+      btuMax: 9000,
+    });
+  });
+
+  it("a capacidade exata vence a faixa na leitura (link antigo)", () => {
+    expect(
+      lerEstado(new URLSearchParams("btu=12000&btuMin=9001&btuMax=18000")),
+    ).toEqual({ btu: 12000 });
+  });
+
+  it("escreve a faixa nas duas chaves, sem `btu`", () => {
+    expect(escreverEstado({ btuMin: 9001, btuMax: 12000 }).toString()).toBe(
+      "btuMin=9001&btuMax=12000",
+    );
+    expect(escreverEstado({ btu: 12000, btuMin: 9001 }).toString()).toBe(
+      "btu=12000",
+    );
+  });
+
+  it("preserva a faixa num round-trip", () => {
+    const original = { btuMin: 12001, btuMax: 18000 } as const;
+    expect(lerEstado(escreverEstado(original))).toEqual(original);
+  });
+
   it("não escreve filtros novos vazios", () => {
     expect(
       escreverEstado({
@@ -182,6 +215,8 @@ describe("Pesquisa avançada aberta pela URL (ticket 50)", () => {
       "marca=LG",
       "tipo=Split+Hi-Wall",
       "btu=9000",
+      "btuMin=9001",
+      "btuMax=12000",
       "tensao=127",
       "funcao=Frio",
       "classe=A",

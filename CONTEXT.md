@@ -33,8 +33,8 @@ Um Aparelho presente na tabela que não traz Dados declarados. É um estado, nã
 _Avoid_: Produto incompleto, registro vazio
 
 **Oferta**:
-Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos. É sempre identificada na tela como link de afiliado.
-_Avoid_: Link de compra, anúncio
+Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos. Aparece com o rótulo **"Ver oferta"** — o site não exibe preços, então o link não promete nenhum —, sempre com a loja e o marcador **"link de afiliado"**, em texto pequeno e cor secundária. A divulgação acontece em **três níveis**: junto do link, numa seção própria dos Termos de Uso e numa linha discreta no rodapé de todas as páginas. O CTA fica na ficha, na Análise, nos destaques da home e no cartão do modelo na Comparação — nunca na matriz de atributos. Ver ADR-0010 e ADR-0023.
+_Avoid_: Link de compra, anúncio, "Ver preço e comprar" (promete um preço que o site não mostra)
 
 **Análise**:
 Texto editorial sobre um único Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial.
@@ -68,6 +68,10 @@ _Avoid_: Artigo, ranking, lista
 **Filtros padrão (ticket 38, revisto no 44)**:
 O recorte aplicado implicitamente quando `/aparelhos/` é aberto sem querystring — só a Tensão `220` V. É o `FILTROS_PADRAO` de `apps/site/src/lib/estado.ts`: aplicado na leitura (`lerEstado`) mas nunca escrito na URL, a menos que o estado diferente do padrão já contenha esse valor. Um link com qualquer chave de filtro é respeitado e não recebe o padrão por cima; desligar o padrão grava a chave vazia (`tensao=`). "Limpar filtros" volta ao padrão preservando a ordenação.
 _Avoid_: Filtros iniciais, recorte fixo (o padrão é implícito e compartilhável, não um parâmetro da URL)
+
+**Faixa de capacidade**:
+Intervalo de BTU/h usado como filtro na tabela — até 9.000, 9.001–12.000, 12.001–18.000, 18.001–24.000, 24.001–30.000 e acima de 30.000 —, com limites fixos e comerciais, mas **derivado dos dados**: uma faixa sem nenhum Aparelho na base não é renderizada. Vive nas chaves `btuMin`/`btuMax` do contrato de consulta (teto ausente = sem teto) e casa qualquer Variante no intervalo, limites incluídos. Não é uma capacidade exata e não substitui `btu`: quando `?btu=` está presente, as chaves da faixa são ignoradas, e escolher uma forma limpa a outra.
+_Avoid_: Capacidade aproximada, categoria de BTU
 
 **IDRS**:
 Índice de Desempenho de Refrigeração Sazonal: a razão entre o calor removido e a energia elétrica consumida (Wh/Wh) que o INMETRO declara para uma Variante. É sempre o Valor oficial e nunca é recalculado a partir da Classe. A exportação às vezes perde a vírgula decimal; a regra de formato a recoloca após o primeiro dígito (`55` → `5,5`) — é formato, não Exceção manual.
@@ -112,6 +116,14 @@ _Avoid_: Valor original (o original é o que o Registro INMETRO guarda, sem padr
 **Valor calculado**:
 Dado derivado por conta determinística a partir de Valores oficiais e de entradas informadas por quem consulta, como o custo anual estimado com uma tarifa dada na consulta. Sempre acompanha a fórmula e as entradas usadas, para nunca ser confundido com um Valor oficial.
 _Avoid_: Estimativa, recomendação
+
+**Custo estimado**:
+O resultado da calculadora de energia: um **Valor calculado** a partir do consumo anual declarado pelo INMETRO e das entradas de quem consulta — tarifa em R$/kWh, horas por dia e dias por mês. Segue o ciclo de medição do INMETRO (**2.080 h/ano**): consumo por hora = consumo anual ÷ 2.080; consumo mensal = consumo por hora × horas × dias; custo mensal = consumo mensal × tarifa; custo anual = custo mensal × 12. Um Aparelho com Variantes de consumo divergente devolve **faixa** (mínimo–máximo). Nunca é um Valor oficial, promessa de economia nem critério de "melhor aparelho": anda sempre com a conta aberta, as entradas e o aviso de estimativa. Ver ADR-0022.
+_Avoid_: Conta de luz, economia estimada (prometem um resultado que o site não garante)
+
+**Tarifa de referência**:
+O valor em R$/kWh curado por UF em `apps/site/tarifas.json`, com mês de referência e fonte — insumo do site, não dado do INMETRO, que nunca entra em `data/build/`, na API ou na consulta. Serve de ponto de partida da calculadora e pode ser trocada pela tarifa da própria conta, que tem precedência e não se associa a nenhum estado ("Tarifa informada"). Ver ADR-0022.
+_Avoid_: Tarifa oficial, preço da energia (não é tarifa homologada nem preço)
 
 **Dados declarados**:
 Valores de capacidade e consumo informados para quatro condições (carga total e
