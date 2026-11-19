@@ -14,6 +14,7 @@ import type { DestaqueAnalise } from "../lib/analises.ts";
 import {
   capacidadesPopulares,
   contarBase,
+  EXPLICACAO_DO_RECORTE,
   formatarCapacidade,
   formatarNumero,
   jsonLdPerguntasFrequentes,
@@ -170,6 +171,7 @@ const jsonLd: Record<string, unknown>[] = [
       oficial de produtos do INMETRO e são reproduzidos como Valores oficiais,
       sem correção editorial.
     </p>
+    <p>{EXPLICACAO_DO_RECORTE}</p>
     <p>
       O <strong>IDRS</strong> (Índice de Desempenho de Refrigeração Sazonal) é a
       razão entre o calor removido e a energia elétrica consumida, em Wh/Wh:

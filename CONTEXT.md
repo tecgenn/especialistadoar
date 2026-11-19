@@ -12,6 +12,10 @@ _Avoid_: Bot, robô (sugere que roda dentro do produto)
 Uma linha da exportação oficial do INMETRO (o CSV), preservada exatamente como foi publicada, junto com a Versão da tabela de onde veio.
 _Avoid_: Registro, entrada, produto
 
+**Linha excluída**:
+Uma Linha da tabela cuja coluna Status do Modelo traz `Excluido`. Não entra na base publicada: ao montar a tabela, essas Linhas são descartadas para evitar duplicatas e versões antigas de um mesmo modelo. Não se confunde com **Situação**, que vem dos status do **Registro INMETRO** (Ativo, Cancelado ou Inativo), aparece na ficha quando o Aparelho está na base e não o remove da tabela; nem com **Ausente**, que descreve um Aparelho sumido entre Versões, sem causa presumida.
+_Avoid_: Modelo cancelado, produto descontinuado (o campo não diz isso)
+
 **Registro INMETRO**:
 A inscrição oficial identificada pelo Número do Registro, com status próprio (Ativo, Cancelado ou Inativo), que abrange uma ou mais Linhas da tabela.
 _Avoid_: Processo, inscrição
@@ -94,7 +98,7 @@ Correção de conteúdo feita à mão sobre um dado de uma Linha da tabela, semp
 _Avoid_: Ajuste, correção
 
 **Ausente**:
-Estado de um Aparelho que constava em uma versão anterior da tabela e não aparece em nenhuma Linha da versão atual. Não cobre o caso de um Aparelho que continua na tabela mas perdeu os Dados declarados — esse segue sendo um Aparelho sem dados declarados, e o histórico registra que ele já teve dados. A causa da ausência não é presumida: a tabela não diz se o modelo foi descontinuado, cancelado ou omitido por engano.
+Estado de um Aparelho que constava em uma versão anterior da tabela e não aparece em nenhuma Linha da versão atual. Não cobre o caso de um Aparelho que continua na tabela mas perdeu os Dados declarados — esse segue sendo um Aparelho sem dados declarados, e o histórico registra que ele já teve dados. A causa da ausência não é presumida: a tabela não diz se o modelo foi descontinuado, cancelado ou omitido por engano. Não se confunde com **Linha excluída**, que nunca entra na base em nenhuma Versão.
 _Avoid_: Removido, cancelado, descontinuado
 
 **Versão da tabela**:

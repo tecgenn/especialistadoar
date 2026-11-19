@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   capacidadesPopulares,
   contarBase,
+  EXPLICACAO_DO_RECORTE,
   formatarCapacidade,
   formatarNumero,
   jsonLdPerguntasFrequentes,
@@ -112,9 +113,9 @@ describe("formatação pt-BR", () => {
 });
 
 describe("FAQ e JSON-LD", () => {
-  it("tem 7–8 perguntas reais com resposta curta", () => {
-    expect(PERGUNTAS_FREQUENTES.length).toBeGreaterThanOrEqual(7);
-    expect(PERGUNTAS_FREQUENTES.length).toBeLessThanOrEqual(8);
+  it("tem 9–10 perguntas reais com resposta curta", () => {
+    expect(PERGUNTAS_FREQUENTES.length).toBeGreaterThanOrEqual(9);
+    expect(PERGUNTAS_FREQUENTES.length).toBeLessThanOrEqual(10);
     for (const { pergunta, resposta } of PERGUNTAS_FREQUENTES) {
       expect(pergunta.trim().length).toBeGreaterThan(0);
       expect(resposta.trim().length).toBeGreaterThan(0);
@@ -136,6 +137,22 @@ describe("FAQ e JSON-LD", () => {
     expect(tensao?.resposta).toContain("instalação");
     expect(tensao?.resposta).toContain("127 V");
     expect(tensao?.resposta).toContain("220 V");
+  });
+
+  it("explica o recorte da tabela sem confundir linha excluída, ausência e status do Registro", () => {
+    const recorte = PERGUNTAS_FREQUENTES.find(
+      ({ pergunta }) => pergunta === "Por que um modelo não aparece na tabela?",
+    );
+    expect(recorte?.resposta).toBe(EXPLICACAO_DO_RECORTE);
+    for (const trecho of [
+      "descartadas ao montar a tabela",
+      "duplicatas",
+      "está ausente",
+      "Cancelado e Inativo são status do Registro INMETRO",
+      "não o removem da tabela",
+    ]) {
+      expect(EXPLICACAO_DO_RECORTE).toContain(trecho);
+    }
   });
 
   it("publica um FAQPage válido com as mesmas perguntas e respostas", () => {
