@@ -1,8 +1,8 @@
-# 06 — Home: cobertura, populares, destaques, Assistente, FAQ e metodologia
+# 71 — Home: cobertura, populares, destaques, Assistente, FAQ e metodologia
 
 **What to build:** o restante da home no novo sistema, mantendo integralmente o conteúdo editorial e o `FAQPage`. A página deixa de ser uma sequência de cartões genéricos e passa a ser um percurso: cobertura → capacidades → marcas → análises → Assistente → perguntas → metodologia. Cada bloco tem uma razão de existir e um caminho para a próxima decisão.
 
-**Blocked by:** 04 — Ofertas; 05 — Home: hero e a régua de capacidade.
+**Blocked by:** 69 — Ofertas; 70 — Home: hero e a régua de capacidade.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/sections.md`, `references/sections-library.md`. `ui-ux-pro-max` — `"faq accordion heading" --domain ux`.
 

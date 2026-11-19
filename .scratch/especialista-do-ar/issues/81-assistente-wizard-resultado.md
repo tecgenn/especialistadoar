@@ -1,8 +1,8 @@
-# 16 — Assistente: wizard de cinco etapas e leitura do resultado
+# 81 — Assistente: wizard de cinco etapas e leitura do resultado
 
 **What to build:** o Assistente vira um diagnóstico calibrado: trilho de cinco segmentos, uma pergunta por tela, cartões de opção grandes e um resultado com capacidade recomendada em leitura grande, fatores, soma, suposições e orientações. O motor determinístico e as respostas não mudam.
 
-**Blocked by:** 03 — Primitivos de interface e ícones.
+**Blocked by:** 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/motion.md`, `references/moments.md`. `ui-ux-pro-max` — `"multi step form progress" --domain ux`.
 

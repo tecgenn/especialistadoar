@@ -1,8 +1,8 @@
-# 13 — Ficha: impressão do datasheet
+# 78 — Ficha: impressão do datasheet
 
 **What to build:** a ficha pode ser impressa e levada para uma conversa de instalação. O papel mostra marca, modelo, versão da tabela, leituras principais, resumo, consumo e custo com os valores atuais, condições de ensaio, especificações e registros; navegação, botões, sombras e sticky desaparecem. A impressão é um requisito de produto, não um extra.
 
-**Blocked by:** 11 — Ficha: corpo do datasheet; 12 — Ficha: calculadora de custo como painel de instrumento.
+**Blocked by:** 76 — Ficha: corpo do datasheet; 77 — Ficha: calculadora de custo como painel de instrumento.
 
 **Skills:** `impeccable` — `SKILL.md` + `reference/typeset.md`, `reference/polish.md`. `design-taste-frontend` — `references/perf.md`.
 

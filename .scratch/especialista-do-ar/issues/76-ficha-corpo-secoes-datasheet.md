@@ -1,8 +1,8 @@
-# 11 — Ficha: corpo do datasheet
+# 76 — Ficha: corpo do datasheet
 
 **What to build:** o corpo da ficha ganha ritmo de datasheet: Resumo em pares, explicadores fechados, condições de ensaio em tabelas legíveis, especificações e registros, proveniência e a análise/Ofertas claramente separadas do dado oficial. A página continua longa porque o dado é longo, mas deixa de ser uma pilha de blocos iguais.
 
-**Blocked by:** 04 — Ofertas; 10 — Ficha: topo de datasheet, leituras e índice.
+**Blocked by:** 69 — Ofertas; 75 — Ficha: topo de datasheet, leituras e índice.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/sections.md`. `impeccable` — `reference/typeset.md`. `ui-ux-pro-max` — `"definition list table" --domain ux`.
 

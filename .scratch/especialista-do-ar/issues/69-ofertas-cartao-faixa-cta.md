@@ -1,8 +1,8 @@
-# 04 — Ofertas: cartão, faixa e CTA no novo sistema
+# 69 — Ofertas: cartão, faixa e CTA no novo sistema
 
 **What to build:** a apresentação comercial do site deixa de parecer um bloco genérico e passa a ser um componente claramente separado do dado técnico. "Ver oferta — Loja · link de afiliado" continua em uma linha, com a mesma transparência de três níveis, e a matriz de comparação continua sem qualquer elemento comercial.
 
-**Blocked by:** 03 — Primitivos de interface e ícones.
+**Blocked by:** 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/cards.md`, `references/copy.md`. `ui-ux-pro-max` — `"affiliate disclosure link" --domain ux`.
 

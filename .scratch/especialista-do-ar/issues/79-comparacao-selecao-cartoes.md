@@ -1,8 +1,8 @@
-# 14 — Comparação: slots, busca e cartões de modelo
+# 79 — Comparação: slots, busca e cartões de modelo
 
 **What to build:** a seleção da comparação vira três slots de instrumento, cada um com marca, modelo, capacidade, tipo, custo e ações. O combobox de troca continua com sugestões e teclado; o CTA de Oferta fica na área de ações; o estado vazio convida a escolher modelos ou voltar à tabela.
 
-**Blocked by:** 04 — Ofertas; 03 — Primitivos de interface e ícones.
+**Blocked by:** 69 — Ofertas; 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/cards.md`, `references/copy.md`. `ui-ux-pro-max` — `"combobox autocomplete keyboard" --domain ux`.
 

@@ -1,8 +1,8 @@
-# 15 — Comparação: matriz neutra e painel de custo
+# 80 — Comparação: matriz neutra e painel de custo
 
 **What to build:** a matriz de atributos ganha leitura de instrumento — atributos à esquerda, modelos em colunas, números em mono, seções em tinta — e o painel de custo aplica o mesmo cenário a todos os modelos. A comparação continua neutra: nenhum destaque de vencedor, nenhuma Oferta dentro da matriz, e a diferença de custo é uma frase factual.
 
-**Blocked by:** 12 — Ficha: calculadora de custo como painel de instrumento; 14 — Comparação: slots, busca e cartões de modelo.
+**Blocked by:** 77 — Ficha: calculadora de custo como painel de instrumento; 79 — Comparação: slots, busca e cartões de modelo.
 
 **Skills:** `ui-ux-pro-max` — `"comparison table sticky header" --domain ux`. `design-taste-frontend` — `SKILL.md` + `references/system.md`.
 

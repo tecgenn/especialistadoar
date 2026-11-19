@@ -1,8 +1,8 @@
-# 23 — Performance: orçamento de fontes, CSS e imagens
+# 88 — Performance: orçamento de fontes, CSS e imagens
 
 **What to build:** o redesign não pode custar velocidade. Este ticket mede e garante o orçamento: CSS crítico ≤ 80 KB gzip, fontes ≤ 130 KB no primeiro carregamento (subset `latin`, medido em ~121 KB), zero terceiros, LCP ≤ 2,5 s em 4G, CLS ≤ 0,05 e INP ≤ 200 ms. O custo dominante atual — `consulta.json` com 506 KB (65,7 KB gzip) e o cliente React compartilhado com 401 KB (120,5 KB gzip) — não pode crescer. Se algum número estourar, o ajuste é feito aqui, não deixado para depois.
 
-**Blocked by:** 01–20 — fundação e todas as superfícies do site.
+**Blocked by:** 66–85 — fundação e todas as superfícies do site.
 
 **Skills:** `design-taste-frontend` — `scripts/perf.mjs` + `references/perf.md`. `impeccable` — `reference/optimize.md`. `ui-ux-pro-max` — `"list virtualization" --domain react`.
 

@@ -1,8 +1,8 @@
-# 18 — Análise: template editorial
+# 83 — Análise: template editorial
 
 **What to build:** o artigo de Análise passa a ler como uma publicação técnica: coluna de 68 ch, serifa no corpo, grotesca nos subtítulos, mono na data e nas legendas, aviso de transparência com borda âmbar, figuras com legenda real e CTAs separados por hairline. O texto, as imagens e o `Article` JSON-LD atuais são preservados.
 
-**Blocked by:** 04 — Ofertas.
+**Blocked by:** 69 — Ofertas.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/copy.md`, `references/moments.md`. `impeccable` — `reference/typeset.md`, `reference/craft.md`.
 

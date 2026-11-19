@@ -1,8 +1,8 @@
-# 22 — Acessibilidade: auditoria e correções em todas as superfícies
+# 87 — Acessibilidade: auditoria e correções em todas as superfícies
 
 **What to build:** o site inteiro passa a cumprir WCAG 2.2 AA de forma verificável: teclado em todos os fluxos, foco visível, contraste, alvos de 44 px, zoom de 200%, reflow a 320 px, tabelas semanticamente corretas com região de rolagem focável no celular, formulários com erro associado, movimento reduzido e cores forçadas. A auditoria cobre todas as rotas, não uma amostra.
 
-**Blocked by:** 01–20 — fundação e todas as superfícies do site.
+**Blocked by:** 66–85 — fundação e todas as superfícies do site.
 
 **Skills:** `ui-ux-pro-max` — buscas por resultado: `"focus not obscured" --domain ux`, `"target size" --domain ux`, `"reflow zoom" --domain ux`. `design-taste-frontend` — `scripts/gate.mjs` + `references/gate.md`. `impeccable` — `reference/audit.md`, `reference/harden.md`.
 

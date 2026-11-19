@@ -3,7 +3,7 @@
 **Status:** ready-for-agent
 **Escopo:** todas as rotas, layouts, componentes e estados responsivos do site Astro.
 **Contrato visual:** `DESIGN.md` na raiz do repositório.
-**Tracker:** local, `.scratch/redesign-instrumento/`.
+**Tracker:** local, `.scratch/especialista-do-ar/` — spec `spec-fase12.md`, tickets **#66–#90**.
 
 ---
 
@@ -428,7 +428,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 - Orçamento por página: CSS crítico ≤ 80 KB gzip; fontes ≤ 130 KB no primeiro carregamento (subset `latin`, medido em ~121 KB); JS de ilha inalterado; nenhuma dependência nova de runtime.
 - LCP ≤ 2,5 s em 4G; CLS ≤ 0,05; INP ≤ 200 ms.
 - Zero requisições de terceiros.
-- Prefetch seletivo do Astro nos links de navegação (ticket 25), nunca nas linhas da tabela nem em links de Oferta. O site continua MPA: sem router de cliente e sem transição de página.
+- Prefetch seletivo do Astro nos links de navegação (ticket 90), nunca nas linhas da tabela nem em links de Oferta. O site continua MPA: sem router de cliente e sem transição de página.
 - Imagens com dimensões explícitas; `loading="lazy"` abaixo da dobra; `fetchpriority="high"` só na imagem do topo da Análise, se houver.
 - Evitar `backdrop-filter`, `filter`, sombras grandes e animação de layout.
 - Medir com Lighthouse/WebPageTest e registrar os números no ticket de performance.
@@ -491,7 +491,7 @@ A ordem detalhada e as arestas estão nos tickets.
 - Novas rotas, novos produtos, novas Análises, novas Ofertas ou qualquer conteúdo inventado.
 - Mudanças no pipeline, na API, nos cálculos, no schema ou nos artefatos publicados.
 - Migração de framework, nova biblioteca de UI, Tailwind, Sass, CMS ou backend.
-- Router de cliente, `ClientRouter` ou transições de página; a navegação continua MPA, com prefetch seletivo no ticket 25.
+- Router de cliente, `ClientRouter` ou transições de página; a navegação continua MPA, com prefetch seletivo no ticket 90.
 - Autenticação, comentários, busca externa, analytics novo ou cookies.
 - Geração de imagens por IA, banco de imagens, fotografia de produto fictícia.
 - Reescrita do texto editorial existente além de pequenos ajustes de clareza.
@@ -503,7 +503,7 @@ A ordem detalhada e as arestas estão nos tickets.
 - **Peso das fontes.** Mitigação: subset `latin` apenas, uma pré-carga, `font-display: swap`, medir LCP; se estourar o orçamento, reduzir a Azeret a um peso e usar `font-variation-settings` para o resto.
 - **Barra sticky + dock no celular.** Mitigação: altura máxima da barra, dock em uma linha, teste em 320 px; se cobrir a tabela, o dock vira uma faixa no rodapé da viewport só no mobile.
 - **Tabela no mobile.** A tabela continua tabela, com rolagem horizontal contida e colunas de seleção/Modelo fixas. Mitigação: testar todas as colunas em 320, 390 e 768 px, garantir que a página não role na horizontal, que o contêiner seja focável por teclado, que o `z-index` das células fixas e do cabeçalho não se sobreponha e que o aviso “Deslize para ver as colunas” apareça abaixo de 900 px. Nenhuma conversão para cartões.
-- **Prefetch em excesso.** Mitigação: `prefetchAll` desligado, `data-astro-prefetch` só em links de navegação deliberada, `false` explícito na tabela e nos links de Oferta; medir requisições por hover no ticket 25.
+- **Prefetch em excesso.** Mitigação: `prefetchAll` desligado, `data-astro-prefetch` só em links de navegação deliberada, `false` explícito na tabela e nos links de Oferta; medir requisições por hover no ticket 90.
 - **Contraste do âmbar.** O âmbar claro não é texto em fundo claro; usar `signal-ink` e validar no teste de tokens.
 - **Uma única Análise publicada.** O template precisa funcionar com título longo, sem Oferta e com imagem ausente; testar com fixtures existentes.
 - **OG image.** Não há imagem de marca; a decisão é usar a imagem real da Análise quando existir e omitir `og:image` nas demais páginas até haver um ativo aprovado. Não inventar.
@@ -515,7 +515,7 @@ A ordem detalhada e as arestas estão nos tickets.
 
 - **Ativo de Open Graph:** manter `og:image` apenas na Análise até existir um cartão de marca aprovado, ou produzir esse cartão no ticket de SEO? A recomendação é adiar e não inventar imagem.
 - **Dark mode:** confirmar que fica fora desta fase. O sistema de tokens já permite uma camada escura futura sem refazer componentes.
-- **Dock no celular muito estreito:** em telas abaixo de 360 px, preferir a barra fixa no rodapé da viewport em vez do dock acima da tabela? A recomendação é testar em 320 px e decidir no ticket 09.
+- **Dock no celular muito estreito:** em telas abaixo de 360 px, preferir a barra fixa no rodapé da viewport em vez do dock acima da tabela? A recomendação é testar em 320 px e decidir no ticket 74.
 
 ## Further notes
 

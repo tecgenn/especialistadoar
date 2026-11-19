@@ -1,8 +1,8 @@
-# 12 — Ficha: calculadora de custo como painel de instrumento
+# 77 — Ficha: calculadora de custo como painel de instrumento
 
 **What to build:** a calculadora deixa de ser um formulário e vira um painel de medição: campos à esquerda, custo mensal em leitura grande à direita, conta aberta em mono e o aviso de estimativa visível. O visitante entende de onde vem cada real sem sair da página. O contrato de URL e o motor puro não mudam.
 
-**Blocked by:** 03 — Primitivos de interface e ícones; 10 — Ficha: topo de datasheet, leituras e índice.
+**Blocked by:** 68 — Primitivos de interface e ícones; 75 — Ficha: topo de datasheet, leituras e índice.
 
 **Skills:** `ui-ux-pro-max` — `"inline validation numeric input" --domain ux` e `"form error summary" --domain ux`. `design-taste-frontend` — `SKILL.md` + `references/copy.md`.
 

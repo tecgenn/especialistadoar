@@ -1,8 +1,8 @@
-# 21 — SEO e metadados: Open Graph, breadcrumbs e preservação
+# 86 — SEO e metadados: Open Graph, breadcrumbs e preservação
 
 **What to build:** todas as páginas passam a ter metadados sociais completos e dados estruturados de navegação, sem perder nada do SEO atual. O canonical continua limpo, o `FAQPage` continua idêntico ao FAQ visível, a ficha e a Análise ganham `BreadcrumbList`, o 404 é `noindex` e o sitemap continua correto.
 
-**Blocked by:** 02 — Shell global; 10 — Ficha: topo; 17 — Análises: índice; 18 — Análise: template; 20 — Página 404.
+**Blocked by:** 67 — Shell global; 75 — Ficha: topo; 82 — Análises: índice; 83 — Análise: template; 85 — Página 404.
 
 **Skills:** Nenhuma das três é fonte de SEO técnico. Validar com o checklist deste ticket e o seam de build; usar `context7` apenas para conferir a API do Astro se necessário.
 

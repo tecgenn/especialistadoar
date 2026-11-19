@@ -1,8 +1,8 @@
-# 09 — Catálogo: seleção para comparar, dock e vitrine de análises
+# 74 — Catálogo: seleção para comparar, dock e vitrine de análises
 
 **What to build:** o visitante marca até três Aparelhos sem perder o recorte, vê a seleção num dock escuro que não atrapalha a leitura e chega à comparação com um link que carrega a ordem escolhida. A vitrine "Aparelhos com análise" continua fora da tabela, sempre visível quando há Análise, e nunca entra na contagem, ordenação ou paginação.
 
-**Blocked by:** 07 — Catálogo: a tabela de instrumento; 08 — Catálogo: barra de ferramentas e pesquisa avançada.
+**Blocked by:** 72 — Catálogo: a tabela de instrumento; 73 — Catálogo: barra de ferramentas e pesquisa avançada.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/cards.md`, `references/moments.md`. `ui-ux-pro-max` — `"selection bar sticky action" --domain ux`.
 

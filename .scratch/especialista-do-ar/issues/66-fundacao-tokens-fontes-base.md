@@ -1,4 +1,4 @@
-# 01 — Fundação: tokens, fontes e base tipográfica
+# 66 — Fundação: tokens, fontes e base tipográfica
 
 **What to build:** o alicerce visual de todo o site. Ao final, qualquer página herda a paleta de instrumento, as três vozes tipográficas, a escala de espaço, os raios, o foco e o comportamento de movimento — sem que nenhuma classe existente seja renomeada. É a base que faz o restante do redesign parecer um sistema, e não uma colagem.
 

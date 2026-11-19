@@ -1,8 +1,8 @@
-# 08 — Catálogo: barra de ferramentas e pesquisa avançada
+# 73 — Catálogo: barra de ferramentas e pesquisa avançada
 
 **What to build:** a barra do catálogo vira um instrumento de recorte: busca, filtros ativos, contagem e ordenação no mesmo lugar, sticky ao rolar. A Pesquisa avançada mantém as duas faixas (Aparelho e Desempenho), os chips de marca, as faixas de capacidade, a Classe e a Tensão — e no celular abre como painel sobreposto, com foco preso, `Esc` para fechar e um rodapé que mostra quantos resultados o recorte tem.
 
-**Blocked by:** 07 — Catálogo: a tabela de instrumento.
+**Blocked by:** 72 — Catálogo: a tabela de instrumento.
 
 **Skills:** `ui-ux-pro-max` — `"filter panel focus trap" --domain ux` e `"form search results count" --domain ux`. `design-taste-frontend` — `SKILL.md` + `references/cards.md`.
 

@@ -1,8 +1,8 @@
-# 03 — Primitivos de interface e ícones
+# 68 — Primitivos de interface e ícones
 
 **What to build:** o vocabulário compartilhado que as páginas usam para não reinventar botão, campo, etiqueta e estado vazio. São componentes Astro estáticos (sem hidratação) e classes de CSS com todos os estados: hover, foco, ativo, desabilitado, erro e seleção. Ao final, uma página nova consegue ser montada só com primitivos e composição.
 
-**Blocked by:** 01 — Fundação: tokens, fontes e base tipográfica.
+**Blocked by:** 66 — Fundação: tokens, fontes e base tipográfica.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/cards.md`, `references/icons.md`, `references/motion.md`. `ui-ux-pro-max` — `"accessible button focus state" --domain ux`.
 

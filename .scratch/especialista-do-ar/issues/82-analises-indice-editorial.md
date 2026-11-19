@@ -1,8 +1,8 @@
-# 17 — Análises: índice editorial
+# 82 — Análises: índice editorial
 
 **What to build:** o índice de Análises vira uma mesa editorial, não uma lista de cards: o primeiro artigo em destaque com imagem real e resumo, os demais em linhas com data, título, marca/modelo e capacidade. A rota continua condicional — sem Análise publicada, ela não existe.
 
-**Blocked by:** 03 — Primitivos de interface e ícones.
+**Blocked by:** 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/sections.md`, `references/photos.md`. `impeccable` — `reference/typeset.md`.
 

@@ -1,8 +1,8 @@
-# 02 — Shell global: header, footer, larguras e metadados
+# 67 — Shell global: header, footer, larguras e metadados
 
 **What to build:** a moldura de todas as páginas. O visitante passa a reconhecer o mesmo instrumento em qualquer rota: cabeçalho com navegação e estado ativo, rodapé com proveniência e transparência, larguras de shell/leitura corretas e metadados sociais completos. O skip link é o primeiro foco e a página pode ser operada por teclado desde o topo.
 
-**Blocked by:** 01 — Fundação: tokens, fontes e base tipográfica.
+**Blocked by:** 66 — Fundação: tokens, fontes e base tipográfica.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/layout-v4.md`, `references/icons.md`. `ui-ux-pro-max` — `"navigation skip link header" --domain ux` e `--stack astro`. `impeccable` — `reference/craft-floor.md`.
 

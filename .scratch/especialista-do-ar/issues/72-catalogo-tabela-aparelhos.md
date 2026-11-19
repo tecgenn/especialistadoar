@@ -1,8 +1,8 @@
-# 07 — Catálogo: a tabela de instrumento
+# 72 — Catálogo: a tabela de instrumento
 
 **What to build:** a tabela de Aparelhos deixa de ser uma grade uniforme e passa a ter hierarquia de leitura: marca e modelo identificam, capacidade e consumo comparam, IDRS e Classe qualificam. O cabeçalho ordenável, a linha analisada, o selo de Análise e a segunda linha `Função · Tensão` continuam funcionando. **A tabela continua tabela em todas as larguras**: no celular ela rola na horizontal dentro de um contêiner próprio, com seleção e Modelo fixas, sem virar cartões e sem esconder colunas.
 
-**Blocked by:** 03 — Primitivos de interface e ícones.
+**Blocked by:** 68 — Primitivos de interface e ícones.
 
 **Skills:** `ui-ux-pro-max` — `"data table sticky column horizontal scroll" --domain ux` e `"table density" --stack astro`. `design-taste-frontend` — `SKILL.md` + `references/system.md`, `references/layout-v4.md`. `impeccable` — `reference/craft-floor.md`.
 

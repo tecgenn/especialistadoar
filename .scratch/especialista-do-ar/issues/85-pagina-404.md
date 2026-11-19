@@ -1,8 +1,8 @@
-# 20 — Página 404
+# 85 — Página 404
 
 **What to build:** uma página de erro que recupera o visitante sem humor forçado: "Fora da escala", uma frase curta, a régua de capacidade como caminho de volta e links para Aparelhos, Assistente, Comparar e Home. Ela usa a mesma moldura do site e não entra no sitemap.
 
-**Blocked by:** 02 — Shell global; 03 — Primitivos de interface e ícones.
+**Blocked by:** 67 — Shell global; 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/copy.md`, `references/moments.md`. `ui-ux-pro-max` — `"404 error recovery navigation" --domain ux`.
 

@@ -10,6 +10,14 @@ Issues and specs (you may know a spec as a PRD) for this repo live as markdown f
 - Triage state is recorded as a `**Status:**` line near the top of each issue file (see `triage-labels.md` for the role strings and for the `done` resolution)
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
 
+> **Fases do produto não ganham diretório novo.** Em `especialista-do-ar`, uma fase
+> é uma spec `.scratch/especialista-do-ar/spec-faseNN.md` e uma continuação da
+> numeração global em `.scratch/especialista-do-ar/issues/` — a Fase 11 fecha em
+> `65` e a Fase 12 começa em `66`. A regra "um feature por diretório, tickets a
+> partir de `01`" vale para um esforço **separado do produto**, não para a próxima
+> fase: numerar de `01` de novo colide com tickets já existentes e quebra o
+> `git log --grep='Ticket: NN'`.
+
 ## Referência do ticket no git
 
 A forma da referência do ticket numa mensagem de commit (e no título/corpo do PR)

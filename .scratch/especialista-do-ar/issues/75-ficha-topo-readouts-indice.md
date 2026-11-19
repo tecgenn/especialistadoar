@@ -1,8 +1,8 @@
-# 10 — Ficha: topo de datasheet, leituras e índice
+# 75 — Ficha: topo de datasheet, leituras e índice
 
 **What to build:** a ficha passa a se apresentar como um datasheet: breadcrumb, marca/modelo, etiquetas de Classe/Situação/Registro, três leituras grandes (IDRS, consumo anual, capacidade) e um índice sticky que mostra onde o visitante está. A hierarquia permite decidir em cinco segundos se o modelo interessa antes de rolar.
 
-**Blocked by:** 03 — Primitivos de interface e ícones.
+**Blocked by:** 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/layout-v4.md`, `references/system.md`. `ui-ux-pro-max` — `"breadcrumb tabs sticky index" --domain ux`.
 

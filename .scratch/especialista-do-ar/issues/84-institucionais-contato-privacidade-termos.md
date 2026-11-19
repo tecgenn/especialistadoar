@@ -1,8 +1,8 @@
-# 19 — Institucionais: Contato, Privacidade e Termos
+# 84 — Institucionais: Contato, Privacidade e Termos
 
 **What to build:** as três páginas institucionais passam a parecer o mesmo instrumento em modo de leitura: coluna de 68 ch, H1 display, seções com H2 em grotesca, hairlines e links sublinhados. O contato vira uma régua de assuntos com `mailto:`; privacidade e termos mantêm o texto e a transparência.
 
-**Blocked by:** 02 — Shell global; 03 — Primitivos de interface e ícones.
+**Blocked by:** 67 — Shell global; 68 — Primitivos de interface e ícones.
 
 **Skills:** `design-taste-frontend` — `SKILL.md` + `references/copy.md`. `impeccable` — `reference/typeset.md`.
 
