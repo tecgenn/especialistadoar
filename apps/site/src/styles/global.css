@@ -716,6 +716,23 @@ body.ampla footer {
   overflow-wrap: anywhere;
 }
 
+/* Segunda linha da célula do Modelo (ticket 63): Função · Tensão, discreta sob
+   o modelo — tipografia menor e cor secundária, sem competir com Marca e
+   Modelo e sem crescer a altura da linha além do necessário. */
+.consulta .tabela-aparelhos .celula-modelo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+}
+
+.consulta .tabela-aparelhos .modelo-detalhe {
+  color: var(--texto-suave);
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
 .consulta .tabela-aparelhos tbody tr:nth-child(even) td {
   background: color-mix(in srgb, var(--fundo) 55%, var(--superficie));
 }
@@ -1532,6 +1549,12 @@ body.ampla footer {
 
   .consulta .tabela-aparelhos td[data-campo="marca"] {
     /* No celular, a tag "Análise" viaja inline com a Marca, sem célula própria. */
+    text-align: left;
+  }
+
+  /* No cartão do celular a segunda linha acompanha o alinhamento à esquerda. */
+  .consulta .tabela-aparelhos td[data-campo="modelo"] .celula-modelo {
+    align-items: flex-start;
     text-align: left;
   }
 }

@@ -1,6 +1,10 @@
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
-import { COLUNAS_TABELA, valorDaColuna } from "../src/lib/tabela.ts";
+import {
+  COLUNAS_TABELA,
+  detalheDoAparelho,
+  valorDaColuna,
+} from "../src/lib/tabela.ts";
 
 function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
   return {
@@ -59,5 +63,26 @@ describe("colunas da tabela de Aparelhos", () => {
     expect(valorDaColuna(item(), "btu")).toBe("—");
     expect(valorDaColuna(item(), "tipo")).toBe("—");
     expect(valorDaColuna(item(), "funcao")).toBe("—");
+  });
+});
+
+describe("segunda linha da célula do Modelo (ticket 63)", () => {
+  it("mostra Função e Tensão do Aparelho simples", () => {
+    expect(
+      detalheDoAparelho(item({ funcao: "Quente/Frio", tensoes: [220] })),
+    ).toBe("Quente/Frio · 220 V");
+  });
+
+  it("lista as duas tensões do bivolt em ordem", () => {
+    expect(
+      detalheDoAparelho(item({ funcao: "Frio", tensoes: [220, 127] })),
+    ).toBe("Frio · 127 · 220 V");
+  });
+
+  it("sem Função ou sem Tensão não deixa separador solto", () => {
+    expect(detalheDoAparelho(item({ tensoes: [220] }))).toBe("220 V");
+    expect(detalheDoAparelho(item({ funcao: "Frio" }))).toBe("Frio");
+    expect(detalheDoAparelho(item({ funcao: "  ", tensoes: [] }))).toBeNull();
+    expect(detalheDoAparelho(item())).toBeNull();
   });
 });

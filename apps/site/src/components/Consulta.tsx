@@ -35,7 +35,11 @@ import {
   type CampoResumoFiltro,
   resumoDosFiltros,
 } from "../lib/resumo-filtros";
-import { colunasDaTabela, valorDaColuna } from "../lib/tabela";
+import {
+  colunasDaTabela,
+  detalheDoAparelho,
+  valorDaColuna,
+} from "../lib/tabela";
 
 /**
  * A ilha de consulta do site (ADR-0008): a tabela de Aparelhos com filtros
@@ -995,6 +999,7 @@ export default function Consulta({
                 <tbody>
                   {exibidos.map((item) => {
                     const analise = analisados.get(item.id);
+                    const detalhe = detalheDoAparelho(item);
                     return (
                       <tr
                         key={item.id}
@@ -1028,7 +1033,14 @@ export default function Consulta({
                               }
                             >
                               {campo === "modelo" ? (
-                                <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                                <span className="celula-modelo">
+                                  <a href={`/aparelhos/${item.id}`}>{valor}</a>
+                                  {detalhe === null ? null : (
+                                    <span className="modelo-detalhe">
+                                      {detalhe}
+                                    </span>
+                                  )}
+                                </span>
                               ) : campo === "classe" ? (
                                 item.classes.length === 0 ? (
                                   "—"

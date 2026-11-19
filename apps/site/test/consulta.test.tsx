@@ -282,6 +282,56 @@ describe("ilha de consulta (ADR-0008)", () => {
     ]);
   });
 
+  describe("segunda linha Função · Tensão (ticket 63)", () => {
+    /** O texto da segunda linha do Aparelho de dado modelo. */
+    function detalheDaLinha(modelo: string): string | null {
+      const link = screen.getByRole("link", { name: modelo });
+      const celula = link.closest("td");
+      return celula?.querySelector(".modelo-detalhe")?.textContent ?? null;
+    }
+
+    it("mostra Função e Tensão sob o modelo, na mesma célula", async () => {
+      await montar();
+      const link = screen.getByRole("link", { name: "Classe F" });
+      expect(link.closest("td")?.getAttribute("data-campo")).toBe("modelo");
+      expect(detalheDaLinha("Classe F")).toBe("Frio · 220 V");
+    });
+
+    it("lista as duas tensões do Aparelho bivolt", async () => {
+      await montar();
+      expect(detalheDaLinha("Janela")).toBe("Frio · 127 · 220 V");
+    });
+
+    it("não deixa separador solto quando falta Função ou Tensão", async () => {
+      const base: ItemConsulta = {
+        id: "sem-detalhe",
+        marca: "LG",
+        marcaCatalogo: "LG",
+        modelo: "Sem Detalhe",
+        tipo: "Split Hi-Wall",
+        funcao: null,
+        capacidadesBtu: [9000],
+        tensoes: [],
+        classes: ["A"],
+        idrs: [5],
+        consumosKwh: [300],
+      };
+      servirConsulta([
+        base,
+        { ...base, id: "so-funcao", modelo: "Só Função", funcao: "Frio" },
+      ]);
+      await montar();
+
+      expect(
+        screen
+          .getByRole("link", { name: "Sem Detalhe" })
+          .closest("td")
+          ?.querySelector(".modelo-detalhe"),
+      ).toBeNull();
+      expect(detalheDaLinha("Só Função")).toBe("Frio");
+    });
+  });
+
   it("filtra por marca pelo campo de busca 'Outras marcas'", async () => {
     await montar();
     fireEvent.change(screen.getByRole("searchbox", { name: "Outras marcas" }), {

@@ -4,14 +4,14 @@
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Cada linha da tabela mostra, sob o modelo, uma segunda linha com Função e Tensão
-- [ ] Aparelho bivolt lista as duas tensões ("127 · 220 V") e monofásico mostra a sua
-- [ ] Função ou Tensão ausente na base não deixa separador solto nem texto vazio
-- [ ] A segunda linha é visualmente secundária (tipografia menor e cor de texto secundário), sem competir com Marca e Modelo
-- [ ] Nenhuma coluna nova é criada e a altura da linha não cresce de forma a prejudicar a densidade da tabela
-- [ ] Contagem, ordenação, seleção para comparar e "Mostrar mais" continuam idênticos
-- [ ] No celular, a mesma informação aparece no cartão do Aparelho
-- [ ] Testes de ilha cobrem a presença da linha, o caso bivolt e o caso sem Função ou sem Tensão
-- [ ] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
+- [x] Cada linha da tabela mostra, sob o modelo, uma segunda linha com Função e Tensão
+- [x] Aparelho bivolt lista as duas tensões ("127 · 220 V") e monofásico mostra a sua
+- [x] Função ou Tensão ausente na base não deixa separador solto nem texto vazio
+- [x] A segunda linha é visualmente secundária (tipografia menor e cor de texto secundário), sem competir com Marca e Modelo
+- [x] Nenhuma coluna nova é criada e a altura da linha não cresce de forma a prejudicar a densidade da tabela
+- [x] Contagem, ordenação, seleção para comparar e "Mostrar mais" continuam idênticos
+- [x] No celular, a mesma informação aparece no cartão do Aparelho
+- [x] Testes de ilha cobrem a presença da linha, o caso bivolt e o caso sem Função ou sem Tensão
+- [x] `pnpm test`, `pnpm typecheck` e `pnpm lint` verdes
