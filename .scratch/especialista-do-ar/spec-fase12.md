@@ -3,7 +3,7 @@
 **Status:** ready-for-agent
 **Escopo:** todas as rotas, layouts, componentes e estados responsivos do site Astro.
 **Contrato visual:** `DESIGN.md` na raiz do repositório.
-**Tracker:** local, `.scratch/especialista-do-ar/` — spec `spec-fase12.md`, tickets **#66–#90**.
+**Tracker:** local, `.scratch/especialista-do-ar/` — spec `spec-fase12.md`, tickets **#66–#91** (o `#91` corre antes do `#69`).
 
 ---
 
@@ -66,6 +66,8 @@ O resultado deve parecer desenhado por uma equipe de produto e engenharia, não 
 
 - **Chão:** papel mineral frio (`#F2F5F1`), giz (`#FCFDFB`), tinta petróleo (`#0A1F22`), petróleo (`#123F45`), grafite (`#4B5D5F`).
 - **Sinal:** âmbar (`#E8A33D`) para ação, foco, calor e capacidade ativa. Frios em `#2F7F8C`.
+
+> **Ajuste #91 (executar antes de #69):** o chão passa a giz `#FDFDFB` e papel `#F8F8F7` — branco quase puro, neutro, sem viés mineral esverdeado. Tinta, petróleo, âmbar, frio e Classes A–F não mudam. `DESIGN.md` e `tokens.css` são atualizados nesse ticket; até lá, os valores acima descrevem a base atual.
 - **Matéria:** quase nenhuma sombra; hairlines de 1 px, ticks, réguas, numeração, bordas de 2 px só em seleção/foco.
 - **Forma:** raios 2/4/8 px; nenhum pill; nenhum gradiente de fundo; nenhum vidro.
 - **Vozes:** Schibsted Grotesk (operar), Source Serif 4 (ler), Azeret Mono (medir).
@@ -461,7 +463,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
   - `base-build.test.ts` ou extensão do seam de build: skip link, `aria-current`, `og:*`, `twitter:card`, `BreadcrumbList` na ficha e na Análise, `404.html` gerado e fora do sitemap.
   - `print.test.ts` (build): a ficha contém a classe/mídia de impressão e o cabeçalho de impressão.
   - Testes de ilha ampliados: `aria-sort`, estado de erro com retry, painel mobile com `Esc`, foco no título da etapa do Assistente, resultado da calculadora com faixa.
-- **Não testar aparência em unit test.** A validação visual é feita com `agent-browser` em 390/768/1024/1440, com screenshots arquivados em `/tmp/opencode/shots/` e revisão humana.
+- **Não testar aparência em unit test.** A validação visual é feita com `agent-browser` em 390/768/1024/1440, com screenshots temporários conferidos e descartados ao fim da validação.
 - **Regressão:** os 663 testes devem continuar verdes; qualquer mudança de markup que quebre um teste deve ser justificada por um comportamento melhor, nunca por conveniência.
 - **Build:** `pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test` antes de cada PR; `data/build` e `reports` sem diff.
 
@@ -471,15 +473,16 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 1. Fundação de tokens, fontes e base.
 2. Shell global e primitivos.
-3. Home (hero + régua) e o resto da home.
-4. Catálogo (tabela, filtros, seleção, vitrine).
-5. Ficha (topo, corpo, calculadora, impressão).
-6. Comparação (seleção, matriz, custo).
-7. Assistente.
-8. Análises (índice e artigo).
-9. Institucionais, Ofertas e 404.
-10. SEO/metadados, acessibilidade, performance e prefetch seletivo.
-11. QA visual, documentação e fechamento.
+3. Calibração do chão visual (#91) — antes de qualquer página.
+4. Home (hero + régua) e o resto da home.
+5. Catálogo (tabela, filtros, seleção, vitrine).
+6. Ficha (topo, corpo, calculadora, impressão).
+7. Comparação (seleção, matriz, custo).
+8. Assistente.
+9. Análises (índice e artigo).
+10. Institucionais, Ofertas e 404.
+11. SEO/metadados, acessibilidade, performance e prefetch seletivo.
+12. QA visual, documentação e fechamento.
 
 A ordem detalhada e as arestas estão nos tickets.
 
@@ -510,6 +513,13 @@ A ordem detalhada e as arestas estão nos tickets.
 - **Design tokens duplicados (CSS + DESIGN.md).** Mitigação: CSS é a fonte normativa; o teste de contraste lê o CSS; o `DESIGN.md` é atualizado no ticket de fechamento.
 - **Sem ferramenta de regressão visual.** Mitigação: screenshots com `agent-browser` em cinco larguras, revisão lado a lado e checklist por página no ticket de QA.
 - **Escopo de "premium".** O risco é confundir premium com mais decoração. A direção é explícita: menos ornamento, mais calibração. O ticket de QA rejeita qualquer elemento sem função.
+- **Chão com viés mineral.** O papel antigo (`#F2F5F1`) tinha viés esverdeado suficiente para ler como paleta genérica de dashboard. Mitigação aplicada: o ticket `#91` fixou giz/papel quase puros antes de `#69`. Os hex e raios legados que ainda vivem em `apps/site/src/styles/global.css` são removidos pelos tickets que reescrevem cada superfície — `#91` só corrige o chão e não duplica esse trabalho:
+  - `#69`/`#79` — `.cta-cartao`, `.cta-acao`: `#e0f2fe`, `0.75rem`, `999px`.
+  - `#70`/`#71` — `.home-cartao-destaque`, `.home-links a`: `#e0f2fe`, `999px`.
+  - `#73` — `.consulta .chip-filtro`, `.consulta .chips button`, `.consulta .classes-chips button[data-classe]`, `.consulta .classe-selo`: `#16a34a`, `#2563eb`, `#ca8a04`, `#ea580c`, `#dc2626`, `999px`.
+  - `#75` — `.ficha-etiqueta`, `.ficha-comparar`: `999px`.
+  - `#80` — `.comparar-aviso`, `.comparar-convite`, `.comparar-aviso-capacidade`: `#fffbeb`, `#e0f2fe`, `0.5rem`.
+  - `#81` — `.assistente-progresso-trilha`, `.assistente-formas button`, `.assistente-confianca`, `.assistente-analisado-selo`: `999px`.
 
 ### Questões abertas (não bloqueiam o início)
 

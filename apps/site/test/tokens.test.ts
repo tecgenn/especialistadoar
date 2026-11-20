@@ -206,6 +206,56 @@ describe("contraste dos pares documentados", () => {
   });
 });
 
+describe("chão visual: branco quase puro e neutro", () => {
+  const chao = {
+    giz: "#fdfdfb",
+    papel: "#f8f8f7",
+    mineral: "#ececeb",
+    linha: "#d5d8d5",
+    "escala-neutro": "#e2e4e1",
+  } as const;
+
+  const inalterados = {
+    tinta: "#0a1f22",
+    petroleo: "#123f45",
+    sinal: "#e8a33d",
+    frio: "#2f7f8c",
+    "classe-a": "#1b6a4e",
+    "classe-b": "#467536",
+    "classe-c": "#6e691b",
+    "classe-d": "#96601c",
+    "classe-e": "#9f4529",
+    "classe-f": "#8e2f35",
+  } as const;
+
+  function conferir(esperados: Readonly<Record<string, string>>): void {
+    for (const [token, esperado] of Object.entries(esperados)) {
+      expect(valor(token).toLowerCase(), `--${token}`).toBe(esperado);
+    }
+  }
+
+  it("usa branco quase puro e neutro no chão", () => {
+    conferir(chao);
+  });
+
+  it("o chão é neutro: nenhum canal verde predomina", () => {
+    for (const token of ["giz", "papel"] as const) {
+      const [r = 0, g = 0, b = 0] = rgb(valor(token)).map((c) => c * 255);
+      expect(g, `--${token} com viés esverdeado`).toBeLessThanOrEqual(r);
+      expect(b, `--${token} com viés amarelado`).toBeGreaterThanOrEqual(r - 4);
+    }
+  });
+
+  it("mantém tinta, petróleo, âmbar, frio e as Classes intactos", () => {
+    conferir(inalterados);
+  });
+
+  it("o fundo da página é o papel claro, nunca uma superfície escura", () => {
+    expect(baseCss).toMatch(/html\s*{[^}]*background:\s*var\(--papel\)/);
+    expect(baseCss).toMatch(/body\s*{[^}]*background:\s*var\(--papel\)/);
+  });
+});
+
 describe("fontes self-hosted", () => {
   const arquivos = [...fontesCss.matchAll(/url\("([^"]+\.woff2)"\)/g)]
     .map((achado) => achado[1])

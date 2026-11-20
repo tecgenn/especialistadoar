@@ -2,7 +2,7 @@
 
 **What to build:** a primeira tela que prova a direção. O H1 e o lead atuais permanecem, mas abaixo deles entra a assinatura do site: uma régua de capacidade construída com as contagens reais da base, navegável, que leva cada faixa ao recorte correspondente do catálogo. Em 390 px ela vira uma lista de seis linhas com barra de proporção, sem perder a contagem.
 
-**Blocked by:** 67 — Shell global; 68 — Primitivos de interface e ícones.
+**Blocked by:** 67 — Shell global; 68 — Primitivos de interface e ícones; 91 — Calibração do chão visual.
 
 **Skills:** `impeccable` — `SKILL.md` + `reference/generate.md`, `reference/craft.md`, `reference/animate.md`. `design-taste-frontend` — `references/moments.md`, `references/motion.md`. `ui-ux-pro-max` — `"proportional bar chart accessibility" --domain chart`.
 

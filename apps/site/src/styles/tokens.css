@@ -15,10 +15,11 @@
   --petroleo: #123f45;
   --petroleo-profundo: #0b2c30;
 
-  --giz: #fcfdfb;
-  --papel: #f2f5f1;
-  --mineral: #e4eae3;
-  --linha: #cfd9d1;
+  /* Giz e papel: branco quase puro e neutro, sem viés mineral esverdeado. */
+  --giz: #fdfdfb;
+  --papel: #f8f8f7;
+  --mineral: #ececeb;
+  --linha: #d5d8d5;
   --linha-escura: #24454a;
 
   --grafite: #4b5d5f;
@@ -50,7 +51,7 @@
 
   /* Escala térmica: assinatura usada só onde existe um dado. */
   --escala-frio: var(--frio);
-  --escala-neutro: #d9ded7;
+  --escala-neutro: #e2e4e1;
   --escala-morno: var(--sinal);
   --escala-quente: #c4553b;
 

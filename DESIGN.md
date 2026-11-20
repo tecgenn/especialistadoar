@@ -5,10 +5,10 @@ colors:
   ink: "#0A1F22"
   petrol: "#123F45"
   petrol-deep: "#0B2C30"
-  chalk: "#FCFDFB"
-  paper: "#F2F5F1"
-  mineral: "#E4EAE3"
-  hairline: "#CFD9D1"
+  chalk: "#FDFDFB"
+  paper: "#F8F8F7"
+  mineral: "#ECEDEB"
+  hairline: "#D5D8D5"
   hairline-dark: "#24454A"
   graphite: "#4B5D5F"
   muted: "#5F6F70"
@@ -137,7 +137,7 @@ components:
 
 **Creative North Star: "Instrumento de climatização"**
 
-O site é um instrumento de medição, não uma vitrine. A superfície lembra um painel de climatização calibrado: papel mineral frio, tinta petróleo profunda, linhas de 1 px que separam escalas, leituras em mono com unidade sempre presente e uma única faixa térmica que só aparece onde existe um dado de temperatura ou energia. Nada flutua; tudo está apoiado numa grade visível. A autoridade vem da calibração — réguas, ticks, numeração, procedência —, não de sombras, gradientes ou promessas.
+O site é um instrumento de medição, não uma vitrine. A superfície lembra um painel de climatização calibrado: chão quase branco e neutro, tinta petróleo profunda, linhas de 1 px que separam escalas, leituras em mono com unidade sempre presente e uma única faixa térmica que só aparece onde existe um dado de temperatura ou energia. Nada flutua; tudo está apoiado numa grade visível. A autoridade vem da calibração — réguas, ticks, numeração, procedência —, não de sombras, gradientes ou promessas.
 
 A densidade é deliberada. O catálogo é o produto, então a tabela pode ser densa e a ficha pode ser longa; o que não pode existir é ruído. Cada ornamento tem função: a linha separa atributos, o tick marca uma capacidade, o mono identifica uma unidade ou uma fonte, o âmbar assinala a ação ou o calor. O visitante deve sentir que está lendo um instrumento confiável e não uma página de marketing.
 
@@ -145,7 +145,7 @@ A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca o
 
 **Key Characteristics:**
 - Grade de medição visível: hairlines, ticks e numeração de 1 px.
-- Superfícies mate: papel mineral, tinta petróleo, nenhum brilho.
+- Superfícies mate: chão quase branco e neutro, tinta petróleo, nenhum brilho.
 - Um acento de sinal (âmbar) e uma escala térmica usada como dado.
 - Três vozes tipográficas: grotesca para operar, serifa para ler, mono para medir.
 - Quase nenhuma sombra; profundidade por tom e linha.
@@ -156,7 +156,7 @@ A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca o
 
 ## Colors
 
-A paleta é mineral e térmica: papel frio, petróleo profundo, grafite e um único âmbar de sinal. As cores de Classe energética são as únicas cores saturadas permanentes, porque são dados.
+A paleta é clara e térmica: chão quase branco e neutro, petróleo profundo, grafite e um único âmbar de sinal. As cores de Classe energética são as únicas cores saturadas permanentes, porque são dados.
 
 ### Primary
 - **Tinta petróleo** (`#0A1F22`): texto principal, superfície de botões primários, cabeçalho da tabela e fundo do rodapé. É o "preto" do sistema, com subtom verde-azulado.
@@ -165,19 +165,19 @@ A paleta é mineral e térmica: papel frio, petróleo profundo, grafite e um ún
 
 ### Secondary
 - **Âmbar de sinal** (`#E8A33D`): ação, foco, capacidade selecionada e o extremo "quente" da escala térmica. Sobre tinta tem 7,9:1; sobre papel é cor gráfica, nunca texto.
-- **Âmbar de texto** (`#7A4A0F`): links e rótulos âmbar sobre papel (7,3:1). O âmbar claro não é usado como texto em fundo claro.
+- **Âmbar de texto** (`#7A4A0F`): links e rótulos âmbar sobre papel (7,0:1). O âmbar claro não é usado como texto em fundo claro.
 
 ### Tertiary
-- **Frio** (`#2F7F8C`): extremo "frio" da escala térmica, linhas de gráfico e estados informativos. Como texto sobre papel, usar **frio de texto** (`#1D5B66`, 7,5:1).
+- **Frio** (`#2F7F8C`): extremo "frio" da escala térmica, linhas de gráfico e estados informativos. Como texto sobre papel, usar **frio de texto** (`#1D5B66`, 7,2:1).
 
 ### Neutral
-- **Giz** (`#FCFDFB`): superfície de cartões, tabela, campos e páginas de leitura.
-- **Papel mineral** (`#F2F5F1`): fundo da página, cabeçalho da tabela, chips inativos, blocos secundários.
-- **Mineral** (`#E4EAE3`): faixas alternadas da tabela, preenchimento de barras e trilhas.
-- **Hairline** (`#CFD9D1`): toda borda de 1 px sobre papel claro.
+- **Giz** (`#FDFDFB`): superfície de cartões, tabela, campos e páginas de leitura.
+- **Papel** (`#F8F8F7`): fundo da página, cabeçalho da tabela, chips inativos, blocos secundários. Branco quase puro e neutro, sem viés mineral esverdeado.
+- **Mineral** (`#ECEDEB`): faixas alternadas da tabela, preenchimento de barras e trilhas.
+- **Hairline** (`#D5D8D5`): toda borda de 1 px sobre papel claro.
 - **Hairline escura** (`#24454A`): borda de 1 px sobre tinta ou petróleo.
 - **Grafite** (`#4B5D5F`): texto secundário sobre giz (6,8:1).
-- **Mudo** (`#5F6F70`): legendas, unidades e metadados sobre giz ou papel (5,2:1 e 4,8:1).
+- **Mudo** (`#5F6F70`): legendas, unidades e metadados sobre giz ou papel (5,2:1 e 5,0:1).
 - **Mudo escuro** (`#9FB0AE`): texto secundário sobre tinta (7,6:1).
 
 ### Classe energética
@@ -190,7 +190,7 @@ Uma escala contínua frio → neutro → âmbar → quente, construída com os t
 
 ```
 --escala-frio: var(--frio);
---escala-neutro: #D9DED7;
+--escala-neutro: #E2E4E1;
 --escala-morno: var(--sinal);
 --escala-quente: #C4553B;
 ```
@@ -304,7 +304,7 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 
 O sistema é quase plano. Profundidade vem de tom, hairline e sobreposição sólida, não de sombra difusa.
 
-- **Nível 0** — página em papel mineral.
+- **Nível 0** — página em papel quase branco.
 - **Nível 1** — giz com hairline de 1 px: cartões, tabela, campos, painéis.
 - **Nível 2** — petróleo sólido: cabeçalho de tabela escuro, blocos de destaque, rodapé.
 - **Nível 3** — sobreposição: somente o dock de seleção, o painel de filtros aberto no celular, menus e tooltips.
@@ -399,6 +399,7 @@ Página de leitura com o título "Fora da escala", uma frase curta, a régua de 
 ## Do's and Don'ts
 
 ### Do
+- Mantenha o chão quase branco e neutro: é ele que deixa o dado, a hairline e o âmbar legíveis.
 - Use a grade e a hairline para separar; deixe o espaço em branco fazer o trabalho.
 - Escreva o número com unidade, origem e, se calculado, a fórmula.
 - Use o mono para medir e a serifa para explicar.
@@ -409,6 +410,7 @@ Página de leitura com o título "Fora da escala", uma frase curta, a régua de 
 - Preserve a URL, o canonical, o JSON-LD e o conteúdo crawlável em toda mudança.
 
 ### Don't
+- Não devolva o papel mineral esverdeado nem escureça o chão da página; superfície escura é só rodapé, linha de seção da matriz e dock de seleção.
 - Não use gradiente de fundo, glassmorphism, blur, sombra difusa ou card flutuante.
 - Não use pill, raio maior que 8 px, ícone colorido ou ilustração decorativa.
 - Não use roxo, azul genérico de SaaS, verde "sustentável" de marca ou laranja de urgência.
