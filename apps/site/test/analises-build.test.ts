@@ -646,6 +646,10 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlValida).toContain(`href="${oferta.url}"`);
     expect(htmlValida).toContain('rel="sponsored nofollow noopener"');
     expect(htmlValida).toContain('target="_blank"');
+    // As ações do cartão são o botão do sistema (ticket 69): o pill azul
+    // antigo (`.cta-acao`) não existe mais no HTML.
+    expect(htmlValida).not.toContain('class="cta-acao"');
+    expect(htmlValida).toContain('class="botao botao-secundario"');
     // O cartão comercial se identifica como link de afiliado (ADR-0010): o
     // marcador discreto fica na mesma linha da loja e o rótulo padrão é
     // "Ver oferta" — sem promessa de preço (ticket 58).
@@ -654,7 +658,9 @@ describe("build com uma Análise de fixture", () => {
       htmlValida.match(/<a class="oferta-cartao"[\s\S]*?<\/a>/)?.[0] ?? "";
     expect(cartaoOferta).toContain("Ver oferta");
     expect(cartaoOferta).toContain(oferta.loja);
-    expect(cartaoOferta).toContain("· link de afiliado");
+    // O separador "·" é decoração de CSS (só aparece na linha larga); o HTML
+    // guarda o rótulo que identifica o link de afiliado.
+    expect(cartaoOferta).toContain(">link de afiliado</span>");
     expect(cartaoOferta).toContain('rel="sponsored nofollow noopener"');
     expect(cartaoOferta).toContain('target="_blank"');
     // O MDX não repete a Oferta: só os dois cartões do template a exibem.

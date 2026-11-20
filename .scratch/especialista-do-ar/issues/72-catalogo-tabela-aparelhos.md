@@ -19,3 +19,4 @@
 - [ ] Estados de carregamento (esqueleto de linhas), erro de rede (alerta com "Tentar de novo") e recorte vazio (estado vazio com ação) estão implementados.
 - [ ] "Mostrar mais" continua em blocos de 50 e informa quantos restam.
 - [ ] Nenhuma mudança em filtros, seleção, URL, contagem ou dados; os testes de ilha da consulta continuam verdes.
+- [ ] **Densidade e centralização:** a tabela reduz o espaçamento horizontal entre colunas (gaps internos de `th`/`td` e `gap` do contêiner) para uma leitura mais compacta; o contêiner da tabela fica centralizado na shell quando a tabela não ocupa a largura total, sem folga excessiva nas laterais. O comportamento mobile (rolagem horizontal, colunas fixas) permanece idêntico.

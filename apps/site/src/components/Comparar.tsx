@@ -359,9 +359,7 @@ export default function Comparar({
                       </span>
                       {" — "}
                       <span className="oferta-loja">{oferta.loja}</span>{" "}
-                      <span className="oferta-marcador">
-                        · {MARCADOR_OFERTA}
-                      </span>
+                      <span className="oferta-marcador">{MARCADOR_OFERTA}</span>
                     </a>
                   ))}
                   <button

@@ -699,7 +699,7 @@ describe("CTA de Oferta no cartão", () => {
 
     const comOferta = cartoes()[0] as HTMLElement;
     const cta = within(comOferta).getByRole("link", {
-      name: "Ver oferta — Loja do teste · link de afiliado",
+      name: "Ver oferta — Loja do teste link de afiliado",
     });
     expect(cta.getAttribute("href")).toBe("https://loja.example.com/windfree");
     expect(cta.getAttribute("rel")).toBe("sponsored nofollow noopener");
@@ -713,19 +713,25 @@ describe("CTA de Oferta no cartão", () => {
     const acoes = cartoes()[0]?.querySelector(
       ".comparar-cartao-acoes",
     ) as HTMLElement;
+    const cta = within(acoes).getByRole("link", { name: /Ver oferta/ });
+    const trocar = within(acoes).getByRole("button", {
+      name: "Trocar SAMSUNG WindFree AI Pro",
+    });
+    const remover = within(acoes).getByRole("button", {
+      name: "Remover SAMSUNG WindFree AI Pro",
+    });
+    expect(cta).toBeDefined();
+    expect(trocar).toBeDefined();
+    expect(remover).toBeDefined();
+    // A ordem do DOM é a ordem de leitura: a Oferta vem antes de "Trocar"
+    // (ticket 69), nunca depois das ações destrutivas.
     expect(
-      within(acoes).getByRole("link", { name: /Ver oferta/ }),
-    ).toBeDefined();
+      cta.compareDocumentPosition(trocar) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(
-      within(acoes).getByRole("button", {
-        name: "Trocar SAMSUNG WindFree AI Pro",
-      }),
-    ).toBeDefined();
-    expect(
-      within(acoes).getByRole("button", {
-        name: "Remover SAMSUNG WindFree AI Pro",
-      }),
-    ).toBeDefined();
+      trocar.compareDocumentPosition(remover) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("não renderiza CTA, espaço reservado nem botão desabilitado sem Oferta", async () => {

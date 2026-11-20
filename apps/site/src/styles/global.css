@@ -1377,42 +1377,111 @@ main.principal-leitura {
   color: var(--texto-suave);
 }
 
+/* ==========================================================================
+   Ofertas (ticket 69) — a apresentação comercial é um bloco separado do dado
+   técnico: hairline, tipografia de interface e o marcador de transparência.
+   Nenhum preço, selo de urgência ou cor de promoção. DESIGN.md, componente
+   Oferta, é o contrato.
+   ========================================================================== */
+
 .ofertas {
-  margin-block: 1.5rem 1rem;
-  padding: 1rem;
-  border: 1px dashed var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  margin-block: var(--esp-9) 0;
+  padding-block-start: var(--esp-5);
+  border-top: 1px solid var(--linha);
 }
 
 .ofertas h2,
 .ofertas h3,
 .ofertas h4 {
-  margin-top: 0;
+  margin: 0 0 var(--esp-2);
+}
+
+/* A frase curta de transparência fica fora da lista de links. */
+.ofertas .intro {
+  max-width: 62ch;
+  margin: 0;
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
 }
 
 .ofertas ul {
-  margin: 0.5rem 0 0;
-  padding-left: 1.25rem;
+  display: grid;
+  margin: var(--esp-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada Oferta é uma linha da régua: a hairline separa, o alvo de 44 px vem do
+   próprio link. */
+.ofertas li {
+  margin: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.ofertas li:last-child {
+  border-bottom: 1px solid var(--linha);
 }
 
 .oferta-cartao {
-  display: inline-block;
-  margin-block: 0.15rem;
-  font-weight: 600;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 44px;
+  padding-block: var(--esp-3);
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-apertada);
+  text-decoration: none;
+}
+
+/* Na faixa, o link ocupa a linha inteira da régua: alvo contínuo no celular. */
+.ofertas .oferta-cartao {
+  display: flex;
+}
+
+.oferta-cartao:hover .oferta-titulo {
+  text-decoration: underline;
+  text-decoration-color: var(--sinal);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 .oferta-loja {
-  color: var(--texto-suave);
-  font-weight: 400;
+  color: var(--grafite);
+  font-weight: var(--peso-normal);
 }
 
-/* Divulgação junto do link (ticket 58): texto pequeno e cor secundária, na
-   mesma linha da loja. Sem ícone, selo ou cor de destaque. */
+/* Divulgação junto do link (ticket 58): mono pequeno, na mesma linha da loja.
+   Sem ícone, selo ou cor de destaque; o rótulo nunca quebra no meio. O
+   separador é decoração de CSS: só existe enquanto os dois cabem na linha. */
 .oferta-marcador {
-  color: var(--texto-suave);
-  font-size: 0.8rem;
-  font-weight: 400;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-normal);
+  letter-spacing: var(--tracking-unidade);
+  white-space: nowrap;
+}
+
+.oferta-marcador::before {
+  content: "·";
+  margin-inline-end: 0.5ch;
+}
+
+/* No celular "Ver oferta — Loja · link de afiliado" não cabe sem apertar a
+   tipografia: o marcador desce inteiro para a linha de baixo, sem o separador
+   órfão, e o nome da loja pode ser longo. */
+@media (max-width: 30rem) {
+  .oferta-marcador {
+    flex-basis: 100%;
+  }
+
+  .oferta-marcador::before {
+    content: none;
+  }
 }
 
 .analise-corpo {
@@ -1460,74 +1529,82 @@ main.principal-leitura {
   background: var(--superficie);
 }
 
-/* CTAs da Análise (ticket 47): sempre um cartão destacado, nunca um link solto
-   no meio do texto. As ações dentro do cartão são botões. */
+/* CTAs da Análise (ticket 47): sempre um cartão no sistema, nunca um link
+   solto no meio do texto. As ações dentro do cartão usam o botão do sistema
+   (ticket 68). O cartão comercial se distingue pelo título e pela nota de
+   afiliado — nunca por cor de promoção (ticket 69). */
 .cta-cartao {
-  margin-block: 1.5rem;
-  padding: 1.25rem;
-  border: 2px solid var(--primaria);
-  border-radius: 0.75rem;
-  background: #e0f2fe;
+  display: grid;
+  gap: var(--esp-3);
+  margin-block: var(--esp-8);
+  padding: var(--esp-5);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  background: var(--giz);
 }
 
 .cta-cartao-titulo {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-semi);
+  line-height: var(--entrelinha-apertada);
+  letter-spacing: var(--tracking-apertado);
 }
 
 .cta-cartao-descricao {
-  margin: 0.25rem 0 0.75rem;
-  color: var(--texto-suave);
+  max-width: 60ch;
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
 }
 
 .cta-cartao-acoes {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.cta-acao {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  background: var(--primaria);
-  color: var(--superficie);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.cta-acao:hover {
-  background: #075985;
+  gap: var(--esp-3);
 }
 
 .cta-ofertas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  gap: var(--esp-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.cta-ofertas .oferta-cartao {
-  display: inline-block;
+.cta-ofertas li {
   margin: 0;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--primaria);
-  border-radius: 999px;
-  background: var(--superficie);
-  text-decoration: none;
+}
+
+/* O link de Oferta dentro do cartão é a ação do bloco: mesma forma do botão
+   secundário do sistema, com o marcador de afiliado na linha. */
+.cta-ofertas .oferta-cartao {
+  min-height: 44px;
+  padding: var(--esp-3) var(--esp-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  font-size: var(--texto-pequeno);
+  transition:
+    background-color var(--mov-hover) var(--curva),
+    border-color var(--mov-hover) var(--curva);
 }
 
 .cta-ofertas .oferta-cartao:hover {
-  border-color: #075985;
+  border-color: var(--grafite);
+  background: var(--papel);
 }
 
 .cta-cartao-nota {
-  margin: 0.75rem 0 0;
-  color: var(--texto-suave);
-  font-size: 0.85rem;
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-normal);
+  letter-spacing: var(--tracking-unidade);
+  line-height: 1.45;
 }
 
 .analise-aviso,
@@ -1597,7 +1674,8 @@ main.principal-leitura {
 }
 
 .analises-destaque-lista .ofertas {
-  margin-block: 0.75rem 0;
+  margin-block: var(--esp-4) 0;
+  padding-block-start: var(--esp-3);
 }
 
 /* Ficha no celular: o resumo vira uma coluna e as células da grade de condições
@@ -2414,11 +2492,14 @@ main.principal-leitura {
   margin-top: 0.4rem;
 }
 
-/* O CTA de Oferta no cartão (ticket 59) usa o mesmo visual da ficha; na barra
-   de ações ele divide espaço com "Trocar" e "Remover". */
+/* O CTA de Oferta no cartão (ticket 59) entra na área de ações, antes de
+   "Trocar", e fala a mesma língua da ficha (ticket 69). A matriz continua sem
+   qualquer elemento comercial. */
 .comparar-cartao-acoes .oferta-cartao {
+  display: inline-flex;
   margin-inline-end: auto;
-  font-size: 0.85rem;
+  padding-block: var(--esp-2);
+  font-size: var(--texto-pequeno);
 }
 
 .comparar-cartao-acoes button,

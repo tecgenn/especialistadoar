@@ -196,8 +196,7 @@ describe("a divulgação da Oferta não promete preço", () => {
 });
 
 /**
- * A ilha de consulta (filtros + busca, ADR-0008) roda no cliente sobre
- * `consulta.json` e **não** conhece Oferta (ADR-0010): nada de anúncio no
+ * Ofertas ficam fora da ilha de consulta (ADR-0010): nada de anúncio no
  * resultado da busca.
  */
 describe("Ofertas ficam fora da ilha de consulta", () => {
@@ -219,5 +218,66 @@ describe("Ofertas ficam fora da ilha de consulta", () => {
     expect(existsSync(new URL("../public/ofertas.json", import.meta.url))).toBe(
       false,
     );
+  });
+});
+
+/**
+ * O ticket 69 tira a caixa azul de promoção e o pill da apresentação comercial
+ * e a coloca no sistema visual: hairline, tokens de cor, raio de 2 px e alvo de
+ * 44 px. O teste lê o CSS normativo (como `tokens.test.ts`) para a superfície
+ * não voltar a ter cor hard-coded ou alvo pequeno.
+ */
+describe("a apresentação da Oferta segue o sistema visual", () => {
+  const css = readFileSync(
+    fileURLToPath(new URL("../src/styles/global.css", import.meta.url)),
+    "utf8",
+  );
+
+  function regra(seletor: string): string {
+    const escapado = seletor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const encontrada = css.match(
+      new RegExp(`^${escapado} \\{([\\s\\S]*?)\\n\\}`, "m"),
+    );
+    expect(encontrada, `regra ${seletor} ausente`).not.toBeNull();
+    return encontrada?.[1] ?? "";
+  }
+
+  it("não usa hex de promoção nem raio de pill", () => {
+    for (const seletor of [
+      ".oferta-cartao",
+      ".ofertas .oferta-cartao",
+      ".cta-ofertas .oferta-cartao",
+      ".cta-cartao",
+    ]) {
+      const texto = regra(seletor);
+      expect(texto).not.toMatch(/#[0-9a-f]{3,8}/i);
+      expect(texto).not.toMatch(/999px/);
+    }
+  });
+
+  it("garante alvo de 44 px e separação por hairline", () => {
+    expect(regra(".oferta-cartao")).toContain("min-height: 44px");
+    expect(regra(".ofertas")).toContain("border-top: 1px solid var(--linha)");
+    expect(regra(".cta-ofertas .oferta-cartao")).toContain("min-height: 44px");
+  });
+
+  it("mantém o marcador de afiliado em mono e cor secundária", () => {
+    const marcador = regra(".oferta-marcador");
+    expect(marcador).toContain("var(--fonte-mono)");
+    expect(marcador).toContain("var(--mudo)");
+    expect(marcador).toContain("white-space: nowrap");
+  });
+
+  it("deixa o separador no CSS e empilha o marcador no celular", () => {
+    // O "·" é decoração: em tela estreita ele some para o marcador inteiro
+    // descer uma linha, sem separador órfão no começo da linha.
+    expect(regra(".oferta-marcador::before")).toContain('content: "·"');
+    const estreito = css.match(
+      /@media \(max-width: 30rem\) \{([\s\S]*?)\n\}/,
+    )?.[1];
+    expect(estreito, "regra de tela estreita ausente").toBeDefined();
+    expect(estreito).toContain(".oferta-marcador");
+    expect(estreito).toContain("flex-basis: 100%");
+    expect(estreito).toContain("content: none");
   });
 });

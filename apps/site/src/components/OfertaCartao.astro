@@ -22,5 +22,5 @@ const { oferta } = Astro.props;
 <a class="oferta-cartao" href={oferta.url} {...ATRIBUTOS_OFERTA}>
   <span class="oferta-titulo">{rotuloDaOferta(oferta)}</span>{' — '}
   <span class="oferta-loja">{oferta.loja}</span>{' '}
-  <span class="oferta-marcador">· {MARCADOR_OFERTA}</span>
+  <span class="oferta-marcador">{MARCADOR_OFERTA}</span>
 </a>
