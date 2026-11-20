@@ -6,6 +6,8 @@ import type { Manifest } from "@especialista-do-ar/pipeline";
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import HomePopulares from "../components/HomePopulares.astro";
+import Botao from "../components/primitivos/Botao.astro";
+import ReguaCapacidade from "../components/ReguaCapacidade.astro";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
 import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
@@ -23,6 +25,7 @@ import {
   PASSOS_ASSISTENTE,
   PERGUNTAS_FREQUENTES,
 } from "../lib/home.ts";
+import { faixasDaRegua } from "../lib/regua-capacidade.ts";
 
 // A home é um hub (ticket 46) montado inteiro no build: as contagens saem do
 // dataset de consulta publicado, as capacidades/marcas populares da curadoria
@@ -33,6 +36,7 @@ const curadoria = carregarFiltros();
 const contagens = contarBase(dataset);
 const capacidades = capacidadesPopulares(dataset, curadoria);
 const marcas = marcasPopulares(dataset, curadoria);
+const regua = faixasDaRegua(dataset);
 const versao = versaoAtualDo(manifestJson as Manifest);
 
 // Os destaques são montados no build: cada Análise publicada, na ordem da mais
@@ -67,38 +71,45 @@ const jsonLd: Record<string, unknown>[] = [
   jsonLd={jsonLd}
 >
   <section class="home-hero">
+    <p class="home-fita">
+      <span>Base INMETRO</span>
+      {
+        versao ? (
+          <span>
+            Versão {versao.hash.slice(0, 12)} · obtida em {versao.obtidoEm}
+          </span>
+        ) : null
+      }
+    </p>
     <h1>Ar-condicionado com dados do INMETRO</h1>
-    <p class="intro">
+    <p class="home-hero-lead intro">
       Compare capacidade, consumo e eficiência de aparelhos de ar-condicionado
       com os dados oficiais do INMETRO — e descubra quantos BTUs o seu ambiente
       pede antes de escolher o modelo.
     </p>
+    <ReguaCapacidade faixas={regua} />
+    <div class="home-acoes">
+      <Botao href="/aparelhos/" icone="seta-direita">Explorar o catálogo</Botao>
+      <Botao href="/assistente/" variante="secundario">
+        Dimensionar meu ambiente
+      </Botao>
+    </div>
   </section>
 
-  <div class="home-cartoes">
-    <a class="home-cartao" href="/aparelhos/">
-      <strong>Ver aparelhos</strong>
-      <span>
-        A tabela completa, com filtros por marca, capacidade, Tipo e Classe.
-      </span>
-    </a>
-    <a class="home-cartao home-cartao-destaque" href="/assistente/">
-      <strong>Usar assistente</strong>
-      <span>
-        Responda cinco perguntas e veja quantos BTUs o seu ambiente precisa.
-      </span>
-    </a>
-  </div>
-
   <section class="home-confianca" aria-label="Cobertura da base">
-    <p>
-      <strong>{formatarNumero(contagens.aparelhos)}</strong> aparelhos
-      <span aria-hidden="true">·</span>
-      <strong>{formatarNumero(contagens.marcas)}</strong> marcas
-      <span aria-hidden="true">·</span>
-      <strong>{formatarNumero(contagens.capacidades)}</strong> capacidades
+    <p class="home-confianca-rotulo">Cobertura da base</p>
+    <p class="home-confianca-numeros">
+      <span class="home-confianca-item">
+        <strong>{formatarNumero(contagens.aparelhos)}</strong> aparelhos
+      </span>
+      <span class="home-confianca-item">
+        <strong>{formatarNumero(contagens.marcas)}</strong> marcas
+      </span>
+      <span class="home-confianca-item">
+        <strong>{formatarNumero(contagens.capacidades)}</strong> capacidades
+      </span>
     </p>
-    <p class="intro">
+    <p class="home-confianca-origem">
       Tudo a partir da exportação oficial de produtos do INMETRO.
       {
         versao ? (

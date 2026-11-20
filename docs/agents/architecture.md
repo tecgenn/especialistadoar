@@ -236,9 +236,15 @@ nova exportação CSV
   ele. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
   (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`; o bloco de
-  capacidades e marcas populares vem de `HomePopulares.astro`) com hero, dois
-  cartões de entrada (tabela e
-  Assistente, este em destaque de cor), faixa de confiança com contagens
+  capacidades e marcas populares vem de `HomePopulares.astro`) com a fita de
+  calibração (`BASE INMETRO · VERSÃO · OBTIDA EM`), H1 e lead preservados, a
+  **régua de capacidade** (ticket 70 — `ReguaCapacidade.astro` sobre o módulo
+  puro `src/lib/regua-capacidade.ts`: seis colunas proporcionais às contagens
+  de Aparelhos por faixa, derivadas do `consulta.json`, cada uma um link para
+  `/aparelhos/?btuMin=&btuMax=`; no celular vira lista com barra de proporção;
+  os ticks entram uma vez, em sequência de 40 ms, e somem com movimento
+  reduzido), as duas ações de entrada (catálogo primário e Assistente
+  secundário), a leitura de cobertura com contagens
   derivadas do `consulta.json` (Aparelhos, marcas, capacidades) e a Versão da
   tabela, capacidades e marcas populares ligadas à tabela filtrada, Análises em
   destaque (condicional), chamada do Assistente em três passos, FAQ e

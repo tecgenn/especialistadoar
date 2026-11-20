@@ -1,0 +1,72 @@
+---
+import { formatarNumero } from "../lib/home.ts";
+import type { FaixaDaRegua } from "../lib/regua-capacidade.ts";
+
+/**
+ * Régua de capacidade (ticket 70) — a assinatura gráfica da home. Seis
+ * segmentos proporcionais às contagens reais, cada um um link para o recorte da
+ * faixa no catálogo. Sem hidratação: no desktop a régua é uma linha graduada
+ * com rótulos mono; no celular vira uma lista de seis linhas com barra de
+ * proporção. A contagem é sempre visível — hover e foco só acendem o segmento
+ * em âmbar, nunca revelam informação.
+ */
+interface Props {
+  faixas: readonly FaixaDaRegua[];
+}
+
+const { faixas } = Astro.props;
+const colunas = faixas.map(({ contagem }) => `${contagem}fr`).join(" ");
+
+// "9.001–12.000" quebra só no travessão (`<wbr>`): os dois números ficam
+// inteiros quando a coluna fica estreita.
+const itens = faixas.map((faixa, indice) => ({
+  ...faixa,
+  indice,
+  partes: faixa.rotulo.split("–"),
+}));
+---
+
+<nav class="regua-capacidade" aria-label="Navegar por faixa de capacidade">
+  <div class="regua-capacidade-cabecalho">
+    <p class="regua-capacidade-rotulo">Aparelhos com capacidade na faixa</p>
+    <p class="regua-capacidade-unidade">BTU/h</p>
+  </div>
+  <ol class="regua-capacidade-lista" style={`--colunas: ${colunas}`}>
+    {
+      itens.map((item) => (
+        <li
+          class="regua-capacidade-item"
+          style={`--indice: ${item.indice}; --proporcao: ${item.proporcao}%`}
+        >
+          <a class="regua-capacidade-link" href={item.href}>
+            <span class="regua-capacidade-faixa">
+              {
+                // O `<wbr>` depois do travessão é a única quebra permitida: a
+                // coluna estreita não parte um número ao meio.
+              }
+              {item.partes[0]}{item.partes.length > 1 ? "–" : ""}<wbr />{
+                item.partes.length > 1 ? item.partes[1] : null
+              }
+              <span class="apenas-leitor"> BTU/h. </span>
+            </span>
+            <span class="regua-capacidade-contagem">
+              {formatarNumero(item.contagem)}
+              <span class="apenas-leitor">
+                {" "}
+                aparelhos com capacidade nesta faixa
+              </span>
+            </span>
+            <span class="regua-capacidade-trilho" aria-hidden="true">
+              <span class="regua-capacidade-barra" />
+            </span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+  <p class="regua-capacidade-nota">
+    Cada faixa conta os aparelhos com ao menos uma Variante na faixa. Um
+    aparelho com Variantes em faixas diferentes aparece em cada uma, por isso a
+    soma das seis não é o total de Aparelhos da base.
+  </p>
+</nav>

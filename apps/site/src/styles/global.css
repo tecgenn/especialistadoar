@@ -2214,65 +2214,267 @@ main.principal-leitura {
   }
 }
 
-/* Home como hub (ticket 46): hero, dois cartões de entrada, faixa de confiança,
+/* Home como hub (ticket 46): hero, régua de capacidade, leitura de cobertura,
    capacidades e marcas populares, Análises em destaque, chamada do Assistente,
-   FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente. */
+   FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente.
+   O topo (tickets 70 e 71) é o caminho de leitura do instrumento: fita de
+   calibração, H1 em display, lead em serifa, régua e duas ações. */
 .home-hero {
-  margin-bottom: 2rem;
-}
-
-.home-cartoes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.home-cartao {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 1.5rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
-  color: var(--texto);
+  gap: var(--esp-6);
+  margin-bottom: var(--esp-8);
+}
+
+/* Fita de calibração: diz de onde vêm os números antes de qualquer promessa. */
+.home-fita {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-6);
+  align-items: baseline;
+  margin: 0;
+  padding-bottom: var(--esp-3);
+  border-bottom: 1px solid var(--linha);
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-hero h1 {
+  max-width: 22ch;
+  margin: 0;
+  font-size: var(--texto-display);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--entrelinha-display);
+}
+
+.home-hero-lead {
+  max-width: 56ch;
+  margin: 0;
+  font-family: var(--fonte-leitura);
+  font-size: var(--texto-bloco);
+  line-height: var(--entrelinha-corpo);
+}
+
+.home-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-4);
+  margin: 0;
+}
+
+/* --- Régua de capacidade (ticket 70) -----------------------------------
+   No desktop é uma linha graduada: seis colunas proporcionais às contagens,
+   cada uma um link com tick de 8 px, rótulo e contagem em mono. No celular
+   vira uma lista de seis linhas com barra de proporção. A contagem está
+   sempre visível; hover e foco só acendem o segmento em âmbar.             */
+.regua-capacidade-rotulo,
+.regua-capacidade-unidade {
+  margin: 0;
+}
+
+/* Se o cabeçalho quebrar em duas linhas, a unidade fica à direita, como uma
+   coluna de escala — não como um rótulo solto à esquerda. */
+.regua-capacidade-unidade {
+  margin-left: auto;
+}
+
+.regua-capacidade-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--esp-2) var(--esp-6);
+  margin-bottom: var(--esp-5);
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.regua-capacidade-lista {
+  display: grid;
+  grid-template-columns: var(--colunas);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.regua-capacidade-item,
+.regua-capacidade-item + .regua-capacidade-item {
+  display: flex;
+  margin: 0;
+}
+
+.regua-capacidade-link {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--esp-1);
+  padding: var(--esp-4) var(--esp-4) var(--esp-2) 0;
+  border-top: 1px solid var(--linha);
+  color: var(--tinta);
   text-decoration: none;
+  transition:
+    background-color var(--mov-hover) var(--curva),
+    border-color var(--mov-hover) var(--curva);
 }
 
-.home-cartao strong {
-  font-size: 1.2rem;
+/* O tick vertical de 8 px, um dos poucos ornamentos do sistema — ele mede. */
+.regua-capacidade-link::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 1px;
+  height: 9px;
+  background: var(--grafite);
+  transform-origin: top;
 }
 
-.home-cartao span {
-  color: var(--texto-suave);
+.regua-capacidade-link:hover {
+  border-top-color: var(--sinal);
+  background: color-mix(in srgb, var(--sinal) 12%, transparent);
 }
 
-.home-cartao:hover {
-  border-color: var(--primaria);
+.regua-capacidade-link:hover::before,
+.regua-capacidade-link:focus-visible::before {
+  background: var(--sinal);
 }
 
-.home-cartao-destaque {
-  border-color: var(--primaria);
-  background: var(--azul-frio-lavado);
+.regua-capacidade-link:focus-visible {
+  background: color-mix(in srgb, var(--sinal) 12%, transparent);
 }
 
-.home-cartao-destaque strong {
-  color: var(--primaria);
+.regua-capacidade-faixa {
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-rotulo);
+  overflow-wrap: normal;
+  text-transform: uppercase;
+}
+
+.regua-capacidade-contagem {
+  color: var(--tinta);
+  font-family: var(--fonte-mono);
+  font-size: clamp(var(--texto-bloco), 1.7vw, var(--texto-secao));
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: 1.1;
+}
+
+.regua-capacidade-trilho {
+  display: none;
+}
+
+.regua-capacidade-nota {
+  max-width: 92ch;
+  margin: var(--esp-4) 0 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* A única entrada orquestrada do site: os ticks da régua em sequência de
+   40 ms, uma vez. Com movimento reduzido, os ticks nascem no lugar. */
+@keyframes regua-tick-entra {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes regua-barra-entra {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .regua-capacidade-link::before {
+    animation: regua-tick-entra 200ms var(--curva) calc(var(--indice) * 40ms)
+      both;
+  }
+}
+
+/* Rótulo que quebra em duas linhas não desalinha a leitura: as contagens
+   encostam no pé da mesma linha da régua. */
+@media (min-width: 40rem) {
+  .regua-capacidade-contagem {
+    margin-top: auto;
+  }
 }
 
 .home-confianca {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  align-items: baseline;
-  padding-block: 0.75rem;
-  margin-bottom: 2rem;
-  border-block: 1px solid var(--borda);
+  display: grid;
+  gap: var(--esp-3);
+  padding-block: var(--esp-5);
+  margin-block: 0 var(--esp-8);
+  border-block: 1px solid var(--linha);
 }
 
-.home-confianca p {
+.home-confianca-rotulo {
   margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-confianca-numeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-7);
+  align-items: baseline;
+  margin: 0;
+  color: var(--grafite);
+  font-size: var(--texto-pequeno);
+}
+
+.home-confianca-item {
+  display: inline-flex;
+  gap: var(--esp-3);
+  align-items: baseline;
+}
+
+.home-confianca-numeros strong {
+  color: var(--tinta);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-secao);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+}
+
+.home-confianca-origem {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
 }
 
 .home-populares {
@@ -2353,7 +2555,69 @@ main.principal-leitura {
 }
 
 @media (max-width: 40rem) {
-  .home-cartoes,
+  .home-hero {
+    gap: var(--esp-5);
+    margin-bottom: var(--esp-7);
+  }
+
+  .home-hero h1 {
+    max-width: none;
+  }
+
+  .home-acoes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* A régua vira lista: rótulo, contagem e barra de proporção na mesma linha,
+     com alvo de 44 px e nenhum overflow horizontal. */
+  .regua-capacidade-lista {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .regua-capacidade-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--esp-2) var(--esp-5);
+    align-items: baseline;
+    min-height: 44px;
+    padding: var(--esp-4) 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .regua-capacidade-link::before {
+    display: none;
+  }
+
+  .regua-capacidade-contagem {
+    justify-self: end;
+    font-size: var(--texto-bloco);
+  }
+
+  .regua-capacidade-trilho {
+    display: block;
+    grid-column: 1 / -1;
+    height: 6px;
+    background: var(--mineral);
+  }
+
+  .regua-capacidade-barra {
+    display: block;
+    width: var(--proporcao);
+    height: 100%;
+    background: color-mix(in srgb, var(--sinal) 55%, var(--giz));
+    transform-origin: left;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .regua-capacidade-barra {
+      animation: regua-barra-entra 200ms var(--curva) calc(var(--indice) * 40ms)
+        both;
+    }
+  }
+
   .home-passos {
     grid-template-columns: 1fr;
   }

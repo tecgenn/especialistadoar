@@ -353,6 +353,87 @@ function versaoDaTabela(): string | undefined {
 }
 
 /**
+ * A régua de capacidade (ticket 70) é o contrato do topo da home: seis faixas
+ * comerciais com as contagens reais da base publicada, cada uma um link para o
+ * recorte correspondente. As contagens e os hrefs são recalculados aqui, sem
+ * importar o módulo da página.
+ */
+function conferirReguaDaHome(html: string): void {
+  const itens = JSON.parse(
+    readFileSync(join(distDir, "consulta.json"), "utf8"),
+  ) as Array<{ capacidadesBtu: number[] }>;
+  const numero = new Intl.NumberFormat("pt-BR");
+  const faixas = [
+    {
+      min: Number.NEGATIVE_INFINITY,
+      max: 9000,
+      rotulo: "Até 9.000",
+      href: "/aparelhos/?btuMax=9000",
+    },
+    {
+      min: 9001,
+      max: 12000,
+      rotulo: "9.001–12.000",
+      href: "/aparelhos/?btuMin=9001&amp;btuMax=12000",
+    },
+    {
+      min: 12001,
+      max: 18000,
+      rotulo: "12.001–18.000",
+      href: "/aparelhos/?btuMin=12001&amp;btuMax=18000",
+    },
+    {
+      min: 18001,
+      max: 24000,
+      rotulo: "18.001–24.000",
+      href: "/aparelhos/?btuMin=18001&amp;btuMax=24000",
+    },
+    {
+      min: 24001,
+      max: 30000,
+      rotulo: "24.001–30.000",
+      href: "/aparelhos/?btuMin=24001&amp;btuMax=30000",
+    },
+    {
+      min: 30001,
+      max: Number.POSITIVE_INFINITY,
+      rotulo: "Acima de 30.000",
+      href: "/aparelhos/?btuMin=30001",
+    },
+  ];
+
+  const inicio = html.indexOf('class="regua-capacidade"');
+  expect(inicio).toBeGreaterThan(-1);
+  const regua = html.slice(inicio, html.indexOf("</nav>", inicio));
+  // O texto como o leitor de tela o monta: sem tags e com espaços colapsados.
+  // O `<wbr>` que deixa o rótulo quebrar depois do travessão conta como um
+  // espaço no texto, então a comparação ignora esse espaço.
+  const texto = textoDaPagina(regua.replace(/<[^>]+>/g, " ")).replace(
+    /– /g,
+    "–",
+  );
+  expect(regua).toContain('aria-label="Navegar por faixa de capacidade"');
+  expect(regua.match(/class="regua-capacidade-link"/g) ?? []).toHaveLength(
+    faixas.length,
+  );
+
+  for (const faixa of faixas) {
+    const contagem = itens.filter((item) =>
+      item.capacidadesBtu.some((btu) => btu >= faixa.min && btu <= faixa.max),
+    ).length;
+    expect(contagem).toBeGreaterThan(0);
+    expect(regua).toContain(`href="${faixa.href}"`);
+    expect(texto).toContain(faixa.rotulo);
+    expect(texto).toContain(
+      `${numero.format(contagem)} aparelhos com capacidade nesta faixa`,
+    );
+  }
+
+  // A régua não apresenta a soma das seis como o total de Aparelhos.
+  expect(texto).toContain("a soma das seis não é o total de Aparelhos da base");
+}
+
+/**
  * A home é um hub (ticket 46) com os nove blocos, e tudo nela é derivado da
  * base publicada: contagens, capacidades e marcas populares, Versão da tabela.
  */
@@ -365,13 +446,18 @@ function conferirHomeHub(html: string): void {
   expect(html).toContain("<h1>Ar-condicionado com dados do INMETRO</h1>");
   expect(html).toContain("capacidade, consumo e eficiência");
 
-  // 2. Dois cartões grandes, o do Assistente com destaque de cor.
-  expect(html).toContain('class="home-cartoes"');
-  expect(html).toContain("<strong>Ver aparelhos</strong>");
+  // 2. Duas ações: catálogo (primária) e Assistente (secundária).
+  expect(html).toContain('class="home-acoes"');
+  expect(html).toContain("botao-primario");
+  expect(html).toContain("Explorar o catálogo");
+  expect(html).toContain("botao-secundario");
+  expect(html).toContain("Dimensionar meu ambiente");
   expect(html).toContain('href="/aparelhos/"');
-  expect(html).toContain("<strong>Usar assistente</strong>");
   expect(html).toContain('href="/assistente/"');
-  expect(html).toContain("home-cartao home-cartao-destaque");
+
+  // 2b. Régua de capacidade: seis faixas, contagens do dataset e link para o
+  //     recorte de cada faixa no catálogo.
+  conferirReguaDaHome(html);
 
   // 3. Faixa de confiança com contagens reais e a Versão da tabela.
   expect(html).toContain(`<strong>${contagens.aparelhos}</strong> aparelhos`);

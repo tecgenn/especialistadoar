@@ -53,18 +53,27 @@ export function faixasDeCapacidade(
 const formatar = (valor: number) => valor.toLocaleString("pt-BR");
 
 /**
- * O rótulo legível da faixa: "Até 9.000 BTU/h", "12.001–18.000 BTU/h" ou
- * "Acima de 30.000 BTU/h". A faixa sem teto mostra o último valor coberto —
- * "acima de 30.000", não "acima de 30.001".
+ * O rótulo curto da faixa, sem unidade: "Até 9.000", "12.001–18.000" ou
+ * "Acima de 30.000". A faixa sem teto mostra o último valor coberto — "acima
+ * de 30.000", não "acima de 30.001". É o que vai no eixo da régua de
+ * capacidade, onde a unidade é declarada uma vez.
  */
-export function rotuloDaFaixa(faixa: FaixaCapacidade): string {
+export function rotuloDaFaixaCurto(faixa: FaixaCapacidade): string {
   if (faixa.min === undefined) {
-    return `Até ${formatar(faixa.max ?? 0)} BTU/h`;
+    return `Até ${formatar(faixa.max ?? 0)}`;
   }
   if (faixa.max === undefined) {
-    return `Acima de ${formatar(faixa.min - 1)} BTU/h`;
+    return `Acima de ${formatar(faixa.min - 1)}`;
   }
-  return `${formatar(faixa.min)}–${formatar(faixa.max)} BTU/h`;
+  return `${formatar(faixa.min)}–${formatar(faixa.max)}`;
+}
+
+/**
+ * O rótulo legível da faixa: "Até 9.000 BTU/h", "12.001–18.000 BTU/h" ou
+ * "Acima de 30.000 BTU/h".
+ */
+export function rotuloDaFaixa(faixa: FaixaCapacidade): string {
+  return `${rotuloDaFaixaCurto(faixa)} BTU/h`;
 }
 
 /** A faixa gravada no estado, se houver — as duas chaves, e só elas. */
