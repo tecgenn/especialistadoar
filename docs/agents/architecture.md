@@ -235,21 +235,20 @@ nova exportação CSV
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
-  (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`; o bloco de
-  capacidades e marcas populares vem de `HomePopulares.astro`) com a fita de
-  calibração (`BASE INMETRO · VERSÃO · OBTIDA EM`), H1 e lead preservados, a
-  **régua de capacidade** (ticket 70 — `ReguaCapacidade.astro` sobre o módulo
-  puro `src/lib/regua-capacidade.ts`: seis colunas proporcionais às contagens
-  de Aparelhos por faixa, derivadas do `consulta.json`, cada uma um link para
-  `/aparelhos/?btuMin=&btuMax=`; no celular vira lista com barra de proporção;
-  os ticks entram uma vez, em sequência de 40 ms, e somem com movimento
-  reduzido), as duas ações de entrada (catálogo primário e Assistente
-  secundário), a leitura de cobertura com contagens
+  (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`) com a fita
+  de calibração (`BASE INMETRO · VERSÃO · OBTIDA EM`), H1 e lead preservados,
+  um **hero renovado** com animação de entrada e efeito de linhas ao lado do
+  texto (ticket 93 — `ReguaCapacidade.astro` migra para o hero no desktop; no
+  celular a régua continua como lista de seis linhas com barra de proporção,
+  ticket 94), as duas ações de entrada (catálogo primário e botão secundário
+  renomeado, ex: "Calcular BTUs"), a leitura de cobertura com contagens
   derivadas do `consulta.json` (Aparelhos, marcas, capacidades) e a Versão da
-  tabela, capacidades e marcas populares ligadas à tabela filtrada, Análises em
-  destaque (condicional), chamada do Assistente em três passos, FAQ e
-  metodologia/INMETRO. O `<head>` publica `WebSite` e `FAQPage`; a home não baixa
-  JSON no cliente. Os links antigos
+  tabela, blocos de aparelhos em destaque por faixa (ticket 96 — substituem
+  "Capacidades populares" e "Marcas populares"), carousel de Análises em destaque
+  (ticket 97), chamada do Assistente reposicionada ou removida (ticket 98), FAQ e
+  Metodologia/INMETRO em `<details>` nativo (ticket 99). O `<head>` publica
+  `WebSite` e `FAQPage`; a home não baixa JSON no cliente. A Versão da base
+  aparece apenas no footer, em fonte pequena (ticket 95). Os links antigos
   `/?marca=…` são levados a `/aparelhos/` com a mesma querystring por um script
   curto na home (o `_redirects` não separa a mesma URL por parâmetros), e o menu
   tem Aparelhos, Assistente e, com ≥ 1 Análise, Análises.
