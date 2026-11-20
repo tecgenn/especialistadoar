@@ -12,6 +12,8 @@
 
   /* --- Cor: primitivas ------------------------------------------------ */
   --tinta: #0a1f22;
+
+  /* Petróleo (legado): mantidos como dado histórico; não são mais a cor de ação primária. */
   --petroleo: #123f45;
   --petroleo-profundo: #0b2c30;
 
@@ -30,6 +32,17 @@
   --sinal-texto: #7a4a0f;
   --sinal-lavado: #fbefd9;
 
+  /* Azul-frio / gelo: família primária do sistema "instrumento de climatização".
+     Base: #0E6B8A — azul frio puro, sem viés esverdeado, AA sobre giz/papel.
+     Estados derivados para hover, active, texto e fundo lavado (chips/badges). */
+  --azul-frio: #0e6b8a;
+  --azul-frio-hover: #1579a0;
+  --azul-frio-ativo: #0b5a73;
+  --azul-frio-texto: #0e6b8a;
+  --azul-frio-lavado: color-mix(in srgb, var(--azul-frio) 8%, var(--giz));
+  --azul-frio-escuro: #084d66;
+
+  /* Frio (assinatura térmica): mantido como escala de dado, não como ação. */
   --frio: #2f7f8c;
   --frio-texto: #1d5b66;
   --frio-lavado: #e3eff0;
@@ -144,7 +157,7 @@
   --borda: var(--linha);
   --fundo: var(--papel);
   --superficie: var(--giz);
-  --primaria: var(--petroleo);
+  --primaria: var(--azul-frio);
 }
 
 @media (min-width: 640px) {

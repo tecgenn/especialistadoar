@@ -136,7 +136,7 @@ main.principal-leitura {
 }
 
 .site-footer {
-  background: var(--tinta);
+  background: var(--azul-frio-escuro);
   color: var(--giz);
 }
 
@@ -1267,7 +1267,7 @@ main.principal-leitura {
 }
 
 .ficha-comparar:hover {
-  border-color: #075985;
+  border-color: var(--azul-frio-hover);
   background: color-mix(in srgb, var(--primaria) 8%, var(--superficie));
 }
 
@@ -2254,7 +2254,7 @@ main.principal-leitura {
 
 .home-cartao-destaque {
   border-color: var(--primaria);
-  background: #e0f2fe;
+  background: var(--azul-frio-lavado);
 }
 
 .home-cartao-destaque strong {
@@ -2299,7 +2299,7 @@ main.principal-leitura {
 
 .home-links a:hover {
   border-color: var(--primaria);
-  background: #e0f2fe;
+  background: var(--azul-frio-lavado);
 }
 
 .home-assistente {
@@ -2556,7 +2556,7 @@ main.principal-leitura {
   padding: 0.6rem 0.85rem;
   margin: 1.25rem 0 0;
   border-radius: 0.5rem;
-  background: #e0f2fe;
+  background: var(--azul-frio-lavado);
   font-size: 0.9rem;
 }
 

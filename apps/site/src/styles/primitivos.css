@@ -62,7 +62,7 @@
 }
 
 .botao-primario:hover {
-  background: var(--petroleo);
+  background: var(--azul-frio-hover);
   color: var(--giz);
 }
 
@@ -102,7 +102,7 @@
 }
 
 .botao-primario:active {
-  background: var(--petroleo-profundo);
+  background: var(--azul-frio-ativo);
   color: var(--giz);
 }
 
@@ -287,8 +287,8 @@
 }
 
 .chip[aria-pressed="true"]:hover {
-  border-color: var(--petroleo);
-  background: var(--petroleo);
+  border-color: var(--azul-frio-hover);
+  background: var(--azul-frio-hover);
   color: var(--giz);
 }
 

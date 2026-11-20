@@ -19,6 +19,12 @@ colors:
   cold: "#2F7F8C"
   cold-ink: "#1D5B66"
   cold-wash: "#E3EFF0"
+  blue-cold: "#0E6B8A"
+  blue-cold-hover: "#1579A0"
+  blue-cold-active: "#0B5A73"
+  blue-cold-ink: "#0E6B8A"
+  blue-cold-wash: "#E9F1F1"
+  blue-cold-dark: "#084D66"
   classe-a: "#1B6A4E"
   classe-b: "#467536"
   classe-c: "#6E691B"
@@ -156,19 +162,27 @@ A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca o
 
 ## Colors
 
-A paleta é clara e térmica: chão quase branco e neutro, petróleo profundo, grafite e um único âmbar de sinal. As cores de Classe energética são as únicas cores saturadas permanentes, porque são dados.
+A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como cor de ação, petróleo profundo como legado, grafite e um único âmbar de sinal. As cores de Classe energética são as únicas cores saturadas permanentes, porque são dados.
 
-### Primary
-- **Tinta petróleo** (`#0A1F22`): texto principal, superfície de botões primários, cabeçalho da tabela e fundo do rodapé. É o "preto" do sistema, com subtom verde-azulado.
-- **Petróleo** (`#123F45`): hover do botão primário, faixas de cabeçalho, fundo de blocos de destaque escuros. Nunca como texto sobre papel.
-- **Petróleo profundo** (`#0B2C30`): fundo de seções escuras de largura total e do dock de seleção.
+### Primary (Azul-frio / Gelo — climatização)
+- **Azul-frio** (`#0E6B8A`): cor de ação primária do sistema — botões primários, foco global, links, chips ativos, badges de destaque. Azul puro, sem viés esverdeado, AA (4.5:1) sobre giz e papel. Texto branco sobre a base (7.4:1).
+- **Azul-frio hover** (`#1579A0`): estado hover do botão primário e de controles que usam a cor primária. AA sobre giz/papel.
+- **Azul-frio ativo** (`#0B5A73`): estado pressed/active do botão primário.
+- **Azul-frio texto** (`#0E6B8A`): links e acentos textuais sobre superfícies claras (giz/papel).
+- **Azul-frio lavado** (`#E9F1F1`, `color-mix(in srgb, var(--azul-frio) 8%, var(--giz))`): fundo tonal a 8% para chips ativos, badges e acentos leves.
+- **Azul-frio escuro** (`#084D66`): fundo do rodapé e de faixas escuras de largura total; substitui o petróleo profundo como superfície escura primária.
+
+### Petróleo (legado — dado histórico)
+- **Tinta petróleo** (`#0A1F22`): texto principal, cabeçalho da tabela. É o "preto" do sistema, com subtom verde-azulado.
+- **Petróleo** (`#123F45`): mantido no contrato como legado; não é mais hover de botão primário nem cor de ação.
+- **Petróleo profundo** (`#0B2C30`): mantido no contrato como legado; não é mais fundo de seções escuras nem dock.
 
 ### Secondary
-- **Âmbar de sinal** (`#E8A33D`): ação, foco, capacidade selecionada e o extremo "quente" da escala térmica. Sobre tinta tem 7,9:1; sobre papel é cor gráfica, nunca texto.
+- **Âmbar de sinal** (`#E8A33D`): capacidade selecionada e o extremo "quente" da escala térmica. Sobre tinta tem 7,9:1; sobre papel é cor gráfica, nunca texto. **Não é mais a cor de foco global** — o foco usa azul-frio via `--primaria`.
 - **Âmbar de texto** (`#7A4A0F`): links e rótulos âmbar sobre papel (7,0:1). O âmbar claro não é usado como texto em fundo claro.
 
 ### Tertiary
-- **Frio** (`#2F7F8C`): extremo "frio" da escala térmica, linhas de gráfico e estados informativos. Como texto sobre papel, usar **frio de texto** (`#1D5B66`, 7,2:1).
+- **Frio** (`#2F7F8C`): extremo "frio" da escala térmica, linhas de gráfico e estados informativos (ex.: aviso-frio). Como texto sobre papel, usar **frio de texto** (`#1D5B66`, 7,2:1). **Não é a cor de ação primária** — essa é o azul-frio.
 
 ### Neutral
 - **Giz** (`#FDFDFB`): superfície de cartões, tabela, campos e páginas de leitura.
@@ -198,13 +212,14 @@ Uma escala contínua frio → neutro → âmbar → quente, construída com os t
 ### Nomes dos tokens no CSS
 O frontmatter acima é a camada portátil (chaves descritivas em inglês). No CSS, os mesmos valores usam nomes em português, e essa é a única grafia aceita nos componentes:
 
-`--tinta`, `--petroleo`, `--petroleo-profundo`, `--giz`, `--papel`, `--mineral`, `--linha`, `--linha-escura`, `--grafite`, `--mudo`, `--mudo-escuro`, `--sinal`, `--sinal-texto`, `--sinal-lavado`, `--frio`, `--frio-texto`, `--frio-lavado`, `--classe-a`…`--classe-f`, `--shell`, `--leitura`, `--calha`, `--raio-xs`, `--raio-sm`, `--raio-md`.
+`--tinta`, `--petroleo`, `--petroleo-profundo`, `--giz`, `--papel`, `--mineral`, `--linha`, `--linha-escura`, `--grafite`, `--mudo`, `--mudo-escuro`, `--sinal`, `--sinal-texto`, `--sinal-lavado`, `--azul-frio`, `--azul-frio-hover`, `--azul-frio-ativo`, `--azul-frio-texto`, `--azul-frio-lavado`, `--azul-frio-escuro`, `--frio`, `--frio-texto`, `--frio-lavado`, `--classe-a`…`--classe-f`, `--shell`, `--leitura`, `--calha`, `--raio-xs`, `--raio-sm`, `--raio-md`.
 
 Nenhum componente inventa um nome alternativo para o mesmo valor.
 
 ### Regras de cor
 - Texto de corpo: tinta sobre giz/papel, giz sobre tinta. Nunca cinza claro sobre papel.
-- Âmbar e frio puros são cores gráficas; para texto, usar as variantes `-ink`.
+- **Azul-frio** é a cor de ação e foco primária; âmbar sinaliza seleção/capacidade e calor na escala térmica.
+- Âmbar e frio puros são cores gráficas; para texto, usar as variantes `-ink` / `-texto`.
 - Vermelho só para erro, Classe E/F e consumo implausível. Nunca para "promoção".
 - Nenhum gradiente de fundo. A escala térmica é o único gradiente permitido, e é um dado.
 - Estados desabilitados: 45% de opacidade e cursor `not-allowed`, sem cinza extra.
@@ -306,14 +321,14 @@ O sistema é quase plano. Profundidade vem de tom, hairline e sobreposição só
 
 - **Nível 0** — página em papel quase branco.
 - **Nível 1** — giz com hairline de 1 px: cartões, tabela, campos, painéis.
-- **Nível 2** — petróleo sólido: cabeçalho de tabela escuro, blocos de destaque, rodapé.
+- **Nível 2** — **azul-frio escuro** (`--azul-frio-escuro`): cabeçalho de tabela escuro, blocos de destaque, rodapé. O petróleo (`--petroleo-profundo`) permanece como legado mas não é usado em superfícies novas.
 - **Nível 3** — sobreposição: somente o dock de seleção, o painel de filtros aberto no celular, menus e tooltips.
 
 Regras:
 - Nenhuma sombra em repouso. A única sombra permitida é a do nível 3: `0 1px 0 var(--linha), 0 16px 40px rgb(10 31 34 / 0.10)`.
 - Sem `backdrop-filter`, sem vidro, sem blur.
 - Nunca usar sombra para compensar falta de contraste; usar hairline e tom.
-- O foco é sempre visível: contorno de 2 px âmbar com `outline-offset: 2px` e, sobre tinta, contorno giz.
+- O foco é sempre visível: contorno de 2 px **azul-frio** (`var(--primaria)`) com `outline-offset: 2px` e, sobre tinta, contorno giz.
 
 ## Shapes
 
@@ -331,10 +346,10 @@ Regras:
 Faixa de 64/72 px, fundo giz, hairline inferior. Marca em grotesca 600, navegação em grotesca 500 com sublinhado âmbar de 2 px no item ativo. O link "Análises" só existe quando há Análise publicada. No celular, a navegação rola horizontalmente sem esconder itens.
 
 ### Rodapé
-Fundo tinta, texto giz, três colunas no desktop: proveniência e Versão da tabela; navegação institucional; nota de afiliado. No celular, empilha com a proveniência primeiro. A nota de afiliado é texto, não selo.
+Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas no desktop: proveniência e Versão da tabela; navegação institucional; nota de afiliado. No celular, empilha com a proveniência primeiro. A nota de afiliado é texto, não selo. Links e bordas usam a família azul-frio; o rodapé não lê mais "verde-petróleo".
 
 ### Botão primário
-Fundo tinta, texto giz, raio 2 px, altura 44 px, padding 12×20, grotesca 500. Hover: petróleo. Active: petróleo profundo com deslocamento de 1 px. Disabled: 45% de opacidade. Ícone opcional à direita, 16 px. Nunca com sombra.
+Fundo **azul-frio** (`--azul-frio`, `#0E6B8A`), texto giz, raio 2 px, altura 44 px, padding 12×20, grotesca 500. Hover: **azul-frio hover** (`--azul-frio-hover`, `#1579A0`). Active: **azul-frio ativo** (`--azul-frio-ativo`, `#0B5A73`) com deslocamento de 1 px. Disabled: 45% de opacidade. Ícone opcional à direita, 16 px. Nunca com sombra.
 
 ### Botão secundário
 Fundo giz, texto tinta, borda de 1 px hairline, mesmo tamanho. Hover: fundo papel e borda grafite. É o padrão para ações não destrutivas fora do fluxo principal.
@@ -399,7 +414,7 @@ Página de leitura com o título "Fora da escala", uma frase curta, a régua de 
 ## Do's and Don'ts
 
 ### Do
-- Mantenha o chão quase branco e neutro: é ele que deixa o dado, a hairline e o âmbar legíveis.
+- Mantenha o chão quase branco e neutro: é ele que deixa o dado, a hairline e o azul-frio legíveis.
 - Use a grade e a hairline para separar; deixe o espaço em branco fazer o trabalho.
 - Escreva o número com unidade, origem e, se calculado, a fórmula.
 - Use o mono para medir e a serifa para explicar.
@@ -413,7 +428,7 @@ Página de leitura com o título "Fora da escala", uma frase curta, a régua de 
 - Não devolva o papel mineral esverdeado nem escureça o chão da página; superfície escura é só rodapé, linha de seção da matriz e dock de seleção.
 - Não use gradiente de fundo, glassmorphism, blur, sombra difusa ou card flutuante.
 - Não use pill, raio maior que 8 px, ícone colorido ou ilustração decorativa.
-- Não use roxo, azul genérico de SaaS, verde "sustentável" de marca ou laranja de urgência.
+- Não use roxo, azul genérico de SaaS, verde "sustentável" de marca, laranja de urgência ou petróleo esverdeado como cor de ação.
 - Não use "melhor", "campeão", estrelas, nota, ranking ou selo de recomendação.
 - Não prometa preço, desconto, economia ou prazo.
 - Não esconda conteúdo atrás de animação, scroll-jacking ou carrossel automático.

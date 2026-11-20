@@ -80,6 +80,12 @@ describe("tokens do sistema visual", () => {
       "sinal",
       "sinal-texto",
       "sinal-lavado",
+      "azul-frio",
+      "azul-frio-hover",
+      "azul-frio-ativo",
+      "azul-frio-texto",
+      "azul-frio-lavado",
+      "azul-frio-escuro",
       "frio",
       "frio-texto",
       "frio-lavado",
@@ -160,7 +166,7 @@ describe("tokens do sistema visual", () => {
       ["borda", "linha"],
       ["fundo", "papel"],
       ["superficie", "giz"],
-      ["primaria", "petroleo"],
+      ["primaria", "azul-frio"],
     ] as const;
     for (const [legado, novo] of aliases) {
       expect(tokens.get(legado), `--${legado}`).toBe(`var(--${novo})`);
@@ -183,6 +189,17 @@ describe("contraste dos pares documentados", () => {
     ["mudo-escuro", "tinta", 4.5],
     ["frio-texto", "giz", 4.5],
     ["frio-texto", "papel", 4.5],
+    ["azul-frio", "giz", 4.5],
+    ["azul-frio", "papel", 4.5],
+    ["azul-frio-hover", "giz", 4.5],
+    ["azul-frio-hover", "papel", 4.5],
+    ["azul-frio-ativo", "giz", 4.5],
+    ["azul-frio-ativo", "papel", 4.5],
+    ["azul-frio-texto", "giz", 4.5],
+    ["azul-frio-texto", "papel", 4.5],
+    ["giz", "azul-frio", 4.5],
+    ["giz", "azul-frio-hover", 4.5],
+    ["giz", "azul-frio-ativo", 4.5],
   ];
 
   it.each(pares)("--%s sobre --%s alcança %s:1", (frente, fundo, minimo) => {
@@ -220,6 +237,11 @@ describe("chão visual: branco quase puro e neutro", () => {
     petroleo: "#123f45",
     sinal: "#e8a33d",
     frio: "#2f7f8c",
+    "azul-frio": "#0e6b8a",
+    "azul-frio-hover": "#1579a0",
+    "azul-frio-ativo": "#0b5a73",
+    "azul-frio-texto": "#0e6b8a",
+    "azul-frio-escuro": "#084d66",
     "classe-a": "#1b6a4e",
     "classe-b": "#467536",
     "classe-c": "#6e691b",
