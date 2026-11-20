@@ -2,6 +2,8 @@ import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
 import {
   capacidadesPopulares,
+  contagensPorCapacidade,
+  contagensPorMarca,
   contarBase,
   EXPLICACAO_DO_RECORTE,
   formatarCapacidade,
@@ -91,6 +93,35 @@ describe("capacidades e marcas populares", () => {
       { valor: "MIDEA", rotulo: "Midea" },
       { valor: "SAMSUNG", rotulo: "Samsung" },
     ]);
+  });
+});
+
+describe("contagens dos populares", () => {
+  it("conta cada Aparelho uma vez por capacidade, mesmo com Variantes no mesmo valor", () => {
+    const contagens = contagensPorCapacidade([
+      item({ id: "a", capacidadesBtu: [9000, 12000] }),
+      item({ id: "b", capacidadesBtu: [12000, 12000] }),
+      item({ id: "c", capacidadesBtu: [18000] }),
+    ]);
+    expect(contagens.get(9000)).toBe(1);
+    expect(contagens.get(12000)).toBe(2);
+    expect(contagens.get(18000)).toBe(1);
+  });
+
+  it("conta os Aparelhos por Marca de catálogo, ignorando a Marca vazia", () => {
+    const contagens = contagensPorMarca([
+      item({ id: "a", marca: "MIDEA", marcaCatalogo: "MIDEA" }),
+      item({
+        id: "b",
+        marca: "SPRINGER MIDEA",
+        marcaCatalogo: "MIDEA",
+      }),
+      item({ id: "c", marca: "LG", marcaCatalogo: "LG" }),
+      item({ id: "d", marcaCatalogo: "" }),
+    ]);
+    expect(contagens.get("MIDEA")).toBe(2);
+    expect(contagens.get("LG")).toBe(1);
+    expect(contagens.has("")).toBe(false);
   });
 });
 

@@ -1637,40 +1637,81 @@ main.principal-leitura {
   font-size: 0.9rem;
 }
 
+/* Análises em destaque na home (ticket 71): a Análise real, com a imagem de
+   abertura do artigo, data em mono, título, resumo e o CTA de Oferta quando há.
+   O bloco é uma régua de seção com uma linha por destaque, imagem à esquerda. */
 .analises-destaque {
-  margin-block: 1.5rem;
-  padding: 1rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  padding-block: var(--esp-6);
+  margin-block: 0;
+  border-top: 1px solid var(--linha);
 }
 
 .analises-destaque h2 {
-  margin-top: 0;
+  margin: 0 0 var(--esp-3);
+}
+
+.analises-destaque > .intro {
+  max-width: 62ch;
+  margin: 0 0 var(--esp-6);
 }
 
 .analises-destaque-lista {
   list-style: none;
-  margin: 1rem 0;
+  display: grid;
+  gap: var(--esp-7);
+  margin: 0 0 var(--esp-6);
   padding: 0;
 }
 
 .analises-destaque-lista li {
-  padding-block: 0.75rem;
-  border-bottom: 1px solid var(--borda);
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--esp-7);
+  align-items: start;
+  margin-block: 0;
+  padding-block-start: var(--esp-5);
+  border-top: 1px solid var(--linha);
 }
 
-.analises-destaque-lista li:first-child {
-  padding-top: 0;
+.analises-destaque-imagem {
+  overflow: hidden;
+  border-radius: var(--raio-sm);
+  background: var(--mineral);
 }
 
-.analises-destaque-lista li:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
+.analises-destaque-imagem img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+.analises-destaque-data {
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
 }
 
 .analises-destaque-lista h3 {
-  margin: 0 0 0.25rem;
+  margin: var(--esp-2) 0 var(--esp-3);
+  font-size: var(--texto-secao);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+}
+
+.analises-destaque-lista h3 a {
+  text-decoration: none;
+}
+
+.analises-destaque-lista h3 a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--sinal);
+  text-underline-offset: 0.15em;
 }
 
 .analises-destaque-lista .ofertas {
@@ -2424,12 +2465,29 @@ main.principal-leitura {
   }
 }
 
+/* O percurso da home (ticket 71): cobertura → capacidades → marcas → análises
+   → Assistente → perguntas → metodologia. Cada bloco começa numa régua de 1 px
+   e respira com o mesmo ritmo; nenhum deles é um cartão flutuante. */
+.home-confianca,
+.home-populares,
+.home-assistente,
+.home-faq,
+.home-metodologia {
+  padding-block: var(--esp-6);
+  margin-block: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.home-populares h2,
+.home-assistente h2,
+.home-faq h2,
+.home-metodologia h2 {
+  margin: 0 0 var(--esp-3);
+}
+
 .home-confianca {
   display: grid;
   gap: var(--esp-3);
-  padding-block: var(--esp-5);
-  margin-block: 0 var(--esp-8);
-  border-block: 1px solid var(--linha);
 }
 
 .home-confianca-rotulo {
@@ -2477,81 +2535,211 @@ main.principal-leitura {
   line-height: var(--entrelinha-pequena);
 }
 
-.home-populares {
-  margin-bottom: 2rem;
+/* Populares (ticket 71): listas de links com contagem, não chips soltos.
+   Capacidades em duas colunas; marcas em três. Cada linha tem uma hairline e
+   um alvo de 44 px; o rótulo carrega a hierarquia e a contagem fica em mono. */
+.home-populares-intro {
+  max-width: 62ch;
+  margin: 0 0 var(--esp-5);
 }
 
-.home-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0;
+.home-populares-lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--esp-7);
   margin: 0;
+  padding: 0;
   list-style: none;
 }
 
-.home-links a {
-  display: inline-block;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--borda);
-  border-radius: 999px;
-  background: var(--superficie);
+.home-populares-marcas .home-populares-lista {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.home-populares-lista li {
+  margin-block: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.home-populares-lista a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  min-height: 44px;
+  padding-block: var(--esp-3);
+  color: var(--tinta);
   text-decoration: none;
 }
 
-.home-links a:hover {
-  border-color: var(--primaria);
-  background: var(--azul-frio-lavado);
+.home-populares-texto {
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: var(--entrelinha-apertada);
 }
 
-.home-assistente {
-  margin-block: 2.5rem;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
+.home-populares-marcas .home-populares-texto {
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-normal);
+}
+
+.home-populares-contagem {
+  flex: none;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-rotulo);
+  transition: color var(--mov-hover) var(--curva);
+}
+
+.home-populares-lista a:hover .home-populares-texto {
+  text-decoration: underline;
+  text-decoration-color: var(--sinal);
+  text-underline-offset: 0.15em;
+}
+
+.home-populares-lista a:hover .home-populares-contagem {
+  color: var(--sinal-texto);
+}
+
+/* Assistente (ticket 71): três passos numerados sobre uma régua, com a conta
+   do método intacta e uma única ação primária. */
+.home-assistente-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--esp-4) var(--esp-8);
+  margin-bottom: var(--esp-6);
+}
+
+.home-assistente-cabecalho > div {
+  max-width: 60ch;
+}
+
+.home-assistente-cabecalho .intro {
+  margin-bottom: 0;
+}
+
+.home-assistente-acao {
+  margin: 0;
 }
 
 .home-passos {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-5);
+  margin: 0;
   padding: 0;
-  margin: 1.25rem 0;
   list-style: none;
 }
 
 .home-passos li {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding-left: 0.75rem;
-  border-left: 3px solid var(--primaria);
+  display: grid;
+  gap: var(--esp-2);
+  align-content: start;
+  margin-block: 0;
+  padding-block-start: var(--esp-4);
+  border-top: 1px solid var(--linha);
 }
 
-.home-passos span {
-  color: var(--texto-suave);
-  font-size: 0.9rem;
+.home-passo-numero {
+  color: var(--sinal-texto);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
 }
 
-.home-faq,
-.home-metodologia {
-  margin-bottom: 2rem;
+.home-passos strong {
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: var(--entrelinha-apertada);
+}
+
+.home-passo-texto {
+  color: var(--grafite);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* FAQ (ticket 71): `<details>` nativo, fechado por padrão. A pergunta é um
+   título dentro do `summary`, com o marcador desenhado em mono. */
+.home-faq-lista {
+  display: grid;
 }
 
 .home-pergunta {
-  padding-block: 0.75rem;
-  border-bottom: 1px solid var(--borda);
+  border-top: 1px solid var(--linha);
+}
+
+.home-pergunta summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-5);
+  min-height: 44px;
+  padding-block: var(--esp-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+.home-pergunta summary::-webkit-details-marker {
+  display: none;
+}
+
+.home-pergunta summary::after {
+  content: "+";
+  flex: none;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-ui);
+  line-height: 1;
+  transition: color var(--mov-hover) var(--curva);
+}
+
+.home-pergunta[open] summary::after {
+  content: "−";
+  color: var(--sinal-texto);
+}
+
+.home-pergunta summary:hover::after {
+  color: var(--sinal-texto);
 }
 
 .home-pergunta h3 {
-  margin: 0 0 0.35rem;
-  font-size: 1.05rem;
+  margin: 0;
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-ui);
 }
 
 .home-pergunta p {
+  max-width: 68ch;
   margin: 0;
-  color: var(--texto-suave);
+  padding-block-end: var(--esp-4);
+  color: var(--grafite);
+  font-size: var(--texto-ui);
+  line-height: 1.6;
+}
+
+/* Metodologia (ticket 71): coluna de leitura em serifa e as fontes em mono. */
+.home-metodologia p {
+  max-width: 68ch;
+}
+
+.home-fontes {
+  margin: var(--esp-6) 0 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
 }
 
 @media (max-width: 40rem) {
@@ -2616,6 +2804,24 @@ main.principal-leitura {
       animation: regua-barra-entra 200ms var(--curva) calc(var(--indice) * 40ms)
         both;
     }
+  }
+
+  .analises-destaque-lista li {
+    grid-template-columns: 1fr;
+    gap: var(--esp-5);
+  }
+
+  .home-populares-lista,
+  .home-populares-marcas .home-populares-lista {
+    grid-template-columns: 1fr;
+  }
+
+  .home-assistente-cabecalho {
+    flex-direction: column;
+  }
+
+  .home-assistente-acao .botao {
+    width: 100%;
   }
 
   .home-passos {

@@ -15,6 +15,8 @@ import Base from "../layouts/Base.astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
 import {
   capacidadesPopulares,
+  contagensPorCapacidade,
+  contagensPorMarca,
   contarBase,
   EXPLICACAO_DO_RECORTE,
   formatarCapacidade,
@@ -34,8 +36,14 @@ import { faixasDaRegua } from "../lib/regua-capacidade.ts";
 const dataset = consultaJson as ItemConsulta[];
 const curadoria = carregarFiltros();
 const contagens = contarBase(dataset);
+// Cada item popular leva a própria contagem: quantos Aparelhos têm aquela
+// capacidade ou aquela Marca de catálogo. É a mesma base da tabela.
+const porCapacidade = contagensPorCapacidade(dataset);
+const porMarca = contagensPorMarca(dataset);
 const capacidades = capacidadesPopulares(dataset, curadoria);
 const marcas = marcasPopulares(dataset, curadoria);
+const contagemPopulares = (quantidade: number | undefined): string =>
+  `${formatarNumero(quantidade ?? 0)} aparelhos`;
 const regua = faixasDaRegua(dataset);
 const versao = versaoAtualDo(manifestJson as Manifest);
 
@@ -122,57 +130,72 @@ const jsonLd: Record<string, unknown>[] = [
   </section>
 
   <HomePopulares
+    classe="home-populares-capacidades"
     titulo="Capacidades populares"
     intro="Vá direto para os aparelhos da capacidade que você procura."
     itens={capacidades.map((capacidade) => ({
       href: linkDaTabela({ btu: capacidade }),
       texto: formatarCapacidade(capacidade),
+      contagem: contagemPopulares(porCapacidade.get(capacidade)),
     }))}
   />
 
   <HomePopulares
+    classe="home-populares-marcas"
     titulo="Marcas populares"
     intro="Compare os modelos das marcas mais procuradas."
     itens={marcas.map((marca) => ({
       href: linkDaTabela({ marca: marca.valor }),
       texto: marca.rotulo,
+      contagem: contagemPopulares(porMarca.get(marca.valor)),
     }))}
   />
 
   <AnalisesDestaque destaques={destaques} />
 
   <section class="home-assistente">
-    <h2>Descubra quantos BTUs você precisa</h2>
-    <p class="intro">
-      Como funciona em 3 passos: o Assistente calcula a capacidade comercial mais
-      próxima a partir da área, do sol, das pessoas e dos equipamentos do
-      ambiente. É uma estimativa determinística, com a conta aberta.
-    </p>
+    <div class="home-assistente-cabecalho">
+      <div>
+        <h2>Descubra quantos BTUs você precisa</h2>
+        <p class="intro">
+          Como funciona em 3 passos: o Assistente calcula a capacidade comercial
+          mais próxima a partir da área, do sol, das pessoas e dos equipamentos
+          do ambiente. É uma estimativa determinística, com a conta aberta.
+        </p>
+      </div>
+      <p class="home-assistente-acao">
+        <Botao href="/assistente/" icone="seta-direita">Usar o Assistente</Botao>
+      </p>
+    </div>
     <ol class="home-passos">
       {
-        PASSOS_ASSISTENTE.map((passo) => (
+        PASSOS_ASSISTENTE.map((passo, indice) => (
           <li>
+            <span class="home-passo-numero">
+              {String(indice + 1).padStart(2, "0")}
+            </span>
             <strong>{passo.titulo}</strong>
-            <span>{passo.texto}</span>
+            <span class="home-passo-texto">{passo.texto}</span>
           </li>
         ))
       }
     </ol>
-    <p>
-      <a class="botao" href="/assistente/">Usar o Assistente</a>
-    </p>
   </section>
 
   <section class="home-faq">
     <h2>Perguntas frequentes</h2>
-    {
-      PERGUNTAS_FREQUENTES.map(({ pergunta, resposta }) => (
-        <div class="home-pergunta">
-          <h3>{pergunta}</h3>
-          <p>{resposta}</p>
-        </div>
-      ))
-    }
+    <div class="home-faq-lista">
+      {
+        PERGUNTAS_FREQUENTES.map(({ pergunta, resposta }) => (
+          <details class="home-pergunta">
+            <summary>
+              <h3>{pergunta}</h3>
+            </summary>
+            <p>{resposta}</p>
+          </details>
+        ))
+      }
+    </div>
   </section>
 
   <section class="home-metodologia">
@@ -213,6 +236,18 @@ const jsonLd: Record<string, unknown>[] = [
       por heurística de mercado: não é um Valor oficial nem um cálculo de carga
       térmica. Para ambientes complexos ou acima de 60.000 BTU/h, procure uma
       avaliação técnica.
+    </p>
+    <p class="home-fontes">
+      Fontes · exportação oficial de produtos do INMETRO · Portaria INMETRO
+      269/2021 · ciclo de referência de 2.080 h/ano
+      {
+        versao ? (
+          <>
+            · Versão da tabela {versao.hash.slice(0, 12)} (obtida em{" "}
+            {versao.obtidoEm})
+          </>
+        ) : null
+      }
     </p>
   </section>
 

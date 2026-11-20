@@ -469,23 +469,43 @@ function conferirHomeHub(html: string): void {
   expect(versao).toBeDefined();
   expect(html).toContain(`Versão da tabela: ${versao}`);
 
-  // 4. Capacidades populares ligadas à tabela filtrada (9.000 a 36.000).
+  // 4. Capacidades populares ligadas à tabela filtrada (9.000 a 36.000), cada
+  //    uma com a contagem de Aparelhos daquela capacidade (ticket 71).
+  const itens = JSON.parse(
+    readFileSync(join(distDir, "consulta.json"), "utf8"),
+  ) as Array<{ marcaCatalogo: string; capacidadesBtu: number[] }>;
   expect(html).toContain("Capacidades populares");
   expect(curadoria.btus.length).toBeGreaterThan(0);
   for (const btu of curadoria.btus) {
     expect(html).toContain(`href="/aparelhos/?btu=${btu}"`);
     expect(html).toContain(`${numero.format(btu)} BTU/h`);
+    const contagem = itens.filter((item) =>
+      item.capacidadesBtu.includes(btu),
+    ).length;
+    expect(html).toContain(
+      `<span class="home-populares-contagem">${numero.format(contagem)} aparelhos</span>`,
+    );
   }
 
-  // 5. Marcas populares (as curadas em filtros.json) ligadas à tabela.
+  // 5. Marcas populares (as curadas em filtros.json) ligadas à tabela, também
+  //    com a contagem de Aparelhos da Marca de catálogo.
   expect(html).toContain("Marcas populares");
   expect(curadoria.marcas.length).toBeGreaterThan(0);
   for (const marca of curadoria.marcas) {
     expect(html).toContain(`href="/aparelhos/?marca=${marca.valor}"`);
-    expect(html).toContain(`>${marca.rotulo}</a>`);
+    expect(html).toContain(`>${marca.rotulo}</span>`);
+    const contagem = itens.filter(
+      (item) => item.marcaCatalogo === marca.valor,
+    ).length;
+    expect(html).toContain(
+      `<span class="home-populares-contagem">${numero.format(contagem)} aparelhos</span>`,
+    );
   }
+  // Os populares são listas de links com hairline, não chips pill.
+  expect(html).not.toContain("home-links");
 
-  // 7. Chamada do Assistente com "como funciona em 3 passos".
+  // 7. Chamada do Assistente com "como funciona em 3 passos", os passos
+  //    numerados sobre a régua e uma única ação.
   expect(html).toContain("Descubra quantos BTUs você precisa");
   expect(html.match(/class="home-passos"/g) ?? []).toHaveLength(1);
   for (const passo of [
@@ -494,6 +514,11 @@ function conferirHomeHub(html: string): void {
     "Compare antes de comprar",
   ]) {
     expect(html).toContain(passo);
+  }
+  for (const numeroDoPasso of ["01", "02", "03"]) {
+    expect(html).toContain(
+      `<span class="home-passo-numero">${numeroDoPasso}</span>`,
+    );
   }
 
   // 8. FAQ visível e o mesmo conteúdo no JSON-LD FAQPage.
@@ -508,6 +533,13 @@ function conferirHomeHub(html: string): void {
   }>;
   expect(entidades.length).toBeGreaterThanOrEqual(9);
   expect(entidades.length).toBeLessThanOrEqual(10);
+  // O FAQ visível é `<details>` nativo, fechado por padrão, com a pergunta no
+  // `summary` — a mesma lista que alimenta o JSON-LD (ticket 71).
+  expect(html.match(/<details class="home-pergunta">/g) ?? []).toHaveLength(
+    entidades.length,
+  );
+  expect(html.match(/<summary>/g) ?? []).toHaveLength(entidades.length);
+  expect(html).not.toContain('<details class="home-pergunta" open');
   const nomes = entidades.map((entidade) => entidade.name);
   expect(nomes).toContain("O que é BTU/h?");
   expect(nomes).toContain("Qual tensão escolher: 127 V ou 220 V?");

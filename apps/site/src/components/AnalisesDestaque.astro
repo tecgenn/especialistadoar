@@ -1,21 +1,38 @@
 ---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
 import OfertaFaixa from "./OfertaFaixa.astro";
 
 /**
  * Bloco estático de Análises em destaque na home. As Análises e as Ofertas de
  * cada uma chegam já resolvidas do build — o cliente não baixa `analises.json`
- * nem `ofertas.json` para renderizá-lo. Sem Análise, não renderiza nada: a home
- * fica exatamente como antes.
+ * nem `ofertas.json` para renderizá-lo. Sem Análise, não renderiza nada.
  *
- * O CTA usa o mesmo `OfertaFaixa` da ficha e da Análise; sem Oferta (ou com o
- * Aparelho Ausente), nada dele aparece.
+ * Cada destaque é a Análise real: a imagem de abertura (a mesma foto do artigo,
+ * apontada pelo frontmatter e resolvida no build), a data em mono, o título, o
+ * resumo e o CTA de Oferta quando houver (ticket 71). Sem imagem declarada, o
+ * destaque fica só com o texto — nunca um quadro vazio.
  */
 interface Props {
   destaques: DestaqueAnalise[];
 }
 
 const { destaques } = Astro.props;
+
+// As imagens de abertura vivem em `src/assets`; o frontmatter aponta o caminho
+// relativo a essa pasta e o glob resolve o arquivo (e as larguras) no build.
+const imagens = import.meta.glob<ImageMetadata>(
+  "../assets/**/*.{avif,jpeg,jpg,png,webp}",
+  { eager: true, import: "default" },
+);
+
+function imagemDe(caminho: string | undefined): ImageMetadata | undefined {
+  if (caminho === undefined) {
+    return undefined;
+  }
+  return imagens[`../assets/${caminho}`];
+}
 ---
 
 {
@@ -27,19 +44,38 @@ const { destaques } = Astro.props;
         dados oficiais do INMETRO na ficha de cada Aparelho.
       </p>
       <ul class="analises-destaque-lista">
-        {destaques.map(({ analise, ofertas }) => (
-          <li>
-            <h3>
-              <a href={analise.url}>{analise.titulo}</a>
-            </h3>
-            <p class="intro">{analise.descricao}</p>
-            <OfertaFaixa
-              ofertas={ofertas}
-              titulo="Onde comprar"
-              nivelTitulo={4}
-            />
-          </li>
-        ))}
+        {destaques.map(({ analise, ofertas }) => {
+          const imagem = imagemDe(analise.imagem);
+          return (
+            <li>
+              {imagem ? (
+                <div class="analises-destaque-imagem">
+                  <Image
+                    src={imagem}
+                    alt={analise.imagemAlt ?? ""}
+                    widths={[480, 720, 1080]}
+                    sizes="(min-width: 64rem) 30rem, 100vw"
+                    loading="lazy"
+                  />
+                </div>
+              ) : null}
+              <div class="analises-destaque-texto">
+                <p class="analises-destaque-data">
+                  <time datetime={analise.data}>{analise.data}</time>
+                </p>
+                <h3>
+                  <a href={analise.url}>{analise.titulo}</a>
+                </h3>
+                <p class="intro">{analise.descricao}</p>
+                <OfertaFaixa
+                  ofertas={ofertas}
+                  titulo="Onde comprar"
+                  nivelTitulo={4}
+                />
+              </div>
+            </li>
+          );
+        })}
       </ul>
       <p>
         <a href="/analises/">Todas as análises</a>

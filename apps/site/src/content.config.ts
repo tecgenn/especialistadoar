@@ -33,6 +33,9 @@ const analises = defineCollection({
       .transform((valor) =>
         valor instanceof Date ? valor.toISOString().slice(0, 10) : valor,
       ),
+    // Imagem de abertura no destaque da home, relativa a `src/assets`.
+    imagem: z.string().optional(),
+    imagemAlt: z.string().optional(),
   }),
 });
 

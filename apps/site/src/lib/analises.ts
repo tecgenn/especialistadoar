@@ -22,6 +22,15 @@ export interface AnaliseFrontmatter {
   descricao: string;
   /** A data de publicação (`YYYY-MM-DD`). */
   data: string;
+  /**
+   * A imagem de abertura, com caminho relativo a `src/assets` (ex.:
+   * `analises/<pasta>/abertura.webp`) — a mesma foto que abre o artigo. A home
+   * usa essa imagem real no destaque (ticket 71). Opcional: sem ela, o destaque
+   * fica só com título, data e texto.
+   */
+  imagem?: string;
+  /** O texto alternativo da imagem de abertura; obrigatório quando há imagem. */
+  imagemAlt?: string;
 }
 
 export interface Analise extends AnaliseFrontmatter {
@@ -97,6 +106,14 @@ export function validarAnalises(analises: readonly AnaliseFrontmatter[]): void {
     if (!FORMATO_DATA.test(analise.data)) {
       throw new Error(
         `${onde}: \`data\` precisa seguir o formato YYYY-MM-DD: ${analise.data}`,
+      );
+    }
+    if (analise.imagem !== undefined && campoEmBranco(analise.imagem)) {
+      throw new Error(`${onde}: \`imagem\` não pode ficar em branco.`);
+    }
+    if (analise.imagem !== undefined && campoEmBranco(analise.imagemAlt)) {
+      throw new Error(
+        `${onde}: \`imagemAlt\` é obrigatório quando há \`imagem\`.`,
       );
     }
     if (slugs.has(analise.slug)) {

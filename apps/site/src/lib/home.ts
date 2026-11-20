@@ -159,6 +159,40 @@ export function capacidadesPopulares(
   return curadoria.btus.filter((capacidade) => presentes.has(capacidade));
 }
 
+/**
+ * Aparelhos por capacidade: cada Aparelho conta uma vez em cada capacidade que
+ * declara, mesmo quando tem mais de uma Variante no mesmo valor. Alimenta a
+ * contagem das capacidades populares (ticket 71).
+ */
+export function contagensPorCapacidade(
+  dataset: readonly ItemConsulta[],
+): Map<number, number> {
+  const contagens = new Map<number, number>();
+  for (const item of dataset) {
+    for (const capacidade of new Set(item.capacidadesBtu)) {
+      contagens.set(capacidade, (contagens.get(capacidade) ?? 0) + 1);
+    }
+  }
+  return contagens;
+}
+
+/** Aparelhos por Marca de catálogo (ADR-0016), para a contagem das marcas. */
+export function contagensPorMarca(
+  dataset: readonly ItemConsulta[],
+): Map<string, number> {
+  const contagens = new Map<string, number>();
+  for (const item of dataset) {
+    if (item.marcaCatalogo === "") {
+      continue;
+    }
+    contagens.set(
+      item.marcaCatalogo,
+      (contagens.get(item.marcaCatalogo) ?? 0) + 1,
+    );
+  }
+  return contagens;
+}
+
 /** As marcas populares que existem na base, na ordem curada. */
 export function marcasPopulares(
   dataset: readonly ItemConsulta[],

@@ -122,6 +122,21 @@ describe("validarAnalises", () => {
     );
   });
 
+  it("recusa imagem em branco e imagem sem texto alternativo", () => {
+    expect(() => validarAnalises([analise({ imagem: " " })])).toThrow(/imagem/);
+    expect(() =>
+      validarAnalises([analise({ imagem: "analises/modelo/abertura.webp" })]),
+    ).toThrow(/imagemAlt/);
+    expect(() =>
+      validarAnalises([
+        analise({
+          imagem: "analises/modelo/abertura.webp",
+          imagemAlt: "Unidade interna do split, na cor branca",
+        }),
+      ]),
+    ).not.toThrow();
+  });
+
   it("recusa slug repetido", () => {
     expect(() =>
       validarAnalises([analise(), analise({ aparelhoId: "ap-bbbbbbbbbbbb" })]),
