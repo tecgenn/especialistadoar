@@ -30,6 +30,8 @@
 
 /* --- Botão -------------------------------------------------------------
    O mesmo par de tamanhos para as três variantes; a diferença é a superfície.
+   O primário (e o `.botao` sem variante) usa a família azul-frio do ticket
+   92 em repouso, hover e ativo — a tinta fica só para superfícies escuras.
    Nenhuma sombra, nenhum raio acima de 2 px, nenhum gradiente.              */
 
 .botao {
@@ -41,7 +43,7 @@
   padding: 10px 20px;
   border: 1px solid transparent;
   border-radius: var(--raio-xs);
-  background: var(--tinta);
+  background: var(--azul-frio);
   color: var(--giz);
   font-family: var(--fonte-interface);
   font-size: var(--texto-ui);
@@ -57,7 +59,7 @@
 }
 
 .botao-primario {
-  background: var(--tinta);
+  background: var(--azul-frio);
   color: var(--giz);
 }
 
@@ -94,7 +96,7 @@
 }
 
 .botao:active {
-  background: var(--petroleo-profundo);
+  background: var(--azul-frio-ativo);
 }
 
 .botao-secundario:active {
@@ -124,7 +126,7 @@
 
 .botao:disabled:hover,
 .botao-desabilitado:hover {
-  background: var(--tinta);
+  background: var(--azul-frio);
 }
 
 .botao-secundario:disabled:hover {

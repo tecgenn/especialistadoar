@@ -30,6 +30,12 @@ Com **#65**, a fase está fechada: o **ADR-0022** registra a calculadora de cust
 
 ## Completed
 
+### Correção — botão primário herda o azul-frio (2026-11-20)
+
+- **Changed:** `apps/site/src/styles/primitivos.css` (o `.botao` base e o `.botao-primario` deixam de fixar `--tinta` e passam a `--azul-frio`; `.botao:active` troca `--petroleo-profundo` legado por `--azul-frio-ativo`; o hover desabilitado acompanha a família).
+- **What works:** o primário agora cumpre o contrato do `DESIGN.md` e do #92 em repouso, hover e ativo — em vez de repousar em tinta quase preta e saltar para azul no hover. Afeta a CTA da home, o "Comparar" do dock da tabela e a chamada do Assistente, que usam o mesmo primitivo. Giz sobre `#0E6B8A` fica em ~5,9:1, e giz sobre o hover `#1579A0` em ~4,9:1. 755/755 testes, `pnpm typecheck`, `pnpm lint` (0 erros, 23 warnings) e `pnpm build:site` 2.236 páginas; nenhuma mudança em `data/build` ou `reports`.
+- **Ticket:** #92 (correção de desvio do `92-paleta-azul-frio-climatizacao`)
+
 ### 70 — Home: hero e a régua de capacidade (2026-11-20)
 
 - **Changed:** novo `apps/site/src/lib/regua-capacidade.ts` (`FaixaDaRegua`, `linkDaFaixa`, `faixasDaRegua` — contagens derivadas do `consulta.json`, proporção para a barra e `/aparelhos/?btuMin=&btuMax=`); `apps/site/src/lib/faixas-capacidade.ts` (`rotuloDaFaixaCurto`, com `rotuloDaFaixa` compondo a unidade); novo `apps/site/src/components/ReguaCapacidade.astro` (nav sem hidratação, seis links, ticks, rótulos com `<wbr>`, nota da soma); `apps/site/src/pages/index.astro` (fita `BASE INMETRO · VERSÃO · OBTIDA EM`, H1 display, lead em serifa, régua, `Botao` primário "Explorar o catálogo" e secundário "Dimensionar meu ambiente", cobertura com hairline e números em mono); `apps/site/src/styles/global.css` (bloco do topo da home e da régua; saíram `.home-cartoes`/`.home-cartao*`; entrada dos ticks em 40 ms e barra do celular, ambas sob `prefers-reduced-motion: no-preference`); novos `apps/site/test/regua-capacidade.test.ts` (7 puros) e `conferirReguaDaHome` em `apps/site/test/analises-build.test.ts` (contagens recalculadas da base servida, seis links, nota da soma, duas ações); `.scratch/especialista-do-ar/issues/70-home-hero-regua-capacidade.md` (Status `done`), `docs/agents/project-state.md`.
