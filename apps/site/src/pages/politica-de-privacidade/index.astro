@@ -10,7 +10,12 @@ const pagina = PAGINAS_INSTITUCIONAIS.privacidade;
 const canonical = canonicalInstitucional(pagina, Astro.site);
 ---
 
-<Base titulo={pagina.titulo} descricao={pagina.descricao} canonical={canonical}>
+<Base
+  titulo={pagina.titulo}
+  descricao={pagina.descricao}
+  canonical={canonical}
+  largura="leitura"
+>
   <article class="pagina-institucional">
     <h1>Política de Privacidade</h1>
     <p class="intro">

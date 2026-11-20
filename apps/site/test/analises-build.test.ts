@@ -129,6 +129,77 @@ function jsonLdDaPagina(html: string): Record<string, unknown> {
   return primeiro as Record<string, unknown>;
 }
 
+type ItemDeNavegacao = "Aparelhos" | "Comparar" | "Assistente" | "Análises";
+
+/**
+ * Seam de build do shell global (ticket 67): a mesma moldura em todas as
+ * rotas — skip link primeiro, cabeçalho com o item ativo, largura declarada,
+ * rodapé em tinta e metadados sociais mínimos. Nenhuma imagem é inventada:
+ * `og:image` não existe nestas páginas.
+ */
+function conferirShell(
+  html: string,
+  esperado: {
+    ativo: ItemDeNavegacao | null;
+    largura: "shell" | "leitura" | "ampla";
+  },
+): void {
+  expect(html).toContain(`<body data-largura="${esperado.largura}">`);
+  expect(html).toContain(`class="shell principal-${esperado.largura}"`);
+
+  // Skip link: primeiro elemento focável do body, leva ao main.
+  const corpo = html.slice(html.indexOf("<body"));
+  const posicaoSkip = corpo.indexOf('class="skip-link"');
+  const posicaoHeader = corpo.indexOf("<header");
+  const posicaoMain = corpo.indexOf('<main id="conteudo"');
+  expect(posicaoSkip).toBeGreaterThan(-1);
+  expect(posicaoSkip).toBeLessThan(posicaoHeader);
+  expect(posicaoHeader).toBeLessThan(posicaoMain);
+  expect(corpo).toContain('href="#conteudo"');
+
+  // Header: marca, navegação e exatamente um item ativo.
+  expect(html).toContain('<header class="site-header">');
+  expect(html).toContain('<a class="marca" href="/">Especialista do Ar</a>');
+  const inicioNav = html.indexOf('<nav class="site-nav"');
+  const nav = html.slice(inicioNav, html.indexOf("</nav>", inicioNav));
+  const ativos = [
+    ...nav.matchAll(/aria-current="page"[^>]*>([^<]+)<\/a>/g),
+  ].map((achado) => achado[1]);
+  expect(ativos).toEqual(esperado.ativo === null ? [] : [esperado.ativo]);
+
+  // Rodapé em tinta com proveniência, institucionais e nota de afiliado.
+  const rodape = html.slice(html.indexOf('<footer class="site-footer"'));
+  expect(rodape).toContain('data-superficie="escura"');
+  expect(rodape).toContain("Versão da tabela");
+  expect(rodape).toContain("Alguns links deste site são de afiliado");
+  for (const pagina of Object.values(PAGINAS_INSTITUCIONAIS)) {
+    expect(rodape).toContain(`href="${pagina.href}"`);
+  }
+
+  // Metadados sociais mínimos, iguais ao title/description da página.
+  expect(html).toContain('<meta name="theme-color" content="#F2F5F1">');
+  expect(html).toContain('<meta property="og:type" content="website">');
+  expect(html).toContain(
+    '<meta property="og:site_name" content="Especialista do Ar">',
+  );
+  expect(html).toContain('<meta property="og:locale" content="pt_BR">');
+  expect(html).toContain('<meta name="twitter:card" content="summary">');
+  const titulo = html.match(/<title>([^<]*)<\/title>/)?.[1];
+  const ogTitulo = html.match(
+    /<meta property="og:title" content="([^"]*)">/,
+  )?.[1];
+  expect(ogTitulo).toBe(titulo);
+  const descricao = html.match(
+    /<meta name="description" content="([^"]*)">/,
+  )?.[1];
+  if (descricao !== undefined) {
+    expect(html).toContain(
+      `<meta property="og:description" content="${descricao}">`,
+    );
+  }
+  expect(html).not.toContain('property="og:image"');
+}
+
 /**
  * Seam de build das páginas institucionais (ticket 57): as três rotas saem no
  * `dist/`, cada uma com título/descrição/canonical próprios no layout de leitura,
@@ -147,8 +218,9 @@ function conferirPaginasInstitucionais(): void {
     expect(html).toContain(
       `<link rel="canonical" href="${site}${pagina.href}">`,
     );
-    expect(html).not.toContain('<body class="ampla">');
+    expect(html).toContain('<body data-largura="leitura">');
     expect(html).toContain("<h1>");
+    conferirShell(html, { ativo: null, largura: "leitura" });
   }
 
   const sitemap = readFileSync(join(distDir, "sitemap-0.xml"), "utf8");
@@ -537,6 +609,7 @@ describe("build com uma Análise de fixture", () => {
     buildarSite(fixtureBase, ofertasJson);
 
     const htmlValida = lerHtml("analises", valida.slug);
+    conferirShell(htmlValida, { ativo: "Análises", largura: "leitura" });
     expect(htmlValida).toContain(`<h1>${valida.titulo}</h1>`);
     expect(htmlValida).toContain("Corpo editorial da fixture");
     expect(htmlValida).toContain(`datetime="${valida.data}"`);
@@ -841,8 +914,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");
     expect(htmlHome).not.toContain('class="tabela-aparelhos"');
-    // A home (e as demais páginas de leitura) mantém o teto de 64 rem.
-    expect(htmlHome).not.toContain('<body class="ampla">');
+    // A home usa a largura de shell (ticket 67).
+    expect(htmlHome).toContain('<body data-largura="shell">');
+    conferirShell(htmlHome, { ativo: null, largura: "shell" });
     const jsonLdHome = jsonLdDaPagina(htmlHome);
     expect(jsonLdHome["@type"]).toBe("WebSite");
 
@@ -856,10 +930,12 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // interface, não uma página a indexar.
     const htmlComparar = lerHtml("comparar");
     expect(htmlComparar).toContain("<h1>Comparar aparelhos</h1>");
+    const inicioMenu = htmlComparar.indexOf('<nav class="site-nav"');
     const menu = htmlComparar.slice(
-      htmlComparar.indexOf("<nav>"),
-      htmlComparar.indexOf("</nav>"),
+      inicioMenu,
+      htmlComparar.indexOf("</nav>", inicioMenu),
     );
+    conferirShell(htmlComparar, { ativo: "Comparar", largura: "shell" });
     expect(menu.indexOf(">Aparelhos</a>")).toBeLessThan(
       menu.indexOf(">Comparar</a>"),
     );
@@ -874,6 +950,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // JSON-LD de aplicação. A ilha renderiza no servidor antes de hidratar: a
     // primeira pergunta e o progresso já vêm no HTML, sem depender de JS.
     const htmlAssistente = lerHtml("assistente");
+    conferirShell(htmlAssistente, { ativo: "Assistente", largura: "shell" });
     expect(htmlAssistente).toContain(
       "<title>Calculadora de BTUs: quantos BTUs preciso? — Especialista do Ar</title>",
     );
@@ -933,8 +1010,10 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlTabela).toContain(
       "<title>Aparelhos de ar-condicionado — Especialista do Ar</title>",
     );
-    // A página de Aparelhos usa o layout amplo; as demais páginas mantêm o teto.
-    expect(htmlTabela).toContain('<body class="ampla">');
+    // A página de Aparelhos usa a largura ampla (ticket 67); as demais páginas
+    // usam shell ou leitura.
+    expect(htmlTabela).toContain('<body data-largura="ampla">');
+    conferirShell(htmlTabela, { ativo: "Aparelhos", largura: "ampla" });
     expect(htmlTabela).toContain(
       'rel="canonical" href="https://especialista-do-ar.pages.dev/aparelhos/"',
     );
@@ -972,6 +1051,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     );
     expect(gree).toBeDefined();
     const htmlGree = lerHtml("aparelhos", gree?.id as string);
+    conferirShell(htmlGree, { ativo: "Aparelhos", largura: "shell" });
     expect(htmlGree).toContain("<h2>Resumo</h2>");
     expect(htmlGree).toContain("7.500 BTU/h (2.197 W)");
     expect(htmlGree).toContain("2,97");
