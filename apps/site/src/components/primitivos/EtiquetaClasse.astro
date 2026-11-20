@@ -1,0 +1,29 @@
+---
+import { etiquetaDaClasse } from "../../lib/primitivos.ts";
+
+/**
+ * Etiqueta de Classe energética (ticket 68): a letra em mono, a cor da Classe
+ * e o fundo tonal a 10%. As Variantes podem divergir — aí a etiqueta mostra a
+ * faixa (`A – C`), usa o tom da pior Classe e explica em texto o que a faixa
+ * quer dizer, porque cor e forma sozinhas não carregam o dado.
+ */
+interface Props {
+  /** As Classes das Variantes; a ordem e as repetições não importam. */
+  classes: readonly string[];
+}
+
+const etiqueta = etiquetaDaClasse(Astro.props.classes);
+---
+
+{
+  etiqueta ? (
+    <span
+      class="etiqueta-classe"
+      data-classe={etiqueta.pior}
+      title={etiqueta.explicacao}
+    >
+      <span aria-hidden="true">{etiqueta.texto}</span>
+      <span class="apenas-leitor">{etiqueta.explicacao}</span>
+    </span>
+  ) : null
+}

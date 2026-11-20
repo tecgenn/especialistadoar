@@ -1,0 +1,42 @@
+---
+/**
+ * Trilha de navegação (ticket 68): `nav` com `aria-label`, lista ordenada e o
+ * último item como página atual (`aria-current="page"`). O separador é só
+ * visual (`li + li::before`), então nenhum leitor de tela anuncia barras.
+ */
+export interface ItemDaTrilha {
+  rotulo: string;
+  /** O último item nunca é link: é a página em que o visitante está. */
+  href?: string;
+}
+
+interface Props {
+  itens: ItemDaTrilha[];
+  /** Nome do landmark; “Trilha de navegação” por padrão. */
+  rotulo?: string;
+  class?: string;
+}
+
+const { itens, rotulo = "Trilha de navegação", class: classe } = Astro.props;
+---
+
+<nav class:list={["trilha", classe]} aria-label={rotulo}>
+  <ol>
+    {
+      itens.map((item, indice) => {
+        const ultimo = indice === itens.length - 1;
+        return (
+          <li>
+            {item.href && !ultimo ? (
+              <a href={item.href}>{item.rotulo}</a>
+            ) : (
+              <span aria-current={ultimo ? "page" : undefined}>
+                {item.rotulo}
+              </span>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>

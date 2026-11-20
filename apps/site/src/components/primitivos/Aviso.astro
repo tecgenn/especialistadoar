@@ -1,0 +1,30 @@
+---
+import Icone from "./Icone.astro";
+
+/**
+ * Aviso de estimativa e de transparência (ticket 68): borda esquerda de 2 px,
+ * rótulo mono opcional e o texto em grotesca pequena. `role="note"` para ser
+ * encontrado, sem virar mais um landmark de página.
+ */
+interface Props {
+  /** Rótulo curto em mono: “Estimativa”, “Transparência”. */
+  rotulo?: string;
+  /** Tom do fio: âmbar (padrão) ou frio (informativo). */
+  tom?: "sinal" | "frio";
+  class?: string;
+}
+
+const { rotulo, tom = "sinal", class: classe } = Astro.props;
+---
+
+<div class:list={["aviso", `aviso-${tom}`, classe]} role="note">
+  {
+    rotulo ? (
+      <p class="aviso-rotulo">
+        <Icone nome="info" tamanho={16} />
+        {rotulo}
+      </p>
+    ) : null
+  }
+  <div class="aviso-texto"><slot /></div>
+</div>

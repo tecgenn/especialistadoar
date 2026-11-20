@@ -1,0 +1,21 @@
+---
+/**
+ * Estado vazio (ticket 68): título em grotesca, uma frase em serifa e a ação
+ * no slot — sem ilustração. Vale para o catálogo sem resultado, a comparação
+ * sem modelos e a calculadora sem consumo declarado.
+ */
+interface Props {
+  titulo: string;
+  frase: string;
+  class?: string;
+}
+
+const { titulo, frase, class: classe } = Astro.props;
+const temAcao = Astro.slots.has("default");
+---
+
+<div class:list={["estado-vazio", classe]}>
+  <p class="estado-vazio-titulo">{titulo}</p>
+  <p class="estado-vazio-frase">{frase}</p>
+  {temAcao ? <div class="estado-vazio-acao"><slot /></div> : null}
+</div>

@@ -1,6 +1,7 @@
 @import "./tokens.css";
 @import "./fontes.css";
 @import "./base.css";
+@import "./primitivos.css";
 
 /* ==========================================================================
    Shell global (ticket 67) — a mesma moldura calibrada em todas as rotas:
@@ -202,21 +203,6 @@ main.principal-leitura {
 
 .intro {
   color: var(--texto-suave);
-}
-
-.botao {
-  display: inline-block;
-  padding: 0.6rem 1rem;
-  border-radius: 0.375rem;
-  background: var(--primaria);
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.botao:hover {
-  background: var(--petroleo-profundo);
-  color: var(--giz);
 }
 
 /* Layout da consulta (tickets 50 e 67): sem barra lateral — busca, Pesquisa
