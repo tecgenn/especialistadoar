@@ -7,7 +7,7 @@ colors:
   petrol-deep: "#0B2C30"
   chalk: "#FDFDFB"
   paper: "#F8F8F7"
-  mineral: "#ECEDEB"
+  mineral: "#ECECEB"
   hairline: "#D5D8D5"
   hairline-dark: "#24454A"
   graphite: "#4B5D5F"
@@ -32,6 +32,12 @@ colors:
   classe-e: "#9F4529"
   classe-f: "#8E2F35"
 typography:
+  display-home:
+    fontFamily: "Schibsted Grotesk Variable, system-ui, sans-serif"
+    fontSize: "clamp(2.75rem, 6.4vw, 5.25rem)"
+    fontWeight: 500
+    lineHeight: 0.98
+    letterSpacing: "-0.03em"
   display:
     fontFamily: "Schibsted Grotesk Variable, system-ui, sans-serif"
     fontSize: "clamp(2.75rem, 5.2vw, 4.5rem)"
@@ -92,22 +98,22 @@ spacing:
   "11": "128px"
 components:
   button-primary:
-    backgroundColor: "{colors.ink}"
+    backgroundColor: "{colors.blue-cold}"
     textColor: "{colors.chalk}"
     rounded: "{rounded.xs}"
-    padding: "12px 20px"
+    padding: "10px 20px"
     height: "44px"
   button-primary-hover:
-    backgroundColor: "{colors.petrol}"
+    backgroundColor: "{colors.blue-cold-hover}"
     textColor: "{colors.chalk}"
     rounded: "{rounded.xs}"
-    padding: "12px 20px"
+    padding: "10px 20px"
     height: "44px"
   button-secondary:
     backgroundColor: "{colors.chalk}"
     textColor: "{colors.ink}"
     rounded: "{rounded.xs}"
-    padding: "12px 20px"
+    padding: "10px 20px"
     height: "44px"
   input:
     backgroundColor: "{colors.chalk}"
@@ -155,7 +161,7 @@ A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca o
 - Um acento de sinal (âmbar) e uma escala térmica usada como dado.
 - Três vozes tipográficas: grotesca para operar, serifa para ler, mono para medir.
 - Quase nenhuma sombra; profundidade por tom e linha.
-- Cantos de 2–8 px; nenhum pill.
+- Cantos de 2–8 px nos componentes do sistema; nenhum pill. Etiquetas legadas em `global.css` ainda usam 999 px e estão inventariadas na spec da fase como dívida a limpar.
 - Movimento curto e funcional, sempre com alternativa sem movimento.
 
 **Modo:** somente claro nesta fase. Os tokens são organizados para permitir uma camada escura futura sem refazer componentes, mas não há seletor de tema nem `prefers-color-scheme` no escopo atual.
@@ -165,7 +171,7 @@ A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca o
 A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como cor de ação, petróleo profundo como legado, grafite e um único âmbar de sinal. As cores de Classe energética são as únicas cores saturadas permanentes, porque são dados.
 
 ### Primary (Azul-frio / Gelo — climatização)
-- **Azul-frio** (`#0E6B8A`): cor de ação primária do sistema — botões primários, foco global, links, chips ativos, badges de destaque. Azul puro, sem viés esverdeado, AA (4.5:1) sobre giz e papel. Texto branco sobre a base (7.4:1).
+- **Azul-frio** (`#0E6B8A`): cor de ação primária do sistema — botões primários, links, chips ativos, badges de destaque. Azul puro, sem viés esverdeado, AA (4.5:1) sobre giz e papel. Texto branco sobre a base (7.4:1). O contorno de foco é âmbar (ticket 93), não azul-frio.
 - **Azul-frio hover** (`#1579A0`): estado hover do botão primário e de controles que usam a cor primária. AA sobre giz/papel.
 - **Azul-frio ativo** (`#0B5A73`): estado pressed/active do botão primário.
 - **Azul-frio texto** (`#0E6B8A`): links e acentos textuais sobre superfícies claras (giz/papel).
@@ -173,12 +179,12 @@ A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como c
 - **Azul-frio escuro** (`#084D66`): fundo do rodapé e de faixas escuras de largura total; substitui o petróleo profundo como superfície escura primária.
 
 ### Petróleo (legado — dado histórico)
-- **Tinta petróleo** (`#0A1F22`): texto principal, cabeçalho da tabela. É o "preto" do sistema, com subtom verde-azulado.
+- **Tinta petróleo** (`#0A1F22`): texto principal. É o "preto" do sistema, com subtom verde-azulado; o cabeçalho da tabela usa grafite sobre papel.
 - **Petróleo** (`#123F45`): mantido no contrato como legado; não é mais hover de botão primário nem cor de ação.
 - **Petróleo profundo** (`#0B2C30`): mantido no contrato como legado; não é mais fundo de seções escuras nem dock.
 
 ### Secondary
-- **Âmbar de sinal** (`#E8A33D`): capacidade selecionada e o extremo "quente" da escala térmica. Sobre tinta tem 7,9:1; sobre papel é cor gráfica, nunca texto. **Não é mais a cor de foco global** — o foco usa azul-frio via `--primaria`.
+- **Âmbar de sinal** (`#E8A33D`): capacidade selecionada, o extremo "quente" da escala térmica e, desde o ticket 93, o contorno de foco de 2 px. Sobre tinta tem 7,9:1; sobre papel é cor gráfica, nunca texto. O foco antes usava azul-frio via `--primaria`; a decisão nova é âmbar via `--sinal`, a mesma cor do marcador de dado analisado.
 - **Âmbar de texto** (`#7A4A0F`): links e rótulos âmbar sobre papel (7,0:1). O âmbar claro não é usado como texto em fundo claro.
 
 ### Tertiary
@@ -187,7 +193,7 @@ A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como c
 ### Neutral
 - **Giz** (`#FDFDFB`): superfície de cartões, tabela, campos e páginas de leitura.
 - **Papel** (`#F8F8F7`): fundo da página, cabeçalho da tabela, chips inativos, blocos secundários. Branco quase puro e neutro, sem viés mineral esverdeado.
-- **Mineral** (`#ECEDEB`): faixas alternadas da tabela, preenchimento de barras e trilhas.
+- **Mineral** (`#ECECEB`): preenchimento de barras, trilha da régua no celular e fundo do botão secundário em estado pressed. A zebra da tabela é quase branca, não mineral.
 - **Hairline** (`#D5D8D5`): toda borda de 1 px sobre papel claro.
 - **Hairline escura** (`#24454A`): borda de 1 px sobre tinta ou petróleo.
 - **Grafite** (`#4B5D5F`): texto secundário sobre giz (6,8:1).
@@ -218,7 +224,7 @@ Nenhum componente inventa um nome alternativo para o mesmo valor.
 
 ### Regras de cor
 - Texto de corpo: tinta sobre giz/papel, giz sobre tinta. Nunca cinza claro sobre papel.
-- **Azul-frio** é a cor de ação e foco primária; âmbar sinaliza seleção/capacidade e calor na escala térmica.
+- **Azul-frio** é a cor de ação primária; âmbar sinaliza seleção/capacidade, calor na escala térmica e o contorno de foco de 2 px.
 - Âmbar e frio puros são cores gráficas; para texto, usar as variantes `-ink` / `-texto`.
 - Vermelho só para erro, Classe E/F e consumo implausível. Nunca para "promoção".
 - Nenhum gradiente de fundo. A escala térmica é o único gradiente permitido, e é um dado.
@@ -238,6 +244,7 @@ Todas são self-hosted via Fontsource, subconjunto `latin` apenas, e apenas um a
 ### Escala
 | Papel | Fonte | Tamanho | Peso | Entrelinha | Tracking |
 | --- | --- | --- | --- | --- | --- |
+| Display da home | Grotesca | `clamp(2.75rem, 6.4vw, 5.25rem)` (abaixo de 22 rem desce para o headline) | 500 | 0.98 | -0.03em |
 | Display | Grotesca | `clamp(2.75rem, 5.2vw, 4.5rem)` | 500 | 0.98 | -0.03em |
 | Headline | Grotesca | `clamp(2rem, 3.2vw, 2.75rem)` | 500 | 1.05 | -0.02em |
 | Título de seção | Grotesca | `1.5rem` | 600 | 1.15 | -0.01em |
@@ -288,7 +295,7 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 
 ### Tabela
 - Cabeçalho em mono maiúsculo, fundo papel, hairline inferior de 1 px.
-- Linhas de 52 px no desktop e 48 px no celular. Zebra mineral a 50% quando houver mais de 8 colunas.
+- Linhas de 52 px no desktop e 48 px no celular. Zebra quase branca (55% papel + 45% giz) em todas as linhas pares.
 - Números alinhados à direita, texto à esquerda, Classe centrada. Nunca centralizar texto corrido.
 - A primeira coluna é o checkbox de comparação, com alvo de 44 px; a coluna Modelo é a única com link.
 - **A tabela continua tabela em todas as larguras.** Abaixo de 900 px, um contêiner de rolagem horizontal mantém a estrutura, com as colunas de seleção e Modelo fixas à esquerda e um aviso textual "Deslize para ver as colunas". O contêiner é focável e rolável por teclado. Nenhuma linha vira cartão.
@@ -309,7 +316,7 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 
 ### Assistente
 - Uma pergunta por tela, com trilho de progresso de 5 segmentos e o número da etapa em mono.
-- Cartões de opção grandes (alvo mínimo de 56 px), com ícone de linha e descrição curta; seleção por borda de 2 px e fundo de 6% de tinta.
+- Cartões de opção grandes (alvo mínimo de 56 px), com ícone de linha e descrição curta; borda de 1 px sobre fundo giz, seleção por contorno âmbar de 2 px.
 - O resultado é uma leitura grande em mono, seguida dos fatores, das suposições e das orientações.
 
 ### Breakpoints
@@ -321,24 +328,24 @@ O sistema é quase plano. Profundidade vem de tom, hairline e sobreposição só
 
 - **Nível 0** — página em papel quase branco.
 - **Nível 1** — giz com hairline de 1 px: cartões, tabela, campos, painéis.
-- **Nível 2** — **azul-frio escuro** (`--azul-frio-escuro`): cabeçalho de tabela escuro, blocos de destaque, rodapé. O petróleo (`--petroleo-profundo`) permanece como legado mas não é usado em superfícies novas.
+- **Nível 2** — **azul-frio escuro** (`--azul-frio-escuro`): rodapé. Cabeçalhos de tabela são claros (papel, texto grafite). O petróleo (`--petroleo-profundo`) permanece como legado mas não é usado em superfícies novas.
 - **Nível 3** — sobreposição: somente o dock de seleção, o painel de filtros aberto no celular, menus e tooltips.
 
 Regras:
 - Nenhuma sombra em repouso. A única sombra permitida é a do nível 3: `0 1px 0 var(--linha), 0 16px 40px rgb(10 31 34 / 0.10)`.
 - Sem `backdrop-filter`, sem vidro, sem blur.
 - Nunca usar sombra para compensar falta de contraste; usar hairline e tom.
-- O foco é sempre visível: contorno de 2 px **azul-frio** (`var(--primaria)`) com `outline-offset: 2px` e, sobre tinta, contorno giz.
+- O foco é sempre visível: contorno de 2 px **âmbar** (`var(--sinal)`) com `outline-offset: 2px` (com exceções de offset em âncoras e controles específicos) e, sobre tinta, contorno giz.
 
 ## Shapes
 
 - Raio padrão: **2 px** para botões, campos, chips, etiquetas e células.
 - **4 px** para painéis e cartões.
 - **8 px** apenas para o dock de seleção, menus e a caixa de resultado do Assistente.
-- **Nenhum pill**. Nenhum raio maior que 8 px. Nenhum círculo, exceto o marcador de rádio/checkbox e ícones circulares de 32 px.
+- **Nenhum pill em componente novo**. Nenhum raio maior que 8 px. Nenhum círculo, exceto o marcador de rádio/checkbox e ícones circulares de 32 px. As 999 px legadas em `global.css` estão inventariadas na spec da fase.
 - Bordas sempre de 1 px; a única borda de 2 px é a seleção ativa e o foco.
 - Ícones de linha, 1,5 px de traço, 16/20/24 px, desenhados para a grade. Sem ícones preenchidos, coloridos ou ilustrativos.
-- A régua de capacidade é o elemento gráfico-assinatura: uma linha horizontal com ticks a cada faixa comercial, rótulos mono e a faixa ativa em âmbar. Ela é navegável e mostra a contagem real de Aparelhos.
+- A régua de capacidade é o elemento gráfico-assinatura: uma linha horizontal com ticks a cada faixa comercial, rótulos mono e a faixa ativa em âmbar. Ela é navegável e mostra a contagem real de Aparelhos. Na home ela é a única leitura de escala da primeira tela; não existe uma segunda versão decorativa do mesmo gráfico.
 
 ## Components
 
@@ -346,10 +353,10 @@ Regras:
 Faixa de 64/72 px, fundo giz, hairline inferior. Marca em grotesca 600, navegação em grotesca 500 com sublinhado âmbar de 2 px no item ativo. O link "Análises" só existe quando há Análise publicada. No celular, a navegação rola horizontalmente sem esconder itens.
 
 ### Rodapé
-Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas no desktop: proveniência e Versão da tabela; navegação institucional; nota de afiliado. No celular, empilha com a proveniência primeiro. A nota de afiliado é texto, não selo. Links e bordas usam a família azul-frio; o rodapé não lê mais "verde-petróleo".
+Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas no desktop: proveniência e Versão da tabela; navegação institucional; nota de afiliado. No celular, empilha com a proveniência primeiro. A nota de afiliado é texto, não selo. Os links são giz com sublinhado hairline-escura e hover âmbar; só o fundo vem da família azul-frio, e o rodapé não lê mais "verde-petróleo".
 
 ### Botão primário
-Fundo **azul-frio** (`--azul-frio`, `#0E6B8A`), texto giz, raio 2 px, altura 44 px, padding 12×20, grotesca 500. Hover: **azul-frio hover** (`--azul-frio-hover`, `#1579A0`). Active: **azul-frio ativo** (`--azul-frio-ativo`, `#0B5A73`) com deslocamento de 1 px. Disabled: 45% de opacidade. Ícone opcional à direita, 16 px. Nunca com sombra.
+Fundo **azul-frio** (`--azul-frio`, `#0E6B8A`), texto giz, raio 2 px, altura 44 px, padding 10×20, grotesca 500. Hover: **azul-frio hover** (`--azul-frio-hover`, `#1579A0`). Active: **azul-frio ativo** (`--azul-frio-ativo`, `#0B5A73`) com deslocamento de 1 px. Disabled: 45% de opacidade. Ícone opcional à direita, 16 px. Nunca com sombra.
 
 ### Botão secundário
 Fundo giz, texto tinta, borda de 1 px hairline, mesmo tamanho. Hover: fundo papel e borda grafite. É o padrão para ações não destrutivas fora do fluxo principal.
@@ -369,11 +376,17 @@ Letra A–F em mono 600, cor da Classe, fundo tonal a 10%, borda de 1 px na cor 
 ### Leitura de dado (readout)
 Rótulo mono maiúsculo, valor em mono 1,75–2,5 rem, unidade em mono 0,75 rem, legenda em grotesca pequena. Sem caixa; a hierarquia vem do tamanho e da hairline acima. É o componente que substitui o "card de estatística" genérico.
 
+### Hero
+Decisão do ticket 93, refeita depois da primeira entrega: o topo da home é tipográfico e funcional. A fita de calibração abre em largura total; o H1 em grotesca display — até 5,25 rem, acima do token, só aqui — ocupa a largura toda em duas linhas fixas no desktop e flui naturalmente no celular; abaixo dele vem o lead em serifa e, na sequência, o **simulador do ambiente**. Não existe painel lateral, escala decorativa nem linha animada: a régua de capacidade logo abaixo é a única leitura de escala da primeira tela, e a decisão sobre manter ou remover essa navegação independente pertence ao ticket 94. O marcador âmbar de 2 px acima do título continua sendo o mesmo sinal da linha analisada na tabela. Nada de conteúdo depende de Análise publicada.
+
+### Simulador do hero
+A promessa da home executada na primeira tela: a pessoa move a área (8–60 m²) e escolhe a incidência de sol; o motor puro do Assistente devolve a capacidade comercial, com a conta aberta (`20 m² × 750 BTU/h/m² = 15.000 → 18.000`) e o que a base tem naquela capacidade (`318 aparelhos de 18.000 BTU/h, 256 com Classe A`). O bloco é uma faixa de instrumento, não um card: hairline superior, rótulos em mono maiúsculo, leitura do resultado em mono 2,5 rem, chips de 32 px (44 px no celular) e o controle deslizante com trilho de 1 px e preenchimento de 2 px em azul-frio — sem gradiente, sem sombra. As duas ações são contextuais: a primária abre o recorte exato (`/aparelhos/?btu=`), a secundária o catálogo inteiro; o Assistente completo fica na nota de rodapé, que também declara a estimativa. O HTML já traz o estado padrão (20 m², sol à tarde, 18.000 BTU/h), então o bloco funciona sem JavaScript; a ilha só acrescenta a interação.
+
 ### Régua de capacidade
-Linha de 1 px com seis segmentos proporcionais às contagens reais; ticks verticais de 8 px; rótulos mono `ATÉ 9.000`, `9.001–12.000`, etc.; contagem em mono abaixo. Cada segmento é um link para o recorte correspondente. No hover/foco, o segmento ganha fundo âmbar a 12% e a contagem aparece; no celular, vira uma lista de seis linhas com barra de proporção. Como um Aparelho pode ter Variantes em mais de uma faixa, a soma das contagens pode passar do total: o rótulo fala em "aparelhos com capacidade na faixa", não em uma partição. É a assinatura da home e não se repete como decoração em outras páginas.
+Linha de 1 px com até seis segmentos proporcionais às contagens reais, apenas para faixas com Aparelhos; ticks verticais de 9 px; rótulos mono `ATÉ 9.000`, `9.001–12.000`, etc.; contagem em mono abaixo. Cada segmento é um link para o recorte correspondente. No hover/foco, o segmento ganha fundo âmbar a 12% e a contagem aparece; no celular, vira uma lista de seis linhas com barra de proporção. Como um Aparelho pode ter Variantes em mais de uma faixa, a soma das contagens pode passar do total: o rótulo fala em "aparelhos com capacidade na faixa", não em uma partição. É a assinatura da home e não se repete em outras rotas.
 
 ### Tabela de Aparelhos
-Cabeçalho mono, linhas hairline, zebra mineral, ordenação com setas de 8 px, linha analisada com marcador âmbar de 2 px à esquerda e selo "Análise" discreto. A célula Modelo tem o link e a segunda linha `Função · Tensão` em grotesca pequena e mudo. Checkbox de 20 px com alvo de 44 px. A tabela nunca vira cartões: em telas estreitas ela rola na horizontal dentro do próprio contêiner, com seleção e Modelo fixas à esquerda, cabeçalho sticky e o aviso "Deslize para ver as colunas".
+Cabeçalho mono claro, linhas hairline, zebra quase branca, ordenação com setas de 8 px, linha analisada com marcador âmbar de 2 px à esquerda e selo "Análise" discreto. A célula Modelo tem o link e a segunda linha `Função · Tensão` em grotesca pequena e mudo. Checkbox de 20 px com alvo de 44 px. A tabela nunca vira cartões: em telas estreitas ela rola na horizontal dentro do próprio contêiner, com seleção e Modelo fixas à esquerda, cabeçalho sticky e o aviso "Deslize para ver as colunas".
 
 ### Painel de filtros
 Duas faixas nomeadas — **Aparelho** e **Desempenho** —, cada uma com rótulo mono e hairline superior. Campos em largura total, chips quebrando linha. Rodapé com contagem do recorte e "Limpar filtros" (só quando fora do padrão). No desktop, painel embutido abaixo da barra; no celular, painel sobreposto de altura máxima com rolagem interna e botão "Aplicar" fixo.
@@ -406,10 +419,10 @@ Título em grotesca 1,25 rem, uma frase em serifa, uma ação primária. Sem ilu
 Página de leitura com o título "Fora da escala", uma frase curta, a régua de capacidade como caminho de volta e links para Aparelhos, Assistente e Comparar. Sem humor forçado.
 
 ### Movimento
-- Durações: 120 ms (hover/foco), 180 ms (abertura de painel), 240 ms (dock e resultado).
+- Durações: 120 ms (hover/foco e preenchimento do trilho), 180 ms (abertura de painel), 240 ms (dock, resultado e troca do número do simulador); na entrada do hero, 440 ms na fita, 700 ms por linha do título e 520 ms no lead e no simulador.
 - Curva: `cubic-bezier(0.2, 0, 0, 1)`.
-- Apenas uma entrada orquestrada: os ticks da régua de capacidade aparecem em sequência de 40 ms na home. Todo o resto é feedback imediato.
-- `prefers-reduced-motion: reduce` remove a entrada, as transições de altura e qualquer deslocamento; nada de conteúdo fica oculto.
+- Uma entrada no hero, em sequência: a fita chega em 440 ms; cada linha do título sobe do próprio mask em 700 ms, 80 ms uma da outra; o lead e o simulador entram com 12 px de subida em 520 ms quando a segunda linha está assentando (340 ms no celular, 400 ms no desktop). Os ticks da régua navegável continuam em sequência de 40 ms. No simulador, o preenchimento do trilho acompanha o controle em 120 ms e o número do resultado entra de novo em 240 ms a cada mudança. Todo o resto é feedback imediato.
+- O estado final já está no HTML: a animação só descreve a chegada sob `prefers-reduced-motion: no-preference`. Com `prefers-reduced-motion: reduce` ou `forced-colors: active`, nada se move e nada fica oculto.
 
 ## Do's and Don'ts
 
@@ -427,7 +440,7 @@ Página de leitura com o título "Fora da escala", uma frase curta, a régua de 
 ### Don't
 - Não devolva o papel mineral esverdeado nem escureça o chão da página; superfície escura é só rodapé, linha de seção da matriz e dock de seleção.
 - Não use gradiente de fundo, glassmorphism, blur, sombra difusa ou card flutuante.
-- Não use pill, raio maior que 8 px, ícone colorido ou ilustração decorativa.
+- Não use pill ou raio maior que 8 px em componente novo (as 999 px legadas em `global.css` estão inventariadas na spec da fase), ícone colorido ou ilustração decorativa.
 - Não use roxo, azul genérico de SaaS, verde "sustentável" de marca, laranja de urgência ou petróleo esverdeado como cor de ação.
 - Não use "melhor", "campeão", estrelas, nota, ranking ou selo de recomendação.
 - Não prometa preço, desconto, economia ou prazo.

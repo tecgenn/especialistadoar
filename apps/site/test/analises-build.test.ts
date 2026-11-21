@@ -443,17 +443,73 @@ function conferirHomeHub(html: string): void {
   const numero = new Intl.NumberFormat("pt-BR");
 
   // 1. Hero com H1 e subtítulo de ar-condicionado + INMETRO + comparação.
-  expect(html).toContain("<h1>Ar-condicionado com dados do INMETRO</h1>");
+  expect(html).toContain('id="home-titulo"');
+  expect(html).toContain("Ar-condicionado com");
   expect(html).toContain("capacidade, consumo e eficiência");
 
-  // 2. Duas ações: catálogo (primária) e Assistente (secundária).
-  expect(html).toContain('class="home-acoes"');
+  // 2. Simulador do hero: slider de área, chips de sol e o estado padrão já no
+  //    HTML (20 m² × 750 BTU/h/m² = 15.000 → 18.000 comercial), com o recorte
+  //    daquela capacidade e a contagem de Classe A.
+  const inicioSimulador = html.indexOf('class="hero-simulador"');
+  expect(inicioSimulador).toBeGreaterThan(-1);
+  const simulador = html.slice(
+    inicioSimulador,
+    html.indexOf("</section>", inicioSimulador),
+  );
+  expect(simulador).toContain('id="hero-area"');
+  expect(simulador).toContain('type="range"');
+  expect(simulador).toContain('href="/aparelhos/?btu=18000"');
+  expect(simulador).toContain('href="/assistente/"');
+  expect(simulador.match(/class="hero-sol-opcao"/g) ?? []).toHaveLength(4);
+  expect(simulador).toContain('aria-pressed="true">Tarde</button>');
+  // O texto como o leitor de tela o monta: o React separa nós com comentários.
+  const textoSimulador = textoDaPagina(simulador.replace(/<[^>]+>/g, " "));
+  expect(textoSimulador).toContain("20 m²");
+  expect(textoSimulador).toContain("18.000 BTU/h");
+  expect(textoSimulador).toContain("Explorar o catálogo");
+  expect(textoSimulador).toMatch(
+    /\d+ aparelhos de 18\.000 BTU\/h no catálogo, \d+ com Classe A\./,
+  );
   expect(html).toContain("botao-primario");
-  expect(html).toContain("Explorar o catálogo");
   expect(html).toContain("botao-secundario");
-  expect(html).toContain("Dimensionar meu ambiente");
-  expect(html).toContain('href="/aparelhos/"');
-  expect(html).toContain('href="/assistente/"');
+  expect(html).not.toContain("Calcular BTUs");
+  expect(html).not.toContain("Dimensionar meu ambiente");
+
+  // 2a. Hero do ticket 93, refeito: o H1 grande é o elemento gráfico da primeira
+  //     tela, em duas linhas com mask para a entrada; não há painel de escala
+  //     lateral nem linha decorativa animada, e a régua é a única leitura de
+  //     escala. O bloco existe até no build sem nenhuma Análise publicada.
+  expect(html).toContain('class="home-hero"');
+  expect(html).toContain('id="home-titulo"');
+  expect(html).toContain('class="home-titulo"');
+  expect(html).not.toContain('class="home-escala"');
+  expect(html).not.toContain("home-hero-texto");
+  const inicioTitulo = html.indexOf('class="home-titulo"');
+  const titulo = html.slice(
+    html.indexOf(">", inicioTitulo) + 1,
+    html.indexOf("</h1>", inicioTitulo),
+  );
+  expect(titulo.match(/class="home-titulo-linha"/g) ?? []).toHaveLength(2);
+  expect(textoDaPagina(titulo.replace(/<[^>]+>/g, " ")).trim()).toBe(
+    "Ar-condicionado com dados do INMETRO",
+  );
+
+  // A entrada é opt-in (só com no-preference) e o estado final já vem no CSS:
+  // título sobe do mask, leitura e ações entram depois. Foco âmbar de 2 px e
+  // alvo mínimo de 44 px nos botões.
+  const css = cssDaPagina(html);
+  expect(css).toMatch(/@keyframes\s+hero-linha-sobe/);
+  expect(css).toMatch(/@keyframes\s+hero-entra/);
+  expect(css).toMatch(/prefers-reduced-motion:\s*no-preference/);
+  expect(css).not.toMatch(/home-escala/);
+  expect(css).toMatch(/outline:\s*2px solid var\(--sinal\)/);
+  expect(css).not.toMatch(/outline:\s*2px solid var\(--primaria\)/);
+  expect(css).toMatch(/min-height:\s*44px/);
+  // As duas colunas do desktop começam em minmax(0, …): nenhuma palavra longa
+  // do título pode empurrar a página para fora da viewport em 1024/1440 px.
+  expect(css).toMatch(
+    /grid-template-columns:\s*minmax\(0,\s*7fr\)\s+minmax\(0,\s*5fr\)/,
+  );
 
   // 2b. Régua de capacidade: seis faixas, contagens do dataset e link para o
   //     recorte de cada faixa no catálogo.
@@ -521,9 +577,14 @@ function conferirHomeHub(html: string): void {
     );
   }
 
-  // 8. FAQ visível e o mesmo conteúdo no JSON-LD FAQPage.
+  // 8. FAQ visível e o mesmo conteúdo no JSON-LD FAQPage. WebSite e canonical
+  //    da home sobrevivem à reformulação visual do hero.
   expect(html).toContain("Perguntas frequentes");
+  expect(html).toContain(
+    '<link rel="canonical" href="https://especialista-do-ar.pages.dev/">',
+  );
   const blocos = jsonLdsDaPagina(html);
+  expect(blocos.map((bloco) => bloco["@type"])).toContain("WebSite");
   const faq = blocos.find((bloco) => bloco["@type"] === "FAQPage");
   expect(faq).toBeDefined();
   const entidades = (faq as Record<string, unknown>).mainEntity as Array<{

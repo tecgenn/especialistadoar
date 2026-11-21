@@ -309,7 +309,7 @@ main.principal-leitura {
 }
 
 .consulta .chip-filtro:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 2px;
 }
 
@@ -947,7 +947,7 @@ main.principal-leitura {
 }
 
 .consulta a.analisado-etiqueta:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 2px;
 }
 
@@ -1048,7 +1048,7 @@ main.principal-leitura {
 }
 
 .consulta .com-analise-item:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 2px;
 }
 
@@ -1190,7 +1190,7 @@ main.principal-leitura {
 
 .aparelho section[id]:target,
 .aparelho section[id]:focus {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 0.5rem;
   border-radius: 0.25rem;
 }
@@ -1833,7 +1833,7 @@ main.principal-leitura {
 }
 
 .consulta .mostrar-mais:focus {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 2px;
 }
 
@@ -1880,7 +1880,7 @@ main.principal-leitura {
 }
 
 .assistente-titulo:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 4px;
 }
 
@@ -1910,7 +1910,7 @@ main.principal-leitura {
 
 .assistente-cartao[aria-pressed="true"] {
   border-color: var(--primaria);
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 1px;
 }
 
@@ -2181,7 +2181,7 @@ main.principal-leitura {
 }
 
 .assistente-analisado:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 2px;
 }
 
@@ -2233,7 +2233,7 @@ main.principal-leitura {
 }
 
 .assistente button:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 2px;
 }
 
@@ -2258,11 +2258,13 @@ main.principal-leitura {
 /* Home como hub (ticket 46): hero, régua de capacidade, leitura de cobertura,
    capacidades e marcas populares, Análises em destaque, chamada do Assistente,
    FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente.
-   O topo (tickets 70 e 71) é o caminho de leitura do instrumento: fita de
-   calibração, H1 em display, lead em serifa, régua e duas ações. */
+   O topo foi refeito no ticket 93: o H1 é o elemento gráfico da primeira tela
+   — display grande em duas linhas, com entrada por mask — e a régua de
+   capacidade logo abaixo é a única leitura de escala. Não há painel lateral
+   nem linha decorativa animada. Nada depende de Análise para o hero existir. */
 .home-hero {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--esp-6);
   margin-bottom: var(--esp-8);
 }
@@ -2284,13 +2286,43 @@ main.principal-leitura {
   text-transform: uppercase;
 }
 
-.home-hero h1 {
-  max-width: 22ch;
+/* O H1 é a peça da primeira tela: a escala display abre acima do token só aqui,
+   porque é a única linha do site que precisa carregar a página inteira. No
+   celular o texto flui e quebra sozinho; no desktop ele vira duas linhas fixas,
+   cada uma com o próprio mask para a entrada. */
+.home-titulo {
   margin: 0;
-  font-size: var(--texto-display);
+  font-size: clamp(2.75rem, 6.4vw, 5.25rem);
   font-weight: var(--peso-medio);
   letter-spacing: var(--tracking-display);
   line-height: var(--entrelinha-display);
+  text-wrap: balance;
+}
+
+/* Abaixo do desktop as linhas são inline: a quebra é a natural do texto, sem
+   uma palavra órfã criada pelo split. */
+.home-titulo-linha,
+.home-titulo-texto {
+  display: inline;
+}
+
+/* Em 320 px a palavra mais longa do título precisa caber sem overflow: abaixo
+   de 22 rem o display desce um degrau em vez de criar rolagem horizontal. */
+@media (max-width: 22rem) {
+  .home-titulo {
+    font-size: var(--texto-headline);
+  }
+}
+
+/* O marcador âmbar de 2 px é o mesmo sinal usado para marcar dado analisado na
+   tabela. Aqui ele abre o título como um traço de instrumento — não um selo. */
+.home-titulo::before {
+  content: "";
+  display: block;
+  width: var(--esp-7);
+  height: 2px;
+  margin-bottom: var(--esp-5);
+  background: var(--sinal);
 }
 
 .home-hero-lead {
@@ -2301,11 +2333,313 @@ main.principal-leitura {
   line-height: var(--entrelinha-corpo);
 }
 
-.home-acoes {
+/* --- Simulador do hero (ticket 93) --------------------------------------
+   A promessa da home executada: área + sol viram capacidade comercial, com a
+   conta aberta e a contagem real de Aparelhos. É instrumento, não card: uma
+   hairline abre o bloco, rótulos em mono e a leitura grande em mono.        */
+.hero-simulador {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--esp-6);
+  padding-top: var(--esp-6);
+  border-top: 1px solid var(--linha);
+}
+
+.hero-simulador-controles {
+  display: grid;
+  gap: var(--esp-5);
+  min-width: 0;
+}
+
+.hero-simulador-rotulo,
+.hero-simulador-etiqueta,
+.hero-area-rotulo,
+.hero-area-valor,
+.hero-sol-rotulo,
+.hero-area-limites,
+.hero-simulador-conta,
+.hero-simulador-oferta,
+.hero-simulador-nota {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+}
+
+.hero-simulador-rotulo {
+  color: var(--tinta);
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.hero-simulador-etiqueta {
+  color: var(--mudo);
+  text-transform: uppercase;
+}
+
+.hero-area {
+  display: grid;
+  gap: var(--esp-2);
+}
+
+.hero-area-topo {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--esp-4);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-1) var(--esp-5);
+}
+
+.hero-area-rotulo,
+.hero-sol-rotulo {
+  color: var(--mudo);
+  text-transform: uppercase;
+}
+
+.hero-area-valor {
+  color: var(--tinta);
+  font-size: var(--texto-ui);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+}
+
+/* Trilho e preenchimento em duas camadas: o controle nativo fica transparente
+   por cima, então não há gradiente nem pseudo-trilho de navegador diferente. */
+.hero-area-trilho {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.hero-area-trilho::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--linha);
+}
+
+.hero-area-preenchimento {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--azul-frio);
+  transform: translateY(-50%);
+  transition: width 120ms var(--curva);
+}
+
+.hero-area-campo {
+  position: relative;
+  width: 100%;
+  height: 44px;
   margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hero-area-campo::-webkit-slider-runnable-track {
+  height: 44px;
+  background: transparent;
+}
+
+.hero-area-campo::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 13px;
+  border: 2px solid var(--azul-frio);
+  border-radius: 50%;
+  background: var(--giz);
+}
+
+.hero-area-campo::-moz-range-track {
+  height: 44px;
+  background: transparent;
+}
+
+.hero-area-campo::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--azul-frio);
+  border-radius: 50%;
+  background: var(--giz);
+}
+
+.hero-area-limites {
+  display: flex;
+  justify-content: space-between;
+  color: var(--mudo);
+  font-size: var(--texto-unidade);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+.hero-sol {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.hero-sol-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2);
+  margin-top: var(--esp-3);
+}
+
+.hero-sol-opcao {
+  min-height: 32px;
+  padding: 0 var(--esp-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  cursor: pointer;
+  transition:
+    background-color 120ms var(--curva),
+    border-color 120ms var(--curva);
+}
+
+.hero-sol-opcao:hover {
+  border-color: var(--grafite);
+}
+
+.hero-sol-opcao[aria-pressed="true"] {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--giz);
+}
+
+.hero-simulador-resultado {
+  display: grid;
+  align-content: start;
+  gap: var(--esp-3);
+  min-width: 0;
+}
+
+.hero-simulador-leitura {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--esp-2);
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-simulador-numero {
+  font-size: var(--texto-leitura);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* O número entra de novo a cada mudança: um passo de 12 px que acompanha o
+   controle, como um ponteiro que assenta. Desligado com movimento reduzido. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-simulador-numero {
+    animation: hero-entra 240ms var(--curva) both;
+  }
+}
+
+.hero-simulador-unidade {
+  color: var(--mudo);
+  font-size: var(--texto-unidade);
+  letter-spacing: var(--tracking-unidade);
+}
+
+.hero-simulador-conta {
+  max-width: 46ch;
+  color: var(--grafite);
+  letter-spacing: 0;
+  line-height: var(--entrelinha-pequena);
+}
+
+.hero-simulador-oferta {
+  color: var(--tinta);
+  letter-spacing: 0;
+  line-height: var(--entrelinha-pequena);
+}
+
+.hero-simulador-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  margin-top: var(--esp-2);
+}
+
+.hero-simulador-nota {
+  max-width: 46ch;
+  color: var(--mudo);
+  font-size: var(--texto-unidade);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* Entrada única do hero: o conteúdo já nasce no estado final no HTML; a
+   animação só descreve a chegada quando o visitante permite movimento. O
+   título sobe linha a linha do mask (700 ms cada, 80 ms de intervalo); a fita
+   vem antes e a leitura e as ações chegam enquanto a última linha assenta, com
+   12 px de subida. É a única sequência orquestrada da página. */
+@keyframes hero-entra {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes hero-linha-sobe {
+  from {
+    transform: translate3d(0, 110%, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-fita {
+    animation: hero-entra 440ms var(--curva) both;
+  }
+
+  /* Abaixo do desktop o título entra inteiro; aqui ele sobe linha a linha. */
+  .home-titulo {
+    animation: hero-entra 520ms var(--curva) 80ms both;
+  }
+
+  .home-hero-lead {
+    animation: hero-entra 520ms var(--curva) 260ms both;
+  }
+
+  .hero-simulador {
+    animation: hero-entra 520ms var(--curva) 340ms both;
+  }
+}
+
+/* Cores forçadas não têm opacidade intermediária confiável: mostra o final. */
+@media (forced-colors: active) {
+  .home-fita,
+  .home-titulo,
+  .home-titulo-texto,
+  .home-hero-lead,
+  .hero-simulador {
+    animation: none;
+  }
 }
 
 /* --- Régua de capacidade (ticket 70) -----------------------------------
@@ -2454,6 +2788,67 @@ main.principal-leitura {
   .regua-capacidade-link::before {
     animation: regua-tick-entra 200ms var(--curva) calc(var(--indice) * 40ms)
       both;
+  }
+}
+
+/* Desktop (ticket 93): o título ocupa a largura toda e a leitura divide a linha
+   com as ações, alinhadas à direita na base da coluna. As colunas usam
+   minmax(0, …) para nenhuma marca longa empurrar a página para fora da
+   viewport em 1024 px. */
+@media (min-width: 64rem) {
+  .home-hero {
+    gap: var(--esp-8);
+    margin-bottom: var(--esp-9);
+    padding-top: var(--esp-5);
+  }
+
+  /* Duas linhas fixas, cada uma num mask próprio: o título sobe de baixo do
+     recorte em vez de aparecer de uma vez. O padding/recuo negativo deixam
+     respiro para descendentes (g, q) sem abrir um vão entre as linhas. */
+  .home-titulo-linha {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.08em;
+    margin-block: -0.08em;
+  }
+
+  .home-titulo-texto {
+    display: block;
+  }
+
+  /* Controles à esquerda, leitura e ação à direita: a linha fecha no mesmo
+     eixo da régua abaixo. */
+  .hero-simulador {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: var(--esp-8);
+    row-gap: var(--esp-5);
+    align-items: start;
+  }
+}
+
+/* No desktop as duas linhas fixas sobem do próprio mask, 80 ms uma da outra;
+   a leitura e as ações chegam quando a segunda já está assentando. */
+@media (min-width: 64rem) {
+  @media (prefers-reduced-motion: no-preference) {
+    .home-titulo {
+      animation: none;
+    }
+
+    .home-titulo-texto {
+      animation: hero-linha-sobe 700ms var(--curva) both;
+    }
+
+    .home-titulo-linha:nth-child(2) .home-titulo-texto {
+      animation-delay: 80ms;
+    }
+
+    .home-hero-lead {
+      animation-delay: 340ms;
+    }
+
+    .hero-simulador {
+      animation-delay: 400ms;
+    }
   }
 }
 
@@ -2748,13 +3143,13 @@ main.principal-leitura {
     margin-bottom: var(--esp-7);
   }
 
-  .home-hero h1 {
-    max-width: none;
-  }
-
-  .home-acoes {
+  .hero-simulador-acoes {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .hero-sol-opcao {
+    min-height: 44px;
   }
 
   /* A régua vira lista: rótulo, contagem e barra de proporção na mesma linha,
@@ -2864,7 +3259,7 @@ main.principal-leitura {
 }
 
 .comparar-campo input:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--sinal);
   outline-offset: 1px;
 }
 
