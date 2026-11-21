@@ -167,10 +167,10 @@ function conferirShell(
   ].map((achado) => achado[1]);
   expect(ativos).toEqual(esperado.ativo === null ? [] : [esperado.ativo]);
 
-  // Rodapé em tinta com proveniência, institucionais e nota de afiliado.
-  const rodape = html.slice(html.indexOf('<footer class="site-footer"'));
+  // Rodapé em tinta com proveniência, institucionais e nota de afiliado. A
+  // Versão da tabela é publicada uma vez por página, aqui (ticket 95).
+  const { rodape } = conferirVersaoNoRodape(html);
   expect(rodape).toContain('data-superficie="escura"');
-  expect(rodape).toContain("Versão da tabela");
   expect(rodape).toContain("Alguns links deste site são de afiliado");
   for (const pagina of Object.values(PAGINAS_INSTITUCIONAIS)) {
     expect(rodape).toContain(`href="${pagina.href}"`);
@@ -339,22 +339,49 @@ function curadoriaPresente(): {
   };
 }
 
-/** O hash (12 primeiros caracteres) da Versão da tabela atual, como a home publica. */
-function versaoDaTabela(): string | undefined {
+/** A Versão da tabela atual, como o footer passa a publicá-la (ticket 95). */
+function versaoDaTabela(): { hash: string; obtidoEm: string } | undefined {
   const manifest = JSON.parse(
     readFileSync(join(dataBuildDir, "manifest.json"), "utf8"),
   ) as {
     versaoAtual: string | null;
     versoes: Array<{ hash: string; obtidoEm: string }>;
   };
-  return manifest.versoes
-    .find((versao) => versao.hash === manifest.versaoAtual)
-    ?.hash.slice(0, 12);
+  const versao = manifest.versoes.find(
+    (candidata) => candidata.hash === manifest.versaoAtual,
+  );
+  return versao
+    ? { hash: versao.hash.slice(0, 12), obtidoEm: versao.obtidoEm }
+    : undefined;
+}
+
+/** A linha de versão aparece uma vez por página, no rodapé, em todas as rotas. */
+function conferirVersaoNoRodape(html: string): {
+  rodape: string;
+  inicioRodape: number;
+  versao: { hash: string; obtidoEm: string };
+} {
+  const versao = versaoDaTabela();
+  expect(versao).toBeDefined();
+  const inicioRodape = html.indexOf('<footer class="site-footer"');
+  expect(inicioRodape).toBeGreaterThan(-1);
+  const rodape = html.slice(inicioRodape);
+  expect(rodape).toContain(
+    `Versão da tabela: ${versao?.hash} · obtida em ${versao?.obtidoEm}`,
+  );
+  expect(html.split("Versão da tabela:")).toHaveLength(2);
+  expect(html.split(versao?.hash as string)).toHaveLength(2);
+  return {
+    rodape,
+    inicioRodape,
+    versao: versao as { hash: string; obtidoEm: string },
+  };
 }
 
 /**
  * A home é um hub (ticket 46) com os nove blocos, e tudo nela é derivado da
- * base publicada: contagens, capacidades e marcas populares, Versão da tabela.
+ * base publicada: contagens, capacidades e marcas populares. A Versão da tabela
+ * saiu da home no ticket 95 e vive só no footer (todas as rotas).
  */
 function conferirHomeHub(html: string): void {
   const contagens = contagensDoBuild();
@@ -448,15 +475,38 @@ function conferirHomeHub(html: string): void {
     /regua-capacidade|regua-tick-entra|regua-barra-entra|--proporcao/,
   );
 
-  // 3. Faixa de confiança com contagens reais e a Versão da tabela.
+  // 3. Faixa de confiança com contagens reais. A Versão da tabela saiu da home
+  //    no ticket 95: fica só no footer, uma vez, em mono 0,75 rem.
   expect(html).toContain(`<strong>${contagens.aparelhos}</strong> aparelhos`);
   expect(html).toContain(`<strong>${contagens.marcas}</strong> marcas`);
   expect(html).toContain(
     `<strong>${contagens.capacidades}</strong> capacidades`,
   );
-  const versao = versaoDaTabela();
-  expect(versao).toBeDefined();
-  expect(html).toContain(`Versão da tabela: ${versao}`);
+  const { inicioRodape, versao } = conferirVersaoNoRodape(html);
+  expect(html.indexOf(versao.hash)).toBeGreaterThan(inicioRodape);
+  // A fita de calibração saiu junto: "Base INMETRO" acima do H1 era um kicker
+  // e o H1 já diz "dados do INMETRO" (ticket 95).
+  expect(html).not.toContain('class="home-fita"');
+  const inicioHero = html.indexOf('class="home-hero"');
+  const inicioCobertura = html.indexOf('class="home-confianca"');
+  const inicioMetodologia = html.indexOf('class="home-metodologia"');
+  const trechosSemVersao = [
+    html.slice(inicioHero, html.indexOf("</section>", inicioHero)),
+    html.slice(inicioCobertura, html.indexOf("</section>", inicioCobertura)),
+    html.slice(
+      inicioMetodologia,
+      html.indexOf("</section>", inicioMetodologia),
+    ),
+  ];
+  for (const trecho of trechosSemVersao) {
+    expect(trecho).not.toContain("Versão da tabela");
+    expect(trecho).not.toContain(`Versão ${versao.hash}`);
+    expect(trecho).not.toContain("obtida em");
+    expect(trecho).not.toContain(versao.hash);
+  }
+  expect(css).toMatch(
+    /\.rodape-versao\s*\{[^}]*font-family:\s*var\(--fonte-mono\)[^}]*font-size:\s*var\(--texto-rotulo\)[^}]*font-variant-numeric:\s*tabular-nums/,
+  );
 
   // 4. Capacidades populares ligadas à tabela filtrada (9.000 a 36.000), cada
   //    uma com a contagem de Aparelhos daquela capacidade (ticket 71).

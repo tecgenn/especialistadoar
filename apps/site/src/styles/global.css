@@ -185,6 +185,7 @@ main.principal-leitura {
   color: var(--giz);
   font-family: var(--fonte-mono);
   font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
   letter-spacing: var(--tracking-unidade);
 }
 
@@ -2270,23 +2271,6 @@ main.principal-leitura {
   margin-bottom: var(--esp-8);
 }
 
-/* Fita de calibração: diz de onde vêm os números antes de qualquer promessa. */
-.home-fita {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--esp-2) var(--esp-6);
-  align-items: baseline;
-  margin: 0;
-  padding-bottom: var(--esp-3);
-  border-bottom: 1px solid var(--linha);
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-rotulo);
-  line-height: var(--entrelinha-rotulo);
-  text-transform: uppercase;
-}
-
 /* O H1 é a peça da primeira tela: a escala display abre acima do token só aqui,
    porque é a única linha do site que precisa carregar a página inteira. No
    celular o texto flui e quebra sozinho; no desktop ele vira duas linhas fixas,
@@ -2589,9 +2573,9 @@ main.principal-leitura {
 
 /* Entrada única do hero: o conteúdo já nasce no estado final no HTML; a
    animação só descreve a chegada quando o visitante permite movimento. O
-   título sobe linha a linha do mask (700 ms cada, 80 ms de intervalo); a fita
-   vem antes e a leitura e as ações chegam enquanto a última linha assenta, com
-   12 px de subida. É a única sequência orquestrada da página. */
+   título sobe linha a linha do mask (700 ms cada, 80 ms de intervalo) e a leitura
+   e as ações chegam enquanto a última linha assenta, com 12 px de subida. É a
+   única sequência orquestrada da página. */
 @keyframes hero-entra {
   from {
     opacity: 0;
@@ -2615,10 +2599,6 @@ main.principal-leitura {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .home-fita {
-    animation: hero-entra 440ms var(--curva) both;
-  }
-
   /* Abaixo do desktop o título entra inteiro; aqui ele sobe linha a linha. */
   .home-titulo {
     animation: hero-entra 520ms var(--curva) 80ms both;
@@ -2635,7 +2615,6 @@ main.principal-leitura {
 
 /* Cores forçadas não têm opacidade intermediária confiável: mostra o final. */
 @media (forced-colors: active) {
-  .home-fita,
   .home-titulo,
   .home-titulo-texto,
   .home-hero-lead,

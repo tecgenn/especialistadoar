@@ -195,6 +195,8 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 > **Revisão (2026-11-21, ticket 94):** a régua de capacidade foi **removida da home** nos dois breakpoints. O simulador do ambiente do #93 é a única leitura de escala da primeira tela e a página segue dele para a cobertura da base. A navegação por faixa (`?btuMin=&btuMax=`) continua nos chips de Faixa de capacidade da Pesquisa avançada do catálogo, e a entrada editorial por faixa da home pertence ao #96. Onde este documento ainda descreve a régua, vale a decisão do #94 e o `DESIGN.md`.
 
+> **Revisão (2026-11-21, ticket 95):** a fita `BASE INMETRO · VERSÃO {hash}` foi **removida**, e a cobertura e a metodologia não repetem a versão. A linha da **Versão da tabela** — hash curto, data de obtenção e contagem de linhas quando disponível — aparece uma única vez por página, no rodapé, em mono de 0,75 rem com tabular-nums. A data na nota do "Modelo fora da tabela atual" permanece: é o estado da análise, não a linha de versão. Onde este documento ainda descreve a fita ou a versão na cobertura, vale a decisão do #95 e o `DESIGN.md`.
+
 **Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta uma faixa como partição exata — o rótulo diz "aparelhos com capacidade na faixa".
 
 **Estados:** base carregada no build (não há estado vazio); versão ausente não renderiza a linha; sem Análise publicada, a seção de destaques desaparece; sem Oferta, o cartão não mostra CTA.

@@ -6,11 +6,11 @@
 
 **Skills:** `impeccable` — `reference/distill.md` (remover a informação repetida da fita, da cobertura e da metodologia, deixando só o dado no footer) e `reference/typeset.md` + `reference/craft-floor.md` (mono pequeno legível, sem virar ruído). `design-taste-frontend` — `references/system.md` (mono reservado a fonte/unidade, tokens existentes, nenhum estilo novo). `ui-ux-pro-max` — `"redundant information removal" --domain ux` e `"data provenance disclosure" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Versão da base aparece só no footer, em fonte pequena (mono 0.75rem)
-- [ ] Removida da fita do hero, da cobertura e da metodologia
-- [ ] Footer mostra proveniência + versão da tabela + nota de afiliado
-- [ ] Sem duplicação da informação em nenhuma outra seção
-- [ ] Testes de build conferem que a versão aparece só no footer
-- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)
+- [x] Versão da base aparece só no footer, em fonte pequena (mono 0.75rem)
+- [x] Removida da fita do hero, da cobertura e da metodologia
+- [x] Footer mostra proveniência + versão da tabela + nota de afiliado
+- [x] Sem duplicação da informação em nenhuma outra seção
+- [x] Testes de build conferem que a versão aparece só no footer
+- [x] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

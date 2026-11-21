@@ -118,14 +118,13 @@ const navegacao = [
             INMETRO.{" "}
             {
               versao ? (
-                <>
-                  Versão da tabela:{" "}
-                  <span class="rodape-versao">{versao.obtidoEm}</span>
+                <span class="rodape-versao">
+                  Versão da tabela: {versao.hash.slice(0, 12)} · obtida em {versao.obtidoEm}
                   {versao.contagemLinhas === null
                     ? ""
-                    : ` (${versao.contagemLinhas} Linhas da tabela)`}
+                    : ` · ${versao.contagemLinhas} Linhas da tabela`}
                   .
-                </>
+                </span>
               ) : null
             }
           </p>

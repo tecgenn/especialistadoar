@@ -1,9 +1,6 @@
 ---
 import consultaJson from "@dados/consulta.json";
-import manifestJson from "@dados/manifest.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
-import type { Manifest } from "@especialista-do-ar/pipeline";
-import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import HomePopulares from "../components/HomePopulares.astro";
 import Botao from "../components/primitivos/Botao.astro";
@@ -59,8 +56,6 @@ const resumosComerciais = Object.fromEntries(
     ];
   }),
 );
-const versao = versaoAtualDo(manifestJson as Manifest);
-
 // Os destaques são montados no build: cada Análise publicada, na ordem da mais
 // recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um
 // Aparelho Ausente não tem Oferta (o glue recusa Oferta órfã), então fica sem
@@ -93,16 +88,6 @@ const jsonLd: Record<string, unknown>[] = [
   jsonLd={jsonLd}
 >
   <section class="home-hero" aria-labelledby="home-titulo">
-    <p class="home-fita">
-      <span>Base INMETRO</span>
-      {
-        versao ? (
-          <span>
-            Versão {versao.hash.slice(0, 12)} · obtida em {versao.obtidoEm}
-          </span>
-        ) : null
-      }
-    </p>
     {/* O título é grande de propósito: esta é a única tela do site em que a
         escala display abre acima do token, com duas linhas fixas para que a
         entrada possa subir cada uma do próprio mask. */}
@@ -139,13 +124,6 @@ const jsonLd: Record<string, unknown>[] = [
     </p>
     <p class="home-confianca-origem">
       Tudo a partir da exportação oficial de produtos do INMETRO.
-      {
-        versao ? (
-          <>
-            Versão da tabela: {versao.hash.slice(0, 12)} (obtida em {versao.obtidoEm}).
-          </>
-        ) : null
-      }
     </p>
   </section>
 
@@ -260,14 +238,6 @@ const jsonLd: Record<string, unknown>[] = [
     <p class="home-fontes">
       Fontes · exportação oficial de produtos do INMETRO · Portaria INMETRO
       269/2021 · ciclo de referência de 2.080 h/ano
-      {
-        versao ? (
-          <>
-            · Versão da tabela {versao.hash.slice(0, 12)} (obtida em{" "}
-            {versao.obtidoEm})
-          </>
-        ) : null
-      }
     </p>
   </section>
 
