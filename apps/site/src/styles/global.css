@@ -2684,11 +2684,11 @@ main.principal-leitura {
   }
 }
 
-/* O percurso da home (ticket 71): cobertura → capacidades → marcas → análises
-   → Assistente → perguntas → metodologia. Cada bloco começa numa régua de 1 px
-   e respira com o mesmo ritmo; nenhum deles é um cartão flutuante. */
+/* O percurso da home (tickets 71 e 96): cobertura → capacidades em destaque →
+   análises → Assistente → perguntas → metodologia. Cada bloco começa numa
+   régua de 1 px e respira com o mesmo ritmo; nenhum deles flutua. */
 .home-confianca,
-.home-populares,
+.home-destaques-capacidade,
 .home-assistente,
 .home-faq,
 .home-metodologia {
@@ -2697,7 +2697,7 @@ main.principal-leitura {
   border-top: 1px solid var(--linha);
 }
 
-.home-populares h2,
+.home-destaques-capacidade h2,
 .home-assistente h2,
 .home-faq h2,
 .home-metodologia h2 {
@@ -2754,75 +2754,165 @@ main.principal-leitura {
   line-height: var(--entrelinha-pequena);
 }
 
-/* Populares (ticket 71): listas de links com contagem, não chips soltos.
-   Capacidades em duas colunas; marcas em três. Cada linha tem uma hairline e
-   um alvo de 44 px; o rótulo carrega a hierarquia e a contagem fica em mono. */
-.home-populares-intro {
-  max-width: 62ch;
-  margin: 0 0 var(--esp-5);
+/* Aparelhos em destaque por capacidade exata (ticket 96): até três cartões de
+   ficha técnica por capacidade, numa grade apoiada em hairlines. Sem sombra, sem
+   selo de "melhor" e sem proporção desenhada: o que está aqui é o Valor oficial. */
+.home-destaques-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--esp-4) var(--esp-8);
+  margin-bottom: var(--esp-5);
 }
 
-.home-populares-lista {
+.home-destaques-cabecalho > div {
+  max-width: 62ch;
+}
+
+.home-destaques-cabecalho h2 {
+  margin: 0 0 var(--esp-2);
+}
+
+.home-destaques-cabecalho .intro {
+  margin: 0;
+}
+
+.home-destaques-total {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--esp-7);
+  gap: var(--esp-2);
+  margin: 0;
+  font-size: var(--texto-pequeno);
+}
+
+.home-destaques-contagem {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-rotulo);
+}
+
+.home-destaques-cartoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--esp-5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.home-populares-marcas .home-populares-lista {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.home-populares-lista li {
+.home-destaque-cartao {
+  min-width: 0;
   margin-block: 0;
+  padding-block-start: var(--esp-4);
   border-top: 1px solid var(--linha);
 }
 
-.home-populares-lista a {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+.home-destaque-cartao article {
+  display: grid;
   gap: var(--esp-4);
-  min-height: 44px;
-  padding-block: var(--esp-3);
-  color: var(--tinta);
-  text-decoration: none;
+  align-content: start;
+  height: 100%;
 }
 
-.home-populares-texto {
-  font-family: var(--fonte-interface);
+.home-destaque-identidade {
+  display: grid;
+  gap: var(--esp-1);
+  margin: 0;
+}
+
+.home-destaque-marca {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-destaque-modelo {
   font-size: var(--texto-bloco);
   font-weight: var(--peso-medio);
   letter-spacing: var(--tracking-apertado);
   line-height: var(--entrelinha-apertada);
+  overflow-wrap: anywhere;
 }
 
-.home-populares-marcas .home-populares-texto {
-  font-size: var(--texto-ui);
-  font-weight: var(--peso-normal);
+.home-destaque-modelo a {
+  color: var(--tinta);
+  text-decoration: none;
 }
 
-.home-populares-contagem {
-  flex: none;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: var(--tracking-unidade);
-  line-height: var(--entrelinha-rotulo);
-  transition: color var(--mov-hover) var(--curva);
-}
-
-.home-populares-lista a:hover .home-populares-texto {
+.home-destaque-modelo a:hover {
   text-decoration: underline;
   text-decoration-color: var(--sinal);
   text-underline-offset: 0.15em;
 }
 
-.home-populares-lista a:hover .home-populares-contagem {
-  color: var(--sinal-texto);
+.home-destaque-atributos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-4);
+  margin: 0;
+  color: var(--grafite);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+.home-destaque-leituras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-4);
+  margin: 0;
+}
+
+.home-destaque-leituras div {
+  display: grid;
+  gap: var(--esp-1);
+  min-width: 0;
+}
+
+.home-destaque-leituras dt {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-destaque-leituras dd {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+.home-destaque-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-4);
+  margin: auto 0 0;
+  padding-block-start: var(--esp-3);
+  font-size: var(--texto-pequeno);
+}
+
+.home-destaque-acoes a {
+  color: var(--azul-frio-texto);
+  text-decoration: underline;
+  text-decoration-color: var(--linha);
+  text-underline-offset: 0.15em;
+}
+
+.home-destaque-acoes a:hover {
+  text-decoration-color: var(--sinal);
+}
+
+.home-destaque-marcador {
+  color: var(--mudo);
 }
 
 /* Assistente (ticket 71): três passos numerados sobre uma régua, com a conta
@@ -2981,8 +3071,7 @@ main.principal-leitura {
     gap: var(--esp-5);
   }
 
-  .home-populares-lista,
-  .home-populares-marcas .home-populares-lista {
+  .home-destaques-cartoes {
     grid-template-columns: 1fr;
   }
 

@@ -2,45 +2,35 @@
 import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
-import HomePopulares from "../components/HomePopulares.astro";
+import HomeDestaquesPorCapacidade from "../components/HomeDestaquesPorCapacidade.astro";
 import Botao from "../components/primitivos/Botao.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
-import { ofertasDoAparelho } from "../conteudo/ofertas.ts";
+import { ofertasDoAparelho, ofertasPublicadas } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
-import type { DestaqueAnalise } from "../lib/analises.ts";
+import { type DestaqueAnalise, mapaPorAparelho } from "../lib/analises.ts";
 import { CAPACIDADES_COMERCIAIS } from "../lib/assistente.ts";
 import {
-  capacidadesPopulares,
+  capacidadesComDestaque,
   contagensPorCapacidade,
-  contagensPorMarca,
   contarBase,
   EXPLICACAO_DO_RECORTE,
-  formatarCapacidade,
   formatarNumero,
   jsonLdPerguntasFrequentes,
-  linkDaTabela,
-  marcasPopulares,
   PASSOS_ASSISTENTE,
   PERGUNTAS_FREQUENTES,
 } from "../lib/home.ts";
+import { indexarOfertas } from "../lib/ofertas.ts";
 
-// A home é um hub (ticket 46) montado inteiro no build: as contagens saem do
-// dataset de consulta publicado, as capacidades/marcas populares da curadoria
-// do site e o FAQ da mesma lista que alimenta o JSON-LD. Nada de JSON baixado
-// no cliente.
+// A home é um hub (ticket 46) montado inteiro no build: as contagens e os
+// cartões das capacidades em destaque (ticket 96) saem do dataset de consulta
+// publicado, as capacidades da curadoria do site e o FAQ da mesma lista que
+// alimenta o JSON-LD. Nada de JSON baixado no cliente.
 const dataset = consultaJson as ItemConsulta[];
 const curadoria = carregarFiltros();
 const contagens = contarBase(dataset);
-// Cada item popular leva a própria contagem: quantos Aparelhos têm aquela
-// capacidade ou aquela Marca de catálogo. É a mesma base da tabela.
 const porCapacidade = contagensPorCapacidade(dataset);
-const porMarca = contagensPorMarca(dataset);
-const capacidades = capacidadesPopulares(dataset, curadoria);
-const marcas = marcasPopulares(dataset, curadoria);
-const contagemPopulares = (quantidade: number | undefined): string =>
-  `${formatarNumero(quantidade ?? 0)} aparelhos`;
 // O simulador do hero arredonda para uma capacidade comercial: o recorte
 // (`?btu=`) e o resumo de eficiência dessa capacidade saem da mesma base que
 // a tabela serve, no build.
@@ -65,6 +55,20 @@ const destaques: DestaqueAnalise[] = analises.map((analise) => ({
   analise,
   ofertas: ofertasDoAparelho(analise.aparelhoId),
 }));
+// Os blocos por capacidade exata (ticket 96) substituem as listas de populares.
+// Análises e Ofertas chegam indexadas pelo mesmo `aparelhoId` da tabela; uma
+// capacidade só vira bloco quando há pelo menos um Aparelho com uma das duas.
+const indiceDestaques = {
+  dataset,
+  analisesPorAparelho: mapaPorAparelho(analises),
+  ofertasPorAparelho: indexarOfertas(ofertasPublicadas()),
+};
+const blocosDestaque = capacidadesComDestaque(indiceDestaques, curadoria).map(
+  (bloco) => ({
+    ...bloco,
+    totalNaCapacidade: porCapacidade.get(bloco.capacidadeBtu) ?? 0,
+  }),
+);
 
 const descricao = `Ar-condicionado e BTUs com os dados oficiais do INMETRO: compare capacidade, consumo, IDRS e Classe de ${formatarNumero(contagens.aparelhos)} aparelhos e descubra quantos BTUs o seu ambiente precisa.`;
 
@@ -127,27 +131,7 @@ const jsonLd: Record<string, unknown>[] = [
     </p>
   </section>
 
-  <HomePopulares
-    classe="home-populares-capacidades"
-    titulo="Capacidades populares"
-    intro="Vá direto para os aparelhos da capacidade que você procura."
-    itens={capacidades.map((capacidade) => ({
-      href: linkDaTabela({ btu: capacidade }),
-      texto: formatarCapacidade(capacidade),
-      contagem: contagemPopulares(porCapacidade.get(capacidade)),
-    }))}
-  />
-
-  <HomePopulares
-    classe="home-populares-marcas"
-    titulo="Marcas populares"
-    intro="Compare os modelos das marcas mais procuradas."
-    itens={marcas.map((marca) => ({
-      href: linkDaTabela({ marca: marca.valor }),
-      texto: marca.rotulo,
-      contagem: contagemPopulares(porMarca.get(marca.valor)),
-    }))}
-  />
+  {blocosDestaque.map((bloco) => <HomeDestaquesPorCapacidade {...bloco} />)}
 
   <AnalisesDestaque destaques={destaques} />
 

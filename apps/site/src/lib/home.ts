@@ -1,16 +1,18 @@
 /**
  * A home como hub (ticket 46): tudo o que ela mostra é derivado no build — as
- * contagens da base, as capacidades e marcas populares, o FAQ e o JSON-LD
- * `FAQPage`. Este módulo é a parte pura (sem I/O e sem Astro), para o build e os
- * testes usarem a mesma definição.
+ * contagens da base, os blocos de Aparelhos em destaque por capacidade (ticket
+ * 96), o FAQ e o JSON-LD `FAQPage`. Este módulo é a parte pura (sem I/O e sem
+ * Astro), para o build e os testes usarem a mesma definição.
  *
- * Nenhuma contagem é escrita à mão: `contarBase` lê o dataset de consulta
- * publicado. As capacidades e marcas populares saem da curadoria do site
- * (`filtros.json`), escondendo em silêncio o valor que não existe na base — a
- * mesma regra dos chips da tabela.
+ * Nenhuma contagem é escrita à mão: `contarBase` e `contagensPorCapacidade` leem
+ * o dataset de consulta publicado. As capacidades em destaque saem da curadoria
+ * do site (`filtros.json`), escondendo em silêncio o valor que não existe na
+ * base e a capacidade sem nenhum Aparelho com Análise publicada ou Oferta.
  */
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
-import type { FiltrosCurados, MarcaCurada } from "./filtros.ts";
+import type { FiltrosCurados } from "./filtros.ts";
+import type { Oferta } from "./ofertas.ts";
+import { rotuloDaOferta } from "./ofertas.ts";
 
 /** As contagens reais da base servida, exibidas na faixa de confiança. */
 export interface ContagensDaBase {
@@ -150,19 +152,10 @@ export function jsonLdPerguntasFrequentes(
   };
 }
 
-/** As capacidades populares que existem na base, na ordem curada. */
-export function capacidadesPopulares(
-  dataset: readonly ItemConsulta[],
-  curadoria: FiltrosCurados,
-): number[] {
-  const presentes = new Set(dataset.flatMap((item) => item.capacidadesBtu));
-  return curadoria.btus.filter((capacidade) => presentes.has(capacidade));
-}
-
 /**
  * Aparelhos por capacidade: cada Aparelho conta uma vez em cada capacidade que
  * declara, mesmo quando tem mais de uma Variante no mesmo valor. Alimenta a
- * contagem das capacidades populares (ticket 71).
+ * contagem da capacidade em destaque (ticket 96).
  */
 export function contagensPorCapacidade(
   dataset: readonly ItemConsulta[],
@@ -176,34 +169,119 @@ export function contagensPorCapacidade(
   return contagens;
 }
 
-/** Aparelhos por Marca de catálogo (ADR-0016), para a contagem das marcas. */
-export function contagensPorMarca(
-  dataset: readonly ItemConsulta[],
-): Map<string, number> {
-  const contagens = new Map<string, number>();
-  for (const item of dataset) {
-    if (item.marcaCatalogo === "") {
-      continue;
-    }
-    contagens.set(
-      item.marcaCatalogo,
-      (contagens.get(item.marcaCatalogo) ?? 0) + 1,
-    );
-  }
-  return contagens;
+/**
+ * Um cartão da entrada editorial por capacidade da home (ticket 96). Os valores
+ * técnicos são os oficiais do `consulta.json`; a Análise e a Oferta são site-only
+ * e chegam indexadas pelo build. Nunca há um cartão só com Oferta órfã, porque
+ * o glue das Ofertas valida os ids antes de indexar.
+ */
+export interface CartaoDestaquePorCapacidade {
+  aparelhoId: string;
+  marca: string;
+  modelo: string;
+  /** A capacidade exata do bloco, não a lista de Variantes do Aparelho. */
+  capacidadeBtu: number;
+  tipo: string | null;
+  /** Todos os IDRS declarados: a ficha mostra faixa quando as Variantes divergem. */
+  idrs: readonly number[];
+  /** Todos os consumos anuais declarados, em kWh/ano. */
+  consumoAnualKwh: readonly number[];
+  analise: { titulo: string; url: string } | null;
+  oferta: { url: string; loja: string; rotulo: string } | null;
 }
 
-/** As marcas populares que existem na base, na ordem curada. */
-export function marcasPopulares(
-  dataset: readonly ItemConsulta[],
+/** Os índices site-only que o build junta ao dataset de consulta. */
+export interface IndiceDestaquesHome {
+  dataset: readonly ItemConsulta[];
+  /** Análises publicadas, indexadas pelo `aparelhoId`. */
+  analisesPorAparelho: ReadonlyMap<string, { titulo: string; url: string }>;
+  /** Ofertas publicadas e validadas, indexadas pelo `aparelhoId`. */
+  ofertasPorAparelho: ReadonlyMap<string, readonly Oferta[]>;
+}
+
+const MAXIMO_CARTOES_POR_CAPACIDADE = 3;
+
+/**
+ * Seleciona até três Aparelhos de uma capacidade que tenham Análise publicada
+ * e/ou Oferta. Não é um ranking: os analisados abrem e os demais seguem a ordem
+ * do dataset, sem promessa de serem "os melhores". Um Aparelho com as duas
+ * coisas ocupa um único cartão. IDRS e consumo seguem declarados como faixa
+ * quando as Variantes divergem, como na ficha — não vale só a última.
+ */
+export function destaquesPorCapacidade(
+  indice: IndiceDestaquesHome,
+  capacidadeBtu: number,
+): CartaoDestaquePorCapacidade[] {
+  const { dataset, analisesPorAparelho, ofertasPorAparelho } = indice;
+  return dataset
+    .map((item, ordem) => ({ item, ordem }))
+    .filter(({ item }) => {
+      if (!item.capacidadesBtu.includes(capacidadeBtu)) {
+        return false;
+      }
+      return (
+        analisesPorAparelho.has(item.id) ||
+        (ofertasPorAparelho.get(item.id)?.length ?? 0) > 0
+      );
+    })
+    .sort((a, b) => {
+      const analiseA = analisesPorAparelho.has(a.item.id) ? 0 : 1;
+      const analiseB = analisesPorAparelho.has(b.item.id) ? 0 : 1;
+      return analiseA - analiseB || a.ordem - b.ordem;
+    })
+    .slice(0, MAXIMO_CARTOES_POR_CAPACIDADE)
+    .map(({ item }) => {
+      const analise = analisesPorAparelho.get(item.id);
+      const oferta = ofertasPorAparelho.get(item.id)?.at(0);
+      return {
+        aparelhoId: item.id,
+        marca: item.marca,
+        modelo: item.modelo,
+        capacidadeBtu,
+        tipo: item.tipo,
+        idrs: item.idrs,
+        consumoAnualKwh: item.consumosKwh,
+        analise:
+          analise === undefined
+            ? null
+            : { titulo: analise.titulo, url: analise.url },
+        oferta:
+          oferta === undefined
+            ? null
+            : {
+                url: oferta.url,
+                loja: oferta.loja,
+                rotulo: rotuloDaOferta(oferta),
+              },
+      };
+    });
+}
+
+export interface BlocoDestaquePorCapacidade {
+  capacidadeBtu: number;
+  cartoes: CartaoDestaquePorCapacidade[];
+}
+
+/**
+ * As capacidades exatas da curadoria que existem na base e têm pelo menos um
+ * Aparelho com Análise ou Oferta, na ordem da curadoria. Não há teto de blocos:
+ * toda capacidade com conteúdo aparece. Uma capacidade sem destaque não vira
+ * bloco vazio — o recorte segue disponível na tabela, caminho completo da base.
+ */
+export function capacidadesComDestaque(
+  indice: IndiceDestaquesHome,
   curadoria: FiltrosCurados,
-): MarcaCurada[] {
+): BlocoDestaquePorCapacidade[] {
   const presentes = new Set(
-    dataset.map((item) => item.marcaCatalogo).filter((marca) => marca !== ""),
+    indice.dataset.flatMap((item) => item.capacidadesBtu),
   );
-  return curadoria.marcas
-    .filter((marca) => presentes.has(marca.valor))
-    .map(({ valor, rotulo }) => ({ valor, rotulo }));
+  return curadoria.btus
+    .filter((capacidade) => presentes.has(capacidade))
+    .map((capacidadeBtu) => ({
+      capacidadeBtu,
+      cartoes: destaquesPorCapacidade(indice, capacidadeBtu),
+    }))
+    .filter((bloco) => bloco.cartoes.length > 0);
 }
 
 /**

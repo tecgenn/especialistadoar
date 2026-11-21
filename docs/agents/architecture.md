@@ -246,7 +246,7 @@ nova exportação CSV
   leitura de escala da primeira tela, e a navegação por faixa continua no
   catálogo, nos chips de Faixa de capacidade. A leitura de cobertura com contagens
   derivadas do `consulta.json` (Aparelhos, marcas, capacidades), blocos de aparelhos
-  em destaque por faixa (ticket 96 — substituem
+  em destaque por capacidade exata (ticket 96 — substituem
   "Capacidades populares" e "Marcas populares"), carousel de Análises em destaque
   (ticket 97), chamada do Assistente reposicionada ou removida (ticket 98), FAQ e
   Metodologia/INMETRO em `<details>` nativo (ticket 99). O `<head>` publica

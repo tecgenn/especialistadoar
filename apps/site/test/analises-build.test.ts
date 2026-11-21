@@ -508,39 +508,46 @@ function conferirHomeHub(html: string): void {
     /\.rodape-versao\s*\{[^}]*font-family:\s*var\(--fonte-mono\)[^}]*font-size:\s*var\(--texto-rotulo\)[^}]*font-variant-numeric:\s*tabular-nums/,
   );
 
-  // 4. Capacidades populares ligadas à tabela filtrada (9.000 a 36.000), cada
-  //    uma com a contagem de Aparelhos daquela capacidade (ticket 71).
+  // 4–5. As listas de capacidades e marcas populares deram lugar aos blocos de
+  //      Aparelhos em destaque por capacidade exata (ticket 96). As capacidades
+  //      são curadas, mas só aparecem quando há Análise ou Oferta na base.
+  expect(html).not.toContain("Capacidades populares");
+  expect(html).not.toContain("Marcas populares");
+  expect(html).not.toContain("home-populares");
   const itens = JSON.parse(
     readFileSync(join(distDir, "consulta.json"), "utf8"),
-  ) as Array<{ marcaCatalogo: string; capacidadesBtu: number[] }>;
-  expect(html).toContain("Capacidades populares");
-  expect(curadoria.btus.length).toBeGreaterThan(0);
-  for (const btu of curadoria.btus) {
-    expect(html).toContain(`href="/aparelhos/?btu=${btu}"`);
-    expect(html).toContain(`${numero.format(btu)} BTU/h`);
-    const contagem = itens.filter((item) =>
+  ) as Array<{ id: string; capacidadesBtu: number[] }>;
+  const capacidades = [
+    ...html.matchAll(
+      /<section class="home-destaques-capacidade" id="capacidade-(\d+)"/g,
+    ),
+  ].map((achado) => Number(achado[1]));
+  expect(capacidades.length).toBeGreaterThan(0);
+  expect(capacidades).toContain(12000);
+  for (const btu of capacidades) {
+    expect(curadoria.btus).toContain(btu);
+    const inicio = html.indexOf(`id="capacidade-${btu}"`);
+    const bloco = html.slice(inicio, html.indexOf("</section>", inicio));
+    const texto = textoDaPagina(bloco);
+    expect(texto).toContain(
+      `Aparelhos de ${numero.format(btu)} BTUs em destaque`,
+    );
+    expect(bloco).toContain(`href="/aparelhos/?btu=${btu}"`);
+    const total = itens.filter((item) =>
       item.capacidadesBtu.includes(btu),
     ).length;
-    expect(html).toContain(
-      `<span class="home-populares-contagem">${numero.format(contagem)} aparelhos</span>`,
+    expect(texto).toContain(
+      `${numero.format(total)} aparelhos nesta capacidade`,
     );
+    const cartoes = bloco.match(/class="home-destaque-cartao"/g) ?? [];
+    expect(cartoes.length).toBeGreaterThan(0);
+    expect(cartoes.length).toBeLessThanOrEqual(3);
+    expect(texto).toContain(`${numero.format(btu)} BTU/h`);
+    expect(texto).toContain("IDRS");
+    expect(texto).toContain("Consumo anual");
   }
-
-  // 5. Marcas populares (as curadas em filtros.json) ligadas à tabela, também
-  //    com a contagem de Aparelhos da Marca de catálogo.
-  expect(html).toContain("Marcas populares");
-  expect(curadoria.marcas.length).toBeGreaterThan(0);
-  for (const marca of curadoria.marcas) {
-    expect(html).toContain(`href="/aparelhos/?marca=${marca.valor}"`);
-    expect(html).toContain(`>${marca.rotulo}</span>`);
-    const contagem = itens.filter(
-      (item) => item.marcaCatalogo === marca.valor,
-    ).length;
-    expect(html).toContain(
-      `<span class="home-populares-contagem">${numero.format(contagem)} aparelhos</span>`,
-    );
-  }
-  // Os populares são listas de links com hairline, não chips pill.
+  // Entrada estática: nem carrossel automático nem lista de links soltos.
+  expect(html).not.toMatch(/home-destaques-carrossel|autoplay/);
   expect(html).not.toContain("home-links");
 
   // 7. Chamada do Assistente com "como funciona em 3 passos", os passos
@@ -886,6 +893,21 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlHome).toContain(analise.descricao);
     }
 
+    // O bloco da capacidade (ticket 96) traz o Aparelho da fixture no mesmo
+    // cartão: identidade, dados técnicos, link da Análise e link de afiliado.
+    const inicioBloco = htmlHome.indexOf('id="capacidade-12000"');
+    const blocoCapacidade = htmlHome.slice(
+      inicioBloco,
+      htmlHome.indexOf("</section>", inicioBloco),
+    );
+    expect(blocoCapacidade).toContain(`href="/aparelhos/${aparelho.id}/"`);
+    expect(blocoCapacidade).toContain(`href="/analises/${valida.slug}/"`);
+    expect(blocoCapacidade).toContain(oferta.url);
+    expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.marca);
+    expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.modelo);
+    expect(textoDaPagina(blocoCapacidade)).toContain("Loja Fixture");
+    expect(textoDaPagina(blocoCapacidade)).toContain("link de afiliado");
+
     // Os cards de Aparelhos analisados do Assistente (ticket 42) são montados
     // no build: o mapa capacidade → analisados viaja nas props da ilha, então a
     // página traz a Análise sem baixar analises.json no cliente. O Aparelho
@@ -915,7 +937,9 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlHome).toContain('rel="sponsored nofollow noopener"');
     expect(htmlHome).toContain('target="_blank"');
     expect(htmlHome).toContain("Onde comprar");
-    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(1);
+    // Um link comercial no destaque da Análise e outro no cartão da capacidade,
+    // que também tem a Oferta do Aparelho (ticket 96).
+    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(2);
 
     // O bloco é gerado no build: o cliente não baixa `ofertas.json` nem
     // `analises.json` para renderizá-lo.
@@ -1073,7 +1097,14 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const htmlHome = lerHtml("");
     expect(htmlHome).not.toContain('href="/analises/"');
     expect(htmlHome).not.toContain("Análises em destaque");
-    expect(htmlHome).not.toContain('rel="sponsored');
+    // Sem Análise, o único link comercial da home é o do bloco de capacidade,
+    // que segue com as Ofertas publicadas (ticket 96).
+    const inicioBlocoSemAnalise = htmlHome.indexOf('id="capacidade-12000"');
+    const blocoSemAnalise = htmlHome.slice(
+      inicioBlocoSemAnalise,
+      htmlHome.indexOf("</section>", inicioBlocoSemAnalise),
+    );
+    expect(blocoSemAnalise.match(/rel="sponsored/g) ?? []).toHaveLength(1);
 
     // A home (ticket 46) continua o hub com os nove blocos; só o de Análises em
     // destaque some quando não há nenhuma Análise publicada.
@@ -1082,6 +1113,8 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain(">Análises</a>");
     expect(htmlHome).not.toContain("Buscar no site");
     expect(htmlHome).not.toContain('class="tabela-aparelhos"');
+    // Sem Análise, os blocos seguem com as Ofertas publicadas (ticket 96).
+    expect(htmlHome).toContain('id="capacidade-12000"');
     // A home usa a largura de shell (ticket 67).
     expect(htmlHome).toContain('<body data-largura="shell">');
     conferirShell(htmlHome, { ativo: null, largura: "shell" });
