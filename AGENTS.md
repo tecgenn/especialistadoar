@@ -21,6 +21,16 @@ from `.agents/skills/` and follow the listed references before editing UI code.
 The ticket line is the instruction: the user does not need to name the skill
 again in the request.
 
+### Design-doc sync
+
+Design tickets update `DESIGN.md` in the **same commit** as the code. The document
+is the normative contract consumed by skills, `tokens.test.ts` and `impeccable
+detect`, so a visual change that lands without it leaves the next ticket working
+from a stale spec. Read it before implementing, record the final decision after
+browser validation, and grep related terms (every `foco` line when changing the
+focus color, for example) so older statements cannot contradict the new rule.
+Only a deliberate catch-up pass should edit the doc outside a ticket.
+
 ### Issue tracker
 
 Issues and PRDs live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.

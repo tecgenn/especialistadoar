@@ -11,3 +11,4 @@
 - [ ] Footer mostra proveniência + versão da tabela + nota de afiliado
 - [ ] Sem duplicação da informação em nenhuma outra seção
 - [ ] Testes de build conferem que a versão aparece só no footer
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

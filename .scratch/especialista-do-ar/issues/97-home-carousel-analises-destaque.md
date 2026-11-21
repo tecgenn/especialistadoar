@@ -13,3 +13,4 @@
 - [ ] Sem Análise, a seção não renderiza
 - [ ] Imagem real da Análise com alt, data em mono, título, resumo
 - [ ] Testes de build conferem carousel e ausência de seção sem Análise
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

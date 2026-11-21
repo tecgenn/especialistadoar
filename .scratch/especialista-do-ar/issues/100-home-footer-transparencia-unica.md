@@ -13,3 +13,4 @@
 - [ ] 3 colunas no desktop, empilhado no mobile (proveniência primeiro)
 - [ ] Foco visível, alvos de 44 px, sem overflow
 - [ ] Testes de build conferem o bloco de transparência e a versão no footer
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

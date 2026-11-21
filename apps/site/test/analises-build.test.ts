@@ -504,6 +504,10 @@ function conferirHomeHub(html: string): void {
   expect(css).not.toMatch(/home-escala/);
   expect(css).toMatch(/outline:\s*2px solid var\(--sinal\)/);
   expect(css).not.toMatch(/outline:\s*2px solid var\(--primaria\)/);
+  // O marcador da linha analisada usa o mesmo âmbar de 2 px do hero (spec da
+  // fase); o antigo traço de 3 px em azul-frio não pode voltar.
+  expect(css).toMatch(/border-left:\s*2px solid var\(--sinal\)/);
+  expect(css).not.toMatch(/border-left:\s*3px solid var\(--primaria\)/);
   expect(css).toMatch(/min-height:\s*44px/);
   // As duas colunas do desktop começam em minmax(0, …): nenhuma palavra longa
   // do título pode empurrar a página para fora da viewport em 1024/1440 px.

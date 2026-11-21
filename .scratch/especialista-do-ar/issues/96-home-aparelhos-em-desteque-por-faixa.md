@@ -13,3 +13,4 @@
 - [ ] Seletor para alternar a faixa (se for fácil de implementar)
 - [ ] Sem carrossel automático sem controle de pausa
 - [ ] Testes de build conferem contagem e links por faixa
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

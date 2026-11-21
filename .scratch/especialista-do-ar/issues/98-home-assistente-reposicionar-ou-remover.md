@@ -15,3 +15,4 @@
 - [ ] 0 px de overflow em todos os breakpoints
 - [ ] Alvos de 44 px, foco visível
 - [ ] Testes atualizados para o novo estado da seção
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

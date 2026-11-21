@@ -12,3 +12,4 @@
 - [ ] Fontes em mono para notas de fonte
 - [ ] Sem promessa de economia nem recomendação de compra
 - [ ] Testes de build conferem `<details>` fechados e conteúdo do FAQPage
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

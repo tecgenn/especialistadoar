@@ -911,7 +911,7 @@ main.principal-leitura {
 }
 
 .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
-  border-left: 3px solid var(--primaria);
+  border-left: 2px solid var(--sinal);
 }
 
 /* Selo "Análise" (ticket 44): etiqueta de contorno, distinta da pílula azul
@@ -1093,7 +1093,7 @@ main.principal-leitura {
 
 @media (max-width: 40rem) {
   .consulta .tabela-aparelhos tbody tr.linha-analisado {
-    border-left: 3px solid var(--primaria);
+    border-left: 2px solid var(--sinal);
     background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
   }
 
@@ -2701,7 +2701,7 @@ main.principal-leitura {
     border-color var(--mov-hover) var(--curva);
 }
 
-/* O tick vertical de 8 px, um dos poucos ornamentos do sistema — ele mede. */
+/* O tick vertical de 9 px, um dos poucos ornamentos do sistema — ele mede. */
 .regua-capacidade-link::before {
   content: "";
   position: absolute;

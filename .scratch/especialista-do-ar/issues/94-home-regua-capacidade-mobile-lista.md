@@ -14,3 +14,4 @@
 - [ ] Links por faixa continuam funcionando (`/aparelhos/?btuMin=&btuMax=`)
 - [ ] Animação de ticks respeita `prefers-reduced-motion`
 - [ ] Testes de `regua-capacidade.test.ts` e `analises-build.test.ts` atualizados
+- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)
