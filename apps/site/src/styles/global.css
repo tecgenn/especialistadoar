@@ -2255,13 +2255,14 @@ main.principal-leitura {
   }
 }
 
-/* Home como hub (ticket 46): hero, régua de capacidade, leitura de cobertura,
-   capacidades e marcas populares, Análises em destaque, chamada do Assistente,
-   FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente.
-   O topo foi refeito no ticket 93: o H1 é o elemento gráfico da primeira tela
-   — display grande em duas linhas, com entrada por mask — e a régua de
-   capacidade logo abaixo é a única leitura de escala. Não há painel lateral
-   nem linha decorativa animada. Nada depende de Análise para o hero existir. */
+/* Home como hub (ticket 46): hero, leitura de cobertura, capacidades e marcas
+   populares, Análises em destaque, chamada do Assistente, FAQ e metodologia.
+   Tudo é gerado no build — nada depende de JSON no cliente. O topo foi refeito
+   no ticket 93: o H1 é o elemento gráfico da primeira tela — display grande em
+   duas linhas, com entrada por mask — e o simulador de ambiente é a única
+   leitura de escala (ticket 94 removeu a régua de capacidade). Não há painel
+   lateral nem linha decorativa animada. Nada depende de Análise para o hero
+   existir. */
 .home-hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2307,10 +2308,11 @@ main.principal-leitura {
 }
 
 /* Em 320 px a palavra mais longa do título precisa caber sem overflow: abaixo
-   de 22 rem o display desce um degrau em vez de criar rolagem horizontal. */
+   de 22 rem o display desce para o token de manchete em vez de criar rolagem
+   horizontal (ou de cair no tamanho herdado do corpo). */
 @media (max-width: 22rem) {
   .home-titulo {
-    font-size: var(--texto-headline);
+    font-size: var(--texto-manchete);
   }
 }
 
@@ -2642,155 +2644,6 @@ main.principal-leitura {
   }
 }
 
-/* --- Régua de capacidade (ticket 70) -----------------------------------
-   No desktop é uma linha graduada: seis colunas proporcionais às contagens,
-   cada uma um link com tick de 8 px, rótulo e contagem em mono. No celular
-   vira uma lista de seis linhas com barra de proporção. A contagem está
-   sempre visível; hover e foco só acendem o segmento em âmbar.             */
-.regua-capacidade-rotulo,
-.regua-capacidade-unidade {
-  margin: 0;
-}
-
-/* Se o cabeçalho quebrar em duas linhas, a unidade fica à direita, como uma
-   coluna de escala — não como um rótulo solto à esquerda. */
-.regua-capacidade-unidade {
-  margin-left: auto;
-}
-
-.regua-capacidade-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--esp-2) var(--esp-6);
-  margin-bottom: var(--esp-5);
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-rotulo);
-  line-height: var(--entrelinha-rotulo);
-  text-transform: uppercase;
-}
-
-.regua-capacidade-lista {
-  display: grid;
-  grid-template-columns: var(--colunas);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.regua-capacidade-item,
-.regua-capacidade-item + .regua-capacidade-item {
-  display: flex;
-  margin: 0;
-}
-
-.regua-capacidade-link {
-  position: relative;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--esp-1);
-  padding: var(--esp-4) var(--esp-4) var(--esp-2) 0;
-  border-top: 1px solid var(--linha);
-  color: var(--tinta);
-  text-decoration: none;
-  transition:
-    background-color var(--mov-hover) var(--curva),
-    border-color var(--mov-hover) var(--curva);
-}
-
-/* O tick vertical de 9 px, um dos poucos ornamentos do sistema — ele mede. */
-.regua-capacidade-link::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: 0;
-  width: 1px;
-  height: 9px;
-  background: var(--grafite);
-  transform-origin: top;
-}
-
-.regua-capacidade-link:hover {
-  border-top-color: var(--sinal);
-  background: color-mix(in srgb, var(--sinal) 12%, transparent);
-}
-
-.regua-capacidade-link:hover::before,
-.regua-capacidade-link:focus-visible::before {
-  background: var(--sinal);
-}
-
-.regua-capacidade-link:focus-visible {
-  background: color-mix(in srgb, var(--sinal) 12%, transparent);
-}
-
-.regua-capacidade-faixa {
-  color: var(--grafite);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: var(--tracking-unidade);
-  line-height: var(--entrelinha-rotulo);
-  overflow-wrap: normal;
-  text-transform: uppercase;
-}
-
-.regua-capacidade-contagem {
-  color: var(--tinta);
-  font-family: var(--fonte-mono);
-  font-size: clamp(var(--texto-bloco), 1.7vw, var(--texto-secao));
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--peso-medio);
-  letter-spacing: var(--tracking-apertado);
-  line-height: 1.1;
-}
-
-.regua-capacidade-trilho {
-  display: none;
-}
-
-.regua-capacidade-nota {
-  max-width: 92ch;
-  margin: var(--esp-4) 0 0;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-unidade);
-  line-height: var(--entrelinha-pequena);
-}
-
-/* A única entrada orquestrada do site: os ticks da régua em sequência de
-   40 ms, uma vez. Com movimento reduzido, os ticks nascem no lugar. */
-@keyframes regua-tick-entra {
-  from {
-    transform: scaleY(0);
-  }
-
-  to {
-    transform: scaleY(1);
-  }
-}
-
-@keyframes regua-barra-entra {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .regua-capacidade-link::before {
-    animation: regua-tick-entra 200ms var(--curva) calc(var(--indice) * 40ms)
-      both;
-  }
-}
-
 /* Desktop (ticket 93): o título ocupa a largura toda e a leitura divide a linha
    com as ações, alinhadas à direita na base da coluna. As colunas usam
    minmax(0, …) para nenhuma marca longa empurrar a página para fora da
@@ -2849,14 +2702,6 @@ main.principal-leitura {
     .hero-simulador {
       animation-delay: 400ms;
     }
-  }
-}
-
-/* Rótulo que quebra em duas linhas não desalinha a leitura: as contagens
-   encostam no pé da mesma linha da régua. */
-@media (min-width: 40rem) {
-  .regua-capacidade-contagem {
-    margin-top: auto;
   }
 }
 
@@ -3150,55 +2995,6 @@ main.principal-leitura {
 
   .hero-sol-opcao {
     min-height: 44px;
-  }
-
-  /* A régua vira lista: rótulo, contagem e barra de proporção na mesma linha,
-     com alvo de 44 px e nenhum overflow horizontal. */
-  .regua-capacidade-lista {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .regua-capacidade-link {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: var(--esp-2) var(--esp-5);
-    align-items: baseline;
-    min-height: 44px;
-    padding: var(--esp-4) 0;
-    border-top: 0;
-    border-bottom: 1px solid var(--linha);
-  }
-
-  .regua-capacidade-link::before {
-    display: none;
-  }
-
-  .regua-capacidade-contagem {
-    justify-self: end;
-    font-size: var(--texto-bloco);
-  }
-
-  .regua-capacidade-trilho {
-    display: block;
-    grid-column: 1 / -1;
-    height: 6px;
-    background: var(--mineral);
-  }
-
-  .regua-capacidade-barra {
-    display: block;
-    width: var(--proporcao);
-    height: 100%;
-    background: color-mix(in srgb, var(--sinal) 55%, var(--giz));
-    transform-origin: left;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .regua-capacidade-barra {
-      animation: regua-barra-entra 200ms var(--curva) calc(var(--indice) * 40ms)
-        both;
-    }
   }
 
   .analises-destaque-lista li {

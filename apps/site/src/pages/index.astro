@@ -7,7 +7,6 @@ import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import HomePopulares from "../components/HomePopulares.astro";
 import Botao from "../components/primitivos/Botao.astro";
-import ReguaCapacidade from "../components/ReguaCapacidade.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
@@ -29,7 +28,6 @@ import {
   PASSOS_ASSISTENTE,
   PERGUNTAS_FREQUENTES,
 } from "../lib/home.ts";
-import { faixasDaRegua } from "../lib/regua-capacidade.ts";
 
 // A home é um hub (ticket 46) montado inteiro no build: as contagens saem do
 // dataset de consulta publicado, as capacidades/marcas populares da curadoria
@@ -46,7 +44,6 @@ const capacidades = capacidadesPopulares(dataset, curadoria);
 const marcas = marcasPopulares(dataset, curadoria);
 const contagemPopulares = (quantidade: number | undefined): string =>
   `${formatarNumero(quantidade ?? 0)} aparelhos`;
-const regua = faixasDaRegua(dataset);
 // O simulador do hero arredonda para uma capacidade comercial: o recorte
 // (`?btu=`) e o resumo de eficiência dessa capacidade saem da mesma base que
 // a tabela serve, no build.
@@ -125,7 +122,6 @@ const jsonLd: Record<string, unknown>[] = [
       pede antes de escolher o modelo.
     </p>
     <SimuladorHero client:load resumos={resumosComerciais} />
-    <ReguaCapacidade faixas={regua} />
   </section>
 
   <section class="home-confianca" aria-label="Cobertura da base">

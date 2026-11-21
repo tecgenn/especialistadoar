@@ -193,7 +193,9 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 **Mobile:** régua vira lista de seis linhas com barra de proporção e contagem; hero em uma coluna; CTAs empilhados; FAQ mantém `<details>`; nenhum carrossel.
 
-**Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta a régua como uma partição exata — o rótulo diz "aparelhos com capacidade na faixa".
+> **Revisão (2026-11-21, ticket 94):** a régua de capacidade foi **removida da home** nos dois breakpoints. O simulador do ambiente do #93 é a única leitura de escala da primeira tela e a página segue dele para a cobertura da base. A navegação por faixa (`?btuMin=&btuMax=`) continua nos chips de Faixa de capacidade da Pesquisa avançada do catálogo, e a entrada editorial por faixa da home pertence ao #96. Onde este documento ainda descreve a régua, vale a decisão do #94 e o `DESIGN.md`.
+
+**Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta uma faixa como partição exata — o rótulo diz "aparelhos com capacidade na faixa".
 
 **Estados:** base carregada no build (não há estado vazio); versão ausente não renderiza a linha; sem Análise publicada, a seção de destaques desaparece; sem Oferta, o cartão não mostra CTA.
 

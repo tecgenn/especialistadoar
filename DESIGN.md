@@ -149,14 +149,14 @@ components:
 
 **Creative North Star: "Instrumento de climatização"**
 
-O site é um instrumento de medição, não uma vitrine. A superfície lembra um painel de climatização calibrado: chão quase branco e neutro, tinta petróleo profunda, linhas de 1 px que separam escalas, leituras em mono com unidade sempre presente e uma única faixa térmica que só aparece onde existe um dado de temperatura ou energia. Nada flutua; tudo está apoiado numa grade visível. A autoridade vem da calibração — réguas, ticks, numeração, procedência —, não de sombras, gradientes ou promessas.
+O site é um instrumento de medição, não uma vitrine. A superfície lembra um painel de climatização calibrado: chão quase branco e neutro, tinta petróleo profunda, linhas de 1 px que separam escalas, leituras em mono com unidade sempre presente e uma única faixa térmica que só aparece onde existe um dado de temperatura ou energia. Nada flutua; tudo está apoiado numa grade visível. A autoridade vem da calibração — réguas de seção, colunas, numeração, procedência —, não de sombras, gradientes ou promessas.
 
-A densidade é deliberada. O catálogo é o produto, então a tabela pode ser densa e a ficha pode ser longa; o que não pode existir é ruído. Cada ornamento tem função: a linha separa atributos, o tick marca uma capacidade, o mono identifica uma unidade ou uma fonte, o âmbar assinala a ação ou o calor. O visitante deve sentir que está lendo um instrumento confiável e não uma página de marketing.
+A densidade é deliberada. O catálogo é o produto, então a tabela pode ser densa e a ficha pode ser longa; o que não pode existir é ruído. Cada ornamento tem função: a linha separa atributos, a numeração ordena listas, o mono identifica uma unidade ou uma fonte, o âmbar assinala a ação ou o calor. O visitante deve sentir que está lendo um instrumento confiável e não uma página de marketing.
 
 A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca organiza a interface; o mono mede. O contraste entre as três vozes é o sistema. Não há ilustração decorativa, personagem, mascote, glassmorphism, gradiente de fundo, pill, card arredondado ou selo de "melhor". O que existe é o dado, a escala e o caminho para decidir.
 
 **Key Characteristics:**
-- Grade de medição visível: hairlines, ticks e numeração de 1 px.
+- Grade de medição visível: hairlines e numeração de 1 px.
 - Superfícies mate: chão quase branco e neutro, tinta petróleo, nenhum brilho.
 - Um acento de sinal (âmbar) e uma escala térmica usada como dado.
 - Três vozes tipográficas: grotesca para operar, serifa para ler, mono para medir.
@@ -193,7 +193,7 @@ A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como c
 ### Neutral
 - **Giz** (`#FDFDFB`): superfície de cartões, tabela, campos e páginas de leitura.
 - **Papel** (`#F8F8F7`): fundo da página, cabeçalho da tabela, chips inativos, blocos secundários. Branco quase puro e neutro, sem viés mineral esverdeado.
-- **Mineral** (`#ECECEB`): preenchimento de barras, trilha da régua no celular e fundo do botão secundário em estado pressed. A zebra da tabela é quase branca, não mineral.
+- **Mineral** (`#ECECEB`): preenchimento de barras e fundo do botão secundário em estado pressed. A zebra da tabela é quase branca, não mineral.
 - **Hairline** (`#D5D8D5`): toda borda de 1 px sobre papel claro.
 - **Hairline escura** (`#24454A`): borda de 1 px sobre tinta ou petróleo.
 - **Grafite** (`#4B5D5F`): texto secundário sobre giz (6,8:1).
@@ -237,7 +237,7 @@ Três vozes, uma hierarquia. A grotesca opera; a serifa lê; o mono mede. A esca
 ### Fontes
 - **Schibsted Grotesk Variable** — display, títulos, navegação, botões, tabela e formulários. Pesos 400/500/600/700. `font-display: swap`.
 - **Source Serif 4 Variable** — corpo de leitura, análises, textos institucionais e explicações longas. Pesos 400/500/600. Itálico real para ênfase editorial.
-- **Azeret Mono Variable** — rótulos de campo, unidades, números de registro, versão da tabela, procedência, ticks e legendas de dados. Pesos 400/500/600. Sempre com `font-variant-numeric: tabular-nums` quando há colunas de números.
+- **Azeret Mono Variable** — rótulos de campo, unidades, números de registro, versão da tabela, procedência e legendas de dados. Pesos 400/500/600. Sempre com `font-variant-numeric: tabular-nums` quando há colunas de números.
 
 Todas são self-hosted via Fontsource, subconjunto `latin` apenas, e apenas um arquivo por família é pré-carregado (o peso 400 da grotesca). São ~121 KB no total, dentro do orçamento de 130 KB. A serifa e o mono entram depois, sem bloquear a primeira pintura.
 
@@ -345,7 +345,7 @@ Regras:
 - **Nenhum pill em componente novo**. Nenhum raio maior que 8 px. Nenhum círculo, exceto o marcador de rádio/checkbox e ícones circulares de 32 px. As 999 px legadas em `global.css` estão inventariadas na spec da fase.
 - Bordas sempre de 1 px; a única borda de 2 px é a seleção ativa e o foco.
 - Ícones de linha, 1,5 px de traço, 16/20/24 px, desenhados para a grade. Sem ícones preenchidos, coloridos ou ilustrativos.
-- A régua de capacidade é o elemento gráfico-assinatura: uma linha horizontal com ticks a cada faixa comercial, rótulos mono e a faixa ativa em âmbar. Ela é navegável e mostra a contagem real de Aparelhos. Na home ela é a única leitura de escala da primeira tela; não existe uma segunda versão decorativa do mesmo gráfico.
+- A régua de capacidade foi **retirada no ticket 94**. Desde o #93 a leitura de escala da primeira tela é o **simulador do ambiente**, que devolve uma capacidade com a conta aberta e as contagens daquela capacidade; a régua de seis faixas repetia a mesma afirmação num segundo gráfico. Não recriar a régua em nenhuma rota — nem como gráfico, nem como trilho, nem como lista de seis linhas com barra de proporção. A descoberta por faixa continua nos chips de **Faixa de capacidade** da Pesquisa avançada do catálogo, e a entrada editorial por faixa da home pertence ao #96, como lista de modelos, não como escala.
 
 ## Components
 
@@ -377,19 +377,16 @@ Letra A–F em mono 600, cor da Classe, fundo tonal a 10%, borda de 1 px na cor 
 Rótulo mono maiúsculo, valor em mono 1,75–2,5 rem, unidade em mono 0,75 rem, legenda em grotesca pequena. Sem caixa; a hierarquia vem do tamanho e da hairline acima. É o componente que substitui o "card de estatística" genérico.
 
 ### Hero
-Decisão do ticket 93, refeita depois da primeira entrega: o topo da home é tipográfico e funcional. A fita de calibração abre em largura total; o H1 em grotesca display — até 5,25 rem, acima do token, só aqui — ocupa a largura toda em duas linhas fixas no desktop e flui naturalmente no celular; abaixo dele vem o lead em serifa e, na sequência, o **simulador do ambiente**. Não existe painel lateral, escala decorativa nem linha animada: a régua de capacidade logo abaixo é a única leitura de escala da primeira tela, e a decisão sobre manter ou remover essa navegação independente pertence ao ticket 94. O marcador âmbar de 2 px acima do título continua sendo o mesmo sinal da linha analisada na tabela. Nada de conteúdo depende de Análise publicada.
+Decisão do ticket 93, refeita depois da primeira entrega: o topo da home é tipográfico e funcional. A fita de calibração abre em largura total; o H1 em grotesca display — até 5,25 rem, acima do token, só aqui — ocupa a largura toda em duas linhas fixas no desktop e flui naturalmente no celular; abaixo dele vem o lead em serifa e, na sequência, o **simulador do ambiente**. Não existe painel lateral, escala decorativa nem linha animada. Depois do ticket 94 também não existe régua de capacidade: o simulador é a única leitura de escala da primeira tela, e a página segue daí para a cobertura da base. O marcador âmbar de 2 px acima do título continua sendo o mesmo sinal da linha analisada na tabela. Nada de conteúdo depende de Análise publicada.
 
 ### Simulador do hero
 A promessa da home executada na primeira tela: a pessoa move a área (8–60 m²) e escolhe a incidência de sol; o motor puro do Assistente devolve a capacidade comercial, com a conta aberta (`20 m² × 750 BTU/h/m² = 15.000 → 18.000`) e o que a base tem naquela capacidade (`318 aparelhos de 18.000 BTU/h, 256 com Classe A`). O bloco é uma faixa de instrumento, não um card: hairline superior, rótulos em mono maiúsculo, leitura do resultado em mono 2,5 rem, chips de 32 px (44 px no celular) e o controle deslizante com trilho de 1 px e preenchimento de 2 px em azul-frio — sem gradiente, sem sombra. As duas ações são contextuais: a primária abre o recorte exato (`/aparelhos/?btu=`), a secundária o catálogo inteiro; o Assistente completo fica na nota de rodapé, que também declara a estimativa. O HTML já traz o estado padrão (20 m², sol à tarde, 18.000 BTU/h), então o bloco funciona sem JavaScript; a ilha só acrescenta a interação.
-
-### Régua de capacidade
-Linha de 1 px com até seis segmentos proporcionais às contagens reais, apenas para faixas com Aparelhos; ticks verticais de 9 px; rótulos mono `ATÉ 9.000`, `9.001–12.000`, etc.; contagem em mono abaixo. Cada segmento é um link para o recorte correspondente. No hover/foco, o segmento ganha fundo âmbar a 12% e a contagem aparece; no celular, vira uma lista de seis linhas com barra de proporção. Como um Aparelho pode ter Variantes em mais de uma faixa, a soma das contagens pode passar do total: o rótulo fala em "aparelhos com capacidade na faixa", não em uma partição. É a assinatura da home e não se repete em outras rotas.
 
 ### Tabela de Aparelhos
 Cabeçalho mono claro, linhas hairline, zebra quase branca, ordenação com setas de 8 px, linha analisada com marcador âmbar de 2 px à esquerda e selo "Análise" discreto. A célula Modelo tem o link e a segunda linha `Função · Tensão` em grotesca pequena e mudo. Checkbox de 20 px com alvo de 44 px. A tabela nunca vira cartões: em telas estreitas ela rola na horizontal dentro do próprio contêiner, com seleção e Modelo fixas à esquerda, cabeçalho sticky e o aviso "Deslize para ver as colunas".
 
 ### Painel de filtros
-Duas faixas nomeadas — **Aparelho** e **Desempenho** —, cada uma com rótulo mono e hairline superior. Campos em largura total, chips quebrando linha. Rodapé com contagem do recorte e "Limpar filtros" (só quando fora do padrão). No desktop, painel embutido abaixo da barra; no celular, painel sobreposto de altura máxima com rolagem interna e botão "Aplicar" fixo.
+Duas faixas nomeadas — **Aparelho** e **Desempenho** —, cada uma com rótulo mono e hairline superior. Campos em largura total, chips quebrando linha. A **Faixa de capacidade** (seis intervalos derivados dos dados) vive aqui, nos chips de Desempenho: é o caminho de descoberta por faixa que a home deixou de oferecer quando a régua saiu (ticket 94), com o contrato `?btuMin=&btuMax=` intacto. Rodapé com contagem do recorte e "Limpar filtros" (só quando fora do padrão). No desktop, painel embutido abaixo da barra; no celular, painel sobreposto de altura máxima com rolagem interna e botão "Aplicar" fixo.
 
 ### Dock de seleção
 Barra escura (tinta) acima da tabela, com contagem `2 de 3`, nomes dos modelos em mono e ações "Limpar seleção" e "Comparar". Aparece só com ao menos um selecionado; com dois ou três, "Comparar" vira link primário âmbar. No celular, ocupa a largura toda e mantém 44 px de alvo.
@@ -416,12 +413,12 @@ Texto "Ver oferta — Loja · link de afiliado" em uma linha, com o marcador em 
 Título em grotesca 1,25 rem, uma frase em serifa, uma ação primária. Sem ilustração. Exemplos: catálogo sem resultado, comparação sem modelos, análise sem Oferta, calculadora sem consumo declarado.
 
 ### 404
-Página de leitura com o título "Fora da escala", uma frase curta, a régua de capacidade como caminho de volta e links para Aparelhos, Assistente e Comparar. Sem humor forçado.
+Página de leitura com o título "Fora da escala", uma frase curta e links claros para Aparelhos, Assistente, Comparar e Home. Sem régua, sem gráfico de recuperação e sem humor forçado: o caminho de volta é uma lista de destinos, não uma segunda escala.
 
 ### Movimento
 - Durações: 120 ms (hover/foco e preenchimento do trilho), 180 ms (abertura de painel), 240 ms (dock, resultado e troca do número do simulador); na entrada do hero, 440 ms na fita, 700 ms por linha do título e 520 ms no lead e no simulador.
 - Curva: `cubic-bezier(0.2, 0, 0, 1)`.
-- Uma entrada no hero, em sequência: a fita chega em 440 ms; cada linha do título sobe do próprio mask em 700 ms, 80 ms uma da outra; o lead e o simulador entram com 12 px de subida em 520 ms quando a segunda linha está assentando (340 ms no celular, 400 ms no desktop). Os ticks da régua navegável continuam em sequência de 40 ms. No simulador, o preenchimento do trilho acompanha o controle em 120 ms e o número do resultado entra de novo em 240 ms a cada mudança. Todo o resto é feedback imediato.
+- Uma entrada no hero, em sequência: a fita chega em 440 ms; cada linha do título sobe do próprio mask em 700 ms, 80 ms uma da outra; o lead e o simulador entram com 12 px de subida em 520 ms quando a segunda linha está assentando (340 ms no celular, 400 ms no desktop). No simulador, o preenchimento do trilho acompanha o controle em 120 ms e o número do resultado entra de novo em 240 ms a cada mudança. Todo o resto é feedback imediato.
 - O estado final já está no HTML: a animação só descreve a chegada sob `prefers-reduced-motion: no-preference`. Com `prefers-reduced-motion: reduce` ou `forced-colors: active`, nada se move e nada fica oculto.
 
 ## Do's and Don'ts

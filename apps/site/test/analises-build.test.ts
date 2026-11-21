@@ -353,87 +353,6 @@ function versaoDaTabela(): string | undefined {
 }
 
 /**
- * A régua de capacidade (ticket 70) é o contrato do topo da home: seis faixas
- * comerciais com as contagens reais da base publicada, cada uma um link para o
- * recorte correspondente. As contagens e os hrefs são recalculados aqui, sem
- * importar o módulo da página.
- */
-function conferirReguaDaHome(html: string): void {
-  const itens = JSON.parse(
-    readFileSync(join(distDir, "consulta.json"), "utf8"),
-  ) as Array<{ capacidadesBtu: number[] }>;
-  const numero = new Intl.NumberFormat("pt-BR");
-  const faixas = [
-    {
-      min: Number.NEGATIVE_INFINITY,
-      max: 9000,
-      rotulo: "Até 9.000",
-      href: "/aparelhos/?btuMax=9000",
-    },
-    {
-      min: 9001,
-      max: 12000,
-      rotulo: "9.001–12.000",
-      href: "/aparelhos/?btuMin=9001&amp;btuMax=12000",
-    },
-    {
-      min: 12001,
-      max: 18000,
-      rotulo: "12.001–18.000",
-      href: "/aparelhos/?btuMin=12001&amp;btuMax=18000",
-    },
-    {
-      min: 18001,
-      max: 24000,
-      rotulo: "18.001–24.000",
-      href: "/aparelhos/?btuMin=18001&amp;btuMax=24000",
-    },
-    {
-      min: 24001,
-      max: 30000,
-      rotulo: "24.001–30.000",
-      href: "/aparelhos/?btuMin=24001&amp;btuMax=30000",
-    },
-    {
-      min: 30001,
-      max: Number.POSITIVE_INFINITY,
-      rotulo: "Acima de 30.000",
-      href: "/aparelhos/?btuMin=30001",
-    },
-  ];
-
-  const inicio = html.indexOf('class="regua-capacidade"');
-  expect(inicio).toBeGreaterThan(-1);
-  const regua = html.slice(inicio, html.indexOf("</nav>", inicio));
-  // O texto como o leitor de tela o monta: sem tags e com espaços colapsados.
-  // O `<wbr>` que deixa o rótulo quebrar depois do travessão conta como um
-  // espaço no texto, então a comparação ignora esse espaço.
-  const texto = textoDaPagina(regua.replace(/<[^>]+>/g, " ")).replace(
-    /– /g,
-    "–",
-  );
-  expect(regua).toContain('aria-label="Navegar por faixa de capacidade"');
-  expect(regua.match(/class="regua-capacidade-link"/g) ?? []).toHaveLength(
-    faixas.length,
-  );
-
-  for (const faixa of faixas) {
-    const contagem = itens.filter((item) =>
-      item.capacidadesBtu.some((btu) => btu >= faixa.min && btu <= faixa.max),
-    ).length;
-    expect(contagem).toBeGreaterThan(0);
-    expect(regua).toContain(`href="${faixa.href}"`);
-    expect(texto).toContain(faixa.rotulo);
-    expect(texto).toContain(
-      `${numero.format(contagem)} aparelhos com capacidade nesta faixa`,
-    );
-  }
-
-  // A régua não apresenta a soma das seis como o total de Aparelhos.
-  expect(texto).toContain("a soma das seis não é o total de Aparelhos da base");
-}
-
-/**
  * A home é um hub (ticket 46) com os nove blocos, e tudo nela é derivado da
  * base publicada: contagens, capacidades e marcas populares, Versão da tabela.
  */
@@ -501,6 +420,11 @@ function conferirHomeHub(html: string): void {
   expect(css).toMatch(/@keyframes\s+hero-linha-sobe/);
   expect(css).toMatch(/@keyframes\s+hero-entra/);
   expect(css).toMatch(/prefers-reduced-motion:\s*no-preference/);
+  // Abaixo de 22 rem o display desce para o token de manchete. Um var() de
+  // token inexistente cairia no tamanho herdado do corpo (17 px) em 320 px.
+  expect(css).toMatch(
+    /@media\s*\(width<=22rem\)\{\.home-titulo\{font-size:var\(--texto-manchete\)\}/,
+  );
   expect(css).not.toMatch(/home-escala/);
   expect(css).toMatch(/outline:\s*2px solid var\(--sinal\)/);
   expect(css).not.toMatch(/outline:\s*2px solid var\(--primaria\)/);
@@ -515,9 +439,14 @@ function conferirHomeHub(html: string): void {
     /grid-template-columns:\s*minmax\(0,\s*7fr\)\s+minmax\(0,\s*5fr\)/,
   );
 
-  // 2b. Régua de capacidade: seis faixas, contagens do dataset e link para o
-  //     recorte de cada faixa no catálogo.
-  conferirReguaDaHome(html);
+  // 2b. A régua de capacidade saiu da home (ticket 94): o simulador é a única
+  //     leitura de escala, sem segundo gráfico, sem ticks e sem link de faixa
+  //     na página. O contrato `btuMin`/`btuMax` segue no catálogo.
+  expect(html).not.toContain("regua-capacidade");
+  expect(html).not.toMatch(/btuMin=|btuMax=/);
+  expect(css).not.toMatch(
+    /regua-capacidade|regua-tick-entra|regua-barra-entra|--proporcao/,
+  );
 
   // 3. Faixa de confiança com contagens reais e a Versão da tabela.
   expect(html).toContain(`<strong>${contagens.aparelhos}</strong> aparelhos`);

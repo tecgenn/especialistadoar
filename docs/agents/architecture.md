@@ -237,11 +237,14 @@ nova exportação CSV
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
   (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`) com a fita
   de calibração (`BASE INMETRO · VERSÃO · OBTIDA EM`), H1 e lead preservados,
-  um **hero renovado** com animação de entrada e efeito de linhas ao lado do
-  texto (ticket 93 — `ReguaCapacidade.astro` migra para o hero no desktop; no
-  celular a régua continua como lista de seis linhas com barra de proporção,
-  ticket 94), as duas ações de entrada (catálogo primário e botão secundário
-  renomeado, ex: "Calcular BTUs"), a leitura de cobertura com contagens
+  um **hero renovado** (ticket 93): H1 display em duas linhas com entrada por
+  mask, lead em serifa e o **simulador de ambiente** — área e sol viram
+  capacidade comercial pelo motor puro do Assistente, com a conta aberta e as
+  contagens daquela capacidade e de Classe A calculadas no build a partir do
+  `consulta.json`. A **régua de capacidade** do ticket 70 foi removida no
+  ticket 94 (componente, módulo puro, teste e CSS): o simulador é a única
+  leitura de escala da primeira tela, e a navegação por faixa continua no
+  catálogo, nos chips de Faixa de capacidade. A leitura de cobertura com contagens
   derivadas do `consulta.json` (Aparelhos, marcas, capacidades) e a Versão da
   tabela, blocos de aparelhos em destaque por faixa (ticket 96 — substituem
   "Capacidades populares" e "Marcas populares"), carousel de Análises em destaque
