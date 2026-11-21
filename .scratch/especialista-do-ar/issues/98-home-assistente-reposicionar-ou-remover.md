@@ -6,6 +6,8 @@
 
 **Blocked by:** 93 — Hero renovado.
 
+**Skills:** `impeccable` — `reference/distill.md` (critério para a saída) e `reference/new-work-world.md` + `reference/craft-floor.md` (se ficar, hierarquia e apelo visual sem repetir o simulador). `design-taste-frontend` — `references/copy.md`, `references/moments.md` e `references/cards.md`. `ui-ux-pro-max` — `"redundant cta removal" --domain ux` e `"cta visual hierarchy" --domain ux`.
+
 **Status:** ready-for-agent
 
 - [ ] Decisão tomada: Assistente fica abaixo do hero com apelo visual, ou sai da home

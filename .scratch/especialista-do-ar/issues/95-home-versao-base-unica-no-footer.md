@@ -4,6 +4,8 @@
 
 **Blocked by:** 93 — Hero renovado; 94 — Régua de capacidade.
 
+**Skills:** `impeccable` — `reference/distill.md` (remover a informação repetida da fita, da cobertura e da metodologia, deixando só o dado no footer) e `reference/typeset.md` + `reference/craft-floor.md` (mono pequeno legível, sem virar ruído). `design-taste-frontend` — `references/system.md` (mono reservado a fonte/unidade, tokens existentes, nenhum estilo novo). `ui-ux-pro-max` — `"redundant information removal" --domain ux` e `"data provenance disclosure" --domain ux`.
+
 **Status:** ready-for-agent
 
 - [ ] Versão da base aparece só no footer, em fonte pequena (mono 0.75rem)

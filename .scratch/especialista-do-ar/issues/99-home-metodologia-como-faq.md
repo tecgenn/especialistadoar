@@ -4,6 +4,8 @@
 
 **Blocked by:** None — can start immediately.
 
+**Skills:** `design-taste-frontend` — `references/copy.md` (preservar o texto editorial) e `references/sections.md`. `impeccable` — `reference/typeset.md` (fonte mono nas notas de fonte) e `reference/craft-floor.md`. `ui-ux-pro-max` — `"faq accordion heading" --domain ux` e `"native details disclosure accessibility" --domain ux`.
+
 **Status:** ready-for-agent
 
 - [ ] Metodologia convertida em `<details>` nativos (clique para abrir)

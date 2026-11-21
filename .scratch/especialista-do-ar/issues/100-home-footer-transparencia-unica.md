@@ -4,6 +4,8 @@
 
 **Blocked by:** 95 — Versão da base única no footer.
 
+**Skills:** `design-taste-frontend` — `references/layout-v4.md` (3 colunas no desktop, empilhado no mobile), `references/cards.md` e `references/copy.md` (palavras do projeto, não cópia do concorrente). `impeccable` — `reference/craft-floor.md` e `reference/typeset.md`. `ui-ux-pro-max` — `"footer multi column layout" --domain ux` e `"affiliate disclosure link" --domain ux`.
+
 **Status:** ready-for-agent
 
 - [ ] Bloco único de "Transparência com o Leitor" no footer

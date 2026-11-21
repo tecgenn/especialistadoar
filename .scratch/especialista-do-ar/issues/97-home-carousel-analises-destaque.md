@@ -4,6 +4,8 @@
 
 **Blocked by:** 96 — Blocos de aparelhos em destaque por faixa.
 
+**Skills:** `design-taste-frontend` — `references/motion.md`, `references/moments.md` e `references/cards.md` (um único momento orquestrado, com pausa nos controles e respeito a `prefers-reduced-motion`). `impeccable` — `reference/animate.md` e `reference/craft-floor.md`. `ui-ux-pro-max` — `"carousel accessible controls keyboard" --domain ux` e `"carousel reduced motion pause" --domain ux`.
+
 **Status:** ready-for-agent
 
 - [ ] Carousel de análises quando houver ≥ 1 Análise publicada

@@ -4,6 +4,8 @@
 
 **Blocked by:** None — can start immediately.
 
+**Skills:** `design-taste-frontend` — `references/cards.md` e `references/sections.md` (cartões de ficha técnica, uma ideia por bloco de faixa). `impeccable` — `reference/component-review.md` e `reference/craft-floor.md`. `ui-ux-pro-max` — `"product spec card" --domain ux` e `"segmented control selector" --domain ux`.
+
 **Status:** ready-for-agent
 
 - [ ] "Capacidades populares" e "Marcas populares" removidas da home
