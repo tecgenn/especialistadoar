@@ -187,6 +187,7 @@ describe("contraste dos pares documentados", () => {
     ["mudo", "giz", 4.5],
     ["mudo", "papel", 4.5],
     ["mudo-escuro", "tinta", 4.5],
+    ["mudo-escuro", "azul-frio-escuro", 4.5],
     ["frio-texto", "giz", 4.5],
     ["frio-texto", "papel", 4.5],
     ["azul-frio", "giz", 4.5],

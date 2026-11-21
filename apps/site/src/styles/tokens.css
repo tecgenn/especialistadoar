@@ -26,7 +26,10 @@
 
   --grafite: #4b5d5f;
   --mudo: #5f6f70;
-  --mudo-escuro: #9fb0ae;
+  /* Texto secundário sobre superfície escura. #9fb0ae dava 4,1:1 sobre
+     --azul-frio-escuro (rodapé); este tom, derivado da família azul-frio, dá 4,9:1
+     e não lê como cinza lavado sobre o fundo colorido. */
+  --mudo-escuro: #a9c0c6;
 
   --sinal: #e8a33d;
   --sinal-texto: #7a4a0f;

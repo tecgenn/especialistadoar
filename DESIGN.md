@@ -12,7 +12,7 @@ colors:
   hairline-dark: "#24454A"
   graphite: "#4B5D5F"
   muted: "#5F6F70"
-  muted-dark: "#9FB0AE"
+  muted-dark: "#A9C0C6"
   signal: "#E8A33D"
   signal-ink: "#7A4A0F"
   signal-wash: "#FBEFD9"
@@ -198,7 +198,7 @@ A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como c
 - **Hairline escura** (`#24454A`): borda de 1 px sobre tinta ou petróleo.
 - **Grafite** (`#4B5D5F`): texto secundário sobre giz (6,8:1).
 - **Mudo** (`#5F6F70`): legendas, unidades e metadados sobre giz ou papel (5,2:1 e 5,0:1).
-- **Mudo escuro** (`#9FB0AE`): texto secundário sobre tinta (7,6:1).
+- **Mudo escuro** (`#A9C0C6`): texto secundário sobre superfície escura — tinta (9,0:1) e azul-frio escuro, o rodapé (4,9:1). O valor anterior (`#9FB0AE`) ficava em 7,6:1 sobre tinta mas caía para 4,1:1 sobre o rodapé, abaixo de AA; o tom foi clareado e puxado para a família azul-frio, para não ler como cinza lavado sobre o fundo colorido.
 
 ### Classe energética
 Cada Classe tem uma cor de texto AA sobre giz e papel, usada em ponto, borda e etiqueta com fundo tonal a 10%. A cor nunca é o único portador do significado: a letra A–F sempre aparece.
@@ -353,7 +353,7 @@ Regras:
 Faixa de 64/72 px, fundo giz, hairline inferior. Marca em grotesca 600, navegação em grotesca 500 com sublinhado âmbar de 2 px no item ativo. O link "Análises" só existe quando há Análise publicada. No celular, a navegação rola horizontalmente sem esconder itens.
 
 ### Rodapé
-Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas no desktop: proveniência e Versão da tabela; navegação institucional; nota de afiliado. No celular, empilha com a proveniência primeiro. A nota de afiliado é texto, não selo. Os links são giz com sublinhado hairline-escura e hover âmbar; só o fundo vem da família azul-frio, e o rodapé não lê mais "verde-petróleo".
+Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas no desktop: proveniência e Versão da tabela; navegação institucional; nota de afiliado. Rótulos mono e parágrafos secundários usam **mudo escuro** (`--mudo-escuro`, `#A9C0C6`, 4,9:1 sobre o fundo); nenhum texto do rodapé fica abaixo de AA. No celular, empilha com a proveniência primeiro. A nota de afiliado é texto, não selo. Os links são giz com sublinhado hairline-escura e hover âmbar; só o fundo vem da família azul-frio, e o rodapé não lê mais "verde-petróleo".
 
 ### Botão primário
 Fundo **azul-frio** (`--azul-frio`, `#0E6B8A`), texto giz, raio 2 px, altura 44 px, padding 10×20, grotesca 500. Hover: **azul-frio hover** (`--azul-frio-hover`, `#1579A0`). Active: **azul-frio ativo** (`--azul-frio-ativo`, `#0B5A73`) com deslocamento de 1 px. Disabled: 45% de opacidade. Ícone opcional à direita, 16 px. Nunca com sombra.
