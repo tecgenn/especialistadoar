@@ -2420,10 +2420,12 @@ main.principal-leitura {
   display: flex;
 }
 
-/* --- Simulador do hero (ticket 93) --------------------------------------
+/* --- Simulador do hero (tickets 93 e 104) -------------------------------
    A promessa da home executada: área + sol viram capacidade comercial, com a
    conta aberta e a contagem real de Aparelhos. É instrumento, não card: uma
-   hairline abre o bloco, rótulos em mono e a leitura grande em mono.        */
+   hairline abre o bloco e a leitura grande fica em mono. O título e o rótulo
+   de "Incidência de sol" falam a língua da interface — o simulador é o
+   primeiro instrumento de decisão da página, não um formulário técnico.     */
 .hero-simulador {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2438,14 +2440,10 @@ main.principal-leitura {
   min-width: 0;
 }
 
-.hero-simulador-rotulo,
 .hero-simulador-etiqueta,
 .hero-area-rotulo,
 .hero-area-valor,
-.hero-sol-rotulo,
 .hero-area-limites,
-.hero-simulador-conta,
-.hero-simulador-oferta,
 .hero-simulador-nota {
   margin: 0;
   font-family: var(--fonte-mono);
@@ -2454,10 +2452,31 @@ main.principal-leitura {
   line-height: var(--entrelinha-rotulo);
 }
 
-.hero-simulador-rotulo {
+.hero-simulador-cabecalho {
+  display: grid;
+  gap: var(--esp-2);
+}
+
+/* O título é interface em caixa de frase, no tamanho de seção: a promessa do
+   bloco antes do controle, não um rótulo mono em caixa alta. */
+.hero-simulador-titulo {
+  margin: 0;
   color: var(--tinta);
-  font-weight: 500;
-  text-transform: uppercase;
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-secao);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.hero-simulador-apoio {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
 }
 
 .hero-simulador-etiqueta {
@@ -2478,13 +2497,27 @@ main.principal-leitura {
   gap: var(--esp-1) var(--esp-5);
 }
 
-.hero-area-rotulo,
-.hero-sol-rotulo {
+.hero-area-rotulo {
   display: inline-flex;
   align-items: center;
   gap: var(--esp-2);
   color: var(--mudo);
   text-transform: uppercase;
+}
+
+/* "Incidência de sol" sobe ao peso da interface, com o ícone de 16 px: o
+   único pictograma do bloco — os chips continuam texto puro. */
+.hero-sol-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  margin: 0;
+  padding: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-apertada);
 }
 
 .hero-area-valor {
@@ -2647,16 +2680,44 @@ main.principal-leitura {
   letter-spacing: var(--tracking-unidade);
 }
 
-.hero-simulador-conta {
-  max-width: 46ch;
-  color: var(--grafite);
-  letter-spacing: 0;
-  line-height: var(--entrelinha-pequena);
+/* A conta aberta em três linhas: rótulo à esquerda, valor em mono tabular à
+   direita, sem espremer a leitura grande acima. */
+.hero-simulador-calculo {
+  display: grid;
+  gap: var(--esp-2);
+  max-width: 42ch;
+  margin: 0;
 }
 
-.hero-simulador-oferta {
+.hero-simulador-calculo > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  min-width: 0;
+}
+
+.hero-simulador-calculo dt {
+  color: var(--mudo);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+}
+
+.hero-simulador-calculo dd {
+  margin: 0;
   color: var(--tinta);
-  letter-spacing: 0;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  text-align: end;
+}
+
+.hero-simulador-contagem {
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
   line-height: var(--entrelinha-pequena);
 }
 

@@ -411,9 +411,9 @@ function conferirHomeHub(html: string): void {
     /<a class="botao botao-primario" href="#simulador">\s*Encontrar meu ar ideal\s*<svg/,
   );
 
-  // 2. Simulador do hero: slider de área, chips de sol e o estado padrão já no
-  //    HTML (20 m² × 750 BTU/h/m² = 15.000 → 18.000 comercial), com o recorte
-  //    daquela capacidade e a contagem de Classe A.
+  // 2. Simulador do hero (ticket 104): título de interface, conta aberta em
+  //    lista de três linhas e duas ações com a URL preenchida pelo estado
+  //    padrão (20 m², sol à tarde).
   const inicioSimulador = html.indexOf('id="simulador"');
   expect(inicioSimulador).toBeGreaterThan(-1);
   expect(html).toContain('class="hero-simulador"');
@@ -423,20 +423,42 @@ function conferirHomeHub(html: string): void {
   );
   expect(simulador).toContain('id="hero-area"');
   expect(simulador).toContain('type="range"');
-  expect(simulador).toContain('href="/aparelhos/?btu=18000"');
-  expect(simulador).toContain('href="/assistente/"');
-  expect(simulador.match(/class="hero-sol-opcao"/g) ?? []).toHaveLength(4);
-  expect(simulador).toContain('aria-pressed="true">Tarde</button>');
+  expect(simulador).toContain("Descubra quantos BTUs o seu ambiente precisa");
+  expect(simulador).toContain(
+    "A área e o sol já bastam para uma primeira estimativa.",
+  );
+  expect(simulador).toContain("Incidência de sol");
+  expect(simulador).toContain("Capacidade recomendada");
   // O texto como o leitor de tela o monta: o React separa nós com comentários.
   const textoSimulador = textoDaPagina(simulador.replace(/<[^>]+>/g, " "));
   expect(textoSimulador).toContain("20 m²");
   expect(textoSimulador).toContain("18.000 BTU/h");
-  expect(textoSimulador).toContain("Explorar o catálogo");
+  // A conta aberta é um `<dl>` de três linhas, com os rótulos do ticket.
+  expect(simulador).toContain('class="hero-simulador-calculo"');
+  expect(simulador.match(/<dt>/g) ?? []).toHaveLength(3);
+  expect(simulador).toContain("Área × sol");
+  expect(simulador).toContain("Capacidade calculada");
+  expect(simulador).toContain("Faixa comercial");
+  expect(textoSimulador).toContain("15.000 BTU/h");
   expect(textoSimulador).toMatch(
-    /\d+ aparelhos de 18\.000 BTU\/h no catálogo, \d+ com Classe A\./,
+    /\d+ aparelhos de 18\.000 BTU\/h · \d+ com Classe A/,
   );
+  // A ação primária leva ao Assistente com área e sol já preenchidos; a
+  // secundária abre o recorte exato da capacidade.
+  expect(simulador).toMatch(
+    /<a class="botao botao-primario" href="\/assistente\/\?forma=metros&amp;area=20&amp;sol=tarde">/,
+  );
+  expect(simulador).toContain("Continuar no Assistente");
+  expect(simulador).toContain('href="/aparelhos/?btu=18000"');
+  expect(textoSimulador).toContain("Ver aparelhos de 18.000 BTU/h");
+  expect(simulador.match(/class="hero-sol-opcao"/g) ?? []).toHaveLength(4);
+  expect(simulador).toContain('aria-pressed="true">Tarde</button>');
   expect(html).toContain("botao-primario");
   expect(html).toContain("botao-secundario");
+  expect(html).not.toContain("Simule o seu ambiente");
+  expect(html).not.toContain("Capacidade comercial recomendada");
+  expect(html).not.toContain("Ver esses aparelhos");
+  expect(html).not.toContain("Explorar o catálogo");
   expect(html).not.toContain("Calcular BTUs");
   expect(html).not.toContain("Dimensionar meu ambiente");
 

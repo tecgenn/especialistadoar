@@ -11,21 +11,22 @@ import {
 import { caminhosDoIcone } from "../lib/icones.ts";
 
 /**
- * Simulador do hero (ticket 93). É a promessa da home executada na primeira
- * tela: a pessoa move a área, escolhe a incidência de sol e vê a capacidade
- * comercial que o motor do Assistente calcula — com a conta aberta e a
- * quantidade real de Aparelhos naquela capacidade no catálogo.
+ * Simulador do hero (tickets 93 e 104). É a promessa da home executada na
+ * primeira tela: a pessoa move a área, escolhe a incidência de sol e vê a
+ * capacidade comercial que o motor do Assistente calcula — com a conta aberta
+ * e a quantidade real de Aparelhos naquela capacidade no catálogo.
  *
  * A ilha não calcula nada por conta própria: `calcularAssistente` é a mesma
  * função pura do Assistente (ADR-0020), e as contagens vêm do build. Sem
  * JavaScript, o HTML já traz o estado padrão (20 m², sol à tarde) com o
- * resultado e o link; a ilha só acrescenta a interação.
+ * resultado e as ações; a ilha só acrescenta a interação.
  */
 const AREA_MINIMA = 8;
 const AREA_MAXIMA = 60;
 const AREA_PADRAO = 20;
 const SOL_PADRAO: IncidenciaSolar = "tarde";
 const CAMINHOS_SOL = caminhosDoIcone("sol");
+const CAMINHOS_SETA = caminhosDoIcone("seta-direita");
 
 /** Rótulos curtos dos chips: o texto completo do Assistente não cabe aqui. */
 const ROTULOS_SOL_CURTOS: Record<IncidenciaSolar, string> = {
@@ -62,6 +63,11 @@ function respostasPara(
   };
 }
 
+/** O Assistente lê o mesmo contrato `forma`/`area`/`sol` do resto do site. */
+function hrefDoAssistente(area: number, sol: IncidenciaSolar): string {
+  return `/assistente/?forma=metros&area=${area}&sol=${sol}`;
+}
+
 export default function SimuladorHero({ resumos }: Props) {
   const [area, setArea] = useState(AREA_PADRAO);
   const [sol, setSol] = useState<IncidenciaSolar>(SOL_PADRAO);
@@ -69,7 +75,7 @@ export default function SimuladorHero({ resumos }: Props) {
   const recomendacao = calcularAssistente(respostasPara(area, sol));
   const capacidade = recomendacao.capacidadeRecomendadaBtu ?? 60000;
   const resumo = resumos[String(capacidade)] ?? { total: 0, classeA: 0 };
-  const href = `/aparelhos/?btu=${capacidade}`;
+  const hrefCatalogo = `/aparelhos/?btu=${capacidade}`;
   const preenchimento =
     ((area - AREA_MINIMA) / (AREA_MAXIMA - AREA_MINIMA)) * 100;
 
@@ -80,9 +86,14 @@ export default function SimuladorHero({ resumos }: Props) {
       aria-labelledby="hero-simulador-titulo"
     >
       <div className="hero-simulador-controles">
-        <h2 className="hero-simulador-rotulo" id="hero-simulador-titulo">
-          Simule o seu ambiente
-        </h2>
+        <div className="hero-simulador-cabecalho">
+          <h2 className="hero-simulador-titulo" id="hero-simulador-titulo">
+            Descubra quantos BTUs o seu ambiente precisa
+          </h2>
+          <p className="hero-simulador-apoio">
+            A área e o sol já bastam para uma primeira estimativa.
+          </p>
+        </div>
 
         <div className="hero-area">
           <div className="hero-area-topo">
@@ -155,32 +166,62 @@ export default function SimuladorHero({ resumos }: Props) {
       </div>
 
       <div className="hero-simulador-resultado" aria-live="polite">
-        <p className="hero-simulador-etiqueta">
-          Capacidade comercial recomendada
-        </p>
+        <p className="hero-simulador-etiqueta">Capacidade recomendada</p>
         <p className="hero-simulador-leitura">
           <strong key={capacidade} className="hero-simulador-numero">
             {formatarBtu(capacidade)}
           </strong>
           <span className="hero-simulador-unidade">BTU/h</span>
         </p>
-        <p className="hero-simulador-conta">
-          {formatarNumero(area)} m² × {formatarBtu(TAXAS_SOL[sol])} BTU/h/m² ={" "}
-          {formatarBtu(recomendacao.capacidadeCalculadaBtu)} BTU/h calculados —
-          arredondados para {formatarBtu(capacidade)}.
-        </p>
-        <p className="hero-simulador-oferta">
-          {formatarBtu(resumo.total)}{" "}
-          {resumo.total === 1 ? "aparelho" : "aparelhos"} de{" "}
-          {formatarBtu(capacidade)} BTU/h no catálogo,{" "}
-          {formatarBtu(resumo.classeA)} com Classe A.
+        <dl className="hero-simulador-calculo">
+          <div>
+            <dt>Área × sol</dt>
+            <dd>
+              {formatarNumero(area)} m² × {formatarBtu(TAXAS_SOL[sol])} BTU/h/m²
+            </dd>
+          </div>
+          <div>
+            <dt>Capacidade calculada</dt>
+            <dd>{formatarBtu(recomendacao.capacidadeCalculadaBtu)} BTU/h</dd>
+          </div>
+          <div>
+            <dt>Faixa comercial</dt>
+            <dd>{formatarBtu(capacidade)} BTU/h</dd>
+          </div>
+        </dl>
+        <p className="hero-simulador-contagem">
+          {`${formatarBtu(resumo.total)} ${
+            resumo.total === 1 ? "aparelho" : "aparelhos"
+          } de ${formatarBtu(capacidade)} BTU/h · ${formatarBtu(
+            resumo.classeA,
+          )} com Classe A`}
         </p>
         <div className="hero-simulador-acoes">
-          <a className="botao botao-primario" href={href}>
-            Ver esses aparelhos
+          <a
+            className="botao botao-primario"
+            href={hrefDoAssistente(area, sol)}
+          >
+            Continuar no Assistente
+            <svg
+              className="icone"
+              width={16}
+              height={16}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {CAMINHOS_SETA.map((caminho) => (
+                <path key={caminho} d={caminho} />
+              ))}
+            </svg>
           </a>
-          <a className="botao botao-secundario" href="/aparelhos/">
-            Explorar o catálogo
+          <a className="botao botao-secundario" href={hrefCatalogo}>
+            Ver aparelhos de {formatarBtu(capacidade)} BTU/h
           </a>
         </div>
         <p className="hero-simulador-nota">
