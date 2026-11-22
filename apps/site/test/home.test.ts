@@ -10,7 +10,6 @@ import {
   formatarNumero,
   jsonLdPerguntasFrequentes,
   linkDaTabela,
-  PASSOS_ASSISTENTE,
   PERGUNTAS_FREQUENTES,
 } from "../src/lib/home.ts";
 import type { Oferta } from "../src/lib/ofertas.ts";
@@ -163,10 +162,6 @@ describe("FAQ e JSON-LD", () => {
         text: esperada?.resposta,
       });
     });
-  });
-
-  it("descreve o Assistente em três passos", () => {
-    expect(PASSOS_ASSISTENTE).toHaveLength(3);
   });
 });
 

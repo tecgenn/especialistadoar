@@ -111,25 +111,6 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
   },
 ];
 
-/** Os três passos do Assistente, na chamada do meio da home. */
-export const PASSOS_ASSISTENTE: readonly { titulo: string; texto: string }[] = [
-  {
-    titulo: "Responda cinco perguntas",
-    texto:
-      "Ambiente, área, incidência de sol, pessoas e equipamentos — uma pergunta por tela.",
-  },
-  {
-    titulo: "Veja a conta aberta",
-    texto:
-      "A capacidade recomendada aparece com os fatores usados, a fórmula resumida e o nível de confiança.",
-  },
-  {
-    titulo: "Compare antes de comprar",
-    texto:
-      "O resultado leva aos aparelhos analisados daquela capacidade e à tabela já filtrada.",
-  },
-];
-
 /**
  * O JSON-LD `FAQPage` do FAQ visível. Cada pergunta vira uma `Question` com a
  * resposta aceita; o texto é o mesmo que a pessoa lê na página.

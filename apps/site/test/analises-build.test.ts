@@ -550,22 +550,28 @@ function conferirHomeHub(html: string): void {
   expect(html).not.toMatch(/home-destaques-carrossel|autoplay/);
   expect(html).not.toContain("home-links");
 
-  // 7. Chamada do Assistente com "como funciona em 3 passos", os passos
-  //    numerados sobre a régua e uma única ação.
-  expect(html).toContain("Descubra quantos BTUs você precisa");
-  expect(html.match(/class="home-passos"/g) ?? []).toHaveLength(1);
-  for (const passo of [
+  // 7. A chamada do Assistente saiu da home no ticket 98: ela repetia a mesma
+  //    estimativa de 20 m² do hero sem acrescentar fatores, conta aberta por
+  //    fator ou confiança. O caminho para a ferramenta completa fica na nota do
+  //    simulador e na metodologia — não num segundo CTA disfarçado de seção.
+  for (const trecho of [
+    "home-assistente",
+    "home-passos",
+    "home-passo-numero",
+    "Descubra quantos BTUs você precisa",
+    "Usar o Assistente",
     "Responda cinco perguntas",
     "Veja a conta aberta",
     "Compare antes de comprar",
   ]) {
-    expect(html).toContain(passo);
+    expect(html).not.toContain(trecho);
   }
-  for (const numeroDoPasso of ["01", "02", "03"]) {
-    expect(html).toContain(
-      `<span class="home-passo-numero">${numeroDoPasso}</span>`,
-    );
-  }
+  expect(css).not.toMatch(
+    /\.home-assistente|\.home-passos|\.home-passo-numero/,
+  );
+  expect(html).toContain(
+    '<a href="/assistente/">Ajustar os outros fatores no Assistente</a>',
+  );
 
   // 8. FAQ visível e o mesmo conteúdo no JSON-LD FAQPage. WebSite e canonical
   //    da home sobrevivem à reformulação visual do hero.
@@ -626,6 +632,19 @@ function conferirHomeHub(html: string): void {
     "descartadas ao montar a tabela",
     "está ausente",
     "Cancelado e Inativo são status do Registro INMETRO",
+  ]) {
+    expect(metodologia).toContain(trecho);
+  }
+  // Com a seção removida, a metodologia explica o que o Assistente completo
+  // acrescenta ao simulador do hero e onde ele fica (ticket 98).
+  for (const trecho of [
+    'href="/assistente/"',
+    "pessoas",
+    "eletrônicos",
+    "lâmpadas",
+    "janelas",
+    "conta fator por fator",
+    "confiança",
   ]) {
     expect(metodologia).toContain(trecho);
   }

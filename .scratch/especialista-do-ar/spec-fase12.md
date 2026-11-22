@@ -134,7 +134,7 @@ Mundos considerados e recusados: grade suíça de Crouwel (competitiva, doou a d
 
 | Rota | Função | Ilha / componente principal | JSON-LD atual |
 | --- | --- | --- | --- |
-| `/` | Hub: cobertura da base, caminhos, capacidades/marcas, destaques, Assistente, FAQ, metodologia | Astro puro + `HomePopulares`, `AnalisesDestaque` | `WebSite`, `FAQPage` |
+| `/` | Hub: cobertura da base, caminhos, capacidades/marcas, destaques, link para o Assistente, FAQ, metodologia | Astro puro + `HomeDestaquesPorCapacidade`, `AnalisesDestaque` | `WebSite`, `FAQPage` |
 | `/aparelhos/` | Catálogo completo com filtros, ordenação, seleção e vitrine de análises | `Consulta` (`client:load`) | `CollectionPage` |
 | `/aparelhos/[id]/` | Ficha/datasheet de um Aparelho | `CalculadoraCusto` (`client:load`), `OfertaFaixa` | nenhum (adicionar `BreadcrumbList`) |
 | `/comparar/` | Comparação de até 3 Aparelhos | `Comparar` (`client:load`) | nenhum |
@@ -198,6 +198,8 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 > **Revisão (2026-11-21, ticket 95):** a fita `BASE INMETRO · VERSÃO {hash}` foi **removida**, e a cobertura e a metodologia não repetem a versão. A linha da **Versão da tabela** — hash curto, data de obtenção e contagem de linhas quando disponível — aparece uma única vez por página, no rodapé, em mono de 0,75 rem com tabular-nums. A data na nota do "Modelo fora da tabela atual" permanece: é o estado da análise, não a linha de versão. Onde este documento ainda descreve a fita ou a versão na cobertura, vale a decisão do #95 e o `DESIGN.md`.
 
 > **Revisão (2026-11-21, ticket 97):** "nenhum carrossel" no mobile deixou de valer para **Análises em destaque**. Com duas ou mais Análises publicadas, a seção é um carrossel em todos os breakpoints — um quadro por vez, controles de 44 px, pausa explícita e rotação que para no ponteiro, no foco, fora da tela e em `prefers-reduced-motion`; sem JavaScript, a lista aparece inteira. Com uma Análise, o bloco continua estático. Fora dessa seção, o carrossel segue proibido. Ver `DESIGN.md`, seção "Análises em destaque (home)".
+
+> **Revisão (2026-11-21, ticket 98):** "Assistente em 3 passos (régua numerada, CTA)" foi **removido da home**. A seção só repetia a estimativa de 20 m² do simulador do hero, sem trazer os fatores que ele não pergunta, a conta aberta fator por fator ou a confiança. O caminho para o Assistente completo continua na nota do simulador e agora também na metodologia, que explica o que a ferramenta acrescenta. Ver `DESIGN.md`, seções "Simulador do hero" e "Assistente".
 
 **Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta uma faixa como partição exata — o rótulo diz "aparelhos com capacidade na faixa".
 

@@ -8,13 +8,17 @@
 
 **Skills:** `impeccable` — `reference/distill.md` (critério para a saída) e `reference/new-work-world.md` + `reference/craft-floor.md` (se ficar, hierarquia e apelo visual sem repetir o simulador). `design-taste-frontend` — `references/copy.md`, `references/moments.md` e `references/cards.md`. `ui-ux-pro-max` — `"redundant cta removal" --domain ux` e `"cta visual hierarchy" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Decisão tomada: Assistente fica abaixo do hero com apelo visual, ou sai da home
+- [x] Decisão tomada: Assistente sai da home — a seção só repetia a estimativa de 20 m² do hero, sem fatores novos, conta aberta fator por fator ou confiança
 - [ ] Se ficar: mostra os fatores que o hero não pergunta e não repete a estimativa dele
 - [ ] Se ficar: ação direta, fácil de usar, visualmente atraente
-- [ ] Se sair: o simulador do hero e a nota dele continuam sendo o caminho para o Assistente
-- [ ] 0 px de overflow em todos os breakpoints
-- [ ] Alvos de 44 px, foco visível
-- [ ] Testes atualizados para o novo estado da seção
-- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)
+- [x] Se sair: o simulador do hero e a nota dele continuam sendo o caminho para o Assistente; a metodologia também explica o que a ferramenta acrescenta
+- [x] 0 px de overflow em 320/390/768/1024/1440 px no browser
+- [x] Alvos de 44 px nos controles e foco âmbar visível nos links do Assistente; axe sem violações
+- [x] Testes atualizados para o novo estado da seção (ausência do bloco e da constante; presença dos links e do texto de metodologia)
+- [x] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)
+
+## Comments
+
+**Implementação (2026-11-21):** removidos o `<section class="home-assistente">`, o import de `Botao`, a constante `PASSOS_ASSISTENTE`, todo o CSS `.home-assistente*`/`.home-passos*`/`.home-passo-*` e as asserções dos três passos. O teste de build agora exige a ausência do bloco, do CTA e dos passos no HTML e no CSS, e confirma que o link do simulador e o da metodologia continuam em `/assistente/`. A metodologia passou a dizer explicitamente o que o Assistente completo acrescenta ao simulador: pessoas, eletrônicos, lâmpadas, janelas, conta fator por fator e confiança. `DESIGN.md`, `spec-fase12.md` e `docs/agents/architecture.md` registraram a decisão. Browser: 0 px de overflow em 320/390/768/1024/1440, foco âmbar nos links e axe sem violações. Os dois itens condicionais "Se ficar" permanecem desmarcados de propósito: a decisão foi remover a seção, então não se aplicam.

@@ -251,8 +251,11 @@ nova exportação CSV
   (ticket 97 — com 2+ Análises, um quadro por vez, controles, pausa e rotação
   de 7 s que para no ponteiro, no foco, fora da tela e em
   `prefers-reduced-motion`; o script fica em componente próprio e só é servido
-  quando há carrossel, e o HTML traz todos os quadros), chamada do Assistente
-  reposicionada ou removida (ticket 98), FAQ e
+  quando há carrossel, e o HTML traz todos os quadros). A chamada do Assistente
+  saiu da home no ticket 98: repetia a estimativa do hero sem acrescentar
+  fatores, conta aberta por fator ou confiança. O caminho para a ferramenta
+  completa fica na nota do simulador e na metodologia, e a constante
+  `PASSOS_ASSISTENTE` foi removida. FAQ e
   Metodologia/INMETRO em `<details>` nativo (ticket 99). O `<head>` publica
   `WebSite` e `FAQPage`; a home não baixa JSON no cliente. A Versão da base
   aparece apenas no footer, em fonte pequena (ticket 95). Os links antigos

@@ -2354,8 +2354,8 @@ main.principal-leitura {
   }
 }
 
-/* Home como hub (ticket 46): hero, leitura de cobertura, capacidades e marcas
-   populares, Análises em destaque, chamada do Assistente, FAQ e metodologia.
+/* Home como hub (ticket 46): hero, leitura de cobertura, capacidades em destaque,
+   Análises em destaque, FAQ e metodologia.
    Tudo é gerado no build — nada depende de JSON no cliente. O topo foi refeito
    no ticket 93: o H1 é o elemento gráfico da primeira tela — display grande em
    duas linhas, com entrada por mask — e o simulador de ambiente é a única
@@ -2782,12 +2782,11 @@ main.principal-leitura {
   }
 }
 
-/* O percurso da home (tickets 71 e 96): cobertura → capacidades em destaque →
-   análises → Assistente → perguntas → metodologia. Cada bloco começa numa
-   régua de 1 px e respira com o mesmo ritmo; nenhum deles flutua. */
+/* O percurso da home (tickets 71, 96 e 98): cobertura → capacidades em destaque
+   → análises → perguntas → metodologia. Cada bloco começa numa régua de 1 px e
+   respira com o mesmo ritmo; nenhum deles flutua. */
 .home-confianca,
 .home-destaques-capacidade,
-.home-assistente,
 .home-faq,
 .home-metodologia {
   padding-block: var(--esp-6);
@@ -2796,7 +2795,6 @@ main.principal-leitura {
 }
 
 .home-destaques-capacidade h2,
-.home-assistente h2,
 .home-faq h2,
 .home-metodologia h2 {
   margin: 0 0 var(--esp-3);
@@ -3013,68 +3011,6 @@ main.principal-leitura {
   color: var(--mudo);
 }
 
-/* Assistente (ticket 71): três passos numerados sobre uma régua, com a conta
-   do método intacta e uma única ação primária. */
-.home-assistente-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--esp-4) var(--esp-8);
-  margin-bottom: var(--esp-6);
-}
-
-.home-assistente-cabecalho > div {
-  max-width: 60ch;
-}
-
-.home-assistente-cabecalho .intro {
-  margin-bottom: 0;
-}
-
-.home-assistente-acao {
-  margin: 0;
-}
-
-.home-passos {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--esp-5);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.home-passos li {
-  display: grid;
-  gap: var(--esp-2);
-  align-content: start;
-  margin-block: 0;
-  padding-block-start: var(--esp-4);
-  border-top: 1px solid var(--linha);
-}
-
-.home-passo-numero {
-  color: var(--sinal-texto);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-rotulo);
-  line-height: var(--entrelinha-rotulo);
-}
-
-.home-passos strong {
-  font-size: var(--texto-bloco);
-  font-weight: var(--peso-medio);
-  letter-spacing: var(--tracking-apertado);
-  line-height: var(--entrelinha-apertada);
-}
-
-.home-passo-texto {
-  color: var(--grafite);
-  font-size: var(--texto-pequeno);
-  line-height: var(--entrelinha-pequena);
-}
-
 /* FAQ (ticket 71): `<details>` nativo, fechado por padrão. A pergunta é um
    título dentro do `summary`, com o marcador desenhado em mono. */
 .home-faq-lista {
@@ -3175,18 +3111,6 @@ main.principal-leitura {
   }
 
   .home-destaques-cartoes {
-    grid-template-columns: 1fr;
-  }
-
-  .home-assistente-cabecalho {
-    flex-direction: column;
-  }
-
-  .home-assistente-acao .botao {
-    width: 100%;
-  }
-
-  .home-passos {
     grid-template-columns: 1fr;
   }
 }

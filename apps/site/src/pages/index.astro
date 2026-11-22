@@ -3,7 +3,6 @@ import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import HomeDestaquesPorCapacidade from "../components/HomeDestaquesPorCapacidade.astro";
-import Botao from "../components/primitivos/Botao.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
@@ -22,7 +21,6 @@ import {
   EXPLICACAO_DO_RECORTE,
   formatarNumero,
   jsonLdPerguntasFrequentes,
-  PASSOS_ASSISTENTE,
   PERGUNTAS_FREQUENTES,
 } from "../lib/home.ts";
 import { indexarOfertas } from "../lib/ofertas.ts";
@@ -141,35 +139,6 @@ const jsonLd: Record<string, unknown>[] = [
 
   <AnalisesDestaque destaques={destaques} />
 
-  <section class="home-assistente">
-    <div class="home-assistente-cabecalho">
-      <div>
-        <h2>Descubra quantos BTUs você precisa</h2>
-        <p class="intro">
-          Como funciona em 3 passos: o Assistente calcula a capacidade comercial
-          mais próxima a partir da área, do sol, das pessoas e dos equipamentos
-          do ambiente. É uma estimativa determinística, com a conta aberta.
-        </p>
-      </div>
-      <p class="home-assistente-acao">
-        <Botao href="/assistente/" icone="seta-direita">Usar o Assistente</Botao>
-      </p>
-    </div>
-    <ol class="home-passos">
-      {
-        PASSOS_ASSISTENTE.map((passo, indice) => (
-          <li>
-            <span class="home-passo-numero">
-              {String(indice + 1).padStart(2, "0")}
-            </span>
-            <strong>{passo.titulo}</strong>
-            <span class="home-passo-texto">{passo.texto}</span>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
   <section class="home-faq">
     <h2>Perguntas frequentes</h2>
     <div class="home-faq-lista">
@@ -218,6 +187,12 @@ const jsonLd: Record<string, unknown>[] = [
       em vez de ligar e desligar o tempo todo. É por isso que dois modelos de
       mesma capacidade podem consumir quantidades diferentes de energia: o IDRS
       e o consumo anual declarados no INMETRO são a forma de compará-los.
+    </p>
+    <p>
+      O simulador do hero usa área e incidência de sol. No
+      <a href="/assistente/">Assistente completo</a>, você ajusta pessoas,
+      eletrônicos, lâmpadas e janelas, abre a conta fator por fator e vê o nível
+      de confiança da estimativa.
     </p>
     <p>
       A recomendação do Assistente é uma <strong>estimativa</strong> calculada
