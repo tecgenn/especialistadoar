@@ -2413,6 +2413,13 @@ main.principal-leitura {
   line-height: var(--entrelinha-corpo);
 }
 
+/* Ação única do hero (ticket 103): ancora no simulador, que abre a resposta
+   para a primeira pergunta do visitante. O alvo de 44 px vem do primitivo
+   `.botao`; aqui só o respiro até o simulador. */
+.home-hero-acao {
+  display: flex;
+}
+
 /* --- Simulador do hero (ticket 93) --------------------------------------
    A promessa da home executada: área + sol viram capacidade comercial, com a
    conta aberta e a contagem real de Aparelhos. É instrumento, não card: uma
@@ -2705,6 +2712,10 @@ main.principal-leitura {
     animation: hero-entra 520ms var(--curva) 260ms both;
   }
 
+  .home-hero-acao {
+    animation: hero-entra 520ms var(--curva) 300ms both;
+  }
+
   .hero-simulador {
     animation: hero-entra 520ms var(--curva) 340ms both;
   }
@@ -2715,6 +2726,7 @@ main.principal-leitura {
   .home-titulo,
   .home-titulo-texto,
   .home-hero-lead,
+  .home-hero-acao,
   .hero-simulador {
     animation: none;
   }
@@ -2773,6 +2785,10 @@ main.principal-leitura {
 
     .home-hero-lead {
       animation-delay: 340ms;
+    }
+
+    .home-hero-acao {
+      animation-delay: 380ms;
     }
 
     .hero-simulador {

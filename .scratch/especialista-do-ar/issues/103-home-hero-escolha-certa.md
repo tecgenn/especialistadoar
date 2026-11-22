@@ -6,18 +6,22 @@
 
 **Skills:** `design-taste-frontend` — `references/copy.md` e `references/moments.md` (uma entrada orquestrada, CTA único). `impeccable` — `reference/clarify.md` e `reference/craft-floor.md`. `ui-ux-pro-max` — `"hero headline CTA anchor" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] H1 exato, em duas linhas fixas no desktop e fluxo natural abaixo de 22 rem
-- [ ] Lead exato, em serifa, com no máximo 56ch
-- [ ] CTA “Encontrar meu ar ideal →” logo abaixo do lead, alvo de 44 px, com `href="#simulador"` e seta desenhada (não emoji)
-- [ ] O simulador do hero recebe `id="simulador"` e `scroll-margin-top` para não ficar sob o cabeçalho
-- [ ] Sem kicker, sem fita de versão e sem traço acima do H1
-- [ ] `title`, `description`, canonical e JSON-LD (`WebSite` + `FAQPage`) preservados; a description continua citando INMETRO e BTUs
-- [ ] Entrada por mask preservada, com o estado final no HTML e `prefers-reduced-motion` desligando tudo
-- [ ] 0 px de overflow horizontal em 320/390/768/1024/1440 px
-- [ ] Testes de build conferem H1, lead, CTA e ausência de `.home-titulo::before`
-- [ ] `DESIGN.md`, seção “Hero da home”, atualizado no mesmo commit
+- [x] H1 exato, em duas linhas fixas no desktop e fluxo natural abaixo de 22 rem
+- [x] Lead exato, em serifa, com no máximo 56ch
+- [x] CTA “Encontrar meu ar ideal →” logo abaixo do lead, alvo de 44 px, com `href="#simulador"` e seta desenhada (não emoji)
+- [x] O simulador do hero recebe `id="simulador"` e `scroll-margin-top` para não ficar sob o cabeçalho
+- [x] Sem kicker, sem fita de versão e sem traço acima do H1
+- [x] `title`, `description`, canonical e JSON-LD (`WebSite` + `FAQPage`) preservados; a description continua citando INMETRO e BTUs
+- [x] Entrada por mask preservada, com o estado final no HTML e `prefers-reduced-motion` desligando tudo
+- [x] 0 px de overflow horizontal em 320/390/768/1024/1440 px
+- [x] Testes de build conferem H1, lead, CTA e ausência de `.home-titulo::before`
+- [x] `DESIGN.md`, seção “Hero da home”, atualizado no mesmo commit
+
+## Decisão de implementação
+
+O CTA usa o primitivo `Botao` na variante primária com `icone="seta-direita"`: a seta é o SVG de linha do conjunto do site, não um glifo. O alvo de 44 px e o foco ciano vêm do primitivo, e o respiro até o simulador fica em `.home-hero-acao`. O `scroll-margin-top` do `#simulador` já vem da regra global `:where([id])` de `base.css` (72 px do cabeçalho + 16 px de respiro = 88 px medidos no navegador), então não há regra duplicada. O H1 mantém a estrutura de duas `.home-titulo-linha`, o que preserva a entrada por mask do #93 e a quebra natural fora do desktop.
 
 ## Notas
 

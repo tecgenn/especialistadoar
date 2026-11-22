@@ -74,7 +74,11 @@ export default function SimuladorHero({ resumos }: Props) {
     ((area - AREA_MINIMA) / (AREA_MAXIMA - AREA_MINIMA)) * 100;
 
   return (
-    <section className="hero-simulador" aria-labelledby="hero-simulador-titulo">
+    <section
+      id="simulador"
+      className="hero-simulador"
+      aria-labelledby="hero-simulador-titulo"
+    >
       <div className="hero-simulador-controles">
         <h2 className="hero-simulador-rotulo" id="hero-simulador-titulo">
           Simule o seu ambiente

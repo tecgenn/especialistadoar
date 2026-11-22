@@ -398,16 +398,25 @@ function conferirHomeHub(html: string): void {
   const curadoria = curadoriaPresente();
   const numero = new Intl.NumberFormat("pt-BR");
 
-  // 1. Hero com H1 e subtítulo de ar-condicionado + INMETRO + comparação.
+  // 1. Hero do ticket 103: o H1 vende a decisão e o lead assume a promessa
+  //    funcional exata. "Ar-condicionado" sai do H1 visual, mas continua no
+  //    `title` e na description (checados mais abaixo).
   expect(html).toContain('id="home-titulo"');
-  expect(html).toContain("Ar-condicionado com");
-  expect(html).toContain("capacidade, consumo e eficiência");
+  expect(html).toContain("Seu conforto começa");
+  expect(html).toContain(
+    "Descubra quantos BTUs seu ambiente precisa e compare modelos de ar-condicionado por capacidade, consumo e eficiência energética, com base em dados oficiais do INMETRO.",
+  );
+  // O CTA ancora no simulador, com a seta desenhada pelo ícone do primitivo.
+  expect(html).toMatch(
+    /<a class="botao botao-primario" href="#simulador">\s*Encontrar meu ar ideal\s*<svg/,
+  );
 
   // 2. Simulador do hero: slider de área, chips de sol e o estado padrão já no
   //    HTML (20 m² × 750 BTU/h/m² = 15.000 → 18.000 comercial), com o recorte
   //    daquela capacidade e a contagem de Classe A.
-  const inicioSimulador = html.indexOf('class="hero-simulador"');
+  const inicioSimulador = html.indexOf('id="simulador"');
   expect(inicioSimulador).toBeGreaterThan(-1);
+  expect(html).toContain('class="hero-simulador"');
   const simulador = html.slice(
     inicioSimulador,
     html.indexOf("</section>", inicioSimulador),
@@ -447,7 +456,7 @@ function conferirHomeHub(html: string): void {
   );
   expect(titulo.match(/class="home-titulo-linha"/g) ?? []).toHaveLength(2);
   expect(textoDaPagina(titulo.replace(/<[^>]+>/g, " ")).trim()).toBe(
-    "Ar-condicionado com dados do INMETRO",
+    "Seu conforto começa pela escolha certa",
   );
 
   // A entrada é opt-in (só com no-preference) e o estado final já vem no CSS:

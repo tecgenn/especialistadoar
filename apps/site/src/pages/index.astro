@@ -3,6 +3,7 @@ import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import HomeDestaquesPorCapacidade from "../components/HomeDestaquesPorCapacidade.astro";
+import Botao from "../components/primitivos/Botao.astro";
 import CabecalhoDeSecao from "../components/primitivos/CabecalhoDeSecao.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
@@ -99,22 +100,32 @@ const jsonLd: Record<string, unknown>[] = [
   <section class="home-hero" aria-labelledby="home-titulo">
     {/* O título é grande de propósito: esta é a única tela do site em que a
         escala display abre acima do token, com duas linhas fixas para que a
-        entrada possa subir cada uma do próprio mask. */}
+        entrada possa subir cada uma do próprio mask. O #103 trocou o título
+        que vendia a base por um que vende a decisão: “Ar-condicionado” sai do
+        H1 visual e continua no `title`, na description e no texto da página. */}
     <h1 id="home-titulo" class="home-titulo">
       <span class="home-titulo-linha">
-        <span class="home-titulo-texto">Ar-condicionado com</span>
+        <span class="home-titulo-texto">Seu conforto começa</span>
       </span>
       {/* Abaixo do desktop as linhas são inline: o espaço explícito impede
-          "comdados" quando o Astro remove o espaço entre as tags. */}{" "}
+          "começapela" quando o Astro remove o espaço entre as tags. */}{" "}
       <span class="home-titulo-linha">
-        <span class="home-titulo-texto">dados do INMETRO</span>
+        <span class="home-titulo-texto">pela escolha certa</span>
       </span>
     </h1>
     <p class="home-hero-lead intro">
-      Compare capacidade, consumo e eficiência de aparelhos de ar-condicionado
-      com os dados oficiais do INMETRO — e descubra quantos BTUs o seu ambiente
-      pede antes de escolher o modelo.
+      Descubra quantos BTUs seu ambiente precisa e compare modelos de
+      ar-condicionado por capacidade, consumo e eficiência energética, com base
+      em dados oficiais do INMETRO.
     </p>
+    {/* A primeira pergunta do visitante é quantos BTUs ele precisa: o CTA
+        ancora no simulador em vez de pular direto para `/assistente/`, que é
+        o passo seguinte oferecido no resultado. */}
+    <div class="home-hero-acao">
+      <Botao href="#simulador" icone="seta-direita">
+        Encontrar meu ar ideal
+      </Botao>
+    </div>
     <SimuladorHero client:load resumos={resumosComerciais} />
   </section>
 
