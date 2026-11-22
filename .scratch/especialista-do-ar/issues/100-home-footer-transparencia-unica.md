@@ -6,13 +6,13 @@
 
 **Skills:** `design-taste-frontend` — `references/layout-v4.md` (3 colunas no desktop, empilhado no mobile), `references/cards.md` e `references/copy.md` (palavras do projeto, não cópia do concorrente). `impeccable` — `reference/craft-floor.md` e `reference/typeset.md`. `ui-ux-pro-max` — `"footer multi column layout" --domain ux` e `"affiliate disclosure link" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Bloco único de "Transparência com o Leitor" no footer
-- [ ] Versão da base INMETRO no footer, fonte pequena (mono)
-- [ ] Proveniência, navegação institucional e nota de afiliado preservadas
-- [ ] Rodapé em azul-frio escuro (`--azul-frio-escuro`), texto giz
-- [ ] 3 colunas no desktop, empilhado no mobile (proveniência primeiro)
-- [ ] Foco visível, alvos de 44 px, sem overflow
-- [ ] Testes de build conferem o bloco de transparência e a versão no footer
-- [ ] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)
+- [x] Bloco único de "Transparência com o Leitor" no footer
+- [x] Versão da base INMETRO no footer, fonte pequena (mono)
+- [x] Proveniência, navegação institucional e nota de afiliado preservadas
+- [x] Rodapé em azul-frio escuro (`--azul-frio-escuro`), texto giz
+- [x] 3 colunas no desktop, empilhado no mobile (proveniência primeiro)
+- [x] Foco visível, alvos de 44 px, sem overflow
+- [x] Testes de build conferem o bloco de transparência e a versão no footer
+- [x] `DESIGN.md` atualizado no mesmo commit (decisão final e termos relacionados revisados; `impeccable detect` e testes doc↔código conferidos)

@@ -203,6 +203,8 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 > **Revisão (2026-11-21, ticket 99):** a metodologia não fica mais como texto longo exposto. Ela passa a ser uma lista de **`<details>` nativos** (oito tópicos, fechados por padrão), com o texto editorial preservado palavra por palavra e a nota de fontes em mono fora dos `details`. O `FAQPage` não muda: ele descreve o FAQ, não a metodologia. Ver `DESIGN.md`, seção "Metodologia e INMETRO (home)".
 
+> **Revisão (2026-11-21, ticket 100):** o rodapé passa a ter **três colunas no desktop** (a partir de 1024 px) e empilha no celular com a proveniência primeiro. A nota de afiliado deixa de ser um aviso solto e vira o bloco único **"Transparência com o Leitor"**, com as palavras do projeto: independência do INMETRO e do Procel, venda indireta, preços em lojas parceiras e comissão sem custo adicional para o visitante. A Versão da tabela continua aqui, em mono pequeno e uma única vez por página (ticket 95). Ver `DESIGN.md`, componente "Rodapé".
+
 **Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta uma faixa como partição exata — o rótulo diz "aparelhos com capacidade na faixa".
 
 **Estados:** base carregada no build (não há estado vazio); versão ausente não renderiza a linha; sem Análise publicada, a seção de destaques desaparece; sem Oferta, o cartão não mostra CTA.

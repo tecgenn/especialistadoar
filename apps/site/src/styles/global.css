@@ -140,9 +140,13 @@ main.principal-leitura {
   color: var(--giz);
 }
 
+/* Rodapé (tickets 67, 95 e 100): proveniência, navegação institucional e um
+   bloco único de transparência com o leitor. Três colunas no desktop;
+   empilhado no celular, com a proveniência primeiro. */
 .site-footer a {
   color: var(--giz);
   text-decoration-color: var(--linha-escura);
+  text-underline-offset: 0.2em;
 }
 
 .site-footer a:hover {
@@ -151,19 +155,27 @@ main.principal-leitura {
 
 .site-footer-grid {
   display: grid;
-  gap: var(--esp-7);
+  gap: var(--esp-8);
   padding-block: var(--esp-8) var(--esp-9);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 64rem) {
   .site-footer-grid {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.5fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--esp-8);
+    padding-block: var(--esp-9);
   }
 }
 
+.rodape-bloco {
+  display: grid;
+  align-content: start;
+  gap: var(--esp-3);
+  min-width: 0;
+}
+
 .rodape-rotulo {
-  margin: 0 0 var(--esp-3);
+  margin: 0;
   color: var(--mudo-escuro);
   font-family: var(--fonte-mono);
   font-size: var(--texto-rotulo);
@@ -181,7 +193,9 @@ main.principal-leitura {
   line-height: var(--entrelinha-pequena);
 }
 
-.rodape-versao {
+/* A Versão da tabela é a única linha de dado do rodapé: mono pequeno, sem
+   competir com a proveniência. */
+.rodape-bloco p.rodape-versao {
   color: var(--giz);
   font-family: var(--fonte-mono);
   font-size: var(--texto-rotulo);
@@ -191,7 +205,7 @@ main.principal-leitura {
 
 .rodape-institucional ul {
   display: grid;
-  gap: var(--esp-2);
+  gap: 0;
   margin: 0;
   padding: 0;
   font-size: var(--texto-pequeno);
@@ -200,6 +214,14 @@ main.principal-leitura {
 
 .rodape-institucional li {
   margin: 0;
+}
+
+/* Cada destino institucional tem alvo de 44 px, no desktop e no celular. */
+.rodape-institucional a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-block: var(--esp-2);
 }
 
 .intro {

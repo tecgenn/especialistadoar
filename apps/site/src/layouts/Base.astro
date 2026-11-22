@@ -115,19 +115,19 @@ const navegacao = [
           <p class="rodape-rotulo">Proveniência</p>
           <p>
             Base construída a partir da exportação oficial de produtos do
-            INMETRO.{" "}
-            {
-              versao ? (
-                <span class="rodape-versao">
-                  Versão da tabela: {versao.hash.slice(0, 12)} · obtida em {versao.obtidoEm}
-                  {versao.contagemLinhas === null
-                    ? ""
-                    : ` · ${versao.contagemLinhas} Linhas da tabela`}
-                  .
-                </span>
-              ) : null
-            }
+            INMETRO.
           </p>
+          {
+            versao ? (
+              <p class="rodape-versao">
+                Versão da tabela: {versao.hash.slice(0, 12)} · obtida em {versao.obtidoEm}
+                {versao.contagemLinhas === null
+                  ? ""
+                  : ` · ${versao.contagemLinhas} Linhas da tabela`}
+                .
+              </p>
+            ) : null
+          }
         </div>
         <nav
           class="rodape-bloco rodape-institucional"
@@ -145,9 +145,16 @@ const navegacao = [
           </ul>
         </nav>
         <div class="rodape-bloco rodape-transparencia">
-          <p class="rodape-rotulo">Transparência</p>
+          <p class="rodape-rotulo">Transparência com o Leitor</p>
           <p>
-            Alguns links deste site são de afiliado —{" "}
+            O Especialista do Ar é um projeto técnico e editorial independente.
+            Não é filiado ao INMETRO nem ao Procel e não vende produtos
+            diretamente.
+          </p>
+          <p>
+            Acompanhamos preços em lojas parceiras e podemos receber comissão de
+            afiliado quando alguém compra por um link deste site, sem custo
+            adicional para o visitante. Alguns links deste site são de afiliado —{" "}
             <a href={PAGINAS_INSTITUCIONAIS.termos.href}>
               saiba mais nos Termos de Uso
             </a>

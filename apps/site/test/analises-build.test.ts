@@ -167,11 +167,21 @@ function conferirShell(
   ].map((achado) => achado[1]);
   expect(ativos).toEqual(esperado.ativo === null ? [] : [esperado.ativo]);
 
-  // Rodapé em tinta com proveniência, institucionais e nota de afiliado. A
-  // Versão da tabela é publicada uma vez por página, aqui (ticket 95).
+  // Rodapé em azul-frio escuro com proveniência, institucionais e um bloco
+  // único de transparência com o leitor. A Versão da tabela é publicada uma
+  // vez por página, aqui (tickets 95 e 100).
   const { rodape } = conferirVersaoNoRodape(html);
   expect(rodape).toContain('data-superficie="escura"');
-  expect(rodape).toContain("Alguns links deste site são de afiliado");
+  const textoRodape = textoDaPagina(rodape);
+  expect(textoRodape).toContain("Transparência com o Leitor");
+  expect(textoRodape).toContain("projeto técnico e editorial independente");
+  expect(textoRodape).toContain("Não é filiado ao INMETRO nem ao Procel");
+  expect(textoRodape).toContain("não vende produtos diretamente");
+  expect(textoRodape).toContain("preços em lojas parceiras");
+  expect(textoRodape).toContain("comissão de afiliado");
+  expect(textoRodape).toContain("sem custo adicional para o visitante");
+  expect(textoRodape).toContain("Alguns links deste site são de afiliado");
+  expect(rodape.match(/Transparência com o Leitor/g) ?? []).toHaveLength(1);
   for (const pagina of Object.values(PAGINAS_INSTITUCIONAIS)) {
     expect(rodape).toContain(`href="${pagina.href}"`);
   }
@@ -507,6 +517,13 @@ function conferirHomeHub(html: string): void {
   expect(css).toMatch(
     /\.rodape-versao\s*\{[^}]*font-family:\s*var\(--fonte-mono\)[^}]*font-size:\s*var\(--texto-rotulo\)[^}]*font-variant-numeric:\s*tabular-nums/,
   );
+  // Rodapé com três colunas no desktop e alvos de 44 px nos links
+  // institucionais; no celular, a grade empilha com a proveniência primeiro
+  // (ticket 100).
+  expect(css).toMatch(
+    /\.site-footer-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
+  );
+  expect(css).toMatch(/\.rodape-institucional a\s*\{[^}]*min-height:\s*44px/);
 
   // 4–5. As listas de capacidades e marcas populares deram lugar aos blocos de
   //      Aparelhos em destaque por capacidade exata (ticket 96). As capacidades
