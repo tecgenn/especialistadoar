@@ -14,7 +14,7 @@ import type { FiltrosCurados } from "./filtros.ts";
 import type { Oferta } from "./ofertas.ts";
 import { rotuloDaOferta } from "./ofertas.ts";
 
-/** As contagens reais da base servida, exibidas na faixa de confiança. */
+/** As contagens reais da base servida, usadas na `description` da home. */
 export interface ContagensDaBase {
   aparelhos: number;
   marcas: number;
@@ -282,7 +282,7 @@ export function linkDaTabela(filtro: { marca?: string; btu?: number }): string {
   return querystring === "" ? "/aparelhos/" : `/aparelhos/?${querystring}`;
 }
 
-/** Número no formato pt-BR (2.227), para as contagens da faixa de confiança. */
+/** Número no formato pt-BR (2.227), para as contagens e as capacidades. */
 export function formatarNumero(valor: number): string {
   return new Intl.NumberFormat("pt-BR").format(valor);
 }

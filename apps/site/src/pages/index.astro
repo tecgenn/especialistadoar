@@ -33,6 +33,9 @@ import { indexarOfertas } from "../lib/ofertas.ts";
 // alimenta o JSON-LD. Nada de JSON baixado no cliente.
 const dataset = consultaJson as ItemConsulta[];
 const curadoria = carregarFiltros();
+// As contagens da base deixaram de ser uma faixa no meio da home (ticket 105):
+// `contarBase` continua alimentando a `description` da página, e o total por
+// capacidade segue nos blocos em destaque.
 const contagens = contarBase(dataset);
 const porCapacidade = contagensPorCapacidade(dataset);
 // O simulador do hero arredonda para uma capacidade comercial: o recorte
@@ -127,24 +130,6 @@ const jsonLd: Record<string, unknown>[] = [
       </Botao>
     </div>
     <SimuladorHero client:load resumos={resumosComerciais} />
-  </section>
-
-  <section class="home-confianca" aria-label="Cobertura da base">
-    <p class="home-confianca-rotulo">Cobertura da base</p>
-    <p class="home-confianca-numeros">
-      <span class="home-confianca-item">
-        <strong>{formatarNumero(contagens.aparelhos)}</strong> aparelhos
-      </span>
-      <span class="home-confianca-item">
-        <strong>{formatarNumero(contagens.marcas)}</strong> marcas
-      </span>
-      <span class="home-confianca-item">
-        <strong>{formatarNumero(contagens.capacidades)}</strong> capacidades
-      </span>
-    </p>
-    <p class="home-confianca-origem">
-      Tudo a partir da exportação oficial de produtos do INMETRO.
-    </p>
   </section>
 
   {blocosDestaque.map((bloco) => <HomeDestaquesPorCapacidade {...bloco} />)}

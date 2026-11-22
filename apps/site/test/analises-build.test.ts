@@ -389,9 +389,10 @@ function conferirVersaoNoRodape(html: string): {
 }
 
 /**
- * A home é um hub (ticket 46) com os nove blocos, e tudo nela é derivado da
- * base publicada: contagens, capacidades e marcas populares. A Versão da tabela
- * saiu da home no ticket 95 e vive só no footer (todas as rotas).
+ * A home é um hub (ticket 46), e tudo nela é derivado da base publicada: as
+ * capacidades em destaque, as Análises e o FAQ. A Versão da tabela saiu da home
+ * no ticket 95 e vive só no footer (todas as rotas); a faixa de cobertura da
+ * base saiu no ticket 105.
  */
 function conferirHomeHub(html: string): void {
   const contagens = contagensDoBuild();
@@ -516,12 +517,19 @@ function conferirHomeHub(html: string): void {
     /regua-capacidade|regua-tick-entra|regua-barra-entra|--proporcao/,
   );
 
-  // 3. Faixa de confiança com contagens reais. A Versão da tabela saiu da home
-  //    no ticket 95: fica só no footer, uma vez, em mono 0,75 rem.
-  expect(html).toContain(`<strong>${contagens.aparelhos}</strong> aparelhos`);
-  expect(html).toContain(`<strong>${contagens.marcas}</strong> marcas`);
-  expect(html).toContain(
-    `<strong>${contagens.capacidades}</strong> capacidades`,
+  // 3. A faixa "Cobertura da base" saiu do meio da home no ticket 105: nenhuma
+  //    contagem de aparelhos, marcas ou capacidades volta como bloco, e a
+  //    Versão da tabela segue só no footer (ticket 95), uma vez, em mono.
+  expect(html).not.toContain("home-confianca");
+  expect(html).not.toContain("Cobertura da base");
+  expect(html).not.toContain(`<strong>${contagens.aparelhos}</strong>`);
+  expect(html).not.toContain(`<strong>${contagens.marcas}</strong>`);
+  expect(html).not.toContain(`<strong>${contagens.capacidades}</strong>`);
+  expect(css).not.toMatch(/home-confianca/);
+  // A seção seguinte ao hero assume a hairline superior: o respiro entre o
+  // simulador e os destaques não dobra.
+  expect(css).toMatch(
+    /\.home-destaques-capacidade,[^{]*\{[^}]*border-top:\s*1px solid var\(--linha\)/,
   );
   const { inicioRodape, versao } = conferirVersaoNoRodape(html);
   expect(html.indexOf(versao.hash)).toBeGreaterThan(inicioRodape);
@@ -529,11 +537,9 @@ function conferirHomeHub(html: string): void {
   // e o H1 já diz "dados do INMETRO" (ticket 95).
   expect(html).not.toContain('class="home-fita"');
   const inicioHero = html.indexOf('class="home-hero"');
-  const inicioCobertura = html.indexOf('class="home-confianca"');
   const inicioMetodologia = html.indexOf('class="home-metodologia"');
   const trechosSemVersao = [
     html.slice(inicioHero, html.indexOf("</section>", inicioHero)),
-    html.slice(inicioCobertura, html.indexOf("</section>", inicioCobertura)),
     html.slice(
       inicioMetodologia,
       html.indexOf("</section>", inicioMetodologia),

@@ -244,9 +244,9 @@ nova exportação CSV
   `consulta.json`. A **régua de capacidade** do ticket 70 foi removida no
   ticket 94 (componente, módulo puro, teste e CSS): o simulador é a única
   leitura de escala da primeira tela, e a navegação por faixa continua no
-  catálogo, nos chips de Faixa de capacidade. A leitura de cobertura com contagens
-  derivadas do `consulta.json` (Aparelhos, marcas, capacidades), blocos de aparelhos
-  em destaque por capacidade exata (ticket 96 — substituem
+  catálogo, nos chips de Faixa de capacidade. A faixa "Cobertura da base" (contagens
+  de Aparelhos, marcas e capacidades) saiu no ticket 105; abaixo do hero vêm os
+  blocos de aparelhos em destaque por capacidade exata (ticket 96 — substituem
   "Capacidades populares" e "Marcas populares"), carousel de Análises em destaque
   (ticket 97 — com 2+ Análises, um quadro por vez, controles, pausa e rotação
   de 7 s que para no ponteiro, no foco, fora da tela e em

@@ -6,15 +6,15 @@
 
 **Skills:** `impeccable` — `reference/distill.md` e `reference/craft-floor.md`. `design-taste-frontend` — `references/layout-v4.md` (ritmo entre seções).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `<section class="home-confianca">` removida de `index.astro`
-- [ ] CSS `.home-confianca*` removido de `global.css`, inclusive do agrupamento de seções com hairline
-- [ ] `porCapacidade` e `contagens` continuam sendo calculados apenas se ainda tiverem uso; `contarBase` permanece para a `description`
-- [ ] Nenhuma contagem de aparelhos/marcas/capacidades aparece no rodapé, no hero ou na metodologia como substituta
-- [ ] O respiro entre o simulador e a próxima seção não dobra: a seção seguinte assume a hairline superior
-- [ ] Testes de build conferem a ausência de `.home-confianca`, de “Cobertura da base” e das três contagens no HTML
-- [ ] `DESIGN.md` atualizado no mesmo commit, removendo a cobertura da ordem das seções e da descrição do hero
+- [x] `<section class="home-confianca">` removida de `index.astro`
+- [x] CSS `.home-confianca*` removido de `global.css`, inclusive do agrupamento de seções com hairline
+- [x] `porCapacidade` e `contagens` continuam sendo calculados apenas se ainda tiverem uso; `contarBase` permanece para a `description`
+- [x] Nenhuma contagem de aparelhos/marcas/capacidades aparece no rodapé, no hero ou na metodologia como substituta
+- [x] O respiro entre o simulador e a próxima seção não dobra: a seção seguinte assume a hairline superior
+- [x] Testes de build conferem a ausência de `.home-confianca`, de “Cobertura da base” e das três contagens no HTML
+- [x] `DESIGN.md` atualizado no mesmo commit, removendo a cobertura da ordem das seções e da descrição do hero
 
 ## Notas
 

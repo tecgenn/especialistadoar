@@ -2858,10 +2858,10 @@ main.principal-leitura {
   }
 }
 
-/* O percurso da home (tickets 71, 96 e 98): cobertura → capacidades em destaque
-   → análises → perguntas → metodologia. Cada bloco começa numa régua de 1 px e
-   respira com o mesmo ritmo; nenhum deles flutua. */
-.home-confianca,
+/* O percurso da home (tickets 71, 96, 98 e 105): o hero termina no simulador e
+   a primeira seção abaixo dele (capacidades em destaque) assume a régua de
+   1 px; daí vêm análises → perguntas → metodologia. Cada bloco respira com o
+   mesmo ritmo; nenhum deles flutua. A faixa de cobertura saiu no ticket 105. */
 .home-destaques-capacidade,
 .home-faq,
 .home-metodologia {
@@ -2877,56 +2877,6 @@ main.principal-leitura {
 .home-faq .cabecalho-secao,
 .home-metodologia .cabecalho-secao {
   margin-bottom: var(--esp-4);
-}
-
-.home-confianca {
-  display: grid;
-  gap: var(--esp-3);
-}
-
-.home-confianca-rotulo {
-  margin: 0;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-rotulo);
-  line-height: var(--entrelinha-rotulo);
-  text-transform: uppercase;
-}
-
-.home-confianca-numeros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--esp-2) var(--esp-7);
-  align-items: baseline;
-  margin: 0;
-  color: var(--grafite);
-  font-size: var(--texto-pequeno);
-}
-
-.home-confianca-item {
-  display: inline-flex;
-  gap: var(--esp-3);
-  align-items: baseline;
-}
-
-.home-confianca-numeros strong {
-  color: var(--tinta);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-secao);
-  font-variant-numeric: tabular-nums;
-  font-weight: var(--peso-medio);
-  letter-spacing: var(--tracking-apertado);
-}
-
-.home-confianca-origem {
-  max-width: 72ch;
-  margin: 0;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-unidade);
-  line-height: var(--entrelinha-pequena);
 }
 
 /* Aparelhos em destaque por capacidade exata (ticket 96): até três cartões de
