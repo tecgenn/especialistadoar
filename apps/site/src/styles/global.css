@@ -1638,22 +1638,96 @@ main.principal-leitura {
   font-size: 0.9rem;
 }
 
-/* Análises em destaque na home (ticket 71): a Análise real, com a imagem de
-   abertura do artigo, data em mono, título, resumo e o CTA de Oferta quando há.
-   O bloco é uma régua de seção com uma linha por destaque, imagem à esquerda. */
+/* Análises em destaque na home (tickets 71 e 97): a Análise real, com a imagem
+   de abertura do artigo, data em mono, título, resumo e o CTA de Oferta quando
+   há. Com duas ou mais Análises, o bloco vira um carrossel: um quadro por vez,
+   controles de 44 px e um único movimento de 240 ms na troca. Sem JavaScript a
+   lista aparece inteira, sem controles. */
 .analises-destaque {
   padding-block: var(--esp-6);
   margin-block: 0;
   border-top: 1px solid var(--linha);
 }
 
+.analises-destaque-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--esp-4) var(--esp-8);
+  margin-bottom: var(--esp-6);
+}
+
+.analises-destaque-intro {
+  max-width: 62ch;
+}
+
 .analises-destaque h2 {
   margin: 0 0 var(--esp-3);
 }
 
-.analises-destaque > .intro {
-  max-width: 62ch;
-  margin: 0 0 var(--esp-6);
+.analises-destaque-intro .intro {
+  margin: 0;
+}
+
+.analises-carrossel-controles {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-2);
+}
+
+/* Os controles só existem com o carrossel ativo: sem JavaScript, a lista
+   aparece inteira e nada precisa ser controlado. */
+[data-carrossel-ativo] .analises-carrossel-controles {
+  display: flex;
+}
+
+.analises-carrossel-controle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 44px;
+  padding: 0 var(--esp-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--tinta);
+  font: inherit;
+  font-size: var(--texto-pequeno);
+  cursor: pointer;
+}
+
+.analises-carrossel-controle:hover {
+  background: var(--papel);
+  border-color: var(--grafite);
+}
+
+.analises-carrossel-controle[aria-pressed="true"] {
+  background: var(--tinta);
+  border-color: var(--tinta);
+  color: var(--giz);
+}
+
+.analises-carrossel-controle[hidden] {
+  display: none;
+}
+
+.analises-carrossel-pausa {
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+}
+
+.analises-carrossel-indicador {
+  min-width: 3.5rem;
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-rotulo);
+  text-align: center;
 }
 
 .analises-destaque-lista {
@@ -1664,7 +1738,13 @@ main.principal-leitura {
   padding: 0;
 }
 
-.analises-destaque-lista li {
+/* A troca de quadro é instantânea no layout; só com JavaScript um slide é
+   isolado. Sem ele, todos os destaques permanecem visíveis. */
+.analises-slide[hidden] {
+  display: none;
+}
+
+.analises-slide-conteudo {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   gap: var(--esp-7);
@@ -1672,6 +1752,24 @@ main.principal-leitura {
   margin-block: 0;
   padding-block-start: var(--esp-5);
   border-top: 1px solid var(--linha);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .analises-slide[data-ativo] .analises-slide-conteudo {
+    animation: analises-slide-entra var(--mov-destaque) var(--curva);
+  }
+
+  @keyframes analises-slide-entra {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 .analises-destaque-imagem {
@@ -3066,9 +3164,14 @@ main.principal-leitura {
     min-height: 44px;
   }
 
-  .analises-destaque-lista li {
+  .analises-slide-conteudo {
     grid-template-columns: 1fr;
     gap: var(--esp-5);
+  }
+
+  .analises-destaque-cabecalho {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .home-destaques-cartoes {

@@ -248,7 +248,11 @@ nova exportação CSV
   derivadas do `consulta.json` (Aparelhos, marcas, capacidades), blocos de aparelhos
   em destaque por capacidade exata (ticket 96 — substituem
   "Capacidades populares" e "Marcas populares"), carousel de Análises em destaque
-  (ticket 97), chamada do Assistente reposicionada ou removida (ticket 98), FAQ e
+  (ticket 97 — com 2+ Análises, um quadro por vez, controles, pausa e rotação
+  de 7 s que para no ponteiro, no foco, fora da tela e em
+  `prefers-reduced-motion`; o script fica em componente próprio e só é servido
+  quando há carrossel, e o HTML traz todos os quadros), chamada do Assistente
+  reposicionada ou removida (ticket 98), FAQ e
   Metodologia/INMETRO em `<details>` nativo (ticket 99). O `<head>` publica
   `WebSite` e `FAQPage`; a home não baixa JSON no cliente. A Versão da base
   aparece apenas no footer, em fonte pequena (ticket 95). Os links antigos

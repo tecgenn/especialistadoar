@@ -41,7 +41,7 @@ Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca m
 _Avoid_: Link de compra, anúncio, "Ver preço e comprar" (promete um preço que o site não mostra)
 
 **Análise**:
-Texto editorial sobre um único Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial.
+Texto editorial sobre um Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial. Uma Análise pode **comparar** o Aparelho principal com outros (`aparelhosComparados`): a comparação é editorial, aparece no texto e, no destaque da home, soma as Ofertas de todos os Aparelhos citados — mas só o principal vira Aparelho analisado e ganha ficha ligada à Análise.
 _Avoid_: Artigo, review, resenha
 
 **Aparelho analisado**:

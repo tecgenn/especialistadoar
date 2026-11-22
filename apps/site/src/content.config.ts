@@ -23,6 +23,8 @@ const analises = defineCollection({
   }),
   schema: z.object({
     aparelhoId: z.string(),
+    // Os Aparelhos que a Análise compara com o principal (ticket 97).
+    aparelhosComparados: z.array(z.string()).optional(),
     slug: z.string(),
     titulo: z.string(),
     descricao: z.string(),

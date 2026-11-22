@@ -863,8 +863,8 @@ describe("build com uma Análise de fixture", () => {
 
     expect(lerHtml("analises")).toContain(`href="/analises/${valida.slug}/"`);
 
-    // A home exibe o bloco estático de Análises em destaque: título, descrição e
-    // link de cada Análise publicada.
+    // A home exibe o carrossel de Análises em destaque (ticket 97): título,
+    // descrição e link de cada Análise publicada, todos no HTML do build.
     const htmlHome = lerHtml("");
     // A home virou um hub (ticket 46): os nove blocos são gerados no build.
     conferirHomeHub(htmlHome);
@@ -892,6 +892,33 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlHome).toContain(analise.titulo);
       expect(htmlHome).toContain(analise.descricao);
     }
+
+    // Com três Análises publicadas, o bloco é um carrossel: um grupo por Análise,
+    // controles de anterior/próxima e pausa, indicador e âncora viva. Os três
+    // quadros continuam no HTML (sem JavaScript, a lista aparece inteira).
+    expect(htmlHome).toContain('class="analises-destaque"');
+    expect(htmlHome).toContain("data-carrossel");
+    expect(htmlHome).toContain('aria-roledescription="carrossel"');
+    // Conta os quadros pelo `<li>`: o script inline também cita o atributo.
+    expect(htmlHome.match(/class="analises-slide"/g) ?? []).toHaveLength(3);
+    expect(htmlHome.match(/aria-roledescription="slide"/g) ?? []).toHaveLength(
+      3,
+    );
+    expect(htmlHome).toContain("data-carrossel-anterior");
+    expect(htmlHome).toContain("data-carrossel-proximo");
+    expect(htmlHome).toContain("data-carrossel-pausa");
+    expect(htmlHome).toContain('aria-label="Análise anterior"');
+    expect(htmlHome).toContain('aria-label="Próxima análise"');
+    // O botão de pausa nomeia a ação: começa "Pausar" e vira "Retomar".
+    expect(htmlHome).toMatch(/data-carrossel-pausa[^>]*>\s*Pausar\s*</);
+    expect(htmlHome).toContain("1 / 3");
+    expect(htmlHome).toContain("data-carrossel-anuncio");
+    const destaquesHtml = htmlHome.slice(
+      htmlHome.indexOf('class="analises-destaque"'),
+      htmlHome.indexOf("Todas as análises"),
+    );
+    expect(destaquesHtml).toContain("Onde comprar");
+    expect(destaquesHtml).toContain('rel="sponsored nofollow noopener"');
 
     // O bloco da capacidade (ticket 96) traz o Aparelho da fixture no mesmo
     // cartão: identidade, dados técnicos, link da Análise e link de afiliado.
@@ -1097,6 +1124,10 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const htmlHome = lerHtml("");
     expect(htmlHome).not.toContain('href="/analises/"');
     expect(htmlHome).not.toContain("Análises em destaque");
+    // Sem Análise, a seção não renderiza nem o carrossel nem seus controles —
+    // e o script de rotação não entra na página.
+    expect(htmlHome).not.toContain('<section class="analises-destaque"');
+    expect(htmlHome).not.toContain("data-carrossel");
     // Sem Análise, o único link comercial da home é o do bloco de capacidade,
     // que segue com as Ofertas publicadas (ticket 96).
     const inicioBlocoSemAnalise = htmlHome.indexOf('id="capacidade-12000"');

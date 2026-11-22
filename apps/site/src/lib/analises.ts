@@ -14,6 +14,13 @@ import type { Oferta } from "./ofertas.ts";
 export interface AnaliseFrontmatter {
   /** O `id` do Aparelho (`ap-<12 hex>`) ao qual a Análise se refere. */
   aparelhoId: string;
+  /**
+   * Os outros Aparelhos que a Análise compara com o principal (ticket 97).
+   * Opcional: sem a lista, a Análise fala de um único Aparelho. O destaque da
+   * home mostra as Ofertas de todos eles, mas só o principal vira "Aparelho
+   * analisado" — a comparação não publica uma segunda Análise nem ganha ficha.
+   */
+  aparelhosComparados?: string[];
   /** O identificador da URL pública (`/analises/<slug>/`). */
   slug: string;
   /** O H1 próprio da Análise. */
@@ -45,7 +52,35 @@ export interface Analise extends AnaliseFrontmatter {
  */
 export interface DestaqueAnalise {
   analise: Analise;
+  /**
+   * As Ofertas do Aparelho principal e dos comparados, na ordem da Análise —
+   * uma Análise que compara dois modelos mostra o link de afiliado de ambos
+   * (ticket 97). Aparelho sem Oferta simplesmente não entra na lista.
+   */
   ofertas: Oferta[];
+}
+
+/**
+ * Os Aparelhos citados por uma Análise: o principal primeiro, depois os
+ * comparados. É a lista que o destaque da home usa para resolver as Ofertas.
+ */
+export function aparelhosDaAnalise(
+  analise: Pick<Analise, "aparelhoId" | "aparelhosComparados">,
+): string[] {
+  return [analise.aparelhoId, ...(analise.aparelhosComparados ?? [])];
+}
+
+/**
+ * As Ofertas de todos os Aparelhos citados pela Análise, na ordem em que ela
+ * os cita — o principal primeiro. Aparelho sem Oferta não deixa buraco na lista.
+ */
+export function ofertasDoDestaque(
+  analise: Pick<Analise, "aparelhoId" | "aparelhosComparados">,
+  ofertasPorAparelho: ReadonlyMap<string, readonly Oferta[]>,
+): Oferta[] {
+  return aparelhosDaAnalise(analise).flatMap(
+    (aparelhoId) => ofertasPorAparelho.get(aparelhoId) ?? [],
+  );
 }
 
 const FORMATO_APARELHO_ID = /^ap-[0-9a-f]{12}$/;
@@ -115,6 +150,35 @@ export function validarAnalises(analises: readonly AnaliseFrontmatter[]): void {
       throw new Error(
         `${onde}: \`imagemAlt\` é obrigatório quando há \`imagem\`.`,
       );
+    }
+    if (analise.aparelhosComparados !== undefined) {
+      if (!Array.isArray(analise.aparelhosComparados)) {
+        throw new Error(
+          `${onde}: \`aparelhosComparados\` precisa ser uma lista.`,
+        );
+      }
+      const vistos = new Set<string>();
+      for (const comparado of analise.aparelhosComparados) {
+        if (campoEmBranco(comparado)) {
+          throw new Error(
+            `${onde}: \`aparelhosComparados\` não aceita id em branco.`,
+          );
+        }
+        if (!FORMATO_APARELHO_ID.test(comparado)) {
+          throw new Error(
+            `${onde}: \`aparelhosComparados\` precisa seguir o formato ap-<12 hex>: ${comparado}`,
+          );
+        }
+        if (comparado === analise.aparelhoId) {
+          throw new Error(
+            `${onde}: o Aparelho principal não pode aparecer em \`aparelhosComparados\`.`,
+          );
+        }
+        if (vistos.has(comparado)) {
+          throw new Error(`${onde}: Aparelho comparado repetido: ${comparado}`);
+        }
+        vistos.add(comparado);
+      }
     }
     if (slugs.has(analise.slug)) {
       throw new Error(`${onde}: slug repetido: ${analise.slug}`);

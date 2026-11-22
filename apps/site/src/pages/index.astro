@@ -7,9 +7,13 @@ import Botao from "../components/primitivos/Botao.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
-import { ofertasDoAparelho, ofertasPublicadas } from "../conteudo/ofertas.ts";
+import { ofertasPublicadas } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
-import { type DestaqueAnalise, mapaPorAparelho } from "../lib/analises.ts";
+import {
+  type DestaqueAnalise,
+  mapaPorAparelho,
+  ofertasDoDestaque,
+} from "../lib/analises.ts";
 import { CAPACIDADES_COMERCIAIS } from "../lib/assistente.ts";
 import {
   capacidadesComDestaque,
@@ -49,11 +53,13 @@ const resumosComerciais = Object.fromEntries(
 // Os destaques são montados no build: cada Análise publicada, na ordem da mais
 // recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um
 // Aparelho Ausente não tem Oferta (o glue recusa Oferta órfã), então fica sem
-// CTA sem precisar de checagem própria.
+// CTA sem precisar de checagem própria. Quando a Análise compara dois
+// Aparelhos, as Ofertas dos dois entram no mesmo destaque (ticket 97).
 const { analises } = await carregarAnalises();
+const ofertasPorAparelho = indexarOfertas(ofertasPublicadas());
 const destaques: DestaqueAnalise[] = analises.map((analise) => ({
   analise,
-  ofertas: ofertasDoAparelho(analise.aparelhoId),
+  ofertas: ofertasDoDestaque(analise, ofertasPorAparelho),
 }));
 // Os blocos por capacidade exata (ticket 96) substituem as listas de populares.
 // Análises e Ofertas chegam indexadas pelo mesmo `aparelhoId` da tabela; uma
@@ -61,7 +67,7 @@ const destaques: DestaqueAnalise[] = analises.map((analise) => ({
 const indiceDestaques = {
   dataset,
   analisesPorAparelho: mapaPorAparelho(analises),
-  ofertasPorAparelho: indexarOfertas(ofertasPublicadas()),
+  ofertasPorAparelho,
 };
 const blocosDestaque = capacidadesComDestaque(indiceDestaques, curadoria).map(
   (bloco) => ({

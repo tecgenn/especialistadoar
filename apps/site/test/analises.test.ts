@@ -6,16 +6,19 @@ import {
   type AnaliseFrontmatter,
   type AparelhoComCapacidades,
   agruparAnalisadosPorCapacidade,
+  aparelhosDaAnalise,
   indexarAnalises,
   linksDaTabelaPorCapacidade,
   listaAnalisesJson,
   mapaPorAparelho,
   montarAnalises,
   montarVitrine,
+  ofertasDoDestaque,
   secaoVisivel,
   VITRINE_MAXIMO,
   validarAnalises,
 } from "../src/lib/analises.ts";
+import type { Oferta } from "../src/lib/ofertas.ts";
 
 function analise(over: Partial<AnaliseFrontmatter> = {}): AnaliseFrontmatter {
   return {
@@ -135,6 +138,63 @@ describe("validarAnalises", () => {
         }),
       ]),
     ).not.toThrow();
+  });
+
+  it("aceita Aparelhos comparados bem formados e os devolve na ordem", () => {
+    const comparada = montada({
+      aparelhosComparados: ["ap-bbbbbbbbbbbb", "ap-cccccccccccc"],
+    });
+    expect(aparelhosDaAnalise(comparada)).toEqual([
+      "ap-aaaaaaaaaaaa",
+      "ap-bbbbbbbbbbbb",
+      "ap-cccccccccccc",
+    ]);
+    expect(aparelhosDaAnalise(montada())).toEqual(["ap-aaaaaaaaaaaa"]);
+  });
+
+  it("recusa aparelhosComparados mal formados", () => {
+    expect(() =>
+      validarAnalises([analise({ aparelhosComparados: ["ap-123"] })]),
+    ).toThrow(/aparelhosComparados/);
+    expect(() =>
+      validarAnalises([analise({ aparelhosComparados: [" "] })]),
+    ).toThrow(/aparelhosComparados/);
+    expect(() =>
+      validarAnalises([analise({ aparelhosComparados: ["ap-aaaaaaaaaaaa"] })]),
+    ).toThrow(/principal/);
+    expect(() =>
+      validarAnalises([
+        analise({
+          aparelhosComparados: ["ap-bbbbbbbbbbbb", "ap-bbbbbbbbbbbb"],
+        }),
+      ]),
+    ).toThrow(/repetido/);
+  });
+
+  it("soma as Ofertas do Aparelho principal e dos comparados no destaque", () => {
+    const oferta = (aparelhoId: string, url: string): Oferta => ({
+      aparelhoId,
+      loja: "Loja de teste",
+      url,
+    });
+    const porAparelho = new Map<string, Oferta[]>([
+      ["ap-aaaaaaaaaaaa", [oferta("ap-aaaaaaaaaaaa", "https://loja.test/a")]],
+      ["ap-bbbbbbbbbbbb", [oferta("ap-bbbbbbbbbbbb", "https://loja.test/b")]],
+    ]);
+    const comparada = montada({ aparelhosComparados: ["ap-bbbbbbbbbbbb"] });
+
+    expect(
+      ofertasDoDestaque(comparada, porAparelho).map((item) => item.url),
+    ).toEqual(["https://loja.test/a", "https://loja.test/b"]);
+    // Aparelho sem Oferta não deixa buraco nem erro.
+    expect(
+      ofertasDoDestaque(
+        comparada,
+        new Map([
+          ["ap-aaaaaaaaaaaa", porAparelho.get("ap-aaaaaaaaaaaa") ?? []],
+        ]),
+      ).map((item) => item.url),
+    ).toEqual(["https://loja.test/a"]);
   });
 
   it("recusa slug repetido", () => {
