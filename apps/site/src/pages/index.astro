@@ -155,51 +155,98 @@ const jsonLd: Record<string, unknown>[] = [
     </div>
   </section>
 
-  <section class="home-metodologia">
-    <h2>Metodologia e INMETRO</h2>
-    <p>
-      Os dados técnicos — capacidade, consumo, IDRS e Classe — vêm da exportação
-      oficial de produtos do INMETRO e são reproduzidos como Valores oficiais,
-      sem correção editorial.
-    </p>
-    <p>{EXPLICACAO_DO_RECORTE}</p>
-    <p>
-      O <strong>IDRS</strong> (Índice de Desempenho de Refrigeração Sazonal) é a
-      razão entre o calor removido e a energia elétrica consumida, em Wh/Wh:
-      quanto maior, mais eficiente. A <strong>Classe</strong> é a faixa de
-      eficiência (A a F) declarada na coluna “Faixa de Classificação” do
-      INMETRO. Nenhuma das duas é recalculada pelo site.
-    </p>
-    <p>
-      O INMETRO mede o consumo e a capacidade em três condições de ensaio:
-      <strong>carga total a 35 °C</strong>, <strong>carga parcial a 35 °C</strong>
-      e <strong>carga parcial a 29 °C</strong>. Os números publicados na ficha
-      vêm dessas medições, feitas sempre com a mesma referência.
-    </p>
-    <p>
-      A classificação A–F vigente entrou em vigor em
-      <strong>1º de janeiro de 2023</strong>, pela
-      <strong>Portaria INMETRO 269/2021</strong>. Por isso, não compare uma
-      etiqueta atual com uma Classe declarada antes dessa data.
-    </p>
-    <p>
-      A tecnologia <strong>Inverter</strong> ajusta a velocidade do compressor
-      em vez de ligar e desligar o tempo todo. É por isso que dois modelos de
-      mesma capacidade podem consumir quantidades diferentes de energia: o IDRS
-      e o consumo anual declarados no INMETRO são a forma de compará-los.
-    </p>
-    <p>
-      O simulador do hero usa área e incidência de sol. No
-      <a href="/assistente/">Assistente completo</a>, você ajusta pessoas,
-      eletrônicos, lâmpadas e janelas, abre a conta fator por fator e vê o nível
-      de confiança da estimativa.
-    </p>
-    <p>
-      A recomendação do Assistente é uma <strong>estimativa</strong> calculada
-      por heurística de mercado: não é um Valor oficial nem um cálculo de carga
-      térmica. Para ambientes complexos ou acima de 60.000 BTU/h, procure uma
-      avaliação técnica.
-    </p>
+  <section class="home-metodologia" aria-labelledby="home-metodologia-titulo">
+    <h2 id="home-metodologia-titulo">Metodologia e INMETRO</h2>
+    {/* Ticket 99: cada tópico é um `<details>` nativo, fechado por padrão,
+        como o FAQ acima. Fecha o texto longo que antes ficava todo exposto sem
+        cortar conteúdo: o mesmo texto editorial segue na página. */}
+    <div class="home-metodologia-lista">
+      <details class="home-tema">
+        <summary>
+          <h3>De onde vêm os dados</h3>
+        </summary>
+        <p>
+          Os dados técnicos — capacidade, consumo, IDRS e Classe — vêm da
+          exportação oficial de produtos do INMETRO e são reproduzidos como
+          Valores oficiais, sem correção editorial.
+        </p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>O recorte da tabela</h3>
+        </summary>
+        <p>{EXPLICACAO_DO_RECORTE}</p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>IDRS e Classe energética</h3>
+        </summary>
+        <p>
+          O <strong>IDRS</strong> (Índice de Desempenho de Refrigeração Sazonal)
+          é a razão entre o calor removido e a energia elétrica consumida, em
+          Wh/Wh: quanto maior, mais eficiente. A <strong>Classe</strong> é a
+          faixa de eficiência (A a F) declarada na coluna “Faixa de
+          Classificação” do INMETRO. Nenhuma das duas é recalculada pelo site.
+        </p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>Condições de ensaio</h3>
+        </summary>
+        <p>
+          O INMETRO mede o consumo e a capacidade em três condições de ensaio:
+          <strong>carga total a 35 °C</strong>,
+          <strong>carga parcial a 35 °C</strong> e
+          <strong>carga parcial a 29 °C</strong>. Os números publicados na ficha
+          vêm dessas medições, feitas sempre com a mesma referência.
+        </p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>Vigência da classificação</h3>
+        </summary>
+        <p>
+          A classificação A–F vigente entrou em vigor em
+          <strong>1º de janeiro de 2023</strong>, pela
+          <strong>Portaria INMETRO 269/2021</strong>. Por isso, não compare uma
+          etiqueta atual com uma Classe declarada antes dessa data.
+        </p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>Aparelhos Inverter</h3>
+        </summary>
+        <p>
+          A tecnologia <strong>Inverter</strong> ajusta a velocidade do
+          compressor em vez de ligar e desligar o tempo todo. É por isso que
+          dois modelos de mesma capacidade podem consumir quantidades
+          diferentes de energia: o IDRS e o consumo anual declarados no INMETRO
+          são a forma de compará-los.
+        </p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>Simulador e Assistente</h3>
+        </summary>
+        <p>
+          O simulador do hero usa área e incidência de sol. No
+          <a href="/assistente/">Assistente completo</a>, você ajusta pessoas,
+          eletrônicos, lâmpadas e janelas, abre a conta fator por fator e vê o
+          nível de confiança da estimativa.
+        </p>
+      </details>
+      <details class="home-tema">
+        <summary>
+          <h3>O que é estimativa</h3>
+        </summary>
+        <p>
+          A recomendação do Assistente é uma <strong>estimativa</strong>
+          calculada por heurística de mercado: não é um Valor oficial nem um
+          cálculo de carga térmica. Para ambientes complexos ou acima de 60.000
+          BTU/h, procure uma avaliação técnica.
+        </p>
+      </details>
+    </div>
     <p class="home-fontes">
       Fontes · exportação oficial de produtos do INMETRO · Portaria INMETRO
       269/2021 · ciclo de referência de 2.080 h/ano

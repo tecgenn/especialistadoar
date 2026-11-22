@@ -201,6 +201,8 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 > **Revisão (2026-11-21, ticket 98):** "Assistente em 3 passos (régua numerada, CTA)" foi **removido da home**. A seção só repetia a estimativa de 20 m² do simulador do hero, sem trazer os fatores que ele não pergunta, a conta aberta fator por fator ou a confiança. O caminho para o Assistente completo continua na nota do simulador e agora também na metodologia, que explica o que a ferramenta acrescenta. Ver `DESIGN.md`, seções "Simulador do hero" e "Assistente".
 
+> **Revisão (2026-11-21, ticket 99):** a metodologia não fica mais como texto longo exposto. Ela passa a ser uma lista de **`<details>` nativos** (oito tópicos, fechados por padrão), com o texto editorial preservado palavra por palavra e a nota de fontes em mono fora dos `details`. O `FAQPage` não muda: ele descreve o FAQ, não a metodologia. Ver `DESIGN.md`, seção "Metodologia e INMETRO (home)".
+
 **Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta uma faixa como partição exata — o rótulo diz "aparelhos com capacidade na faixa".
 
 **Estados:** base carregada no build (não há estado vazio); versão ausente não renderiza a linha; sem Análise publicada, a seção de destaques desaparece; sem Oferta, o cartão não mostra CTA.

@@ -3011,17 +3011,22 @@ main.principal-leitura {
   color: var(--mudo);
 }
 
-/* FAQ (ticket 71): `<details>` nativo, fechado por padrão. A pergunta é um
-   título dentro do `summary`, com o marcador desenhado em mono. */
-.home-faq-lista {
+/* FAQ (ticket 71) e metodologia (ticket 99): `<details>` nativo, fechado por
+   padrão. O título fica dentro do `summary`, com o marcador desenhado em mono.
+   A metodologia reaproveita a mesma interação, mas mantém o texto editorial na
+   fonte de leitura — ela explica, não é um item de FAQ. */
+.home-faq-lista,
+.home-metodologia-lista {
   display: grid;
 }
 
-.home-pergunta {
+.home-pergunta,
+.home-tema {
   border-top: 1px solid var(--linha);
 }
 
-.home-pergunta summary {
+.home-pergunta summary,
+.home-tema summary {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -3032,11 +3037,13 @@ main.principal-leitura {
   list-style: none;
 }
 
-.home-pergunta summary::-webkit-details-marker {
+.home-pergunta summary::-webkit-details-marker,
+.home-tema summary::-webkit-details-marker {
   display: none;
 }
 
-.home-pergunta summary::after {
+.home-pergunta summary::after,
+.home-tema summary::after {
   content: "+";
   flex: none;
   color: var(--mudo);
@@ -3046,16 +3053,19 @@ main.principal-leitura {
   transition: color var(--mov-hover) var(--curva);
 }
 
-.home-pergunta[open] summary::after {
+.home-pergunta[open] summary::after,
+.home-tema[open] summary::after {
   content: "−";
   color: var(--sinal-texto);
 }
 
-.home-pergunta summary:hover::after {
+.home-pergunta summary:hover::after,
+.home-tema summary:hover::after {
   color: var(--sinal-texto);
 }
 
-.home-pergunta h3 {
+.home-pergunta h3,
+.home-tema h3 {
   margin: 0;
   font-size: var(--texto-ui);
   font-weight: var(--peso-medio);
@@ -3071,9 +3081,13 @@ main.principal-leitura {
   line-height: 1.6;
 }
 
-/* Metodologia (ticket 71): coluna de leitura em serifa e as fontes em mono. */
-.home-metodologia p {
+/* Metodologia (ticket 71): coluna de leitura em serifa e as fontes em mono. O
+   conteúdo do `<details>` (ticket 99) mantém a fonte de leitura; só o título do
+   `summary` usa a interface, e o `+`/`−` fica em mono. */
+.home-metodologia-lista p {
   max-width: 68ch;
+  margin: 0;
+  padding-block-end: var(--esp-4);
 }
 
 .home-fontes {

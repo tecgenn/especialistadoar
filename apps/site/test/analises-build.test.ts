@@ -595,7 +595,9 @@ function conferirHomeHub(html: string): void {
   expect(html.match(/<details class="home-pergunta">/g) ?? []).toHaveLength(
     entidades.length,
   );
-  expect(html.match(/<summary>/g) ?? []).toHaveLength(entidades.length);
+  expect(
+    html.match(/<details class="home-pergunta">\s*<summary>/g) ?? [],
+  ).toHaveLength(entidades.length);
   expect(html).not.toContain('<details class="home-pergunta" open');
   const nomes = entidades.map((entidade) => entidade.name);
   expect(nomes).toContain("O que é BTU/h?");
@@ -647,6 +649,38 @@ function conferirHomeHub(html: string): void {
     "confiança",
   ]) {
     expect(metodologia).toContain(trecho);
+  }
+
+  // 10. A metodologia é um `<details>` nativo por tópico (ticket 99): fechado
+  //     por padrão, com o tópico como título no `summary` — a mesma interação
+  //     do FAQ, sem tirar o texto editorial da página. As fontes seguem em
+  //     mono e o conteúdo do `FAQPage` não muda (o bloco acima confere).
+  const inicioSecaoMetodologia = html.indexOf('class="home-metodologia"');
+  const secaoMetodologia = html.slice(
+    inicioSecaoMetodologia,
+    html.indexOf("</section>", inicioSecaoMetodologia),
+  );
+  const temas = secaoMetodologia.match(/<details class="home-tema">/g) ?? [];
+  expect(temas).toHaveLength(8);
+  expect(secaoMetodologia).not.toContain('<details class="home-tema" open');
+  expect(secaoMetodologia.match(/<summary>\s*<h3>/g) ?? []).toHaveLength(8);
+  expect(secaoMetodologia.match(/<\/details>/g) ?? []).toHaveLength(8);
+  expect(secaoMetodologia).toContain('<p class="home-fontes">');
+  expect(css).toMatch(
+    /\.home-fontes\s*\{[^}]*font-family:\s*var\(--fonte-mono\)/,
+  );
+  expect(css).toMatch(/\.home-tema summary::-webkit-details-marker/);
+  for (const titulo of [
+    "De onde vêm os dados",
+    "O recorte da tabela",
+    "IDRS e Classe energética",
+    "Condições de ensaio",
+    "Vigência da classificação",
+    "Aparelhos Inverter",
+    "Simulador e Assistente",
+    "O que é estimativa",
+  ]) {
+    expect(secaoMetodologia).toContain(`<h3>${titulo}</h3>`);
   }
 
   // A home continua sem baixar JSON no cliente.
