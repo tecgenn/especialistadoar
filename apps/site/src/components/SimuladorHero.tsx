@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   calcularAssistente,
+  escreverEstadoAssistente,
   formatarBtu,
   formatarNumero,
   type IncidenciaSolar,
@@ -65,7 +66,8 @@ function respostasPara(
 
 /** O Assistente lê o mesmo contrato `forma`/`area`/`sol` do resto do site. */
 function hrefDoAssistente(area: number, sol: IncidenciaSolar): string {
-  return `/assistente/?forma=metros&area=${area}&sol=${sol}`;
+  const busca = escreverEstadoAssistente({ forma: "metros", area, sol });
+  return `/assistente/?${busca.toString()}`;
 }
 
 export default function SimuladorHero({ resumos }: Props) {

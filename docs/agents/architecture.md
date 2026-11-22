@@ -254,7 +254,8 @@ nova exportação CSV
   quando há carrossel, e o HTML traz todos os quadros). A chamada do Assistente
   saiu da home no ticket 98: repetia a estimativa do hero sem acrescentar
   fatores, conta aberta por fator ou confiança. O caminho para a ferramenta
-  completa fica na nota do simulador e na metodologia, e a constante
+  completa fica na ação "Continuar no Assistente" do resultado, na nota do
+  simulador e na metodologia (ticket 104), e a constante
   `PASSOS_ASSISTENTE` foi removida. FAQ e
   Metodologia/INMETRO em `<details>` nativo (ticket 99). O `<head>` publica
   `WebSite` e `FAQPage`; a home não baixa JSON no cliente. A Versão da base
