@@ -8,6 +8,7 @@ import {
 } from "../lib/carrossel.ts";
 import AnalisesCarrosselScript from "./AnalisesCarrosselScript.astro";
 import OfertaFaixa from "./OfertaFaixa.astro";
+import CabecalhoDeSecao from "./primitivos/CabecalhoDeSecao.astro";
 import Icone from "./primitivos/Icone.astro";
 
 /**
@@ -57,16 +58,15 @@ function imagemDe(caminho: string | undefined): ImageMetadata | undefined {
       aria-labelledby="analises-destaque-titulo"
       aria-roledescription={emCarrossel ? "carrossel" : undefined}
     >
-      <header class="analises-destaque-cabecalho">
-        <div class="analises-destaque-intro">
-          <h2 id="analises-destaque-titulo">Análises em destaque</h2>
-          <p class="intro">
-            Leituras editoriais sobre aparelhos de ar-condicionado, com link
-            para os dados oficiais do INMETRO na ficha de cada Aparelho.
-          </p>
-        </div>
+      <CabecalhoDeSecao
+        icone="analise"
+        id="analises-destaque-titulo"
+        titulo="Análises em destaque"
+        lead="Leituras editoriais sobre aparelhos de ar-condicionado, com link para os dados oficiais do INMETRO na ficha de cada Aparelho."
+        class="analises-destaque-cabecalho"
+      >
         {emCarrossel ? (
-          <div class="analises-carrossel-controles" data-carrossel-controles>
+          <div class="analises-carrossel-controles" data-carrossel-controles slot="acoes">
             <button
               type="button"
               class="analises-carrossel-controle"
@@ -101,7 +101,7 @@ function imagemDe(caminho: string | undefined): ImageMetadata | undefined {
             </button>
           </div>
         ) : null}
-      </header>
+      </CabecalhoDeSecao>
       <div class="analises-carrossel-palco">
         <ul class="analises-destaque-lista">
           {destaques.map(({ analise, ofertas }, indice) => {

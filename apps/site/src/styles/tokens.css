@@ -31,9 +31,12 @@
      e não lê como cinza lavado sobre o fundo colorido. */
   --mudo-escuro: #a9c0c6;
 
-  --sinal: #e8a33d;
-  --sinal-texto: #7a4a0f;
-  --sinal-lavado: #fbefd9;
+  /* Acento de interação e de dado analisado (ticket 102): ciano frio da
+     família do azul-frio. `--foco` é gráfico (3,8:1 sobre giz/papel, mínimo
+     para contorno e sublinhado); como texto, usar `--foco-texto` (5,8:1). */
+  --foco: #0f8fa8;
+  --foco-texto: #0b6f83;
+  --foco-lavado: color-mix(in srgb, var(--foco) 18%, var(--giz));
 
   /* Azul-frio / gelo: família primária do sistema "instrumento de climatização".
      Base: #0E6B8A — azul frio puro, sem viés esverdeado, AA sobre giz/papel.
@@ -45,7 +48,7 @@
   --azul-frio-lavado: color-mix(in srgb, var(--azul-frio) 8%, var(--giz));
   --azul-frio-escuro: #084d66;
 
-  /* Frio (assinatura térmica): mantido como escala de dado, não como ação. */
+  /* Frio: estado informativo (ex.: aviso-frio), não é cor de ação. */
   --frio: #2f7f8c;
   --frio-texto: #1d5b66;
   --frio-lavado: #e3eff0;
@@ -64,12 +67,6 @@
   --classe-d-lavado: color-mix(in srgb, var(--classe-d) 10%, var(--giz));
   --classe-e-lavado: color-mix(in srgb, var(--classe-e) 10%, var(--giz));
   --classe-f-lavado: color-mix(in srgb, var(--classe-f) 10%, var(--giz));
-
-  /* Escala térmica: assinatura usada só onde existe um dado. */
-  --escala-frio: var(--frio);
-  --escala-neutro: #e2e4e1;
-  --escala-morno: var(--sinal);
-  --escala-quente: #c4553b;
 
   /* --- Tipografia ----------------------------------------------------- */
   --fonte-interface:

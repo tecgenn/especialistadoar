@@ -93,7 +93,7 @@ a {
 }
 
 a:hover {
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
 }
 
 strong {
@@ -155,14 +155,16 @@ fieldset {
   border: 0;
 }
 
+/* Seleção legível: o ciano entra lavado (18% sobre giz) e a tinta continua
+   sendo o texto, nunca ciano cheio com texto claro. */
 ::selection {
-  background: var(--sinal);
+  background: var(--foco-lavado);
   color: var(--tinta);
 }
 
-/* Foco sempre visível: 2 px âmbar com afastamento. Sobre tinta, contorno giz. */
+/* Foco sempre visível: 2 px ciano com afastamento. Sobre tinta, contorno giz. */
 :focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 

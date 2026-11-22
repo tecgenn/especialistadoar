@@ -451,7 +451,7 @@ function conferirHomeHub(html: string): void {
   );
 
   // A entrada é opt-in (só com no-preference) e o estado final já vem no CSS:
-  // título sobe do mask, leitura e ações entram depois. Foco âmbar de 2 px e
+  // título sobe do mask, leitura e ações entram depois. Foco ciano de 2 px e
   // alvo mínimo de 44 px nos botões.
   const css = cssDaPagina(html);
   expect(css).toMatch(/@keyframes\s+hero-linha-sobe/);
@@ -463,11 +463,11 @@ function conferirHomeHub(html: string): void {
     /@media\s*\(width<=22rem\)\{\.home-titulo\{font-size:var\(--texto-manchete\)\}/,
   );
   expect(css).not.toMatch(/home-escala/);
-  expect(css).toMatch(/outline:\s*2px solid var\(--sinal\)/);
+  expect(css).toMatch(/outline:\s*2px solid var\(--foco\)/);
   expect(css).not.toMatch(/outline:\s*2px solid var\(--primaria\)/);
-  // O marcador da linha analisada usa o mesmo âmbar de 2 px do hero (spec da
-  // fase); o antigo traço de 3 px em azul-frio não pode voltar.
-  expect(css).toMatch(/border-left:\s*2px solid var\(--sinal\)/);
+  // O marcador da linha analisada usa o mesmo ciano de 2 px do foco (ticket
+  // 102); o antigo traço de 3 px em azul-frio não pode voltar.
+  expect(css).toMatch(/border-left:\s*2px solid var\(--foco\)/);
   expect(css).not.toMatch(/border-left:\s*3px solid var\(--primaria\)/);
   expect(css).toMatch(/min-height:\s*44px/);
   // As duas colunas do desktop começam em minmax(0, …): nenhuma palavra longa
@@ -616,6 +616,28 @@ function conferirHomeHub(html: string): void {
     html.match(/<details class="home-pergunta">\s*<summary>/g) ?? [],
   ).toHaveLength(entidades.length);
   expect(html).not.toContain('<details class="home-pergunta" open');
+
+  // 9. Cabeçalho de seção padrão da home (ticket 102): o mesmo primitivo em
+  //    Aparelhos em destaque, Análises em destaque, FAQ e Metodologia — ícone
+  //    de 20 px num tile hairline de 32 px ao lado do `h2`, com lead opcional.
+  // Com zero Análises a seção de Análises não existe: sobram os três
+  // cabeçalhos de Aparelhos, FAQ e Metodologia.
+  const cabecalhos = html.match(/class="cabecalho-secao-icone"/g) ?? [];
+  expect(cabecalhos.length).toBeGreaterThanOrEqual(3);
+  const tile = /\.cabecalho-secao-icone\{[^}]*\}/.exec(css)?.[0] ?? "";
+  expect(tile).toContain("width:32px");
+  expect(tile).toContain("height:32px");
+  expect(tile).toContain("border:1px solid var(--linha)");
+  expect(html).toContain('id="home-faq-titulo"');
+  expect(html).toContain('aria-labelledby="home-faq-titulo"');
+  expect(html).toContain('id="home-metodologia-titulo"');
+  expect(html).toContain('aria-labelledby="home-metodologia-titulo"');
+  if (html.includes('id="analises-destaque-titulo"')) {
+    expect(html).toContain('aria-labelledby="analises-destaque-titulo"');
+  }
+  // O traço de 2 px acima do H1 saiu junto com o acento âmbar (ticket 102).
+  expect(css).not.toMatch(/home-titulo::before/);
+  expect(css).not.toMatch(/--sinal|--escala-/);
   const nomes = entidades.map((entidade) => entidade.name);
   expect(nomes).toContain("O que é BTU/h?");
   expect(nomes).toContain("Qual tensão escolher: 127 V ou 220 V?");

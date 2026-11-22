@@ -13,9 +13,9 @@ colors:
   graphite: "#4B5D5F"
   muted: "#5F6F70"
   muted-dark: "#A9C0C6"
-  signal: "#E8A33D"
-  signal-ink: "#7A4A0F"
-  signal-wash: "#FBEFD9"
+  focus: "#0F8FA8"
+  focus-ink: "#0B6F83"
+  focus-wash: "#D2E9EC"
   cold: "#2F7F8C"
   cold-ink: "#1D5B66"
   cold-wash: "#E3EFF0"
@@ -149,16 +149,16 @@ components:
 
 **Creative North Star: "Instrumento de climatização"**
 
-O site é um instrumento de medição, não uma vitrine. A superfície lembra um painel de climatização calibrado: chão quase branco e neutro, tinta petróleo profunda, linhas de 1 px que separam escalas, leituras em mono com unidade sempre presente e uma única faixa térmica que só aparece onde existe um dado de temperatura ou energia. Nada flutua; tudo está apoiado numa grade visível. A autoridade vem da calibração — réguas de seção, colunas, numeração, procedência —, não de sombras, gradientes ou promessas.
+O site é um instrumento de medição, não uma vitrine. A superfície lembra um painel de climatização calibrado: chão quase branco e neutro, tinta petróleo profunda, linhas de 1 px que separam escalas, leituras em mono com unidade sempre presente e um único acento ciano de interação, que nunca vira texto. Nada flutua; tudo está apoiado numa grade visível. A autoridade vem da calibração — réguas de seção, colunas, numeração, procedência —, não de sombras, gradientes ou promessas.
 
-A densidade é deliberada. O catálogo é o produto, então a tabela pode ser densa e a ficha pode ser longa; o que não pode existir é ruído. Cada ornamento tem função: a linha separa atributos, a numeração ordena listas, o mono identifica uma unidade ou uma fonte, o âmbar assinala a ação ou o calor. O visitante deve sentir que está lendo um instrumento confiável e não uma página de marketing.
+A densidade é deliberada. O catálogo é o produto, então a tabela pode ser densa e a ficha pode ser longa; o que não pode existir é ruído. Cada ornamento tem função: a linha separa atributos, a numeração ordena listas, o mono identifica uma unidade ou uma fonte, o ciano assinala a interação e o dado analisado. O visitante deve sentir que está lendo um instrumento confiável e não uma página de marketing.
 
 A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca organiza a interface; o mono mede. O contraste entre as três vozes é o sistema. Não há ilustração decorativa, personagem, mascote, glassmorphism, gradiente de fundo, pill, card arredondado ou selo de "melhor". O que existe é o dado, a escala e o caminho para decidir.
 
 **Key Characteristics:**
 - Grade de medição visível: hairlines e numeração de 1 px.
 - Superfícies mate: chão quase branco e neutro, tinta petróleo, nenhum brilho.
-- Um acento de sinal (âmbar) e uma escala térmica usada como dado.
+- Um acento ciano de interação e de dado analisado, um degrau mais claro e frio que a ação.
 - Três vozes tipográficas: grotesca para operar, serifa para ler, mono para medir.
 - Quase nenhuma sombra; profundidade por tom e linha.
 - Cantos de 2–8 px nos componentes do sistema; nenhum pill. Etiquetas legadas em `global.css` ainda usam 999 px e estão inventariadas na spec da fase como dívida a limpar.
@@ -168,10 +168,10 @@ A voz editorial é sóbria e brasileira. A serifa conta a análise; a grotesca o
 
 ## Colors
 
-A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como cor de ação, petróleo profundo como legado, grafite e um único âmbar de sinal. As cores de Classe energética são as únicas cores saturadas permanentes, porque são dados.
+A paleta é clara e fria: chão quase branco e neutro, azul-frio/gelo como cor de ação, petróleo profundo como legado, grafite e um único ciano de interação. As cores de Classe energética são as únicas cores saturadas de dado; o ciano é o sinal, um degrau mais claro e mais frio que a ação.
 
 ### Primary (Azul-frio / Gelo — climatização)
-- **Azul-frio** (`#0E6B8A`): cor de ação primária do sistema — botões primários, links, chips ativos, badges de destaque. Azul puro, sem viés esverdeado, AA (4.5:1) sobre giz e papel. Texto branco sobre a base (7.4:1). O contorno de foco é âmbar (ticket 93), não azul-frio.
+- **Azul-frio** (`#0E6B8A`): cor de ação primária do sistema — botões primários, links, chips ativos, badges de destaque. Azul puro, sem viés esverdeado, AA (4.5:1) sobre giz e papel. Texto branco sobre a base (7.4:1). O contorno de foco é ciano (ticket 102), não azul-frio.
 - **Azul-frio hover** (`#1579A0`): estado hover do botão primário e de controles que usam a cor primária. AA sobre giz/papel.
 - **Azul-frio ativo** (`#0B5A73`): estado pressed/active do botão primário.
 - **Azul-frio texto** (`#0E6B8A`): links e acentos textuais sobre superfícies claras (giz/papel).
@@ -184,11 +184,12 @@ A paleta é clara e térmica: chão quase branco e neutro, azul-frio/gelo como c
 - **Petróleo profundo** (`#0B2C30`): mantido no contrato como legado; não é mais fundo de seções escuras nem dock.
 
 ### Secondary
-- **Âmbar de sinal** (`#E8A33D`): capacidade selecionada, o extremo "quente" da escala térmica e, desde o ticket 93, o contorno de foco de 2 px. Sobre tinta tem 7,9:1; sobre papel é cor gráfica, nunca texto. O foco antes usava azul-frio via `--primaria`; a decisão nova é âmbar via `--sinal`, a mesma cor do marcador de dado analisado.
-- **Âmbar de texto** (`#7A4A0F`): links e rótulos âmbar sobre papel (7,0:1). O âmbar claro não é usado como texto em fundo claro.
+- **Ciano de foco** (`#0F8FA8`): contorno de 2 px, item ativo da navegação, seleção de texto, marcador da linha analisada, borda da nota de transparência e `+`/`−` do acordeão. Tem 3,8:1 sobre giz e papel — passa o mínimo de 3:1 para contorno, sublinhado e marcador, e **não serve para texto**. Desde o ticket 102 substitui o âmbar: o site lê como climatização, não como alerta.
+- **Ciano de texto** (`#0B6F83`): a variante AA (5,8:1) para links e rótulos ciano sobre giz e papel. O ciano gráfico não é usado como texto em fundo claro.
+- **Ciano lavado** (`#D2E9EC`, `color-mix(in srgb, var(--foco) 18%, var(--giz))`): fundo da `::selection`, sempre com a tinta como texto — nunca ciano cheio com texto claro.
 
 ### Tertiary
-- **Frio** (`#2F7F8C`): extremo "frio" da escala térmica, linhas de gráfico e estados informativos (ex.: aviso-frio). Como texto sobre papel, usar **frio de texto** (`#1D5B66`, 7,2:1). **Não é a cor de ação primária** — essa é o azul-frio.
+- **Frio** (`#2F7F8C`): assinatura de dado e estados informativos (ex.: aviso-frio). Como texto sobre papel, usar **frio de texto** (`#1D5B66`, 7,2:1). **Não é a cor de ação primária** — essa é o azul-frio.
 
 ### Neutral
 - **Giz** (`#FDFDFB`): superfície de cartões, tabela, campos e páginas de leitura.
@@ -205,29 +206,20 @@ Cada Classe tem uma cor de texto AA sobre giz e papel, usada em ponto, borda e e
 
 - **A** `#1B6A4E` · **B** `#467536` · **C** `#6E691B` · **D** `#96601C` · **E** `#9F4529` · **F** `#8E2F35`.
 
-### Escala térmica (assinatura)
-Uma escala contínua frio → neutro → âmbar → quente, construída com os tokens acima. Só é usada onde existe um valor de temperatura, capacidade ou consumo; nunca como decoração de fundo.
-
-```
---escala-frio: var(--frio);
---escala-neutro: #E2E4E1;
---escala-morno: var(--sinal);
---escala-quente: #C4553B;
-```
-
 ### Nomes dos tokens no CSS
 O frontmatter acima é a camada portátil (chaves descritivas em inglês). No CSS, os mesmos valores usam nomes em português, e essa é a única grafia aceita nos componentes:
 
-`--tinta`, `--petroleo`, `--petroleo-profundo`, `--giz`, `--papel`, `--mineral`, `--linha`, `--linha-escura`, `--grafite`, `--mudo`, `--mudo-escuro`, `--sinal`, `--sinal-texto`, `--sinal-lavado`, `--azul-frio`, `--azul-frio-hover`, `--azul-frio-ativo`, `--azul-frio-texto`, `--azul-frio-lavado`, `--azul-frio-escuro`, `--frio`, `--frio-texto`, `--frio-lavado`, `--classe-a`…`--classe-f`, `--shell`, `--leitura`, `--calha`, `--raio-xs`, `--raio-sm`, `--raio-md`.
+`--tinta`, `--petroleo`, `--petroleo-profundo`, `--giz`, `--papel`, `--mineral`, `--linha`, `--linha-escura`, `--grafite`, `--mudo`, `--mudo-escuro`, `--foco`, `--foco-texto`, `--foco-lavado`, `--azul-frio`, `--azul-frio-hover`, `--azul-frio-ativo`, `--azul-frio-texto`, `--azul-frio-lavado`, `--azul-frio-escuro`, `--frio`, `--frio-texto`, `--frio-lavado`, `--classe-a`…`--classe-f`, `--shell`, `--leitura`, `--calha`, `--raio-xs`, `--raio-sm`, `--raio-md`.
 
 Nenhum componente inventa um nome alternativo para o mesmo valor.
 
 ### Regras de cor
 - Texto de corpo: tinta sobre giz/papel, giz sobre tinta. Nunca cinza claro sobre papel.
-- **Azul-frio** é a cor de ação primária; âmbar sinaliza seleção/capacidade, calor na escala térmica e o contorno de foco de 2 px.
-- Âmbar e frio puros são cores gráficas; para texto, usar as variantes `-ink` / `-texto`.
+- **Azul-frio** é a cor de ação primária; ciano sinaliza interação, seleção e dado analisado, incluindo o contorno de foco de 2 px.
+- **Ciano não é texto.** Só a variante `--foco-texto` é usada como texto; as Classes A–F continuam sendo as únicas cores saturadas de dado.
+- Ciano e frio puros são cores gráficas; para texto, usar as variantes `-texto`.
 - Vermelho só para erro, Classe E/F e consumo implausível. Nunca para "promoção".
-- Nenhum gradiente de fundo. A escala térmica é o único gradiente permitido, e é um dado.
+- Nenhum gradiente de fundo; não há mais escala térmica nem gradiente de dado.
 - Estados desabilitados: 45% de opacidade e cursor `not-allowed`, sem cinza extra.
 
 ## Typography
@@ -283,7 +275,7 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 
 ### Cabeçalho e navegação
 - Altura: 64 px no celular, 72 px no desktop. Não é fixo; a barra de ferramentas do catálogo é que gruda.
-- Marca à esquerda em grotesca 600; navegação à direita em grotesca 500. O item ativo tem uma barra de 2 px âmbar embaixo, não um pill.
+- Marca à esquerda em grotesca 600; navegação à direita em grotesca 500. O item ativo tem uma barra de 2 px ciano embaixo, não um pill.
 - No celular, a navegação é uma faixa horizontal com rolagem, sem menu hambúrguer escondido: as quatro seções cabem.
 - Skip link visível no foco, primeiro elemento do DOM.
 
@@ -305,7 +297,7 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 
 ### Ficha
 - Topo: marca/modelo, etiquetas, três leituras (IDRS, consumo, capacidade) e o link "Comparar este modelo".
-- Índice de seções em uma faixa horizontal sticky abaixo do topo (desktop) ou lista quebrada (celular), com a seção atual marcada por uma barra âmbar.
+- Índice de seções em uma faixa horizontal sticky abaixo do topo (desktop) ou lista quebrada (celular), com a seção atual marcada por uma barra ciano.
 - Corpo em blocos de 8 colunas, com notas de método em 4 colunas à direita no desktop.
 - A seção de consumo e custo é um painel de instrumento: campos à esquerda, leitura grande à direita e a conta aberta abaixo, em mono.
 
@@ -316,7 +308,7 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 
 ### Assistente
 - Uma pergunta por tela, com trilho de progresso de 5 segmentos e o número da etapa em mono.
-- Cartões de opção grandes (alvo mínimo de 56 px), com ícone de linha e descrição curta; borda de 1 px sobre fundo giz, seleção por contorno âmbar de 2 px.
+- Cartões de opção grandes (alvo mínimo de 56 px), com ícone de linha e descrição curta; borda de 1 px sobre fundo giz, seleção por contorno ciano de 2 px.
 - O resultado é uma leitura grande em mono, seguida dos fatores, das suposições e das orientações.
 
 ### Breakpoints
@@ -335,7 +327,8 @@ Regras:
 - Nenhuma sombra em repouso. A única sombra permitida é a do nível 3: `0 1px 0 var(--linha), 0 16px 40px rgb(10 31 34 / 0.10)`.
 - Sem `backdrop-filter`, sem vidro, sem blur.
 - Nunca usar sombra para compensar falta de contraste; usar hairline e tom.
-- O foco é sempre visível: contorno de 2 px **âmbar** (`var(--sinal)`) com `outline-offset: 2px` (com exceções de offset em âncoras e controles específicos) e, sobre tinta, contorno giz.
+- O foco é sempre visível: contorno de 2 px **ciano** (`var(--foco)`) com `outline-offset: 2px` (com exceções de offset em âncoras e controles específicos) e, sobre tinta, contorno giz.
+- A `::selection` usa o **ciano lavado** (`--foco-lavado`) com a tinta como texto: o ciano cheio com texto claro perde legibilidade.
 
 ## Shapes
 
@@ -350,10 +343,10 @@ Regras:
 ## Components
 
 ### Cabeçalho
-Faixa de 64/72 px, fundo giz, hairline inferior. Marca em grotesca 600, navegação em grotesca 500 com sublinhado âmbar de 2 px no item ativo. O link "Análises" só existe quando há Análise publicada. No celular, a navegação rola horizontalmente sem esconder itens.
+Faixa de 64/72 px, fundo giz, hairline inferior. Marca em grotesca 600, navegação em grotesca 500 com sublinhado ciano de 2 px no item ativo. O link "Análises" só existe quando há Análise publicada. No celular, a navegação rola horizontalmente sem esconder itens.
 
 ### Rodapé
-Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas iguais a partir de 1024 px: proveniência e Versão da tabela; navegação institucional; **Transparência com o Leitor**. Rótulos mono e parágrafos secundários usam **mudo escuro** (`--mudo-escuro`, `#A9C0C6`, 4,9:1 sobre o fundo); nenhum texto do rodapé fica abaixo de AA. Abaixo de 1024 px a grade empilha com a proveniência primeiro, e cada destino institucional mantém alvo de 44 px. A transparência é **um bloco único**, em texto e não em selo: diz que o site é um projeto técnico e editorial independente, não filiado ao INMETRO nem ao Procel, que não vende produtos diretamente, que acompanha preços em lojas parceiras e que pode receber comissão de afiliado quando alguém compra por um link, sempre sem custo adicional para o visitante. A nota de afiliado ("Alguns links deste site são de afiliado") vive dentro desse bloco, com o link para os Termos de Uso. Os links são giz com sublinhado hairline-escura e hover âmbar; só o fundo vem da família azul-frio, e o rodapé não lê mais "verde-petróleo". Desde o ticket 95 a linha da **Versão da tabela** — hash curto e data de obtenção, seguidos da contagem de linhas quando disponível — aparece **uma única vez por página**, aqui, junto da proveniência, em mono de `0,75 rem` com `font-variant-numeric: tabular-nums`. A cobertura e a metodologia da home não repetem a linha, e o hero não abre com rótulo acima do H1. A data na nota das Análises cujo Modelo saiu da tabela é o estado daquela análise, não a linha de versão, e permanece.
+Fundo **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`), texto giz, três colunas iguais a partir de 1024 px: proveniência e Versão da tabela; navegação institucional; **Transparência com o Leitor**. Rótulos mono e parágrafos secundários usam **mudo escuro** (`--mudo-escuro`, `#A9C0C6`, 4,9:1 sobre o fundo); nenhum texto do rodapé fica abaixo de AA. Abaixo de 1024 px a grade empilha com a proveniência primeiro, e cada destino institucional mantém alvo de 44 px. A transparência é **um bloco único**, em texto e não em selo: diz que o site é um projeto técnico e editorial independente, não filiado ao INMETRO nem ao Procel, que não vende produtos diretamente, que acompanha preços em lojas parceiras e que pode receber comissão de afiliado quando alguém compra por um link, sempre sem custo adicional para o visitante. A nota de afiliado ("Alguns links deste site são de afiliado") vive dentro desse bloco, com o link para os Termos de Uso. Os links são giz com sublinhado hairline-escura e hover ciano; só o fundo vem da família azul-frio, e o rodapé não lê mais "verde-petróleo". Desde o ticket 95 a linha da **Versão da tabela** — hash curto e data de obtenção, seguidos da contagem de linhas quando disponível — aparece **uma única vez por página**, aqui, junto da proveniência, em mono de `0,75 rem` com `font-variant-numeric: tabular-nums`. A cobertura e a metodologia da home não repetem a linha, e o hero não abre com rótulo acima do H1. A data na nota das Análises cujo Modelo saiu da tabela é o estado daquela análise, não a linha de versão, e permanece.
 
 ### Botão primário
 Fundo **azul-frio** (`--azul-frio`, `#0E6B8A`), texto giz, raio 2 px, altura 44 px, padding 10×20, grotesca 500. Hover: **azul-frio hover** (`--azul-frio-hover`, `#1579A0`). Active: **azul-frio ativo** (`--azul-frio-ativo`, `#0B5A73`) com deslocamento de 1 px. Disabled: 45% de opacidade. Ícone opcional à direita, 16 px. Nunca com sombra.
@@ -365,7 +358,7 @@ Fundo giz, texto tinta, borda de 1 px hairline, mesmo tamanho. Hover: fundo pape
 Sem fundo e sem borda, texto tinta ou `signal-ink`, sublinhado de 1 px no hover. Usado em "Limpar filtros", "Trocar", "Remover" e navegação terciária.
 
 ### Campo
-Rótulo mono acima, campo giz com borda hairline, raio 2 px, altura 44 px, texto grotesca. Foco: borda tinta + anel âmbar de 2 px. Erro: borda `classe-f`, mensagem em grotesca pequena com ícone de 16 px. Ajuda: mono 0,75 rem em mudo. Select com seta desenhada, não nativa.
+Rótulo mono acima, campo giz com borda hairline, raio 2 px, altura 44 px, texto grotesca. Foco: borda tinta + anel ciano de 2 px. Erro: borda `classe-f`, mensagem em grotesca pequena com ícone de 16 px. Ajuda: mono 0,75 rem em mudo. Select com seta desenhada, não nativa.
 
 ### Chip de filtro
 Fundo papel, texto grafite, borda transparente, raio 2 px, altura 32 px (44 px no celular). Ativo: fundo tinta, texto giz. Hover: borda grafite. O chip de resumo tem um "×" de 16 px com alvo de 44 px e `aria-label` "Remover filtro …".
@@ -377,7 +370,10 @@ Letra A–F em mono 600, cor da Classe, fundo tonal a 10%, borda de 1 px na cor 
 Rótulo mono maiúsculo, valor em mono 1,75–2,5 rem, unidade em mono 0,75 rem, legenda em grotesca pequena. Sem caixa; a hierarquia vem do tamanho e da hairline acima. É o componente que substitui o "card de estatística" genérico.
 
 ### Hero
-Decisão do ticket 93, refeita depois da primeira entrega: o topo da home é tipográfico e funcional. A fita de calibração saiu no ticket 95 junto com a Versão da tabela: o H1 em grotesca display — até 5,25 rem, acima do token, só aqui — abre a página e já traz "dados do INMETRO", sem kicker acima dele; a linha da versão vive apenas no rodapé. O H1 ocupa a largura toda em duas linhas fixas no desktop e flui naturalmente no celular; abaixo dele vem o lead em serifa e, na sequência, o **simulador do ambiente**. Não existe painel lateral, escala decorativa nem linha animada. Depois do ticket 94 também não existe régua de capacidade: o simulador é a única leitura de escala da primeira tela, e a página segue daí para a cobertura da base. O marcador âmbar de 2 px acima do título continua sendo o mesmo sinal da linha analisada na tabela. Nada de conteúdo depende de Análise publicada.
+Decisão do ticket 93, refeita depois da primeira entrega: o topo da home é tipográfico e funcional. A fita de calibração saiu no ticket 95 junto com a Versão da tabela: o H1 em grotesca display — até 5,25 rem, acima do token, só aqui — abre a página e já traz "dados do INMETRO", sem kicker acima dele; a linha da versão vive apenas no rodapé. O H1 ocupa a largura toda em duas linhas fixas no desktop e flui naturalmente no celular; abaixo dele vem o lead em serifa e, na sequência, o **simulador do ambiente**. Não existe painel lateral, escala decorativa nem linha animada. Depois do ticket 94 também não existe régua de capacidade: o simulador é a única leitura de escala da primeira tela, e a página segue daí para a cobertura da base. O traço de 2 px acima do título foi removido no ticket 102: o hero nasce sem kicker e sem marcador. Nada de conteúdo depende de Análise publicada.
+
+### Cabeçalho de seção (home)
+Decisão do ticket 102: as seções da home compartilham um único cabeçalho. Um ícone de linha de **20 px** dentro de um tile de **32 px** com hairline de 1 px (fundo giz, borda `--linha`, ícone `--azul-frio-texto`) fica ao lado do `h2` com `id`; abaixo dele pode vir um lead em uma linha de 62ch. As ações da seção — controles do carrossel de Análises e a contagem com o link de recorte de Aparelhos em destaque — vivem no slot à direita e descem para baixo do título abaixo de 640 px. O tile não é selo, chip colorido nem ícone preenchido: identifica a seção, nunca decora. O mesmo componente é usado por **Aparelhos em destaque**, **Análises em destaque**, **FAQ** e **Metodologia**; as seções que os tickets seguintes reescreverem reutilizam o mesmo primitivo, enquanto a ficha, o catálogo e o Assistente mantêm os cabeçalhos próprios já documentados.
 
 ### Simulador do hero
 A promessa da home executada na primeira tela: a pessoa move a área (8–60 m²) e escolhe a incidência de sol; o motor puro do Assistente devolve a capacidade comercial, com a conta aberta (`20 m² × 750 BTU/h/m² = 15.000 → 18.000`) e o que a base tem naquela capacidade (`318 aparelhos de 18.000 BTU/h, 256 com Classe A`). O bloco é uma faixa de instrumento, não um card: hairline superior, rótulos em mono maiúsculo, leitura do resultado em mono 2,5 rem, chips de 32 px (44 px no celular) e o controle deslizante com trilho de 1 px e preenchimento de 2 px em azul-frio — sem gradiente, sem sombra. As duas ações são contextuais: a primária abre o recorte exato (`/aparelhos/?btu=`), a secundária o catálogo inteiro; o Assistente completo fica na nota de rodapé, que também declara a estimativa. O HTML já traz o estado padrão (20 m², sol à tarde, 18.000 BTU/h), então o bloco funciona sem JavaScript; a ilha só acrescenta a interação.
@@ -388,19 +384,19 @@ A promessa da home executada na primeira tela: a pessoa move a área (8–60 m²
 Decisão do ticket 96: as listas de "Capacidades populares" e "Marcas populares" deram lugar a blocos de até **três** fichas de Aparelhos por capacidade exata. Só entram Aparelhos com Análise publicada e/ou Oferta; as Análises abrem a lista e os demais seguem a ordem da base, sem ranking e sem promessa de serem "os melhores". As capacidades vêm da curadoria (`filtros.json`) e só viram bloco quando têm pelo menos um destaque — hoje, com uma única Análise e uma única Oferta em 12.000 BTUs, a home mostra apenas aquele bloco. Não há teto de blocos: toda capacidade curada com conteúdo aparece. Cada cartão traz marca, modelo, capacidade, tipo, IDRS e consumo anual (Valores oficiais do `consulta.json`), mais os links para a ficha, a Análise e/ou a Oferta com o marcador "link de afiliado". IDRS e consumo seguem em faixa quando as Variantes divergem, como na ficha — nunca só o último valor. O cabeçalho traz a contagem de Aparelhos da capacidade e o link para o recorte `/aparelhos/?btu=`. Sem preço, sem selo de recomendação, sem carrossel e sem seletor de capacidade: hoje há uma única capacidade em destaque, um seletor não teria o que selecionar, e a descoberta completa segue nos chips do catálogo. Visualmente é a mesma grade apoiada em hairline dos outros blocos: colunas no desktop, uma coluna no celular, sem sombra, sem pill e sem barra de proporção. Nenhum bloco vazio é renderizado.
 
 ### Análises em destaque (home)
-Decisão do ticket 97: a seção deixa de ser uma pilha estática e passa a usar um **carrossel** quando há duas ou mais Análises publicadas. Com uma só, o bloco é um destaque estático — não há para onde avançar nem controles. Com duas ou mais, cada quadro é a Análise real (imagem de abertura com alt, data em mono, título, resumo e o CTA de Oferta quando houver), um por vez, sobre a mesma grade de 5/7 colunas da ficha: imagem à esquerda, texto à direita, hairline acima. Os controles — **Anterior**, **Próxima** e **Pausar/Retomar** — vivem no cabeçalho, em botões de 44 px com o foco âmbar global, e o indicador `1 / 3` fica em mono tabular. A rotação automática corre a cada **7 s** e para no ponteiro, no foco, fora da tela, com a aba escondida e em `prefers-reduced-motion`, que também esconde o botão de pausa. A troca de quadro é um único momento de 240 ms (opacidade e 6 px de subida), nunca uma entrada por seção; o `aria-live` anuncia o quadro só na navegação manual. O HTML traz **todos** os quadros e os controles: sem JavaScript a lista aparece inteira e nada fica escondido, e uma Análise que compara dois Aparelhos mostra o link de afiliado de ambos na mesma faixa "Onde comprar". Sem Análise publicada, a seção não renderiza e o script de rotação não é servido.
+Decisão do ticket 97: a seção deixa de ser uma pilha estática e passa a usar um **carrossel** quando há duas ou mais Análises publicadas. Com uma só, o bloco é um destaque estático — não há para onde avançar nem controles. Com duas ou mais, cada quadro é a Análise real (imagem de abertura com alt, data em mono, título, resumo e o CTA de Oferta quando houver), um por vez, sobre a mesma grade de 5/7 colunas da ficha: imagem à esquerda, texto à direita, hairline acima. Os controles — **Anterior**, **Próxima** e **Pausar/Retomar** — vivem no cabeçalho, em botões de 44 px com o foco ciano global, e o indicador `1 / 3` fica em mono tabular. A rotação automática corre a cada **7 s** e para no ponteiro, no foco, fora da tela, com a aba escondida e em `prefers-reduced-motion`, que também esconde o botão de pausa. A troca de quadro é um único momento de 240 ms (opacidade e 6 px de subida), nunca uma entrada por seção; o `aria-live` anuncia o quadro só na navegação manual. O HTML traz **todos** os quadros e os controles: sem JavaScript a lista aparece inteira e nada fica escondido, e uma Análise que compara dois Aparelhos mostra o link de afiliado de ambos na mesma faixa "Onde comprar". Sem Análise publicada, a seção não renderiza e o script de rotação não é servido.
 
 ### Metodologia e INMETRO (home)
 Decisão do ticket 99: a metodologia deixa de ser um texto longo todo exposto e vira uma lista de **`<details>` nativos**, um por tópico, fechados por padrão — a mesma interação do FAQ da home, sem JavaScript. São oito tópicos (De onde vêm os dados, O recorte da tabela, IDRS e Classe energética, Condições de ensaio, Vigência da classificação, Aparelhos Inverter, Simulador e Assistente, O que é estimativa), cada um com o título em um `h3` dentro do `summary` e o texto editorial original no corpo, palavra por palavra. O `summary` mantém a tipografia de interface do FAQ, o marcador `+`/`−` em mono e o alvo de 44 px; o corpo da metodologia continua na **fonte de leitura**, porque ali o papel é explicar e não responder em duas linhas. A nota de **Fontes** fica fora dos `details`, em mono pequeno, sempre visível. Nada de promessa de economia, recomendação de compra ou segunda linguagem visual; o JSON-LD `FAQPage` não muda, porque ele descreve o FAQ, não a metodologia.
 
 ### Tabela de Aparelhos
-Cabeçalho mono claro, linhas hairline, zebra quase branca, ordenação com setas de 8 px, linha analisada com marcador âmbar de 2 px à esquerda e selo "Análise" discreto. A célula Modelo tem o link e a segunda linha `Função · Tensão` em grotesca pequena e mudo. Checkbox de 20 px com alvo de 44 px. A tabela nunca vira cartões: em telas estreitas ela rola na horizontal dentro do próprio contêiner, com seleção e Modelo fixas à esquerda, cabeçalho sticky e o aviso "Deslize para ver as colunas".
+Cabeçalho mono claro, linhas hairline, zebra quase branca, ordenação com setas de 8 px, linha analisada com marcador ciano de 2 px à esquerda e selo "Análise" discreto. A célula Modelo tem o link e a segunda linha `Função · Tensão` em grotesca pequena e mudo. Checkbox de 20 px com alvo de 44 px. A tabela nunca vira cartões: em telas estreitas ela rola na horizontal dentro do próprio contêiner, com seleção e Modelo fixas à esquerda, cabeçalho sticky e o aviso "Deslize para ver as colunas".
 
 ### Painel de filtros
 Duas faixas nomeadas — **Aparelho** e **Desempenho** —, cada uma com rótulo mono e hairline superior. Campos em largura total, chips quebrando linha. A **Faixa de capacidade** (seis intervalos derivados dos dados) vive aqui, nos chips de Desempenho: é o caminho de descoberta por faixa que a home deixou de oferecer quando a régua saiu (ticket 94), com o contrato `?btuMin=&btuMax=` intacto. Rodapé com contagem do recorte e "Limpar filtros" (só quando fora do padrão). No desktop, painel embutido abaixo da barra; no celular, painel sobreposto de altura máxima com rolagem interna e botão "Aplicar" fixo.
 
 ### Dock de seleção
-Barra escura (tinta) acima da tabela, com contagem `2 de 3`, nomes dos modelos em mono e ações "Limpar seleção" e "Comparar". Aparece só com ao menos um selecionado; com dois ou três, "Comparar" vira link primário âmbar. No celular, ocupa a largura toda e mantém 44 px de alvo.
+Barra escura (tinta) acima da tabela, com contagem `2 de 3`, nomes dos modelos em mono e ações "Limpar seleção" e "Comparar". Aparece só com ao menos um selecionado; com dois ou três, "Comparar" vira link primário em azul-frio. No celular, ocupa a largura toda e mantém 44 px de alvo.
 
 ### Cartão de Aparelho na comparação
 Fundo giz, borda hairline, raio 4 px, padding 16 px. Marca em mono maiúsculo, modelo em grotesca 600, resumo em mudo, custo em mono, ações em texto. O CTA de Oferta fica na área de ações, com o marcador "link de afiliado" na mesma linha, nunca dentro da matriz.
@@ -412,10 +408,10 @@ Primeira coluna de atributos com fundo papel e texto mono; colunas de modelos co
 Painel de instrumento: campos UF, tarifa, horas e dias em uma coluna de 4; resultado em leitura grande de 2,5 rem; a conta aberta em lista mono numerada; o aviso de estimativa em grotesca pequena. O resultado é uma região viva (`aria-live="polite"`). No celular, campos antes do resultado.
 
 ### Assistente
-Trilho de progresso de 5 segmentos com o segmento atual em âmbar e o texto `Etapa 2 de 5` em mono. Uma pergunta por tela, cartões de opção com ícone de linha, título e descrição. Botão "Voltar" em texto e "Continuar" primário. O resultado usa a leitura grande, os fatores em lista mono com valores à direita e as suposições em bloco de nota. Esta experiência mora em `/assistente/`; desde o ticket 98 a home não tem uma versão resumida dela — só o simulador do hero e o link na nota dele.
+Trilho de progresso de 5 segmentos com o segmento atual em ciano e o texto `Etapa 2 de 5` em mono. Uma pergunta por tela, cartões de opção com ícone de linha, título e descrição. Botão "Voltar" em texto e "Continuar" primário. O resultado usa a leitura grande, os fatores em lista mono com valores à direita e as suposições em bloco de nota. Esta experiência mora em `/assistente/`; desde o ticket 98 a home não tem uma versão resumida dela — só o simulador do hero e o link na nota dele.
 
 ### Análise editorial
-Coluna de leitura de 68ch, título em display, data e tempo de leitura em mono, aviso de transparência em bloco de nota com borda esquerda âmbar de 2 px, figuras com legenda em mono, citações em serifa itálica e subtítulos em grotesca. O CTA comercial é um bloco separado por hairline, com o marcador de afiliado.
+Coluna de leitura de 68ch, título em display, data e tempo de leitura em mono, aviso de transparência em bloco de nota com borda esquerda ciano de 2 px, figuras com legenda em mono, citações em serifa itálica e subtítulos em grotesca. O CTA comercial é um bloco separado por hairline, com o marcador de afiliado.
 
 ### Oferta
 Texto "Ver oferta — Loja · link de afiliado" em uma linha, com o marcador em mudo. Sem preço, sem selo de desconto, sem cor de urgência. A faixa de Ofertas tem uma frase curta de transparência e nunca se mistura à matriz técnica.
@@ -441,9 +437,10 @@ Página de leitura com o título "Fora da escala", uma frase curta e links claro
 - Use a grade e a hairline para separar; deixe o espaço em branco fazer o trabalho.
 - Escreva o número com unidade, origem e, se calculado, a fórmula.
 - Use o mono para medir e a serifa para explicar.
-- Mantenha a escala térmica e as cores de Classe como dados, com legenda e letra.
+- Mantenha as cores de Classe como dados, com legenda e letra; use o ciano só como sinal de interação.
 - Prefira uma ação primária por tela; o resto é texto ou secundário.
 - Verifique contraste real (4,5:1 texto, 3:1 não texto) e alvos de 44 px.
+- Use o cabeçalho de seção com ícone na home: o mesmo primitivo, um ícone funcional por seção e as ações no slot.
 - Teste 320 px, 390 px, 768 px, 1024 px, 1440 px e 1920 px.
 - Preserve a URL, o canonical, o JSON-LD e o conteúdo crawlável em toda mudança.
 
@@ -451,7 +448,7 @@ Página de leitura com o título "Fora da escala", uma frase curta e links claro
 - Não devolva o papel mineral esverdeado nem escureça o chão da página; superfície escura é só rodapé, linha de seção da matriz e dock de seleção.
 - Não use gradiente de fundo, glassmorphism, blur, sombra difusa ou card flutuante.
 - Não use pill ou raio maior que 8 px em componente novo (as 999 px legadas em `global.css` estão inventariadas na spec da fase), ícone colorido ou ilustração decorativa.
-- Não use roxo, azul genérico de SaaS, verde "sustentável" de marca, laranja de urgência ou petróleo esverdeado como cor de ação.
+- Não use roxo, azul genérico de SaaS, verde "sustentável" de marca, laranja ou âmbar de urgência/alerta, nem petróleo esverdeado como cor de ação.
 - Não use "melhor", "campeão", estrelas, nota, ranking ou selo de recomendação.
 - Não prometa preço, desconto, economia ou prazo.
 - Não esconda conteúdo atrás de animação ou scroll-jacking. Carrossel automático só no bloco de Análises em destaque, com pausa visível, controles de teclado e o estado estático em `prefers-reduced-motion` (ticket 97); em qualquer outro lugar, é proibido.
@@ -462,5 +459,7 @@ Página de leitura com o título "Fora da escala", uma frase curta e links claro
 - Não recrie a chamada do Assistente na home: o simulador já entrega a estimativa e o caminho para a ferramenta completa é a nota dele e a metodologia (ticket 98).
 - Não exponha a metodologia da home como um paredão de parágrafos: cada tópico é um `<details>` nativo fechado, com o texto preservado e as fontes em mono fora dos `details` (ticket 99).
 - Não troque densidade por cartões decorativos no catálogo.
-- Não use a escala térmica como enfeite; ela só existe onde há dado.
+- Não use o ciano como texto: só `--foco-texto` é AA sobre giz e papel (ticket 102).
+- Não use ícone de seção como ornamento: cada um identifica uma seção ou um controle, sempre em tile hairline e com `aria-hidden`.
+- Não use o ciano cheio como fundo de seleção com texto claro: a `::selection` é ciano lavado com tinta.
 - Não crie uma segunda linguagem visual para uma página "especial".

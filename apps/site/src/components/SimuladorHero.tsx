@@ -8,6 +8,7 @@ import {
   SOL,
   TAXAS_SOL,
 } from "../lib/assistente.ts";
+import { caminhosDoIcone } from "../lib/icones.ts";
 
 /**
  * Simulador do hero (ticket 93). É a promessa da home executada na primeira
@@ -24,6 +25,7 @@ const AREA_MINIMA = 8;
 const AREA_MAXIMA = 60;
 const AREA_PADRAO = 20;
 const SOL_PADRAO: IncidenciaSolar = "tarde";
+const CAMINHOS_SOL = caminhosDoIcone("sol");
 
 /** Rótulos curtos dos chips: o texto completo do Assistente não cabe aqui. */
 const ROTULOS_SOL_CURTOS: Record<IncidenciaSolar, string> = {
@@ -112,7 +114,26 @@ export default function SimuladorHero({ resumos }: Props) {
         </div>
 
         <fieldset className="hero-sol">
-          <legend className="hero-sol-rotulo">Incidência de sol</legend>
+          <legend className="hero-sol-rotulo">
+            <svg
+              className="icone"
+              width={16}
+              height={16}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              {CAMINHOS_SOL.map((caminho) => (
+                <path key={caminho} d={caminho} />
+              ))}
+            </svg>
+            Incidência de sol
+          </legend>
           <div className="hero-sol-opcoes">
             {SOL.map((opcao) => (
               <button

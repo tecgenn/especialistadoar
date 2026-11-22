@@ -93,6 +93,19 @@ describe("ícones", () => {
     }
   });
 
+  it("inclui os ícones de seção e de controle do ticket 102", () => {
+    for (const nome of [
+      "ar-condicionado",
+      "analise",
+      "perguntas",
+      "camadas",
+      "sol",
+    ] as const) {
+      expect(nome in ICONES, nome).toBe(true);
+      expect(caminhosDoIcone(nome).length, nome).toBeGreaterThan(0);
+    }
+  });
+
   it("falha o build para um nome que não existe", () => {
     expect(() => caminhosDoIcone("estrela")).toThrow(/Ícone desconhecido/);
   });
@@ -131,13 +144,13 @@ describe("CSS dos primitivos", () => {
     expect(guarda).toContain("transform: translateY(1px)");
   });
 
-  it("dá 44 px ao campo e à seta desenhada, com foco âmbar", () => {
+  it("dá 44 px ao campo e à seta desenhada, com foco ciano", () => {
     expect(bloco(primitivosCss, ".campo-entrada")).toContain(
       "min-height: 44px",
     );
     expect(primitivosCss).toContain("appearance: none");
     expect(bloco(primitivosCss, ".campo-entrada:focus-visible")).toContain(
-      "outline: 2px solid var(--sinal)",
+      "outline: 2px solid var(--foco)",
     );
     expect(bloco(primitivosCss, ".campo-seta")).toContain(
       "pointer-events: none",
@@ -184,6 +197,22 @@ describe("CSS dos primitivos", () => {
     expect(bloco(primitivosCss, ".regua-secao")).toContain(
       "border-top: 1px solid var(--linha)",
     );
+  });
+
+  it("dá ao cabeçalho de seção um ícone de 32 px em tile hairline", () => {
+    const tile = bloco(primitivosCss, ".cabecalho-secao-icone");
+    expect(tile).toContain("width: 32px");
+    expect(tile).toContain("height: 32px");
+    expect(tile).toContain("border: 1px solid var(--linha)");
+    expect(tile).toContain("background: var(--giz)");
+    expect(tile).toContain("color: var(--azul-frio-texto)");
+    const fonte = readFileSync(
+      join(primitivosDir, "CabecalhoDeSecao.astro"),
+      "utf8",
+    );
+    expect(fonte).toContain("<Icone nome={icone} tamanho={20} />");
+    expect(fonte).toContain("<h2 id={id}");
+    expect(fonte).toContain('<slot name="acoes" />');
   });
 
   it("esconde o texto de leitor de tela sem removê-lo da árvore", () => {

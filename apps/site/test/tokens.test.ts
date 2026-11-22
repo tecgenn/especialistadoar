@@ -8,6 +8,7 @@ const tokensCss = readFileSync(join(estilosDir, "tokens.css"), "utf8");
 const fontesCss = readFileSync(join(estilosDir, "fontes.css"), "utf8");
 const baseCss = readFileSync(join(estilosDir, "base.css"), "utf8");
 const globalCss = readFileSync(join(estilosDir, "global.css"), "utf8");
+const primitivosCss = readFileSync(join(estilosDir, "primitivos.css"), "utf8");
 
 /** Declarações `--token: valor;` na ordem em que aparecem. */
 function declaracoes(css: string): Map<string, string> {
@@ -77,9 +78,9 @@ describe("tokens do sistema visual", () => {
       "grafite",
       "mudo",
       "mudo-escuro",
-      "sinal",
-      "sinal-texto",
-      "sinal-lavado",
+      "foco",
+      "foco-texto",
+      "foco-lavado",
       "azul-frio",
       "azul-frio-hover",
       "azul-frio-ativo",
@@ -141,10 +142,6 @@ describe("tokens do sistema visual", () => {
       "z-dock",
       "z-painel",
       "z-menu",
-      "escala-frio",
-      "escala-neutro",
-      "escala-morno",
-      "escala-quente",
     ];
 
     for (const token of [...cores, ...tipografia, ...estrutura]) {
@@ -157,6 +154,23 @@ describe("tokens do sistema visual", () => {
       Number.parseInt(valor(`esp-${n}`), 10),
     );
     expect(medidas).toEqual([2, 4, 8, 12, 16, 24, 32, 48, 64, 96, 128]);
+  });
+
+  it("aposentou o âmbar de sinal e a escala térmica", () => {
+    for (const token of [
+      "sinal",
+      "sinal-texto",
+      "sinal-lavado",
+      "escala-frio",
+      "escala-neutro",
+      "escala-morno",
+      "escala-quente",
+    ]) {
+      expect(tokens.has(token), `--${token} ainda declarado`).toBe(false);
+    }
+    for (const css of [tokensCss, baseCss, primitivosCss, globalCss]) {
+      expect(css).not.toMatch(/--sinal|--escala-/);
+    }
   });
 
   it("usa o nome legado apenas como alias dos tokens novos", () => {
@@ -179,9 +193,10 @@ describe("contraste dos pares documentados", () => {
     ["tinta", "giz", 4.5],
     ["tinta", "papel", 4.5],
     ["giz", "tinta", 4.5],
-    ["sinal", "tinta", 4.5],
-    ["sinal-texto", "giz", 4.5],
-    ["sinal-texto", "papel", 4.5],
+    ["foco", "giz", 3],
+    ["foco", "papel", 3],
+    ["foco-texto", "giz", 4.5],
+    ["foco-texto", "papel", 4.5],
     ["grafite", "giz", 4.5],
     ["grafite", "papel", 4.5],
     ["mudo", "giz", 4.5],
@@ -230,13 +245,13 @@ describe("chão visual: branco quase puro e neutro", () => {
     papel: "#f8f8f7",
     mineral: "#ececeb",
     linha: "#d5d8d5",
-    "escala-neutro": "#e2e4e1",
   } as const;
 
   const inalterados = {
     tinta: "#0a1f22",
     petroleo: "#123f45",
-    sinal: "#e8a33d",
+    foco: "#0f8fa8",
+    "foco-texto": "#0b6f83",
     frio: "#2f7f8c",
     "azul-frio": "#0e6b8a",
     "azul-frio-hover": "#1579a0",
@@ -269,7 +284,7 @@ describe("chão visual: branco quase puro e neutro", () => {
     }
   });
 
-  it("mantém tinta, petróleo, âmbar, frio e as Classes intactos", () => {
+  it("mantém tinta, petróleo, ciano, frio e as Classes intactos", () => {
     conferir(inalterados);
   });
 
@@ -356,6 +371,13 @@ describe("reset e base", () => {
     expect(baseCss).toMatch(/::selection\s*{/);
   });
 
+  it("pinta a seleção com o ciano lavado e a tinta, não com o ciano cheio", () => {
+    const bloco = /::selection\s*{[^}]*}/.exec(baseCss)?.[0];
+    expect(bloco).toContain("background: var(--foco-lavado)");
+    expect(bloco).toContain("color: var(--tinta)");
+    expect(bloco).not.toContain("background: var(--foco)");
+  });
+
   it("não usa a serifa em navegação, tabela nem campo", () => {
     const bloco =
       /nav,\s*label,[\s\S]*?font-family:\s*var\(--fonte-interface\);/.exec(
@@ -365,9 +387,9 @@ describe("reset e base", () => {
     expect(bloco?.[0]).toContain("input");
   });
 
-  it("mostra foco de 2 px âmbar com afastamento e âncoras sob a barra", () => {
+  it("mostra foco de 2 px ciano com afastamento e âncoras sob a barra", () => {
     expect(baseCss).toMatch(
-      /:focus-visible\s*{[\s\S]*outline:\s*2px solid var\(--sinal\)[\s\S]*outline-offset:\s*2px/,
+      /:focus-visible\s*{[\s\S]*outline:\s*2px solid var\(--foco\)[\s\S]*outline-offset:\s*2px/,
     );
     expect(baseCss).toMatch(/scroll-margin-top:\s*calc\(/);
     expect(baseCss).toContain('[data-superficie="escura"] :focus-visible');

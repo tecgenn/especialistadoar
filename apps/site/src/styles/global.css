@@ -129,9 +129,9 @@ main.principal-leitura {
   color: var(--tinta);
 }
 
-/* O item ativo tem barra âmbar de 2 px embaixo — nunca um pill. */
+/* O item ativo tem barra ciano de 2 px embaixo — nunca um pill. */
 .site-nav a[aria-current="page"] {
-  box-shadow: inset 0 -2px 0 var(--sinal);
+  box-shadow: inset 0 -2px 0 var(--foco);
   color: var(--tinta);
 }
 
@@ -150,7 +150,7 @@ main.principal-leitura {
 }
 
 .site-footer a:hover {
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
 }
 
 .site-footer-grid {
@@ -332,7 +332,7 @@ main.principal-leitura {
 }
 
 .consulta .chip-filtro:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -934,7 +934,7 @@ main.principal-leitura {
 }
 
 .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
-  border-left: 2px solid var(--sinal);
+  border-left: 2px solid var(--foco);
 }
 
 /* Selo "Análise" (ticket 44): etiqueta de contorno, distinta da pílula azul
@@ -970,7 +970,7 @@ main.principal-leitura {
 }
 
 .consulta a.analisado-etiqueta:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -1071,7 +1071,7 @@ main.principal-leitura {
 }
 
 .consulta .com-analise-item:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -1116,7 +1116,7 @@ main.principal-leitura {
 
 @media (max-width: 40rem) {
   .consulta .tabela-aparelhos tbody tr.linha-analisado {
-    border-left: 2px solid var(--sinal);
+    border-left: 2px solid var(--foco);
     background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
   }
 
@@ -1213,7 +1213,7 @@ main.principal-leitura {
 
 .aparelho section[id]:target,
 .aparelho section[id]:focus {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 0.5rem;
   border-radius: 0.25rem;
 }
@@ -1467,7 +1467,7 @@ main.principal-leitura {
 
 .oferta-cartao:hover .oferta-titulo {
   text-decoration: underline;
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
@@ -1547,7 +1547,7 @@ main.principal-leitura {
 .analise-transparencia {
   margin-block: 1.25rem;
   padding: 0.75rem 1rem;
-  border-left: 4px solid var(--primaria);
+  border-left: 2px solid var(--foco);
   border-radius: 0.5rem;
   background: var(--superficie);
 }
@@ -1671,25 +1671,10 @@ main.principal-leitura {
   border-top: 1px solid var(--linha);
 }
 
+/* O cabeçalho da seção é o primitivo do ticket 102; aqui só o respiro até o
+   palco do carrossel é próprio da seção. */
 .analises-destaque-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--esp-4) var(--esp-8);
   margin-bottom: var(--esp-6);
-}
-
-.analises-destaque-intro {
-  max-width: 62ch;
-}
-
-.analises-destaque h2 {
-  margin: 0 0 var(--esp-3);
-}
-
-.analises-destaque-intro .intro {
-  margin: 0;
 }
 
 .analises-carrossel-controles {
@@ -1831,7 +1816,7 @@ main.principal-leitura {
 
 .analises-destaque-lista h3 a:hover {
   text-decoration: underline;
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
   text-underline-offset: 0.15em;
 }
 
@@ -1954,7 +1939,7 @@ main.principal-leitura {
 }
 
 .consulta .mostrar-mais:focus {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -2001,7 +1986,7 @@ main.principal-leitura {
 }
 
 .assistente-titulo:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 4px;
 }
 
@@ -2031,7 +2016,7 @@ main.principal-leitura {
 
 .assistente-cartao[aria-pressed="true"] {
   border-color: var(--primaria);
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 1px;
 }
 
@@ -2302,7 +2287,7 @@ main.principal-leitura {
 }
 
 .assistente-analisado:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -2354,7 +2339,7 @@ main.principal-leitura {
 }
 
 .assistente button:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -2418,17 +2403,6 @@ main.principal-leitura {
   .home-titulo {
     font-size: var(--texto-manchete);
   }
-}
-
-/* O marcador âmbar de 2 px é o mesmo sinal usado para marcar dado analisado na
-   tabela. Aqui ele abre o título como um traço de instrumento — não um selo. */
-.home-titulo::before {
-  content: "";
-  display: block;
-  width: var(--esp-7);
-  height: 2px;
-  margin-bottom: var(--esp-5);
-  background: var(--sinal);
 }
 
 .home-hero-lead {
@@ -2499,6 +2473,9 @@ main.principal-leitura {
 
 .hero-area-rotulo,
 .hero-sol-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
   color: var(--mudo);
   text-transform: uppercase;
 }
@@ -2816,10 +2793,13 @@ main.principal-leitura {
   border-top: 1px solid var(--linha);
 }
 
-.home-destaques-capacidade h2,
-.home-faq h2,
-.home-metodologia h2 {
-  margin: 0 0 var(--esp-3);
+.home-destaques-capacidade .cabecalho-secao {
+  margin-bottom: var(--esp-5);
+}
+
+.home-faq .cabecalho-secao,
+.home-metodologia .cabecalho-secao {
+  margin-bottom: var(--esp-4);
 }
 
 .home-confianca {
@@ -2875,27 +2855,6 @@ main.principal-leitura {
 /* Aparelhos em destaque por capacidade exata (ticket 96): até três cartões de
    ficha técnica por capacidade, numa grade apoiada em hairlines. Sem sombra, sem
    selo de "melhor" e sem proporção desenhada: o que está aqui é o Valor oficial. */
-.home-destaques-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--esp-4) var(--esp-8);
-  margin-bottom: var(--esp-5);
-}
-
-.home-destaques-cabecalho > div {
-  max-width: 62ch;
-}
-
-.home-destaques-cabecalho h2 {
-  margin: 0 0 var(--esp-2);
-}
-
-.home-destaques-cabecalho .intro {
-  margin: 0;
-}
-
 .home-destaques-total {
   display: grid;
   gap: var(--esp-2);
@@ -2964,7 +2923,7 @@ main.principal-leitura {
 
 .home-destaque-modelo a:hover {
   text-decoration: underline;
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
   text-underline-offset: 0.15em;
 }
 
@@ -3026,7 +2985,7 @@ main.principal-leitura {
 }
 
 .home-destaque-acoes a:hover {
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
 }
 
 .home-destaque-marcador {
@@ -3078,12 +3037,12 @@ main.principal-leitura {
 .home-pergunta[open] summary::after,
 .home-tema[open] summary::after {
   content: "−";
-  color: var(--sinal-texto);
+  color: var(--foco-texto);
 }
 
 .home-pergunta summary:hover::after,
 .home-tema summary:hover::after {
-  color: var(--sinal-texto);
+  color: var(--foco-texto);
 }
 
 .home-pergunta h3,
@@ -3141,11 +3100,6 @@ main.principal-leitura {
     gap: var(--esp-5);
   }
 
-  .analises-destaque-cabecalho {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .home-destaques-cartoes {
     grid-template-columns: 1fr;
   }
@@ -3186,7 +3140,7 @@ main.principal-leitura {
 }
 
 .comparar-campo input:focus-visible {
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 1px;
 }
 

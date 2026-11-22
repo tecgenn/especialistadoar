@@ -30,6 +30,36 @@ export const ICONES = {
   filtro: ["M3 5h18", "M6 12h12", "M10 19h4"],
   /** Confirmação de etapa e resultado. */
   check: ["m4 12 5 5L20 6"],
+  /** Aparelhos em destaque: identificação da seção de modelos. */
+  "ar-condicionado": [
+    "M4 6h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z",
+    "M6 11h12",
+    "M7 18c0 1.5 1 2 1 3",
+    "M12 18c0 1.5 1 2 1 3",
+    "M17 18c0 1.5 1 2 1 3",
+  ],
+  /** Análises em destaque: artigo editorial com linhas de texto. */
+  analise: ["M6 3h9l4 4v14H6z", "M15 3v4h4", "M9 12h7", "M9 16h5"],
+  /** Perguntas frequentes: balão de fala com a interrogação. */
+  perguntas: [
+    "M4 5h16v11H9l-5 4z",
+    "M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.4v.3",
+    "M12 15h.01",
+  ],
+  /** Metodologia: camadas de dados e de ensaio. */
+  camadas: ["m12 3 9 5-9 5-9-5 9-5Z", "m3 12 9 5 9-5", "m3 16 9 5 9-5"],
+  /** Controle de incidência de sol do simulador. */
+  sol: [
+    "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z",
+    "M12 2v2",
+    "M12 20v2",
+    "M4.9 4.9l1.4 1.4",
+    "M17.7 17.7l1.4 1.4",
+    "M2 12h2",
+    "M20 12h2",
+    "M4.9 19.1l1.4-1.4",
+    "M17.7 6.3l1.4-1.4",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type NomeDeIcone = keyof typeof ICONES;

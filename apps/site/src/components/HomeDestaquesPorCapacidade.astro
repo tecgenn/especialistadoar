@@ -7,6 +7,7 @@ import {
   linkDaTabela,
 } from "../lib/home.ts";
 import { ATRIBUTOS_OFERTA, MARCADOR_OFERTA } from "../lib/ofertas.ts";
+import CabecalhoDeSecao from "./primitivos/CabecalhoDeSecao.astro";
 
 /**
  * Entrada editorial por capacidade exata da home (ticket 96): até três cartões
@@ -26,16 +27,13 @@ const id = `capacidade-${capacidadeBtu}`;
 ---
 
 <section class="home-destaques-capacidade" id={id} aria-labelledby={`${id}-titulo`}>
-  <header class="home-destaques-cabecalho">
-    <div>
-      <h2 id={`${id}-titulo`}>
-        Aparelhos de {formatarNumero(capacidadeBtu)} BTUs em destaque
-      </h2>
-      <p class="intro">
-        Modelos com análise publicada ou link de afiliado nesta capacidade.
-      </p>
-    </div>
-    <p class="home-destaques-total">
+  <CabecalhoDeSecao
+    icone="ar-condicionado"
+    id={`${id}-titulo`}
+    titulo={`Aparelhos de ${formatarNumero(capacidadeBtu)} BTUs em destaque`}
+    lead="Modelos com análise publicada ou link de afiliado nesta capacidade."
+  >
+    <p class="home-destaques-total" slot="acoes">
       <span class="home-destaques-contagem">
         {formatarNumero(totalNaCapacidade)} aparelhos nesta capacidade
       </span>
@@ -43,7 +41,7 @@ const id = `capacidade-${capacidadeBtu}`;
         Ver os de {formatarCapacidade(capacidadeBtu)}
       </a>
     </p>
-  </header>
+  </CabecalhoDeSecao>
   <ul class="home-destaques-cartoes">
     {
       cartoes.map((cartao) => (

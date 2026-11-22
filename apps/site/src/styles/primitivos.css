@@ -2,9 +2,9 @@
    Primitivos — o vocabulário compartilhado das páginas (ticket 68).
 
    Botão, campo, seleção, chip, etiqueta de Classe, leitura de dado, régua de
-   seção, trilha, aviso, estado vazio e ícone. DESIGN.md (Components) é o
-   contrato: 44 px de alvo, raio de 2 px, nenhum pill, nenhuma sombra em
-   repouso, foco âmbar herdado do global e um acento de sinal.
+   seção, cabeçalho de seção, trilha, aviso, estado vazio e ícone. DESIGN.md
+   (Components) é o contrato: 44 px de alvo, raio de 2 px, nenhum pill, nenhuma
+   sombra em repouso, foco ciano herdado do global e um acento de sinal.
    ========================================================================== */
 
 /* --- Ícone ------------------------------------------------------------- */
@@ -13,6 +13,54 @@
   display: inline-block;
   flex-shrink: 0;
   vertical-align: middle;
+}
+
+/* --- Cabeçalho de seção ------------------------------------------------
+   Ícone de linha em tile hairline ao lado do `h2`, lead opcional e ações à
+   direita. O tile não é um selo colorido: fundo giz, borda hairline e ícone
+   azul-frio-texto, os três do sistema.                                      */
+
+.cabecalho-secao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--esp-4) var(--esp-8);
+}
+
+.cabecalho-secao-corpo {
+  min-width: 0;
+  max-width: 62ch;
+}
+
+.cabecalho-secao-icone {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--azul-frio-texto);
+}
+
+.cabecalho-secao-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+  margin: 0;
+}
+
+.cabecalho-secao-lead {
+  margin: var(--esp-3) 0 0;
+}
+
+@media (max-width: 40rem) {
+  .cabecalho-secao {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 /* Texto só para leitor de tela: o dado continua na árvore de acessibilidade. */
@@ -90,7 +138,7 @@
   background: transparent;
   color: var(--tinta);
   text-decoration: underline;
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
@@ -160,7 +208,7 @@
 }
 
 .campo-obrigatorio {
-  color: var(--sinal-texto);
+  color: var(--foco-texto);
 }
 
 .campo-controle {
@@ -189,7 +237,7 @@
 
 .campo-entrada:focus-visible {
   border-color: var(--tinta);
-  outline: 2px solid var(--sinal);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -313,11 +361,11 @@
 }
 
 .chip-remover:hover {
-  color: var(--sinal);
+  color: var(--foco);
 }
 
 .chip-resumo[data-ativo] .chip-remover:hover {
-  color: var(--sinal);
+  color: var(--foco);
 }
 
 @media (max-width: 639px) {
@@ -432,7 +480,7 @@
 
 .leitura-link:hover .leitura-numero {
   text-decoration: underline;
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.08em;
 }
@@ -511,7 +559,7 @@
 
 .trilha a:hover {
   color: var(--tinta);
-  text-decoration-color: var(--sinal);
+  text-decoration-color: var(--foco);
 }
 
 .trilha [aria-current="page"] {
@@ -524,7 +572,7 @@
   display: grid;
   gap: var(--esp-2);
   padding: var(--esp-3) 0 var(--esp-3) var(--esp-5);
-  border-inline-start: 2px solid var(--sinal);
+  border-inline-start: 2px solid var(--foco);
 }
 
 .aviso-frio {

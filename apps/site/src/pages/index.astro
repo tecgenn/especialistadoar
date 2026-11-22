@@ -3,6 +3,7 @@ import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
 import HomeDestaquesPorCapacidade from "../components/HomeDestaquesPorCapacidade.astro";
+import CabecalhoDeSecao from "../components/primitivos/CabecalhoDeSecao.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
 import { carregarAnalises } from "../conteudo/analises.ts";
 import { carregarFiltros } from "../conteudo/filtros.ts";
@@ -139,8 +140,8 @@ const jsonLd: Record<string, unknown>[] = [
 
   <AnalisesDestaque destaques={destaques} />
 
-  <section class="home-faq">
-    <h2>Perguntas frequentes</h2>
+  <section class="home-faq" aria-labelledby="home-faq-titulo">
+    <CabecalhoDeSecao icone="perguntas" id="home-faq-titulo" titulo="Perguntas frequentes" />
     <div class="home-faq-lista">
       {
         PERGUNTAS_FREQUENTES.map(({ pergunta, resposta }) => (
@@ -156,7 +157,11 @@ const jsonLd: Record<string, unknown>[] = [
   </section>
 
   <section class="home-metodologia" aria-labelledby="home-metodologia-titulo">
-    <h2 id="home-metodologia-titulo">Metodologia e INMETRO</h2>
+    <CabecalhoDeSecao
+      icone="camadas"
+      id="home-metodologia-titulo"
+      titulo="Metodologia e INMETRO"
+    />
     {/* Ticket 99: cada tópico é um `<details>` nativo, fechado por padrão,
         como o FAQ acima. Fecha o texto longo que antes ficava todo exposto sem
         cortar conteúdo: o mesmo texto editorial segue na página. */}
