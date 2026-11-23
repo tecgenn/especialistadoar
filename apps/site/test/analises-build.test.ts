@@ -878,6 +878,30 @@ function aparelhoDiferente(id: string): AparelhoDaBase {
 
 const aparelho = primeiroAparelho();
 const outroAparelho = aparelhoDiferente(aparelho.id);
+
+/**
+ * Um Aparelho de uma segunda capacidade curada (9.000 BTU/h) e sem 12.000, para
+ * o build de fixture exercitar o seletor de capacidade da home com dois
+ * painéis — o dado publicado tem uma capacidade só com destaque.
+ */
+function idNaCapacidade(capacidadeBtu: number): string {
+  const idsConhecidos = new Set([aparelho.id, outroAparelho.id]);
+  const itens = JSON.parse(
+    readFileSync(join(dataBuildDir, "consulta.json"), "utf8"),
+  ) as Array<{ id: string; capacidadesBtu: number[] }>;
+  const encontrado = itens.find(
+    (item) =>
+      item.capacidadesBtu.includes(capacidadeBtu) &&
+      !item.capacidadesBtu.includes(12000) &&
+      !idsConhecidos.has(item.id),
+  );
+  if (encontrado === undefined) {
+    throw new Error(
+      `Nenhum Aparelho de ${capacidadeBtu} BTU/h fora de 12.000 na base.`,
+    );
+  }
+  return encontrado.id;
+}
 const valida: AnaliseFixture = {
   aparelhoId: aparelho.id,
   slug: "analise-fixture-decisao",
@@ -909,6 +933,11 @@ const ofertaAmazon: Oferta = {
   loja: "Amazon",
   url: "https://www.amazon.com.br/aparelho-fixture",
 };
+const ofertaOutraCapacidade: Oferta = {
+  aparelhoId: idNaCapacidade(9000),
+  loja: "Amazon",
+  url: "https://www.amazon.com.br/aparelho-fixture-9000",
+};
 const ofertasFixture: Oferta[] = [oferta, ofertaAmazon];
 
 const diretoriosTemporarios: string[] = [];
@@ -933,7 +962,10 @@ describe("build com uma Análise de fixture", () => {
       aparelhosDaBase().some((item) => item.id === ausente.aparelhoId),
     ).toBe(false);
     const ofertasJson = join(fixtureBase, "ofertas-fixture.json");
-    writeFileSync(ofertasJson, JSON.stringify(ofertasFixture, null, 2));
+    writeFileSync(
+      ofertasJson,
+      JSON.stringify([...ofertasFixture, ofertaOutraCapacidade], null, 2),
+    );
     writeFileSync(
       join(fixtureBase, "valida.mdx"),
       mdx(
@@ -1130,6 +1162,36 @@ describe("build com uma Análise de fixture", () => {
     expect(blocoCapacidade).not.toContain(">Amazon<");
     expect(textoDaPagina(blocoCapacidade)).toContain("link de afiliado");
 
+    // Duas capacidades com conteúdo no build de fixture (9.000 e 12.000): o
+    // seletor nasce em chips, na ordem da curadoria, com o primeiro painel
+    // ativo, e o HTML traz os dois painéis sem `hidden` — o script inline só
+    // esconde o inativo depois de inicializar, então sem JavaScript a lista
+    // aparece inteira.
+    expect(htmlHome).toContain('class="home-destaques-seletor-rotulo"');
+    expect(htmlHome).not.toContain('class="home-destaques-rotulo"');
+    expect(htmlHome.match(/class="home-destaques-chip"/g) ?? []).toHaveLength(
+      2,
+    );
+    expect(htmlHome).toContain(
+      'data-painel="capacidade-9000" aria-pressed="true"',
+    );
+    expect(htmlHome).toContain(
+      'data-painel="capacidade-12000" aria-pressed="false"',
+    );
+    expect(htmlHome.match(/class="home-destaques-painel"/g) ?? []).toHaveLength(
+      2,
+    );
+    expect(htmlHome).not.toMatch(/class="home-destaques-painel"[^>]*hidden/);
+    expect(htmlHome).toContain('id="capacidade-9000"');
+    const inicio9000 = htmlHome.indexOf('id="capacidade-9000"');
+    const painel9000 = htmlHome.slice(
+      inicio9000,
+      htmlHome.indexOf('class="home-destaques-painel"', inicio9000),
+    );
+    expect(painel9000).toContain('class="home-destaque-cartao"');
+    expect(painel9000).toContain(`href="${ofertaOutraCapacidade.url}"`);
+    expect(painel9000).not.toContain('href="/analises/');
+
     // Os cards de Aparelhos analisados do Assistente (ticket 42) são montados
     // no build: o mapa capacidade → analisados viaja nas props da ilha, então a
     // página traz a Análise sem baixar analises.json no cliente. O Aparelho
@@ -1161,9 +1223,10 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlHome).toContain('rel="sponsored nofollow noopener"');
     expect(htmlHome).toContain('target="_blank"');
     expect(htmlHome).toContain("Onde comprar");
-    // Duas Ofertas no destaque da Análise e duas no cartão da capacidade, que
-    // também carrega todas as Ofertas do Aparelho (ticket 106).
-    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(4);
+    // Duas Ofertas no destaque da Análise, duas no cartão de 12.000 (que
+    // carrega todas as Ofertas do Aparelho, ticket 106) e uma no cartão da
+    // segunda capacidade.
+    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(5);
 
     // O bloco é gerado no build: o cliente não baixa `ofertas.json` nem
     // `analises.json` para renderizá-lo.
