@@ -2,7 +2,7 @@
 import consultaJson from "@dados/consulta.json";
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import AnalisesDestaque from "../components/AnalisesDestaque.astro";
-import HomeDestaquesPorCapacidade from "../components/HomeDestaquesPorCapacidade.astro";
+import HomeDestaques from "../components/HomeDestaques.astro";
 import Botao from "../components/primitivos/Botao.astro";
 import CabecalhoDeSecao from "../components/primitivos/CabecalhoDeSecao.astro";
 import SimuladorHero from "../components/SimuladorHero.tsx";
@@ -18,7 +18,6 @@ import {
 import { CAPACIDADES_COMERCIAIS } from "../lib/assistente.ts";
 import {
   capacidadesComDestaque,
-  contagensPorCapacidade,
   contarBase,
   EXPLICACAO_DO_RECORTE,
   formatarNumero,
@@ -27,17 +26,17 @@ import {
 } from "../lib/home.ts";
 import { indexarOfertas } from "../lib/ofertas.ts";
 
-// A home é um hub (ticket 46) montado inteiro no build: as contagens e os
-// cartões das capacidades em destaque (ticket 96) saem do dataset de consulta
-// publicado, as capacidades da curadoria do site e o FAQ da mesma lista que
-// alimenta o JSON-LD. Nada de JSON baixado no cliente.
+// A home é um hub (ticket 46) montado inteiro no build: os cartões de Aparelhos
+// em destaque (tickets 96 e 107) saem do dataset de consulta publicado, as
+// capacidades da curadoria do site e o FAQ da mesma lista que alimenta o
+// JSON-LD. Nada de JSON baixado no cliente.
 const dataset = consultaJson as ItemConsulta[];
 const curadoria = carregarFiltros();
 // As contagens da base deixaram de ser uma faixa no meio da home (ticket 105):
-// `contarBase` continua alimentando a `description` da página, e o total por
-// capacidade segue nos blocos em destaque.
+// `contarBase` continua alimentando a `description` da página. A contagem por
+// capacidade saiu no ticket 107 junto com o atalho para a tabela — a seção é
+// uma entrada editorial, não um recorte do catálogo.
 const contagens = contarBase(dataset);
-const porCapacidade = contagensPorCapacidade(dataset);
 // O simulador do hero arredonda para uma capacidade comercial: o recorte
 // (`?btu=`) e o resumo de eficiência dessa capacidade saem da mesma base que
 // a tabela serve, no build.
@@ -64,20 +63,15 @@ const destaques: DestaqueAnalise[] = analises.map((analise) => ({
   analise,
   ofertas: ofertasDoDestaque(analise, ofertasPorAparelho),
 }));
-// Os blocos por capacidade exata (ticket 96) substituem as listas de populares.
+// As capacidades com destaque (ticket 96) substituem as listas de populares.
 // Análises e Ofertas chegam indexadas pelo mesmo `aparelhoId` da tabela; uma
-// capacidade só vira bloco quando há pelo menos um Aparelho com uma das duas.
+// capacidade só vira painel quando há pelo menos um Aparelho com uma das duas.
 const indiceDestaques = {
   dataset,
   analisesPorAparelho: mapaPorAparelho(analises),
   ofertasPorAparelho,
 };
-const blocosDestaque = capacidadesComDestaque(indiceDestaques, curadoria).map(
-  (bloco) => ({
-    ...bloco,
-    totalNaCapacidade: porCapacidade.get(bloco.capacidadeBtu) ?? 0,
-  }),
-);
+const blocosDestaque = capacidadesComDestaque(indiceDestaques, curadoria);
 
 const descricao = `Ar-condicionado e BTUs com os dados oficiais do INMETRO: compare capacidade, consumo, IDRS e Classe de ${formatarNumero(contagens.aparelhos)} aparelhos e descubra quantos BTUs o seu ambiente precisa.`;
 
@@ -132,7 +126,7 @@ const jsonLd: Record<string, unknown>[] = [
     <SimuladorHero client:load resumos={resumosComerciais} />
   </section>
 
-  {blocosDestaque.map((bloco) => <HomeDestaquesPorCapacidade {...bloco} />)}
+  {blocosDestaque.length > 0 && <HomeDestaques blocos={blocosDestaque} />}
 
   <AnalisesDestaque destaques={destaques} />
 

@@ -2,14 +2,12 @@ import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
 import {
   capacidadesComDestaque,
-  contagensPorCapacidade,
   contarBase,
   destaquesPorCapacidade,
   EXPLICACAO_DO_RECORTE,
   formatarCapacidade,
   formatarNumero,
   jsonLdPerguntasFrequentes,
-  linkDaTabela,
   PERGUNTAS_FREQUENTES,
 } from "../src/lib/home.ts";
 import type { Oferta } from "../src/lib/ofertas.ts";
@@ -69,30 +67,6 @@ describe("contagens da base", () => {
     expect(contagens.aparelhos).toBe(2);
     expect(contagens.marcas).toBe(0);
     expect(contagens.capacidades).toBe(1);
-  });
-});
-
-describe("contagens por capacidade", () => {
-  it("conta cada Aparelho uma vez por capacidade, mesmo com Variantes no mesmo valor", () => {
-    const contagens = contagensPorCapacidade([
-      item({ id: "a", capacidadesBtu: [9000, 12000] }),
-      item({ id: "b", capacidadesBtu: [12000, 12000] }),
-      item({ id: "c", capacidadesBtu: [18000] }),
-    ]);
-    expect(contagens.get(9000)).toBe(1);
-    expect(contagens.get(12000)).toBe(2);
-    expect(contagens.get(18000)).toBe(1);
-  });
-});
-
-describe("links da tabela", () => {
-  it("aponta para a tabela sem filtro quando não há recorte", () => {
-    expect(linkDaTabela({})).toBe("/aparelhos/");
-  });
-
-  it("filtra por capacidade e por Marca de catálogo", () => {
-    expect(linkDaTabela({ btu: 12000 })).toBe("/aparelhos/?btu=12000");
-    expect(linkDaTabela({ marca: "MIDEA" })).toBe("/aparelhos/?marca=MIDEA");
   });
 });
 

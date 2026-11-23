@@ -245,9 +245,12 @@ nova exportação CSV
   ticket 94 (componente, módulo puro, teste e CSS): o simulador é a única
   leitura de escala da primeira tela, e a navegação por faixa continua no
   catálogo, nos chips de Faixa de capacidade. A faixa "Cobertura da base" (contagens
-  de Aparelhos, marcas e capacidades) saiu no ticket 105; abaixo do hero vêm os
-  blocos de aparelhos em destaque por capacidade exata (ticket 96 — substituem
-  "Capacidades populares" e "Marcas populares"), carousel de Análises em destaque
+  de Aparelhos, marcas e capacidades) saiu no ticket 105; abaixo do hero vem a
+  seção única de **Aparelhos em destaque** (tickets 96 e 107 — substitui
+  "Capacidades populares" e "Marcas populares"): capacidade no cabeçalho
+  (chips com 2+ capacidades, rótulo estático com uma só), todos os painéis no
+  HTML e um script inline que só esconde os inativos, e os modelos em cartões
+  separados. Depois vem o carousel de Análises em destaque
   (ticket 97 — com 2+ Análises, um quadro por vez, controles, pausa e rotação
   de 7 s que para no ponteiro, no foco, fora da tela e em
   `prefers-reduced-motion`; o script fica em componente próprio e só é servido

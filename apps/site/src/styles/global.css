@@ -2836,11 +2836,11 @@ main.principal-leitura {
   }
 }
 
-/* O percurso da home (tickets 71, 96, 98 e 105): o hero termina no simulador e
-   a primeira seção abaixo dele (capacidades em destaque) assume a régua de
-   1 px; daí vêm análises → perguntas → metodologia. Cada bloco respira com o
-   mesmo ritmo; nenhum deles flutua. A faixa de cobertura saiu no ticket 105. */
-.home-destaques-capacidade,
+/* O percurso da home (tickets 71, 96, 98, 105 e 107): o hero termina no
+   simulador e a primeira seção abaixo dele (Aparelhos em destaque) assume a
+   régua de 1 px; daí vêm análises → perguntas → metodologia. Cada bloco respira
+   com o mesmo ritmo; nenhum deles flutua. A faixa de cobertura saiu no 105. */
+.home-destaques,
 .home-faq,
 .home-metodologia {
   padding-block: var(--esp-6);
@@ -2848,7 +2848,7 @@ main.principal-leitura {
   border-top: 1px solid var(--linha);
 }
 
-.home-destaques-capacidade .cabecalho-secao {
+.home-destaques .cabecalho-secao {
   margin-bottom: var(--esp-5);
 }
 
@@ -2857,38 +2857,111 @@ main.principal-leitura {
   margin-bottom: var(--esp-4);
 }
 
-/* Aparelhos em destaque por capacidade exata (ticket 96): até três cartões de
-   ficha técnica por capacidade, numa grade apoiada em hairlines. Sem sombra, sem
-   selo de "melhor" e sem proporção desenhada: o que está aqui é o Valor oficial. */
-.home-destaques-total {
+/* Aparelhos em destaque (tickets 96 e 107): uma seção só, com o seletor de
+   capacidade no cabeçalho e os modelos em cartões separados. O seletor nasce
+   com duas ou mais capacidades; com uma só, a capacidade é um rótulo estático.
+   Rolagem horizontal dos chips no celular, nunca quebra de linha. */
+.home-destaques-seletor {
   display: grid;
-  gap: var(--esp-2);
-  margin: 0;
-  font-size: var(--texto-pequeno);
+  gap: var(--esp-1);
+  justify-items: start;
+  min-width: 0;
 }
 
-.home-destaques-contagem {
+.home-destaques-seletor-rotulo,
+.home-destaques-rotulo {
+  margin: 0;
   color: var(--mudo);
   font-family: var(--fonte-mono);
   font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-destaques-rotulo {
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+}
+
+.home-destaques-chips {
+  display: flex;
+  gap: var(--esp-3);
+  max-width: 100%;
+  padding-block-end: var(--esp-1);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.home-destaques-chip {
+  flex: none;
+  min-height: 44px;
+  padding-inline: var(--esp-5);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
   letter-spacing: var(--tracking-unidade);
   line-height: var(--entrelinha-rotulo);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--mov-hover) var(--curva),
+    color var(--mov-hover) var(--curva);
+}
+
+.home-destaques-chip:hover,
+.home-destaques-chip[aria-pressed="true"] {
+  border-color: var(--tinta);
+  color: var(--tinta);
+}
+
+.home-destaques-painel[hidden] {
+  display: none;
+}
+
+.home-destaques-painel + .home-destaques-painel {
+  margin-block-start: var(--esp-5);
 }
 
 .home-destaques-cartoes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
   gap: var(--esp-5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+@media (min-width: 40rem) {
+  .home-destaques-cartoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .home-destaques-cartoes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .home-destaque-cartao {
   min-width: 0;
   margin-block: 0;
-  padding-block-start: var(--esp-4);
-  border-top: 1px solid var(--linha);
+  padding: var(--esp-6);
+  background: var(--giz);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  transition: border-color var(--mov-hover) var(--curva);
+}
+
+.home-destaque-cartao:hover {
+  border-color: var(--tinta);
 }
 
 .home-destaque-cartao article {
@@ -2974,9 +3047,8 @@ main.principal-leitura {
 }
 
 .home-destaque-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--esp-2) var(--esp-4);
+  display: grid;
+  gap: var(--esp-2);
   margin: auto 0 0;
   padding-block-start: var(--esp-3);
   font-size: var(--texto-pequeno);
@@ -2991,6 +3063,23 @@ main.principal-leitura {
 
 .home-destaque-acoes a:hover {
   text-decoration-color: var(--foco);
+}
+
+.home-destaque-analise {
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+}
+
+/* Uma linha por Oferta, cada uma com o logo da loja e o marcador mínimo dentro
+   do link (ticket 106): o cartão não escolhe "a melhor" loja. */
+.home-destaque-ofertas {
+  display: grid;
+  gap: var(--esp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 /* O CTA de Oferta compartilhado mantém a cor do link e o marcador mudo, sem

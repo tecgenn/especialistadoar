@@ -1,0 +1,157 @@
+---
+import { formatarFaixa } from "../lib/ficha.ts";
+import {
+  type BlocoDestaquePorCapacidade,
+  formatarCapacidade,
+} from "../lib/home.ts";
+import CabecalhoDeSecao from "./primitivos/CabecalhoDeSecao.astro";
+import OfertaCartao from "./primitivos/OfertaCartao.astro";
+
+/**
+ * Entrada editorial da home (tickets 96 e 107): uma única seção de Aparelhos em
+ * destaque, com os modelos com Análise publicada e/ou Oferta separados em
+ * cartões. Com duas ou mais capacidades, os chips trocam o painel visível; com
+ * uma só, a capacidade vira rótulo estático — o componente nunca nasce com um
+ * controle de um item só. O HTML traz todos os painéis: o script apenas esconde
+ * os inativos, então nada depende de hidratação.
+ */
+interface Props {
+  blocos: BlocoDestaquePorCapacidade[];
+}
+
+const { blocos } = Astro.props;
+const multiplasCapacidades = blocos.length > 1;
+const capacidadeUnica = blocos[0]?.capacidadeBtu;
+const idDoPainel = (capacidadeBtu: number) => `capacidade-${capacidadeBtu}`;
+---
+
+<section
+  class="home-destaques"
+  data-home-destaques
+  aria-labelledby="home-destaques-titulo"
+>
+  <CabecalhoDeSecao
+    icone="ar-condicionado"
+    id="home-destaques-titulo"
+    titulo="Aparelhos em destaque"
+    lead="Modelos com análise publicada ou oferta, por capacidade."
+  >
+    <div class="home-destaques-seletor" slot="acoes">
+      {
+        multiplasCapacidades ? (
+          <>
+            <p class="home-destaques-seletor-rotulo">Capacidade</p>
+            <div
+              class="home-destaques-chips"
+              role="group"
+              aria-label="Capacidade"
+            >
+              {blocos.map((bloco, indice) => (
+                <button
+                  type="button"
+                  class="home-destaques-chip"
+                  data-home-destaques-chip
+                  data-painel={idDoPainel(bloco.capacidadeBtu)}
+                  aria-pressed={indice === 0 ? "true" : "false"}
+                >
+                  {formatarCapacidade(bloco.capacidadeBtu)}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : capacidadeUnica !== undefined ? (
+          <p class="home-destaques-rotulo">
+            {formatarCapacidade(capacidadeUnica)}
+          </p>
+        ) : null
+      }
+    </div>
+  </CabecalhoDeSecao>
+  {
+    blocos.map((bloco) => (
+      <div
+        class="home-destaques-painel"
+        data-home-destaques-painel
+        id={idDoPainel(bloco.capacidadeBtu)}
+      >
+        <ul class="home-destaques-cartoes">
+          {bloco.cartoes.map((cartao) => (
+            <li class="home-destaque-cartao">
+              <article>
+                <p class="home-destaque-identidade">
+                  <span class="home-destaque-marca">{cartao.marca}</span>
+                  <strong class="home-destaque-modelo">
+                    <a href={`/aparelhos/${cartao.aparelhoId}/`}>
+                      {cartao.modelo}
+                    </a>
+                  </strong>
+                </p>
+                <p class="home-destaque-atributos">
+                  <span>{formatarCapacidade(cartao.capacidadeBtu)}</span>
+                  <span>{cartao.tipo ?? "Tipo não informado"}</span>
+                </p>
+                <dl class="home-destaque-leituras">
+                  <div>
+                    <dt>IDRS</dt>
+                    <dd>{formatarFaixa(cartao.idrs)}</dd>
+                  </div>
+                  <div>
+                    <dt>Consumo anual</dt>
+                    <dd>{formatarFaixa(cartao.consumoAnualKwh, " kWh/ano")}</dd>
+                  </div>
+                </dl>
+                <div class="home-destaque-acoes">
+                  {cartao.analise ? (
+                    <a class="home-destaque-analise" href={cartao.analise.url}>
+                      Ler análise
+                    </a>
+                  ) : null}
+                  {cartao.ofertas.length > 0 ? (
+                    <ul class="home-destaque-ofertas">
+                      {cartao.ofertas.map((oferta) => (
+                        <li>
+                          <OfertaCartao oferta={oferta} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</section>
+
+<script is:inline>
+  (() => {
+    for (const secao of document.querySelectorAll("[data-home-destaques]")) {
+      const chips = Array.from(
+        secao.querySelectorAll("[data-home-destaques-chip]"),
+      );
+      const paineis = Array.from(
+        secao.querySelectorAll("[data-home-destaques-painel]"),
+      );
+      if (chips.length === 0) {
+        continue;
+      }
+      const mostrar = (id) => {
+        for (const painel of paineis) {
+          painel.hidden = painel.id !== id;
+        }
+        for (const chip of chips) {
+          chip.setAttribute("aria-pressed", String(chip.dataset.painel === id));
+        }
+      };
+      const primeiro = chips[0];
+      if (primeiro) {
+        mostrar(primeiro.dataset.painel);
+      }
+      for (const chip of chips) {
+        chip.addEventListener("click", () => mostrar(chip.dataset.painel));
+      }
+    }
+  })();
+</script>

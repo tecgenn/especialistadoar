@@ -4,10 +4,10 @@
  * 96), o FAQ e o JSON-LD `FAQPage`. Este módulo é a parte pura (sem I/O e sem
  * Astro), para o build e os testes usarem a mesma definição.
  *
- * Nenhuma contagem é escrita à mão: `contarBase` e `contagensPorCapacidade` leem
- * o dataset de consulta publicado. As capacidades em destaque saem da curadoria
- * do site (`filtros.json`), escondendo em silêncio o valor que não existe na
- * base e a capacidade sem nenhum Aparelho com Análise publicada ou Oferta.
+ * Nenhuma contagem é escrita à mão: `contarBase` lê o dataset de consulta
+ * publicado. As capacidades em destaque saem da curadoria do site
+ * (`filtros.json`), escondendo em silêncio o valor que não existe na base e a
+ * capacidade sem nenhum Aparelho com Análise publicada ou Oferta.
  */
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import type { FiltrosCurados } from "./filtros.ts";
@@ -134,23 +134,6 @@ export function jsonLdPerguntasFrequentes(
 }
 
 /**
- * Aparelhos por capacidade: cada Aparelho conta uma vez em cada capacidade que
- * declara, mesmo quando tem mais de uma Variante no mesmo valor. Alimenta a
- * contagem da capacidade em destaque (ticket 96).
- */
-export function contagensPorCapacidade(
-  dataset: readonly ItemConsulta[],
-): Map<number, number> {
-  const contagens = new Map<number, number>();
-  for (const item of dataset) {
-    for (const capacidade of new Set(item.capacidadesBtu)) {
-      contagens.set(capacidade, (contagens.get(capacidade) ?? 0) + 1);
-    }
-  }
-  return contagens;
-}
-
-/**
  * Um cartão da entrada editorial por capacidade da home (ticket 96). Os valores
  * técnicos são os oficiais do `consulta.json`; a Análise e a Oferta são site-only
  * e chegam indexadas pelo build. Nunca há um cartão só com Oferta órfã, porque
@@ -256,23 +239,6 @@ export function capacidadesComDestaque(
       cartoes: destaquesPorCapacidade(indice, capacidadeBtu),
     }))
     .filter((bloco) => bloco.cartoes.length > 0);
-}
-
-/**
- * O link para a tabela já recortada. A presença de uma chave de filtro desliga
- * os filtros padrão (ADR-0019), então `?btu=` e `?marca=` mostram todos os
- * aparelhos daquele recorte.
- */
-export function linkDaTabela(filtro: { marca?: string; btu?: number }): string {
-  const busca = new URLSearchParams();
-  if (filtro.marca !== undefined) {
-    busca.set("marca", filtro.marca);
-  }
-  if (filtro.btu !== undefined) {
-    busca.set("btu", String(filtro.btu));
-  }
-  const querystring = busca.toString();
-  return querystring === "" ? "/aparelhos/" : `/aparelhos/?${querystring}`;
 }
 
 /** Número no formato pt-BR (2.227), para as contagens e as capacidades. */

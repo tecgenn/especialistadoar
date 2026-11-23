@@ -529,7 +529,7 @@ function conferirHomeHub(html: string): void {
   // A seção seguinte ao hero assume a hairline superior: o respiro entre o
   // simulador e os destaques não dobra.
   expect(css).toMatch(
-    /\.home-destaques-capacidade,[^{]*\{[^}]*border-top:\s*1px solid var\(--linha\)/,
+    /\.home-destaques,[^{]*\{[^}]*border-top:\s*1px solid var\(--linha\)/,
   );
   const { inicioRodape, versao } = conferirVersaoNoRodape(html);
   expect(html.indexOf(versao.hash)).toBeGreaterThan(inicioRodape);
@@ -562,44 +562,88 @@ function conferirHomeHub(html: string): void {
   );
   expect(css).toMatch(/\.rodape-institucional a\s*\{[^}]*min-height:\s*44px/);
 
-  // 4–5. As listas de capacidades e marcas populares deram lugar aos blocos de
-  //      Aparelhos em destaque por capacidade exata (ticket 96). As capacidades
-  //      são curadas, mas só aparecem quando há Análise ou Oferta na base.
+  // 4–5. As listas de capacidades e marcas populares deram lugar a uma única
+  //      seção de Aparelhos em destaque (tickets 96 e 107), com os modelos em
+  //      cartões separados e a capacidade no cabeçalho. As capacidades são
+  //      curadas, mas só aparecem quando há Análise ou Oferta na base.
   expect(html).not.toContain("Capacidades populares");
   expect(html).not.toContain("Marcas populares");
   expect(html).not.toContain("home-populares");
-  const itens = JSON.parse(
-    readFileSync(join(distDir, "consulta.json"), "utf8"),
-  ) as Array<{ id: string; capacidadesBtu: number[] }>;
+  expect(html.match(/class="home-destaques"/g) ?? []).toHaveLength(1);
+  expect(html).toContain('id="home-destaques-titulo"');
+  expect(html).toContain('aria-labelledby="home-destaques-titulo"');
+  const inicioDestaques = html.indexOf('class="home-destaques"');
+  const secaoDestaques = html.slice(
+    inicioDestaques,
+    html.indexOf("</section>", inicioDestaques),
+  );
+  const textoDestaques = textoDaPagina(secaoDestaques);
+  expect(textoDestaques).toContain("Aparelhos em destaque");
+  expect(textoDestaques).toContain(
+    "Modelos com análise publicada ou oferta, por capacidade.",
+  );
   const capacidades = [
-    ...html.matchAll(
-      /<section class="home-destaques-capacidade" id="capacidade-(\d+)"/g,
-    ),
+    ...html.matchAll(/data-home-destaques-painel[^>]*id="capacidade-(\d+)"/g),
   ].map((achado) => Number(achado[1]));
   expect(capacidades.length).toBeGreaterThan(0);
   expect(capacidades).toContain(12000);
+  if (capacidades.length === 1) {
+    // Com uma só capacidade, a capacidade é rótulo estático: sem chips e sem
+    // botão desabilitado.
+    expect(secaoDestaques).not.toContain("data-home-destaques-chip");
+    expect(secaoDestaques).not.toContain("aria-pressed");
+    expect(secaoDestaques).toContain('class="home-destaques-rotulo"');
+    expect(textoDestaques).toContain(
+      `${numero.format(capacidades[0] ?? 0)} BTU/h`,
+    );
+  } else {
+    expect(secaoDestaques).toContain("data-home-destaques-chip");
+    expect(secaoDestaques).toContain('aria-pressed="true"');
+    expect(secaoDestaques).not.toContain('class="home-destaques-rotulo"');
+  }
   for (const btu of capacidades) {
     expect(curadoria.btus).toContain(btu);
     const inicio = html.indexOf(`id="capacidade-${btu}"`);
     const bloco = html.slice(inicio, html.indexOf("</section>", inicio));
     const texto = textoDaPagina(bloco);
-    expect(texto).toContain(
-      `Aparelhos de ${numero.format(btu)} BTUs em destaque`,
-    );
-    expect(bloco).toContain(`href="/aparelhos/?btu=${btu}"`);
-    const total = itens.filter((item) =>
-      item.capacidadesBtu.includes(btu),
-    ).length;
-    expect(texto).toContain(
-      `${numero.format(total)} aparelhos nesta capacidade`,
-    );
     const cartoes = bloco.match(/class="home-destaque-cartao"/g) ?? [];
     expect(cartoes.length).toBeGreaterThan(0);
     expect(cartoes.length).toBeLessThanOrEqual(3);
-    expect(texto).toContain(`${numero.format(btu)} BTU/h`);
     expect(texto).toContain("IDRS");
     expect(texto).toContain("Consumo anual");
+    expect(texto).toContain("link de afiliado");
+    expect(bloco).toMatch(/href="\/aparelhos\/ap-[^"]+\/"/);
+    expect(bloco).toContain("home-destaque-ofertas");
+    // A seção é uma entrada editorial: nem contagem, nem atalho para a tabela.
+    expect(texto).not.toContain("aparelhos nesta capacidade");
+    expect(bloco).not.toMatch(/href="\/aparelhos\/\?btu=/);
   }
+  if (secaoDestaques.includes('href="/analises/')) {
+    expect(textoDestaques).toContain("Ler análise");
+  }
+  expect(html).not.toContain("Aparelhos de 12.000 BTUs em destaque");
+  expect(html).not.toContain("home-destaques-total");
+  expect(css).not.toMatch(/home-destaques-contagem|home-destaques-total/);
+  // Cartões separados: 3 colunas a partir de 1024 px, 2 a partir de 640 px, 1
+  // abaixo; fundo giz, borda hairline, raio de painel e hover de tinta.
+  expect(css).toMatch(
+    /@media \((?:min-width:\s*|width>=)64rem\)[^{]*\{[^}]*\.home-destaques-cartoes[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
+  );
+  expect(css).toMatch(
+    /@media \((?:min-width:\s*|width>=)40rem\)[^{]*\{[^}]*\.home-destaques-cartoes[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+  );
+  const regraCartao = /\.home-destaque-cartao\{[^}]*\}/.exec(css)?.[0] ?? "";
+  expect(regraCartao).toContain("background:var(--giz)");
+  expect(regraCartao).toContain("border:1px solid var(--linha)");
+  expect(regraCartao).toContain("border-radius:var(--raio-sm)");
+  expect(regraCartao).toContain("padding:var(--esp-6)");
+  expect(css).toMatch(
+    /\.home-destaque-cartao:hover\{[^}]*border-color:var\(--tinta\)/,
+  );
+  // O chip do seletor é botão de 44 px com `aria-pressed`, foco herdado e
+  // rolagem horizontal no celular.
+  expect(css).toMatch(/\.home-destaques-chip\{[^}]*min-height:\s*44px/);
+  expect(css).toMatch(/\.home-destaques-chips\{[^}]*overflow-x:\s*auto/);
   // Entrada estática: nem carrossel automático nem lista de links soltos.
   expect(html).not.toMatch(/home-destaques-carrossel|autoplay/);
   expect(html).not.toContain("home-links");

@@ -6,30 +6,30 @@
 
 **Skills:** `design-taste-frontend` — `references/cards.md`, `references/sections-library.md` e `references/layout-v4.md`. `impeccable` — `reference/component-review.md` e `reference/craft-floor.md`. `ui-ux-pro-max` — `"segmented control selector" --domain ux` e `"product spec card" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Estrutura
 
-- [ ] `HomeDestaquesPorCapacidade.astro` substituído por `HomeDestaques.astro`, que recebe todos os blocos e renderiza uma seção só
-- [ ] Cabeçalho com o `CabecalhoDeSecao` do #102: ícone `ar-condicionado`, título “Aparelhos em destaque” e lead curto (“Modelos com análise publicada ou oferta, por capacidade.”)
-- [ ] Seletor em chips com `aria-pressed`, alvo de 44 px e foco ciano; um painel por capacidade, com `hidden` nos inativos
-- [ ] Com uma capacidade, o cabeçalho mostra “12.000 BTU/h” como rótulo estático, sem chips e sem botão desabilitado
-- [ ] Sem JavaScript, todos os painéis aparecem (o script só esconde os inativos depois de inicializar); nenhum conteúdo depende de hidratação
-- [ ] A capacidade selecionada não vai para a URL: a seção não cria variantes indexáveis
+- [x] `HomeDestaquesPorCapacidade.astro` substituído por `HomeDestaques.astro`, que recebe todos os blocos e renderiza uma seção só
+- [x] Cabeçalho com o `CabecalhoDeSecao` do #102: ícone `ar-condicionado`, título “Aparelhos em destaque” e lead curto (“Modelos com análise publicada ou oferta, por capacidade.”)
+- [x] Seletor em chips com `aria-pressed`, alvo de 44 px e foco ciano; um painel por capacidade, com `hidden` nos inativos
+- [x] Com uma capacidade, o cabeçalho mostra “12.000 BTU/h” como rótulo estático, sem chips e sem botão desabilitado
+- [x] Sem JavaScript, todos os painéis aparecem (o script só esconde os inativos depois de inicializar); nenhum conteúdo depende de hidratação
+- [x] A capacidade selecionada não vai para a URL: a seção não cria variantes indexáveis
 
 ## Cartões
 
-- [ ] Grade de 3 colunas ≥ 1024 px, 2 colunas ≥ 640 px, 1 coluna abaixo; `align-items: stretch`
-- [ ] Cartão com fundo giz, borda de 1 px `--linha`, raio 4 px, padding de 24 px e hover de borda `--tinta` — sem sombra, sem pill
-- [ ] Marca em mono pequena, modelo como link em grotesca, capacidade e tipo em uma linha secundária
-- [ ] IDRS e consumo anual em duas leituras com rótulo mono e valor tabular, como na ficha
-- [ ] Ações: “Ler análise” (quando houver) e uma linha por Oferta com `LogoLoja` + “Ver oferta” + marcador mínimo
-- [ ] Nenhum cartão vazio, nenhum CTA desabilitado e nenhum espaço reservado para Oferta ausente
-- [ ] Sem contagem de aparelhos, sem “Ver os de …” e sem carrossel
-- [ ] `totalNaCapacidade` removido das props e do build; `contagensPorCapacidade` e `linkDaTabela` removidos se ficarem sem consumidor
-- [ ] 0 px de overflow em 320/390/768/1024/1440 px; o seletor rola em uma linha no celular se precisar
-- [ ] Testes de build conferem a seção única, o seletor, os cartões, as Ofertas múltiplas e a ausência da contagem/atalho
-- [ ] `DESIGN.md`, seção “Aparelhos em destaque (home)”, atualizado no mesmo commit
+- [x] Grade de 3 colunas ≥ 1024 px, 2 colunas ≥ 640 px, 1 coluna abaixo; `align-items: stretch`
+- [x] Cartão com fundo giz, borda de 1 px `--linha`, raio 4 px, padding de 24 px e hover de borda `--tinta` — sem sombra, sem pill
+- [x] Marca em mono pequena, modelo como link em grotesca, capacidade e tipo em uma linha secundária
+- [x] IDRS e consumo anual em duas leituras com rótulo mono e valor tabular, como na ficha
+- [x] Ações: “Ler análise” (quando houver) e uma linha por Oferta com `LogoLoja` + “Ver oferta” + marcador mínimo
+- [x] Nenhum cartão vazio, nenhum CTA desabilitado e nenhum espaço reservado para Oferta ausente
+- [x] Sem contagem de aparelhos, sem “Ver os de …” e sem carrossel
+- [x] `totalNaCapacidade` removido das props e do build; `contagensPorCapacidade` e `linkDaTabela` removidos se ficarem sem consumidor
+- [x] 0 px de overflow em 320/390/768/1024/1440 px; o seletor rola em uma linha no celular se precisar
+- [x] Testes de build conferem a seção única, o seletor, os cartões, as Ofertas múltiplas e a ausência da contagem/atalho
+- [x] `DESIGN.md`, seção “Aparelhos em destaque (home)”, atualizado no mesmo commit
 
 ## Notas
 
