@@ -1,16 +1,11 @@
 ---
-import {
-  ATRIBUTOS_OFERTA,
-  MARCADOR_OFERTA,
-  type Oferta,
-  rotuloDaOferta,
-} from "../lib/ofertas.ts";
+import { type Oferta, ofertaExibida } from "../lib/ofertas.ts";
+import OfertaCartao from "./primitivos/OfertaCartao.astro";
 
 /**
  * Um único CTA de Oferta. Puro e reutilizável: recebe a `Oferta` e não sabe de
- * onde ela veio. Os atributos que o programa de afiliados exige ficam aqui, uma
- * vez só (ADR-0010), e a identificação "link de afiliado" acompanha o cartão em
- * todos os lugares — em texto pequeno e cor secundária, sem destaque (ticket 58).
+ * onde ela veio. Resolve o rótulo na camada pura e delega a marcação ao cartão
+ * compartilhado com a home e com a ilha da Comparação (ticket 106).
  */
 interface Props {
   oferta: Oferta;
@@ -19,8 +14,4 @@ interface Props {
 const { oferta } = Astro.props;
 ---
 
-<a class="oferta-cartao" href={oferta.url} {...ATRIBUTOS_OFERTA}>
-  <span class="oferta-titulo">{rotuloDaOferta(oferta)}</span>{' — '}
-  <span class="oferta-loja">{oferta.loja}</span>{' '}
-  <span class="oferta-marcador">{MARCADOR_OFERTA}</span>
-</a>
+<OfertaCartao oferta={ofertaExibida(oferta)} />

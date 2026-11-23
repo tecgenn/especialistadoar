@@ -6,8 +6,8 @@ import {
   formatarNumero,
   linkDaTabela,
 } from "../lib/home.ts";
-import { ATRIBUTOS_OFERTA, MARCADOR_OFERTA } from "../lib/ofertas.ts";
 import CabecalhoDeSecao from "./primitivos/CabecalhoDeSecao.astro";
+import OfertaCartao from "./primitivos/OfertaCartao.astro";
 
 /**
  * Entrada editorial por capacidade exata da home (ticket 96): até três cartões
@@ -69,14 +69,9 @@ const id = `capacidade-${capacidadeBtu}`;
             </dl>
             <p class="home-destaque-acoes">
               {cartao.analise && <a href={cartao.analise.url}>Ler análise</a>}
-              {cartao.oferta && (
-                <a class="home-destaque-oferta" href={cartao.oferta.url} {...ATRIBUTOS_OFERTA}>
-                  <span>
-                    {cartao.oferta.rotulo} — {cartao.oferta.loja}
-                  </span>{" "}
-                  <span class="home-destaque-marcador">{MARCADOR_OFERTA}</span>
-                </a>
-              )}
+              {cartao.ofertas.map((oferta) => (
+                <OfertaCartao oferta={oferta} />
+              ))}
             </p>
           </article>
         </li>

@@ -857,9 +857,15 @@ const semOferta: AnaliseFixture = {
 };
 const oferta: Oferta = {
   aparelhoId: aparelho.id,
-  loja: "Loja Fixture",
-  url: "https://loja.example.com/aparelho-fixture",
+  loja: "Mercado Livre",
+  url: "https://www.mercadolivre.com.br/aparelho-fixture",
 };
+const ofertaAmazon: Oferta = {
+  aparelhoId: aparelho.id,
+  loja: "Amazon",
+  url: "https://www.amazon.com.br/aparelho-fixture",
+};
+const ofertasFixture: Oferta[] = [oferta, ofertaAmazon];
 
 const diretoriosTemporarios: string[] = [];
 
@@ -883,7 +889,7 @@ describe("build com uma Análise de fixture", () => {
       aparelhosDaBase().some((item) => item.id === ausente.aparelhoId),
     ).toBe(false);
     const ofertasJson = join(fixtureBase, "ofertas-fixture.json");
-    writeFileSync(ofertasJson, JSON.stringify([oferta], null, 2));
+    writeFileSync(ofertasJson, JSON.stringify(ofertasFixture, null, 2));
     writeFileSync(
       join(fixtureBase, "valida.mdx"),
       mdx(
@@ -941,28 +947,36 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlValida).toContain("Calcular os BTUs do meu ambiente");
     expect(htmlValida).toContain('href="/assistente/"');
     expect(htmlValida).toContain("Onde comprar");
-    expect(htmlValida).toContain(`href="${oferta.url}"`);
+    for (const ofertaPublicada of ofertasFixture) {
+      expect(htmlValida).toContain(`href="${ofertaPublicada.url}"`);
+    }
     expect(htmlValida).toContain('rel="sponsored nofollow noopener"');
     expect(htmlValida).toContain('target="_blank"');
     // As ações do cartão são o botão do sistema (ticket 69): o pill azul
     // antigo (`.cta-acao`) não existe mais no HTML.
     expect(htmlValida).not.toContain('class="cta-acao"');
     expect(htmlValida).toContain('class="botao botao-secundario"');
-    // O cartão comercial se identifica como link de afiliado (ADR-0010): o
-    // marcador discreto fica na mesma linha da loja e o rótulo padrão é
-    // "Ver oferta" — sem promessa de preço (ticket 58).
-    expect(htmlValida).toContain("Link de afiliado");
-    const cartaoOferta =
-      htmlValida.match(/<a class="oferta-cartao"[\s\S]*?<\/a>/)?.[0] ?? "";
+    // O cartão comercial se identifica como link de afiliado (ticket 106): o
+    // marcador mínimo acompanha o CTA e o nome da loja virou logotipo inline.
+    expect(htmlValida).toContain("link de afiliado");
+    const cartoesOferta = htmlValida.match(
+      /<a class="oferta-cartao oferta-cta oferta-cta--com-logo"[\s\S]*?<\/a>/g,
+    );
+    expect(cartoesOferta?.length).toBe(4);
+    const cartaoOferta = cartoesOferta?.[0] ?? "";
     expect(cartaoOferta).toContain("Ver oferta");
-    expect(cartaoOferta).toContain(oferta.loja);
-    // O separador "·" é decoração de CSS (só aparece na linha larga); o HTML
-    // guarda o rótulo que identifica o link de afiliado.
+    expect(cartaoOferta).toContain('aria-label="Mercado Livre"');
+    expect(cartaoOferta).toContain("<svg");
+    expect(cartoesOferta?.[1]).toContain('aria-label="Amazon"');
+    // Nenhum nome de loja aparece como texto visível: só no nome acessível.
+    expect(htmlValida).not.toContain(">Mercado Livre<");
+    expect(htmlValida).not.toContain(">Amazon<");
     expect(cartaoOferta).toContain(">link de afiliado</span>");
     expect(cartaoOferta).toContain('rel="sponsored nofollow noopener"');
     expect(cartaoOferta).toContain('target="_blank"');
-    // O MDX não repete a Oferta: só os dois cartões do template a exibem.
-    expect(htmlValida.match(/rel="sponsored/g) ?? []).toHaveLength(2);
+    // O MDX não repete a Oferta: só os dois cartões do template a exibem,
+    // cada um com as duas Ofertas do Aparelho (ticket 106).
+    expect(htmlValida.match(/rel="sponsored/g) ?? []).toHaveLength(4);
     expect(htmlValida).not.toContain("Oferta no meio do texto");
     // A tabela filtrada pela capacidade do Aparelho.
     const capacidade = capacidadeDoAparelho(aparelho.id);
@@ -975,17 +989,20 @@ describe("build com uma Análise de fixture", () => {
     const htmlFicha = lerHtml("aparelhos", aparelho.id);
     expect(htmlFicha).toContain("Leia a análise");
     expect(htmlFicha).toContain(`href="/analises/${valida.slug}/"`);
-    expect(htmlFicha).toContain(`href="${oferta.url}"`);
+    for (const ofertaPublicada of ofertasFixture) {
+      expect(htmlFicha).toContain(`href="${ofertaPublicada.url}"`);
+    }
     expect(htmlFicha).toContain('rel="sponsored nofollow noopener"');
-    expect(htmlFicha).toContain("Links comerciais");
     // A seção "Ofertas" entra no índice de seções (ticket 62).
     expect(htmlFicha).toContain('href="#ofertas"');
     expect(htmlFicha).toContain('<section class="ofertas" id="ofertas">');
-    // A faixa troca o parágrafo longo por uma frase curta: link comercial,
-    // compra na loja e comissão sem custo ao visitante (ticket 58).
-    expect(textoDaPagina(htmlFicha)).toContain(
+    // A faixa não tem mais parágrafo de apresentação: título e lista de Ofertas,
+    // com o marcador mínimo dentro de cada link (ticket 106).
+    expect(textoDaPagina(htmlFicha)).not.toContain("Links comerciais");
+    expect(textoDaPagina(htmlFicha)).not.toContain(
       "a compra acontece na loja e a comissão, se houver, não custa nada a você",
     );
+    expect(textoDaPagina(htmlFicha)).toContain("link de afiliado");
     expect(htmlFicha).not.toContain(
       "Não fazem parte dos dados técnicos do INMETRO",
     );
@@ -1058,10 +1075,15 @@ describe("build com uma Análise de fixture", () => {
     );
     expect(blocoCapacidade).toContain(`href="/aparelhos/${aparelho.id}/"`);
     expect(blocoCapacidade).toContain(`href="/analises/${valida.slug}/"`);
-    expect(blocoCapacidade).toContain(oferta.url);
+    for (const ofertaPublicada of ofertasFixture) {
+      expect(blocoCapacidade).toContain(`href="${ofertaPublicada.url}"`);
+    }
     expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.marca);
     expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.modelo);
-    expect(textoDaPagina(blocoCapacidade)).toContain("Loja Fixture");
+    expect(blocoCapacidade).toContain('aria-label="Mercado Livre"');
+    expect(blocoCapacidade).toContain('aria-label="Amazon"');
+    expect(blocoCapacidade).not.toContain(">Mercado Livre<");
+    expect(blocoCapacidade).not.toContain(">Amazon<");
     expect(textoDaPagina(blocoCapacidade)).toContain("link de afiliado");
 
     // Os cards de Aparelhos analisados do Assistente (ticket 42) são montados
@@ -1089,13 +1111,15 @@ describe("build com uma Análise de fixture", () => {
 
     // Na home, só o Aparelho na Versão atual e com Oferta ganha CTA — o Ausente e
     // o Aparelho sem Oferta não geram link comercial nenhum.
-    expect(htmlHome).toContain(`href="${oferta.url}"`);
+    for (const ofertaPublicada of ofertasFixture) {
+      expect(htmlHome).toContain(`href="${ofertaPublicada.url}"`);
+    }
     expect(htmlHome).toContain('rel="sponsored nofollow noopener"');
     expect(htmlHome).toContain('target="_blank"');
     expect(htmlHome).toContain("Onde comprar");
-    // Um link comercial no destaque da Análise e outro no cartão da capacidade,
-    // que também tem a Oferta do Aparelho (ticket 96).
-    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(2);
+    // Duas Ofertas no destaque da Análise e duas no cartão da capacidade, que
+    // também carrega todas as Ofertas do Aparelho (ticket 106).
+    expect(htmlHome.match(/rel="sponsored/g) ?? []).toHaveLength(4);
 
     // O bloco é gerado no build: o cliente não baixa `ofertas.json` nem
     // `analises.json` para renderizá-lo.
@@ -1204,9 +1228,18 @@ describe("build com uma Análise de fixture", () => {
     // cliente não baixa `ofertas.json` (e os bundles em `_astro` não carregam
     // a URL comercial).
     expect(existsSync(join(distDir, "ofertas.json"))).toBe(false);
-    expect(scripts.some((texto) => texto.includes(oferta.url))).toBe(false);
+    for (const ofertaPublicada of ofertasFixture) {
+      expect(scripts.some((texto) => texto.includes(ofertaPublicada.url))).toBe(
+        false,
+      );
+    }
     const htmlComparar = lerHtml("comparar");
-    expect(htmlComparar).toContain(oferta.loja);
+    // A ilha não renderiza cartões no SSR: as Ofertas viajam nas props,
+    // resolvidas no build, e o cliente não baixa `ofertas.json`.
+    for (const ofertaPublicada of ofertasFixture) {
+      expect(htmlComparar).toContain(ofertaPublicada.loja);
+      expect(htmlComparar).toContain(ofertaPublicada.url);
+    }
     expect(htmlComparar).not.toContain("ofertas.json");
 
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
@@ -1258,7 +1291,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain('<section class="analises-destaque"');
     expect(htmlHome).not.toContain("data-carrossel");
     // Sem Análise, o único link comercial da home é o do bloco de capacidade,
-    // que segue com as Ofertas publicadas (ticket 96).
+    // que segue com a Oferta publicada em `ofertas.json` (ticket 96).
     const inicioBlocoSemAnalise = htmlHome.indexOf('id="capacidade-12000"');
     const blocoSemAnalise = htmlHome.slice(
       inicioBlocoSemAnalise,

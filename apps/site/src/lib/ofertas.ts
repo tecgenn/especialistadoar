@@ -44,6 +44,28 @@ export function rotuloDaOferta(oferta: Pick<Oferta, "titulo">): string {
   return titulo === undefined || titulo === "" ? ROTULO_OFERTA_PADRAO : titulo;
 }
 
+/**
+ * A forma já resolvida que o cartão consume: `url`, `loja` e `rotulo`. É o
+ * contrato entre a camada pura (home, ficha, Análise, Comparação) e o mesmo
+ * cartão em Astro e React, sem deixar cada chamador reformatar o rótulo.
+ */
+export interface OfertaExibida {
+  url: string;
+  loja: string;
+  rotulo: string;
+}
+
+/** Resolve o rótulo de uma Oferta para a forma exibida pelo cartão. */
+export function ofertaExibida(
+  oferta: Pick<Oferta, "url" | "loja" | "titulo">,
+): OfertaExibida {
+  return {
+    url: oferta.url,
+    loja: oferta.loja,
+    rotulo: rotuloDaOferta(oferta),
+  };
+}
+
 function campoEmBranco(valor: unknown): boolean {
   return typeof valor !== "string" || valor.trim() === "";
 }

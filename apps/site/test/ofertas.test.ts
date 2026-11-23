@@ -7,6 +7,7 @@ import {
   indexarOfertas,
   MARCADOR_OFERTA,
   type Oferta,
+  ofertaExibida,
   ROTULO_OFERTA_PADRAO,
   rotuloDaOferta,
   validarOfertas,
@@ -65,6 +66,21 @@ describe("validarOfertas", () => {
 
   it("recusa Oferta duplicada para o mesmo Aparelho", () => {
     expect(() => validarOfertas([oferta(), oferta()])).toThrow(/duplicada/);
+  });
+});
+
+describe("ofertaExibida", () => {
+  it("resolve url, loja e rótulo no contrato do cartão compartilhado", () => {
+    expect(ofertaExibida(oferta({ loja: "Amazon" }))).toEqual({
+      url: "https://loja.example.com/aparelho",
+      loja: "Amazon",
+      rotulo: "Comprar",
+    });
+    expect(ofertaExibida(oferta({ titulo: undefined }))).toEqual({
+      url: "https://loja.example.com/aparelho",
+      loja: "Loja",
+      rotulo: ROTULO_OFERTA_PADRAO,
+    });
   });
 });
 
@@ -261,23 +277,27 @@ describe("a apresentação da Oferta segue o sistema visual", () => {
     expect(regra(".cta-ofertas .oferta-cartao")).toContain("min-height: 44px");
   });
 
-  it("mantém o marcador de afiliado em mono e cor secundária", () => {
+  it("mantém o marcador de afiliado em micro, mono e cor muda", () => {
     const marcador = regra(".oferta-marcador");
     expect(marcador).toContain("var(--fonte-mono)");
     expect(marcador).toContain("var(--mudo)");
+    expect(marcador).toContain("var(--texto-micro)");
     expect(marcador).toContain("white-space: nowrap");
   });
 
-  it("deixa o separador no CSS e empilha o marcador no celular", () => {
-    // O "·" é decoração: em tela estreita ele some para o marcador inteiro
-    // descer uma linha, sem separador órfão no começo da linha.
-    expect(regra(".oferta-marcador::before")).toContain('content: "·"');
-    const estreito = css.match(
-      /@media \(max-width: 30rem\) \{([\s\S]*?)\n\}/,
-    )?.[1];
-    expect(estreito, "regra de tela estreita ausente").toBeDefined();
-    expect(estreito).toContain(".oferta-marcador");
-    expect(estreito).toContain("flex-basis: 100%");
-    expect(estreito).toContain("content: none");
+  it("remove apresentação longa, separador, nota de cartão e empilhamento", () => {
+    expect(css).not.toMatch(/\.ofertas\s+\.intro/);
+    expect(css).not.toContain(".cta-cartao-nota");
+    expect(css).not.toContain(".oferta-marcador::before");
+    expect(css).not.toContain("@media (max-width: 30rem)");
+    expect(css).not.toContain("content: none");
+  });
+
+  it("herda a cor do link no logotipo e só sublinha o rótulo no hover", () => {
+    expect(regra(".loja-logo")).toContain("color: inherit");
+    expect(regra(".oferta-cta-conteudo")).toContain("gap: 0.6ch");
+    expect(regra(".oferta-cartao:hover .oferta-cta-rotulo")).toContain(
+      "text-decoration: underline",
+    );
   });
 });

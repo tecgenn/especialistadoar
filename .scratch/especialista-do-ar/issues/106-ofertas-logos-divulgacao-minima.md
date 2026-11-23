@@ -6,32 +6,32 @@
 
 **Skills:** `design-taste-frontend` — `references/icons.md` (marca monocromática dentro da grade) e `references/cards.md`. `impeccable` — `reference/component-review.md` e `reference/clarify.md`. `ui-ux-pro-max` — `"affiliate disclosure microcopy" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Logos
 
-- [ ] `lib/lojas.ts` normaliza o nome (sem acento, minúsculo, `mercado livre`/`mercadolivre`, `amazon`) e devolve a chave da loja ou `null`
-- [ ] `components/primitivos/LogoLoja.astro` renderiza o SVG inline com `role="img"` e `aria-label` com o nome da loja; sem logo, cai para o nome em texto
-- [ ] Marcas desenhadas como linha, 20–24 px, `currentColor`, sem preenchimento amarelo/colorido: aperto de mão do Mercado Livre e sorriso/seta da Amazon
-- [ ] Nenhuma requisição externa, nenhum arquivo de imagem e nenhum pacote de logos
-- [ ] O logo herda a cor do link e não muda de cor no hover além do que o texto já muda
+- [x] `lib/lojas.ts` normaliza o nome (sem acento, minúsculo, `mercado livre`/`mercadolivre`, `amazon`) e devolve a chave da loja ou `null`
+- [x] `components/primitivos/LogoLoja.astro` renderiza o SVG inline com `role="img"` e `aria-label` com o nome da loja; sem logo, cai para o nome em texto
+- [x] Marcas desenhadas como linha, 20–24 px, `currentColor`, sem preenchimento amarelo/colorido: aperto de mão do Mercado Livre e sorriso/seta da Amazon
+- [x] Nenhuma requisição externa, nenhum arquivo de imagem e nenhum pacote de logos
+- [x] O logo herda a cor do link e não muda de cor no hover além do que o texto já muda
 
 ## Divulgação
 
-- [ ] `--texto-micro: 0.625rem` adicionado aos tokens
-- [ ] `OfertaFaixa` não renderiza mais o parágrafo `intro`; o título e a lista continuam
-- [ ] `OfertaCartao` mostra `[logo] Ver oferta →` e o marcador “link de afiliado” em 0,625 rem e `--mudo`
-- [ ] O marcador continua dentro do link (o programa exige que a divulgação acompanhe o CTA), sem virar caixa, selo ou pill
-- [ ] Ficha, Análise e Comparação herdam o mesmo cartão e a mesma marcação
-- [ ] O rodapé (“Transparência com o Leitor”) e os Termos continuam sendo o texto completo; nenhuma explicação longa volta para o cartão
+- [x] `--texto-micro: 0.625rem` adicionado aos tokens
+- [x] `OfertaFaixa` não renderiza mais o parágrafo `intro`; o título e a lista continuam
+- [x] `OfertaCartao` mostra `[logo] Ver oferta →` e o marcador “link de afiliado” em 0,625 rem e `--mudo`
+- [x] O marcador continua dentro do link (o programa exige que a divulgação acompanhe o CTA), sem virar caixa, selo ou pill
+- [x] Ficha, Análise e Comparação herdam o mesmo cartão e a mesma marcação
+- [x] O rodapé (“Transparência com o Leitor”) e os Termos continuam sendo o texto completo; nenhuma explicação longa volta para o cartão
 
 ## Dados
 
-- [ ] `CartaoDestaquePorCapacidade.oferta` vira `ofertas: { url, loja, rotulo }[]`
-- [ ] `destaquesPorCapacidade` mapeia **todas** as Ofertas publicadas do Aparelho, na ordem do arquivo, sem `.at(0)`
-- [ ] Testes de `home.test.ts` cobrem Aparelho com uma e com duas Ofertas e garantem que nenhuma é descartada
-- [ ] `DESIGN.md`, seção de Ofertas e de cartões, atualizado no mesmo commit
-- [ ] `pnpm test` verde; nenhuma mudança em `data/build` ou `reports`
+- [x] `CartaoDestaquePorCapacidade.oferta` vira `ofertas: { url, loja, rotulo }[]`
+- [x] `destaquesPorCapacidade` mapeia **todas** as Ofertas publicadas do Aparelho, na ordem do arquivo, sem `.at(0)`
+- [x] Testes de `home.test.ts` cobrem Aparelho com uma e com duas Ofertas e garantem que nenhuma é descartada
+- [x] `DESIGN.md`, seção de Ofertas e de cartões, atualizado no mesmo commit
+- [x] `pnpm test` verde; nenhuma mudança em `data/build` ou `reports`
 
 ## Notas
 

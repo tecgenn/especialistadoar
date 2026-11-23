@@ -83,6 +83,7 @@
   --texto-corpo: 1.0625rem;
   --texto-ui: 1rem;
   --texto-pequeno: 0.875rem;
+  --texto-micro: 0.625rem;
   --texto-rotulo: 0.75rem;
   --texto-leitura: clamp(1.75rem, 3vw, 2.5rem);
   --texto-unidade: 0.75rem;

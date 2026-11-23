@@ -108,6 +108,7 @@ describe("tokens do sistema visual", () => {
       "texto-corpo",
       "texto-ui",
       "texto-pequeno",
+      "texto-micro",
       "texto-rotulo",
       "texto-leitura",
       "texto-unidade",
@@ -147,6 +148,10 @@ describe("tokens do sistema visual", () => {
     for (const token of [...cores, ...tipografia, ...estrutura]) {
       expect(tokens.has(token), `token --${token} ausente`).toBe(true);
     }
+  });
+
+  it("usa 0,625 rem no texto micro da divulgação de afiliado", () => {
+    expect(valor("texto-micro")).toBe("0.625rem");
   });
 
   it("mantém a escala de espaço em múltiplos de 2, 4 ou 8 px", () => {

@@ -166,11 +166,16 @@ describe("FAQ e JSON-LD", () => {
 });
 
 describe("destaques por capacidade (ticket 96)", () => {
-  function oferta(aparelhoId: string, titulo?: string): Oferta {
+  function oferta(
+    aparelhoId: string,
+    titulo?: string,
+    loja = "Loja Fixture",
+    indice = 1,
+  ): Oferta {
     return {
       aparelhoId,
-      loja: "Loja Fixture",
-      url: `https://loja.example.com/${aparelhoId}`,
+      loja,
+      url: `https://loja.example.com/${aparelhoId}${indice === 1 ? "" : `/${indice}`}`,
       ...(titulo === undefined ? {} : { titulo }),
     };
   }
@@ -273,12 +278,65 @@ describe("destaques por capacidade (ticket 96)", () => {
       idrs: [3.5, 4.2],
       consumoAnualKwh: [300, 420],
       analise: { titulo: "Análise A", url: "/analises/a/" },
-      oferta: {
-        url: "https://loja.example.com/a",
-        loja: "Loja Fixture",
-        rotulo: "Comprar na Loja",
-      },
+      ofertas: [
+        {
+          url: "https://loja.example.com/a",
+          loja: "Loja Fixture",
+          rotulo: "Comprar na Loja",
+        },
+      ],
     });
+  });
+
+  it("entrega uma única Oferta como uma lista de um, sem descartá-la", () => {
+    const [cartao] = destaquesPorCapacidade(
+      {
+        dataset: [item({ id: "a", capacidadesBtu: [12000] })],
+        analisesPorAparelho: new Map(),
+        ofertasPorAparelho: new Map([
+          ["a", [oferta("a", undefined, "Mercado Livre")]],
+        ]),
+      },
+      12000,
+    );
+    expect(cartao?.ofertas).toEqual([
+      {
+        url: "https://loja.example.com/a",
+        loja: "Mercado Livre",
+        rotulo: "Ver oferta",
+      },
+    ]);
+  });
+
+  it("mantém as duas Ofertas na ordem do arquivo, sem escolher a melhor loja", () => {
+    const [cartao] = destaquesPorCapacidade(
+      {
+        dataset: [item({ id: "a", capacidadesBtu: [12000] })],
+        analisesPorAparelho: new Map(),
+        ofertasPorAparelho: new Map([
+          [
+            "a",
+            [
+              oferta("a", undefined, "Mercado Livre", 1),
+              oferta("a", undefined, "Amazon", 2),
+            ],
+          ],
+        ]),
+      },
+      12000,
+    );
+    expect(cartao?.ofertas).toEqual([
+      {
+        url: "https://loja.example.com/a",
+        loja: "Mercado Livre",
+        rotulo: "Ver oferta",
+      },
+      {
+        url: "https://loja.example.com/a/2",
+        loja: "Amazon",
+        rotulo: "Ver oferta",
+      },
+    ]);
   });
 
   it("escolhe só capacidades curadas com destaque, na ordem da curadoria e sem teto", () => {

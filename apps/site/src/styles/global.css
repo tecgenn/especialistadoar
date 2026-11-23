@@ -1419,14 +1419,6 @@ main.principal-leitura {
   margin: 0 0 var(--esp-2);
 }
 
-/* A frase curta de transparência fica fora da lista de links. */
-.ofertas .intro {
-  max-width: 62ch;
-  margin: 0;
-  font-size: var(--texto-pequeno);
-  line-height: var(--entrelinha-pequena);
-}
-
 .ofertas ul {
   display: grid;
   margin: var(--esp-4) 0 0;
@@ -1465,46 +1457,42 @@ main.principal-leitura {
   display: flex;
 }
 
-.oferta-cartao:hover .oferta-titulo {
+/* O logotipo substitui o nome da loja (ticket 106): traço de 1,5 px na grade
+   de 24, sempre em `currentColor`. Só o rótulo reage ao hover, como antes. */
+.oferta-cta-conteudo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6ch;
+}
+
+.loja-logo {
+  display: block;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+.loja-logo-fallback {
+  font-weight: var(--peso-normal);
+}
+
+.oferta-cartao:hover .oferta-cta-rotulo {
   text-decoration: underline;
   text-decoration-color: var(--foco);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
 
-.oferta-loja {
-  color: var(--grafite);
-  font-weight: var(--peso-normal);
-}
-
-/* Divulgação junto do link (ticket 58): mono pequeno, na mesma linha da loja.
-   Sem ícone, selo ou cor de destaque; o rótulo nunca quebra no meio. O
-   separador é decoração de CSS: só existe enquanto os dois cabem na linha. */
+/* Divulgação mínima, dentro do link: micro em mono e cor muda, sem caixa,
+   selo, pill ou separador decorativo. */
 .oferta-marcador {
   color: var(--mudo);
   font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
+  font-size: var(--texto-micro);
   font-weight: var(--peso-normal);
   letter-spacing: var(--tracking-unidade);
   white-space: nowrap;
-}
-
-.oferta-marcador::before {
-  content: "·";
-  margin-inline-end: 0.5ch;
-}
-
-/* No celular "Ver oferta — Loja · link de afiliado" não cabe sem apertar a
-   tipografia: o marcador desce inteiro para a linha de baixo, sem o separador
-   órfão, e o nome da loja pode ser longo. */
-@media (max-width: 30rem) {
-  .oferta-marcador {
-    flex-basis: 100%;
-  }
-
-  .oferta-marcador::before {
-    content: none;
-  }
 }
 
 .analise-corpo {
@@ -1554,8 +1542,8 @@ main.principal-leitura {
 
 /* CTAs da Análise (ticket 47): sempre um cartão no sistema, nunca um link
    solto no meio do texto. As ações dentro do cartão usam o botão do sistema
-   (ticket 68). O cartão comercial se distingue pelo título e pela nota de
-   afiliado — nunca por cor de promoção (ticket 69). */
+   (ticket 68). A divulgação de afiliado vive no link de Oferta (ticket 106),
+   nunca numa nota de cartão — e menos ainda em cor de promoção. */
 .cta-cartao {
   display: grid;
   gap: var(--esp-3);
@@ -1618,16 +1606,6 @@ main.principal-leitura {
 .cta-ofertas .oferta-cartao:hover {
   border-color: var(--grafite);
   background: var(--papel);
-}
-
-.cta-cartao-nota {
-  margin: 0;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  font-weight: var(--peso-normal);
-  letter-spacing: var(--tracking-unidade);
-  line-height: 1.45;
 }
 
 .analise-aviso,
@@ -2899,7 +2877,7 @@ main.principal-leitura {
 
 .home-destaques-cartoes {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
   gap: var(--esp-5);
   margin: 0;
   padding: 0;
@@ -3015,7 +2993,13 @@ main.principal-leitura {
   text-decoration-color: var(--foco);
 }
 
-.home-destaque-marcador {
+/* O CTA de Oferta compartilhado mantém a cor do link e o marcador mudo, sem
+   herdar o sublinhado dos links editoriais do cartão (ticket 106). */
+.home-destaque-acoes .oferta-cartao {
+  text-decoration: none;
+}
+
+.home-destaque-acoes .oferta-marcador {
   color: var(--mudo);
 }
 

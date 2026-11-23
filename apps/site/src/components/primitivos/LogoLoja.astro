@@ -1,0 +1,38 @@
+---
+import {
+  dadosDoLogoDaLoja,
+  GRADE_DO_LOGO,
+  nomeDaLojaParaLeitura,
+} from "../../lib/lojas.ts";
+
+type Props = {
+  loja: string;
+};
+
+const { loja } = Astro.props;
+const dados = dadosDoLogoDaLoja(loja);
+const nome = nomeDaLojaParaLeitura(loja);
+---
+
+{
+  dados ? (
+    <svg
+      class="loja-logo"
+      viewBox={GRADE_DO_LOGO}
+      width="22"
+      height="22"
+      role="img"
+      aria-label={dados.nome}
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      {dados.caminhos.map((caminho) => <path d={caminho} />)}
+    </svg>
+  ) : (
+    <span class="loja-logo-fallback">{nome}</span>
+  )
+}

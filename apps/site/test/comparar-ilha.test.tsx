@@ -699,12 +699,52 @@ describe("CTA de Oferta no cartão", () => {
 
     const comOferta = cartoes()[0] as HTMLElement;
     const cta = within(comOferta).getByRole("link", {
-      name: "Ver oferta — Loja do teste link de afiliado",
+      name: "Ver oferta — Loja do teste — link de afiliado",
     });
     expect(cta.getAttribute("href")).toBe("https://loja.example.com/windfree");
     expect(cta.getAttribute("rel")).toBe("sponsored nofollow noopener");
     expect(cta.getAttribute("target")).toBe("_blank");
-    expect(cta.className).toBe("oferta-cartao");
+    expect(cta.className).toBe("oferta-cartao oferta-cta oferta-cta--com-logo");
+    // Loja desconhecida: o nome continua legível como texto, sem SVG.
+    expect(cta.querySelector(".loja-logo-fallback")?.textContent).toBe(
+      "Loja do teste",
+    );
+    expect(cta.querySelector("svg.loja-logo")).toBeNull();
+  });
+
+  it("substitui o nome da loja por logotipo quando a loja é conhecida", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb", [
+      {
+        aparelhoId: "ap-aaaaaaaaaaaa",
+        loja: "Mercado Livre",
+        url: "https://www.mercadolivre.com.br/windfree",
+      },
+      {
+        aparelhoId: "ap-bbbbbbbbbbbb",
+        loja: "amazon",
+        url: "https://www.amazon.com.br/dual-inverter",
+      },
+    ]);
+
+    const primeiro = cartoes()[0] as HTMLElement;
+    const segundo = cartoes()[1] as HTMLElement;
+    const ctaUm = within(primeiro).getByRole("link", {
+      name: "Ver oferta — Mercado Livre — link de afiliado",
+    });
+    const ctaDois = within(segundo).getByRole("link", {
+      name: "Ver oferta — Amazon — link de afiliado",
+    });
+
+    expect(
+      ctaUm.querySelector("svg.loja-logo")?.getAttribute("aria-label"),
+    ).toBe("Mercado Livre");
+    expect(
+      ctaDois.querySelector("svg.loja-logo")?.getAttribute("aria-label"),
+    ).toBe("Amazon");
+    expect(primeiro.textContent).not.toContain("Mercado Livre");
+    expect(segundo.textContent).not.toContain("amazon");
+    expect(primeiro.textContent).toContain("link de afiliado");
+    expect(segundo.textContent).toContain("link de afiliado");
   });
 
   it("fica na área de ações do cartão, junto de Trocar e Remover", async () => {

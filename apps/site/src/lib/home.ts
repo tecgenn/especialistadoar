@@ -11,8 +11,8 @@
  */
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import type { FiltrosCurados } from "./filtros.ts";
-import type { Oferta } from "./ofertas.ts";
-import { rotuloDaOferta } from "./ofertas.ts";
+import type { Oferta, OfertaExibida } from "./ofertas.ts";
+import { ofertaExibida } from "./ofertas.ts";
 
 /** As contagens reais da base servida, usadas na `description` da home. */
 export interface ContagensDaBase {
@@ -168,7 +168,8 @@ export interface CartaoDestaquePorCapacidade {
   /** Todos os consumos anuais declarados, em kWh/ano. */
   consumoAnualKwh: readonly number[];
   analise: { titulo: string; url: string } | null;
-  oferta: { url: string; loja: string; rotulo: string } | null;
+  /** Todas as Ofertas do Aparelho, na ordem do arquivo — nunca só a primeira. */
+  ofertas: readonly OfertaExibida[];
 }
 
 /** Os índices site-only que o build junta ao dataset de consulta. */
@@ -213,7 +214,6 @@ export function destaquesPorCapacidade(
     .slice(0, MAXIMO_CARTOES_POR_CAPACIDADE)
     .map(({ item }) => {
       const analise = analisesPorAparelho.get(item.id);
-      const oferta = ofertasPorAparelho.get(item.id)?.at(0);
       return {
         aparelhoId: item.id,
         marca: item.marca,
@@ -226,14 +226,7 @@ export function destaquesPorCapacidade(
           analise === undefined
             ? null
             : { titulo: analise.titulo, url: analise.url },
-        oferta:
-          oferta === undefined
-            ? null
-            : {
-                url: oferta.url,
-                loja: oferta.loja,
-                rotulo: rotuloDaOferta(oferta),
-              },
+        ofertas: (ofertasPorAparelho.get(item.id) ?? []).map(ofertaExibida),
       };
     });
 }
