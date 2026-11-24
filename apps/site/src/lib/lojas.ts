@@ -1,30 +1,30 @@
 /**
- * Lojas com marca própria no CTA de Oferta (ticket 106). A parte pura: só
- * normalização do nome e a geometria das marcas. O SVG é inline em
- * `LogoLoja.astro` (e no equivalente React da Comparação), sem requisição,
- * arquivo de imagem ou pacote de logos.
+ * Lojas com marca própria no CTA de Oferta (tickets 106 e 108). A parte pura:
+ * normalização do nome, a geometria da marca desenhada em linha e o nome do
+ * arquivo do logotipo oficial. O Mercado Livre usa o SVG real da marca em
+ * `src/assets/lojas/`; a Amazon continua desenhada em linha, dentro de
+ * `LogoLoja.astro` (e no equivalente React da Comparação).
  *
- * Os desenhos são marcas de linha na grade de 24 × 24, com traço de 1,5 px e
- * `currentColor`: nunca preenchimento amarelo, azul ou de qualquer outra cor.
+ * Os desenhos de linha ficam na grade de 24 × 24, com traço de 1,5 px e
+ * `currentColor` — a marca em arquivo é a única com as cores da loja.
  */
 
-/** A grade compartilhada pelos dois desenhos. */
+/** A grade compartilhada pelos desenhos de linha. */
 export const GRADE_DO_LOGO = "0 0 24 24";
 
 export type ChaveLoja = "mercado-livre" | "amazon";
 
-/** Os `d` dos `<path>` de cada marca, na ordem em que devem ser desenhados. */
+/** Lojas com logotipo oficial em arquivo, em vez de desenho de linha. */
+export type ChaveComArquivo = "mercado-livre";
+
+/** As medidas reservadas do logotipo em arquivo (proporção de 920,12 × 233,88). */
+export const MEDIDAS_DO_LOGO_MERCADO_LIVRE = {
+  largura: 79,
+  altura: 20,
+} as const;
+
+/** Os `d` dos `<path>` de cada marca desenhada, na ordem do desenho. */
 export const CAMINHOS_DO_LOGO = {
-  /** Aperto de mão do Mercado Livre, reduzido a traços contínuos. */
-  "mercado-livre": [
-    "M2.5 10.5 6 7a2.1 2.1 0 0 1 3 0l2.1 2.1",
-    "M21.5 13.5 18 17a2.1 2.1 0 0 1-3 0l-2.1-2.1",
-    "M8.1 11.1 10.7 8.5a1.5 1.5 0 0 1 2.1 0l3.2 3.2a1.5 1.5 0 0 1 0 2.1l-2.6 2.6",
-    "M6 7 3.8 9.2a2.2 2.2 0 0 0 0 3.1L8 16.5",
-    "M18 17l2.2-2.2a2.2 2.2 0 0 0 0-3.1L16 7.5",
-    "M10.7 8.5 12.8 10.6",
-    "M13.4 15.5 15.5 17.6",
-  ],
   /** A "a" e o sorriso com seta da Amazon, como linha contínua. */
   amazon: [
     "M7 10.5c0-2.5 1.9-4.5 4.3-4.5s4.2 2 4.2 4.5v4",
@@ -32,7 +32,10 @@ export const CAMINHOS_DO_LOGO = {
     "M4 15.5c4.7 3.2 11.2 3.2 16 0",
     "m17 13.5 3 2-3 2",
   ],
-} as const satisfies Record<ChaveLoja, readonly string[]>;
+} as const satisfies Record<
+  Exclude<ChaveLoja, ChaveComArquivo>,
+  readonly string[]
+>;
 
 const NOMES_DAS_LOJAS = {
   "mercado-livre": "Mercado Livre",
@@ -81,13 +84,19 @@ export function nomeDaLojaParaLeitura(nome: string | null | undefined): string {
   return typeof nome === "string" ? nome.trim() : "";
 }
 
-export interface DadosDoLogo {
-  chave: ChaveLoja;
-  nome: string;
-  caminhos: readonly string[];
-}
+export type DadosDoLogo =
+  | { tipo: "arquivo"; chave: ChaveComArquivo; nome: string }
+  | {
+      tipo: "desenho";
+      chave: Exclude<ChaveLoja, ChaveComArquivo>;
+      nome: string;
+      caminhos: readonly string[];
+    };
 
-/** Resolve o desenho de uma loja; `null` manda o chamador para o fallback em texto. */
+/**
+ * Resolve a marca da loja; `null` manda o chamador para o fallback em texto.
+ * A loja com arquivo devolve `tipo: "arquivo"` — o componente importa o SVG.
+ */
 export function dadosDoLogoDaLoja(
   nome: string | null | undefined,
 ): DadosDoLogo | null {
@@ -95,7 +104,11 @@ export function dadosDoLogoDaLoja(
   if (chave === null) {
     return null;
   }
+  if (chave === "mercado-livre") {
+    return { tipo: "arquivo", chave, nome: nomeDaLoja(chave) };
+  }
   return {
+    tipo: "desenho",
     chave,
     nome: nomeDaLoja(chave),
     caminhos: CAMINHOS_DO_LOGO[chave],

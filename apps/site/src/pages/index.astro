@@ -12,6 +12,7 @@ import { ofertasPublicadas } from "../conteudo/ofertas.ts";
 import Base from "../layouts/Base.astro";
 import {
   type DestaqueAnalise,
+  destaquesDaHome,
   mapaPorAparelho,
   ofertasDoDestaque,
 } from "../lib/analises.ts";
@@ -52,17 +53,19 @@ const resumosComerciais = Object.fromEntries(
     ];
   }),
 );
-// Os destaques são montados no build: cada Análise publicada, na ordem da mais
-// recente para a mais antiga, com as Ofertas do Aparelho já resolvidas. Um
-// Aparelho Ausente não tem Oferta (o glue recusa Oferta órfã), então fica sem
-// CTA sem precisar de checagem própria. Quando a Análise compara dois
-// Aparelhos, as Ofertas dos dois entram no mesmo destaque (ticket 97).
+// Os destaques são montados no build: as três Análises mais recentes (ticket
+// 108), com as Ofertas do Aparelho já resolvidas. Um Aparelho Ausente não tem
+// Oferta (o glue recusa Oferta órfã), então fica sem CTA sem precisar de
+// checagem própria. Quando a Análise compara dois Aparelhos, as Ofertas dos
+// dois entram no mesmo cartão. O restante fica em `/analises/`.
 const { analises } = await carregarAnalises();
 const ofertasPorAparelho = indexarOfertas(ofertasPublicadas());
-const destaques: DestaqueAnalise[] = analises.map((analise) => ({
-  analise,
-  ofertas: ofertasDoDestaque(analise, ofertasPorAparelho),
-}));
+const destaques: DestaqueAnalise[] = destaquesDaHome(analises).map(
+  (analise) => ({
+    analise,
+    ofertas: ofertasDoDestaque(analise, ofertasPorAparelho),
+  }),
+);
 // As capacidades com destaque (ticket 96) substituem as listas de populares.
 // Análises e Ofertas chegam indexadas pelo mesmo `aparelhoId` da tabela; uma
 // capacidade só vira painel quando há pelo menos um Aparelho com uma das duas.

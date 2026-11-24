@@ -1457,8 +1457,9 @@ main.principal-leitura {
   display: flex;
 }
 
-/* O logotipo substitui o nome da loja (ticket 106): traço de 1,5 px na grade
-   de 24, sempre em `currentColor`. Só o rótulo reage ao hover, como antes. */
+/* O logotipo substitui o nome da loja (tickets 106 e 108): o Mercado Livre usa
+   o SVG oficial em 20 px de altura; a Amazon, o desenho de linha em
+   `currentColor`. Só o rótulo reage ao hover, como antes. */
 .oferta-cta-conteudo {
   display: inline-flex;
   align-items: center;
@@ -1468,8 +1469,8 @@ main.principal-leitura {
 .loja-logo {
   display: block;
   flex: none;
-  width: 22px;
-  height: 22px;
+  width: auto;
+  height: 20px;
   color: inherit;
 }
 
@@ -1482,17 +1483,6 @@ main.principal-leitura {
   text-decoration-color: var(--foco);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
-}
-
-/* Divulgação mínima, dentro do link: micro em mono e cor muda, sem caixa,
-   selo, pill ou separador decorativo. */
-.oferta-marcador {
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-micro);
-  font-weight: var(--peso-normal);
-  letter-spacing: var(--tracking-unidade);
-  white-space: nowrap;
 }
 
 .analise-corpo {
@@ -1638,137 +1628,104 @@ main.principal-leitura {
   font-size: 0.9rem;
 }
 
-/* Análises em destaque na home (tickets 71 e 97): a Análise real, com a imagem
-   de abertura do artigo, data em mono, título, resumo e o CTA de Oferta quando
-   há. Com duas ou mais Análises, o bloco vira um carrossel: um quadro por vez,
-   controles de 44 px e um único movimento de 240 ms na troca. Sem JavaScript a
-   lista aparece inteira, sem controles. */
+/* Análises em destaque na home (tickets 71 e 108): grade estática com as três
+   Análises mais recentes. Cada cartão é imagem real (16:10) quando existe,
+   data em mono, título, resumo e uma linha de Oferta por loja. Sem imagem, o
+   cartão abre pela data — nunca por uma fotografia inventada. Sem carrossel,
+   sem controles e sem script: a seção é HTML puro. */
 .analises-destaque {
   padding-block: var(--esp-6);
   margin-block: 0;
   border-top: 1px solid var(--linha);
 }
 
-/* O cabeçalho da seção é o primitivo do ticket 102; aqui só o respiro até o
-   palco do carrossel é próprio da seção. */
+/* O cabeçalho da seção é o primitivo do ticket 102; aqui só o respiro até a
+   grade é próprio da seção. */
 .analises-destaque-cabecalho {
   margin-bottom: var(--esp-6);
 }
 
-.analises-carrossel-controles {
-  display: none;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--esp-2);
-}
-
-/* Os controles só existem com o carrossel ativo: sem JavaScript, a lista
-   aparece inteira e nada precisa ser controlado. */
-[data-carrossel-ativo] .analises-carrossel-controles {
-  display: flex;
-}
-
-.analises-carrossel-controle {
+/* “Todas as análises” vive no slot de ações do cabeçalho (ticket 108): alvo de
+   44 px, seta desenhada e sublinhado só no hover. */
+.analises-destaque-todas {
   display: inline-flex;
   align-items: center;
   gap: var(--esp-2);
   min-height: 44px;
-  padding: 0 var(--esp-4);
-  border: 1px solid var(--linha);
-  border-radius: var(--raio-xs);
-  background: var(--giz);
   color: var(--tinta);
-  font: inherit;
   font-size: var(--texto-pequeno);
-  cursor: pointer;
+  font-weight: var(--peso-medio);
+  text-decoration: none;
 }
 
-.analises-carrossel-controle:hover {
-  background: var(--papel);
-  border-color: var(--grafite);
+.analises-destaque-todas:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-underline-offset: 0.2em;
 }
 
-.analises-carrossel-controle[aria-pressed="true"] {
-  background: var(--tinta);
-  border-color: var(--tinta);
-  color: var(--giz);
-}
-
-.analises-carrossel-controle[hidden] {
-  display: none;
-}
-
-.analises-carrossel-pausa {
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-rotulo);
-}
-
-.analises-carrossel-indicador {
-  min-width: 3.5rem;
+/* 1 coluna no celular, 2 a partir de 640 px e 3 a partir de 1024 px. Com uma
+   Análise só, a coluna mantém a largura da grade — o cartão não estica para a
+   linha inteira. */
+.analises-destaque-grade {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  gap: var(--esp-5);
   margin: 0;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: var(--tracking-rotulo);
-  text-align: center;
-}
-
-.analises-destaque-lista {
-  list-style: none;
-  display: grid;
-  gap: var(--esp-7);
-  margin: 0 0 var(--esp-6);
   padding: 0;
+  list-style: none;
 }
 
-/* A troca de quadro é instantânea no layout; só com JavaScript um slide é
-   isolado. Sem ele, todos os destaques permanecem visíveis. */
-.analises-slide[hidden] {
-  display: none;
+.analises-destaque-grade > li {
+  display: flex;
 }
 
-.analises-slide-conteudo {
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-  gap: var(--esp-7);
-  align-items: start;
-  margin-block: 0;
-  padding-block-start: var(--esp-5);
-  border-top: 1px solid var(--linha);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .analises-slide[data-ativo] .analises-slide-conteudo {
-    animation: analises-slide-entra var(--mov-destaque) var(--curva);
-  }
-
-  @keyframes analises-slide-entra {
-    from {
-      opacity: 0;
-      transform: translateY(6px);
-    }
-
-    to {
-      opacity: 1;
-      transform: none;
-    }
+@media (min-width: 40rem) {
+  .analises-destaque-grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.analises-destaque-imagem {
+@media (min-width: 64rem) {
+  .analises-destaque-grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* O cartão é uma caixa de giz com hairline e raio de 4 px, sem sombra. Só a
+   borda reage ao hover; a imagem não dá zoom. */
+.analises-cartao {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
   overflow: hidden;
+  border: 1px solid var(--linha);
   border-radius: var(--raio-sm);
+  background: var(--giz);
+  transition: border-color var(--mov-hover) var(--curva);
+}
+
+.analises-cartao-imagem {
+  overflow: hidden;
   background: var(--mineral);
 }
 
-.analises-destaque-imagem img {
+.analises-cartao-imagem img {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
+}
+
+.analises-cartao-texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--esp-2);
+  padding: var(--esp-6);
 }
 
 .analises-destaque-data {
@@ -1781,26 +1738,48 @@ main.principal-leitura {
   text-transform: uppercase;
 }
 
-.analises-destaque-lista h3 {
-  margin: var(--esp-2) 0 var(--esp-3);
-  font-size: var(--texto-secao);
+.analises-cartao h3 {
+  margin: 0;
+  font-size: var(--texto-bloco);
   font-weight: var(--peso-medio);
   letter-spacing: var(--tracking-apertado);
+  line-height: var(--entrelinha-apertada);
 }
 
-.analises-destaque-lista h3 a {
+.analises-cartao a {
   text-decoration: none;
 }
 
-.analises-destaque-lista h3 a:hover {
+.analises-cartao:hover {
+  border-color: var(--tinta);
+}
+
+.analises-cartao:hover h3 a,
+.analises-cartao h3 a:focus-visible {
   text-decoration: underline;
   text-decoration-color: var(--foco);
   text-underline-offset: 0.15em;
 }
 
-.analises-destaque-lista .ofertas {
-  margin-block: var(--esp-4) 0;
-  padding-block-start: var(--esp-3);
+.analises-cartao-resumo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-ui);
+}
+
+/* A Oferta fica no rodapé do cartão, uma linha por loja; o `margin-top: auto`
+   alinha as linhas comerciais entre os cartões da mesma fileira. */
+.analises-cartao-ofertas {
+  display: grid;
+  margin: auto 0 0;
+  padding: var(--esp-2) 0 0;
+  border-top: 1px solid var(--linha);
+  list-style: none;
+}
+
+.analises-cartao-ofertas li + li {
+  border-top: 1px solid var(--linha);
 }
 
 /* Ficha no celular: o resumo vira uma coluna e as células da grade de condições
@@ -3082,14 +3061,10 @@ main.principal-leitura {
   list-style: none;
 }
 
-/* O CTA de Oferta compartilhado mantém a cor do link e o marcador mudo, sem
-   herdar o sublinhado dos links editoriais do cartão (ticket 106). */
+/* O CTA de Oferta compartilhado mantém a cor do link, sem herdar o
+   sublinhado dos links editoriais do cartão (ticket 106). */
 .home-destaque-acoes .oferta-cartao {
   text-decoration: none;
-}
-
-.home-destaque-acoes .oferta-marcador {
-  color: var(--mudo);
 }
 
 /* FAQ (ticket 71) e metodologia (ticket 99): `<details>` nativo, fechado por
@@ -3193,11 +3168,6 @@ main.principal-leitura {
 
   .hero-sol-opcao {
     min-height: 44px;
-  }
-
-  .analises-slide-conteudo {
-    grid-template-columns: 1fr;
-    gap: var(--esp-5);
   }
 
   .home-destaques-cartoes {

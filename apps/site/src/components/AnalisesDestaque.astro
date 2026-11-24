@@ -2,37 +2,30 @@
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
-import {
-  INTERVALO_CARROSSEL_MS,
-  modoDaSecaoDeAnalises,
-} from "../lib/carrossel.ts";
-import AnalisesCarrosselScript from "./AnalisesCarrosselScript.astro";
-import OfertaFaixa from "./OfertaFaixa.astro";
+import { ofertaExibida } from "../lib/ofertas.ts";
 import CabecalhoDeSecao from "./primitivos/CabecalhoDeSecao.astro";
 import Icone from "./primitivos/Icone.astro";
+import OfertaCartao from "./primitivos/OfertaCartao.astro";
 
 /**
- * "Análises em destaque" da home (tickets 71 e 97). As Análises e as Ofertas de
- * cada uma chegam já resolvidas do build — o cliente não baixa `analises.json`
- * nem `ofertas.json` para renderizá-lo.
+ * "Análises em destaque" da home (tickets 71 e 108). As Análises e as Ofertas
+ * de cada uma chegam já resolvidas do build — o cliente não baixa
+ * `analises.json` nem `ofertas.json` para renderizá-lo.
  *
- * Com uma Análise, o bloco é um destaque estático. Com duas ou mais, vira um
- * carrossel: um quadro por vez, controles de anterior/próxima, pausa explícita
- * e rotação automática que para no ponteiro, no foco, fora da tela, com a aba
- * escondida e em `prefers-reduced-motion`. O HTML traz todos os quadros e os
- * controles já estão no markup; sem JavaScript a lista aparece inteira, como
- * uma pilha de destaques, e nada fica escondido. Sem Análise, nada renderiza.
+ * Desde o #108 a seção é uma grade estática: no máximo as três Análises mais
+ * recentes, cada uma num cartão com a imagem de abertura real quando existe.
+ * Sem imagem, o cartão abre pela data e pelo título — nunca por uma fotografia
+ * inventada nem por um ícone de imagem quebrada. Sem JavaScript a grade é o que
+ * já está no HTML; a seção não carrega script nem some quando há uma Análise só.
  *
- * A Análise pode comparar dois Aparelhos: o quadro mostra as Ofertas de todos
- * eles (o `ofertas` já vem somado do build), com o link de afiliado de cada um.
+ * A Análise pode comparar dois Aparelhos: o cartão mostra as Ofertas de todos
+ * eles (o `ofertas` já vem somado do build), uma linha por loja.
  */
 interface Props {
   destaques: DestaqueAnalise[];
 }
 
 const { destaques } = Astro.props;
-const modo = modoDaSecaoDeAnalises(destaques.length);
-const emCarrossel = modo === "carrossel";
 
 // As imagens de abertura vivem em `src/assets`; o frontmatter aponta o caminho
 // relativo a essa pasta e o glob resolve o arquivo (e as larguras) no build.
@@ -50,117 +43,60 @@ function imagemDe(caminho: string | undefined): ImageMetadata | undefined {
 ---
 
 {
-  modo !== "oculta" ? (
-    <section
-      class="analises-destaque"
-      data-carrossel={emCarrossel ? true : undefined}
-      data-intervalo={emCarrossel ? INTERVALO_CARROSSEL_MS : undefined}
-      aria-labelledby="analises-destaque-titulo"
-      aria-roledescription={emCarrossel ? "carrossel" : undefined}
-    >
+  destaques.length > 0 ? (
+    <section class="analises-destaque" aria-labelledby="analises-destaque-titulo">
       <CabecalhoDeSecao
         icone="analise"
         id="analises-destaque-titulo"
         titulo="Análises em destaque"
-        lead="Leituras editoriais sobre aparelhos de ar-condicionado, com link para os dados oficiais do INMETRO na ficha de cada Aparelho."
+        lead="Leituras editoriais sobre modelos da base INMETRO."
         class="analises-destaque-cabecalho"
       >
-        {emCarrossel ? (
-          <div class="analises-carrossel-controles" data-carrossel-controles slot="acoes">
-            <button
-              type="button"
-              class="analises-carrossel-controle"
-              data-carrossel-anterior
-              aria-label="Análise anterior"
-            >
-              <Icone nome="seta-esquerda" tamanho={16} />
-              <span>Anterior</span>
-            </button>
-            <p
-              class="analises-carrossel-indicador"
-              data-carrossel-indicador
-              aria-hidden="true"
-            >
-              1 / {destaques.length}
-            </p>
-            <button
-              type="button"
-              class="analises-carrossel-controle"
-              data-carrossel-proximo
-              aria-label="Próxima análise"
-            >
-              <span>Próxima</span>
-              <Icone nome="seta-direita" tamanho={16} />
-            </button>
-            <button
-              type="button"
-              class="analises-carrossel-controle analises-carrossel-pausa"
-              data-carrossel-pausa
-            >
-              Pausar
-            </button>
-          </div>
-        ) : null}
+        <a class="analises-destaque-todas" href="/analises/" slot="acoes">
+          Todas as análises
+          <Icone nome="seta-direita" tamanho={16} />
+        </a>
       </CabecalhoDeSecao>
-      <div class="analises-carrossel-palco">
-        <ul class="analises-destaque-lista">
-          {destaques.map(({ analise, ofertas }, indice) => {
-            const imagem = imagemDe(analise.imagem);
-            return (
-              <li
-                class="analises-slide"
-                data-carrossel-slide={emCarrossel ? true : undefined}
-                data-titulo={analise.titulo}
-              >
-                <article
-                  class="analises-slide-conteudo"
-                  role={emCarrossel ? "group" : undefined}
-                  aria-roledescription={emCarrossel ? "slide" : undefined}
-                  aria-label={
-                    emCarrossel
-                      ? `${indice + 1} de ${destaques.length}`
-                      : undefined
-                  }
-                >
-                  {imagem ? (
-                    <div class="analises-destaque-imagem">
-                      <Image
-                        src={imagem}
-                        alt={analise.imagemAlt ?? ""}
-                        widths={[480, 720, 1080]}
-                        sizes="(min-width: 64rem) 30rem, 100vw"
-                        loading={indice === 0 ? "eager" : "lazy"}
-                      />
-                    </div>
-                  ) : null}
-                  <div class="analises-destaque-texto">
-                    <p class="analises-destaque-data">
-                      <time datetime={analise.data}>{analise.data}</time>
-                    </p>
-                    <h3>
-                      <a href={analise.url}>{analise.titulo}</a>
-                    </h3>
-                    <p class="intro">{analise.descricao}</p>
-                    <OfertaFaixa
-                      ofertas={ofertas}
-                      titulo="Onde comprar"
-                      nivelTitulo={4}
+      <ul class="analises-destaque-grade">
+        {destaques.map(({ analise, ofertas }, indice) => {
+          const imagem = imagemDe(analise.imagem);
+          return (
+            <li>
+              <article class="analises-cartao">
+                {imagem ? (
+                  <div class="analises-cartao-imagem">
+                    <Image
+                      src={imagem}
+                      alt={analise.imagemAlt ?? ""}
+                      widths={[360, 540, 720]}
+                      sizes="(min-width: 64rem) 26rem, (min-width: 40rem) 45vw, 100vw"
+                      loading={indice === 0 ? "eager" : "lazy"}
                     />
                   </div>
-                </article>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-      {emCarrossel ? (
-        <p class="apenas-leitor" data-carrossel-anuncio aria-live="polite"></p>
-      ) : null}
-      <p class="analises-destaque-todas">
-        <a href="/analises/">Todas as análises</a>
-      </p>
+                ) : null}
+                <div class="analises-cartao-texto">
+                  <p class="analises-destaque-data">
+                    <time datetime={analise.data}>{analise.data}</time>
+                  </p>
+                  <h3>
+                    <a href={analise.url}>{analise.titulo}</a>
+                  </h3>
+                  <p class="analises-cartao-resumo">{analise.descricao}</p>
+                  {ofertas.length > 0 ? (
+                    <ul class="analises-cartao-ofertas">
+                      {ofertas.map((oferta) => (
+                        <li>
+                          <OfertaCartao oferta={ofertaExibida(oferta)} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </article>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   ) : null
 }
-
-{emCarrossel ? <AnalisesCarrosselScript /> : null}

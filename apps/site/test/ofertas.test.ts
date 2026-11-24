@@ -277,12 +277,9 @@ describe("a apresentação da Oferta segue o sistema visual", () => {
     expect(regra(".cta-ofertas .oferta-cartao")).toContain("min-height: 44px");
   });
 
-  it("mantém o marcador de afiliado em micro, mono e cor muda", () => {
-    const marcador = regra(".oferta-marcador");
-    expect(marcador).toContain("var(--fonte-mono)");
-    expect(marcador).toContain("var(--mudo)");
-    expect(marcador).toContain("var(--texto-micro)");
-    expect(marcador).toContain("white-space: nowrap");
+  it("tira o marcador escrito do cartão: a divulgação vive no tooltip do logo", () => {
+    expect(css).not.toContain(".oferta-marcador");
+    expect(css).not.toContain("--texto-micro");
   });
 
   it("remove apresentação longa, separador, nota de cartão e empilhamento", () => {
@@ -295,6 +292,7 @@ describe("a apresentação da Oferta segue o sistema visual", () => {
 
   it("herda a cor do link no logotipo e só sublinha o rótulo no hover", () => {
     expect(regra(".loja-logo")).toContain("color: inherit");
+    expect(regra(".loja-logo")).toContain("height: 20px");
     expect(regra(".oferta-cta-conteudo")).toContain("gap: 0.6ch");
     expect(regra(".oferta-cartao:hover .oferta-cta-rotulo")).toContain(
       "text-decoration: underline",

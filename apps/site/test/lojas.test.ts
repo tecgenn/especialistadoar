@@ -4,6 +4,7 @@ import {
   chaveDaLoja,
   dadosDoLogoDaLoja,
   GRADE_DO_LOGO,
+  MEDIDAS_DO_LOGO_MERCADO_LIVRE,
   nomeDaLoja,
   nomeDaLojaParaLeitura,
 } from "../src/lib/lojas.ts";
@@ -35,13 +36,17 @@ describe("chaveDaLoja", () => {
 });
 
 describe("dados do logo da loja", () => {
-  it("devolve a chave, o nome canônico e os caminhos para lojas conhecidas", () => {
+  it("manda o Mercado Livre para o arquivo oficial da marca", () => {
     expect(dadosDoLogoDaLoja("mercadolivre")).toEqual({
+      tipo: "arquivo",
       chave: "mercado-livre",
       nome: "Mercado Livre",
-      caminhos: CAMINHOS_DO_LOGO["mercado-livre"],
     });
+  });
+
+  it("devolve a chave, o nome canônico e os caminhos da Amazon", () => {
     expect(dadosDoLogoDaLoja("AMAZON")).toEqual({
+      tipo: "desenho",
       chave: "amazon",
       nome: "Amazon",
       caminhos: CAMINHOS_DO_LOGO.amazon,
@@ -60,8 +65,9 @@ describe("dados do logo da loja", () => {
     expect(nomeDaLojaParaLeitura(null)).toBe("");
   });
 
-  it("desenha marcas de linha na grade de 24 px, sem cor própria", () => {
+  it("desenha a marca de linha na grade de 24 px, sem cor própria", () => {
     expect(GRADE_DO_LOGO).toBe("0 0 24 24");
+    expect(Object.keys(CAMINHOS_DO_LOGO)).toEqual(["amazon"]);
     for (const [chave, caminhos] of Object.entries(CAMINHOS_DO_LOGO)) {
       expect(caminhos.length, chave).toBeGreaterThanOrEqual(2);
       for (const caminho of caminhos) {
@@ -69,5 +75,10 @@ describe("dados do logo da loja", () => {
         expect(caminho).not.toMatch(/#[0-9a-f]{3,8}|fill/i);
       }
     }
+  });
+
+  it("reserva a proporção do SVG do Mercado Livre (920,12 × 233,88)", () => {
+    const { largura, altura } = MEDIDAS_DO_LOGO_MERCADO_LIVRE;
+    expect(largura / altura).toBeCloseTo(920.12 / 233.88, 1);
   });
 });

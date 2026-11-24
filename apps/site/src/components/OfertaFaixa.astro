@@ -8,8 +8,9 @@ import OfertaCartao from "./OfertaCartao.astro";
  * um `aparelhoId` (nesse caso busca e valida as Ofertas no build) — é o mesmo
  * componente na ficha do Aparelho, na Análise e no MDX de uma Análise.
  *
- * Sem Oferta, não renderiza nada: nunca há CTA vazio. O marcador mínimo de
- * divulgação acompanha cada cartão, separando-os dos dados técnicos (ticket 106).
+ * Sem Oferta, não renderiza nada: nunca há CTA vazio. O cartão leva o logo da
+ * loja e o aviso de afiliado no tooltip, separando-o dos dados técnicos
+ * (tickets 106 e 108).
  */
 interface Props {
   ofertas?: Oferta[];

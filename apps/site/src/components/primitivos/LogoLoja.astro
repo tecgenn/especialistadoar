@@ -1,10 +1,19 @@
 ---
+import logoMercadoLivre from "../../assets/lojas/mercado-livre.svg?url";
 import {
   dadosDoLogoDaLoja,
   GRADE_DO_LOGO,
+  MEDIDAS_DO_LOGO_MERCADO_LIVRE,
   nomeDaLojaParaLeitura,
 } from "../../lib/lojas.ts";
+import { MARCADOR_OFERTA } from "../../lib/ofertas.ts";
 
+/**
+ * A marca da loja no CTA de Oferta (tickets 106 e 108). O Mercado Livre usa o
+ * SVG oficial da marca; a Amazon segue desenhada em linha na grade de 24. O
+ * `title` — “link de afiliado” — é o único aviso no cartão: a divulgação
+ * completa vive no rodapé e nos Termos.
+ */
 type Props = {
   loja: string;
 };
@@ -15,7 +24,18 @@ const nome = nomeDaLojaParaLeitura(loja);
 ---
 
 {
-  dados ? (
+  dados?.tipo === "arquivo" ? (
+    <img
+      class="loja-logo"
+      src={logoMercadoLivre}
+      width={MEDIDAS_DO_LOGO_MERCADO_LIVRE.largura}
+      height={MEDIDAS_DO_LOGO_MERCADO_LIVRE.altura}
+      alt={dados.nome}
+      title={MARCADOR_OFERTA}
+      loading="lazy"
+      decoding="async"
+    />
+  ) : dados?.tipo === "desenho" ? (
     <svg
       class="loja-logo"
       viewBox={GRADE_DO_LOGO}
@@ -30,6 +50,7 @@ const nome = nomeDaLojaParaLeitura(loja);
       stroke-linejoin="round"
       focusable="false"
     >
+      <title>{MARCADOR_OFERTA}</title>
       {dados.caminhos.map((caminho) => <path d={caminho} />)}
     </svg>
   ) : (

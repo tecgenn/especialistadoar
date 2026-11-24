@@ -7,6 +7,8 @@ import {
   type AparelhoComCapacidades,
   agruparAnalisadosPorCapacidade,
   aparelhosDaAnalise,
+  DESTAQUES_HOME_MAXIMO,
+  destaquesDaHome,
   indexarAnalises,
   linksDaTabelaPorCapacidade,
   listaAnalisesJson,
@@ -241,6 +243,34 @@ describe("montarAnalises", () => {
 
   it("valida antes de montar", () => {
     expect(() => montarAnalises([analise({ titulo: "" })])).toThrow(/titulo/);
+  });
+});
+
+describe("destaquesDaHome", () => {
+  it("ordena da mais recente para a mais antiga e corta em três", () => {
+    const [d1, d2, d3, d4] = [
+      montada({ slug: "d1", data: "2026-10-17" }),
+      montada({ slug: "d2", data: "2026-10-20" }),
+      montada({ slug: "d3", data: "2026-10-18" }),
+      montada({ slug: "d4", data: "2026-10-19" }),
+    ];
+    const lista = [d1, d2, d3, d4];
+    expect(destaquesDaHome(lista).map((item) => item.slug)).toEqual([
+      "d2",
+      "d4",
+      "d3",
+    ]);
+    expect(DESTAQUES_HOME_MAXIMO).toBe(3);
+  });
+
+  it("não altera a lista recebida", () => {
+    const original = [
+      montada({ slug: "antiga", data: "2026-10-01" }),
+      montada({ slug: "recente", data: "2026-10-20" }),
+    ];
+    const copia = structuredClone(original);
+    destaquesDaHome(original);
+    expect(original).toEqual(copia);
   });
 });
 

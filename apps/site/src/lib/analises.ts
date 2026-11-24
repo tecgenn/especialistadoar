@@ -193,6 +193,11 @@ export function validarAnalises(analises: readonly AnaliseFrontmatter[]): void {
   });
 }
 
+/** Da mais recente para a mais antiga; empate mantém a ordem recebida. */
+function porDataDecrescente(a: Analise, b: Analise): number {
+  return a.data === b.data ? 0 : a.data < b.data ? 1 : -1;
+}
+
 /**
  * Valida as Análises e devolve a lista montada — com a `url` derivada do `slug`
  * e ordenada da mais recente para a mais antiga. Não altera a entrada.
@@ -203,7 +208,18 @@ export function montarAnalises(
   validarAnalises(analises);
   return analises
     .map((analise) => ({ ...analise, url: urlDe(analise.slug) }))
-    .sort((a, b) => (a.data === b.data ? 0 : a.data < b.data ? 1 : -1));
+    .sort(porDataDecrescente);
+}
+
+/** Quantos cartões a grade de Análises em destaque exibe no máximo (ticket 108). */
+export const DESTAQUES_HOME_MAXIMO = 3;
+
+/**
+ * Os cartões da home: as Análises mais recentes, cortadas em três. O restante
+ * continua em `/analises/`; a função não altera a lista recebida.
+ */
+export function destaquesDaHome(analises: readonly Analise[]): Analise[] {
+  return [...analises].sort(porDataDecrescente).slice(0, DESTAQUES_HOME_MAXIMO);
 }
 
 function indexarPor(

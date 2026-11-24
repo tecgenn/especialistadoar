@@ -340,8 +340,8 @@ export default function Comparar({
                 ) : null}
                 <div className="comparar-cartao-acoes">
                   {(ofertasPorAparelho.get(item.id) ?? []).map((oferta) => (
-                    // Mesmo cartão da ficha e da home (ticket 106): o nome da
-                    // loja vira logotipo e o marcador mínimo acompanha o link.
+                    // Mesmo cartão da ficha e da home (tickets 106 e 108): o
+                    // nome da loja vira logotipo e o aviso fica no tooltip.
                     <OfertaCartaoIsla
                       key={`${oferta.aparelhoId}-${oferta.url}`}
                       oferta={ofertaExibida(oferta)}

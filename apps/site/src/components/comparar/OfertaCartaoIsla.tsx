@@ -26,7 +26,6 @@ export default function OfertaCartaoIsla({ oferta }: Props) {
           {oferta.rotulo} <span aria-hidden="true">→</span>
         </span>
       </span>
-      <span className="oferta-marcador">{MARCADOR_OFERTA}</span>
     </a>
   );
 }

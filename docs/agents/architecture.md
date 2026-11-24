@@ -250,11 +250,11 @@ nova exportação CSV
   "Capacidades populares" e "Marcas populares"): capacidade no cabeçalho
   (chips com 2+ capacidades, rótulo estático com uma só), todos os painéis no
   HTML e um script inline que só esconde os inativos, e os modelos em cartões
-  separados. Depois vem o carousel de Análises em destaque
-  (ticket 97 — com 2+ Análises, um quadro por vez, controles, pausa e rotação
-  de 7 s que para no ponteiro, no foco, fora da tela e em
-  `prefers-reduced-motion`; o script fica em componente próprio e só é servido
-  quando há carrossel, e o HTML traz todos os quadros). A chamada do Assistente
+  separados. Depois vem a grade estática de **Análises em destaque** (ticket
+  108 — substitui o carrossel do #97): até três Análises, as mais recentes,
+  vindas de `destaquesDaHome`, cada uma num cartão com imagem 16:10 quando
+  existe, data, título, resumo e uma linha de Oferta por loja; o link “Todas
+  as análises” fica no cabeçalho e nenhum script é servido. A chamada do Assistente
   saiu da home no ticket 98: repetia a estimativa do hero sem acrescentar
   fatores, conta aberta por fator ou confiança. O caminho para a ferramenta
   completa fica na ação "Continuar no Assistente" do resultado, na nota do

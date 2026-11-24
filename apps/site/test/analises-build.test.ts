@@ -611,7 +611,8 @@ function conferirHomeHub(html: string): void {
     expect(cartoes.length).toBeLessThanOrEqual(3);
     expect(texto).toContain("IDRS");
     expect(texto).toContain("Consumo anual");
-    expect(texto).toContain("link de afiliado");
+    // O aviso vive no `title` do logo, fora do texto visível (ticket 108).
+    expect(bloco).toContain('title="link de afiliado"');
     expect(bloco).toMatch(/href="\/aparelhos\/ap-[^"]+\/"/);
     expect(bloco).toContain("home-destaque-ofertas");
     // A seção é uma entrada editorial: nem contagem, nem atalho para a tabela.
@@ -810,13 +811,17 @@ function conferirHomeHub(html: string): void {
 }
 
 function mdx(analise: AnaliseFixture, corpo: string): string {
+  const imagem =
+    analise.imagem === undefined
+      ? ""
+      : `imagem: ${analise.imagem}\nimagemAlt: "${analise.imagemAlt ?? ""}"\n`;
   return `---
 aparelhoId: ${analise.aparelhoId}
 slug: ${analise.slug}
 titulo: "${analise.titulo}"
 descricao: "${analise.descricao}"
 data: ${analise.data}
----
+${imagem}---
 
 ${corpo}
 `;
@@ -908,6 +913,10 @@ const valida: AnaliseFixture = {
   titulo: "Vale a pena a análise de fixture?",
   descricao: "Uma leitura editorial do Aparelho de fixture.",
   data: "2026-10-20",
+  // A Análise mais recente da fixture tem imagem real; as outras duas
+  // exercitam o cartão que abre pela data e pelo título (ticket 108).
+  imagem: "analises/samsung-windfree-ai-pro-12000/abertura.webp",
+  imagemAlt: "Abertura da análise de fixture",
 };
 const ausente: AnaliseFixture = {
   aparelhoId: "ap-000000000000",
@@ -915,6 +924,8 @@ const ausente: AnaliseFixture = {
   titulo: "Um modelo fora da tabela atual",
   descricao: "Análise de um Aparelho que não consta na Versão atual.",
   data: "2026-10-19",
+  imagem: "analises/samsung-windfree-ai-pro-12000/windfree.webp",
+  imagemAlt: "Abertura da segunda análise de fixture",
 };
 const semOferta: AnaliseFixture = {
   aparelhoId: outroAparelho.id,
@@ -1032,8 +1043,9 @@ describe("build com uma Análise de fixture", () => {
     // antigo (`.cta-acao`) não existe mais no HTML.
     expect(htmlValida).not.toContain('class="cta-acao"');
     expect(htmlValida).toContain('class="botao botao-secundario"');
-    // O cartão comercial se identifica como link de afiliado (ticket 106): o
-    // marcador mínimo acompanha o CTA e o nome da loja virou logotipo inline.
+    // O CTA de Oferta leva ao link afiliado com o logotipo da loja e o nome
+    // acessível completo; o aviso visível saiu do cartão (ticket 108) e ficou
+    // no `title` do logo. O Mercado Livre usa o SVG oficial, a Amazon o desenho.
     expect(htmlValida).toContain("link de afiliado");
     const cartoesOferta = htmlValida.match(
       /<a class="oferta-cartao oferta-cta oferta-cta--com-logo"[\s\S]*?<\/a>/g,
@@ -1041,13 +1053,16 @@ describe("build com uma Análise de fixture", () => {
     expect(cartoesOferta?.length).toBe(4);
     const cartaoOferta = cartoesOferta?.[0] ?? "";
     expect(cartaoOferta).toContain("Ver oferta");
-    expect(cartaoOferta).toContain('aria-label="Mercado Livre"');
-    expect(cartaoOferta).toContain("<svg");
+    expect(cartaoOferta).toContain('class="loja-logo"');
+    expect(cartaoOferta).toContain('alt="Mercado Livre"');
+    expect(cartaoOferta).toMatch(/src="[^"]*mercado-livre[^"]*\.svg"/);
+    expect(cartaoOferta).toContain('title="link de afiliado"');
+    expect(cartaoOferta).not.toContain(">link de afiliado<");
     expect(cartoesOferta?.[1]).toContain('aria-label="Amazon"');
+    expect(cartoesOferta?.[1]).toContain("<title>link de afiliado</title>");
     // Nenhum nome de loja aparece como texto visível: só no nome acessível.
     expect(htmlValida).not.toContain(">Mercado Livre<");
     expect(htmlValida).not.toContain(">Amazon<");
-    expect(cartaoOferta).toContain(">link de afiliado</span>");
     expect(cartaoOferta).toContain('rel="sponsored nofollow noopener"');
     expect(cartaoOferta).toContain('target="_blank"');
     // O MDX não repete a Oferta: só os dois cartões do template a exibem,
@@ -1072,21 +1087,24 @@ describe("build com uma Análise de fixture", () => {
     // A seção "Ofertas" entra no índice de seções (ticket 62).
     expect(htmlFicha).toContain('href="#ofertas"');
     expect(htmlFicha).toContain('<section class="ofertas" id="ofertas">');
-    // A faixa não tem mais parágrafo de apresentação: título e lista de Ofertas,
-    // com o marcador mínimo dentro de cada link (ticket 106).
+    // A faixa não tem mais parágrafo de apresentação: título e lista de Ofertas.
+    // O aviso de afiliado não está no texto visível (ticket 108); ele fica no
+    // `title` do logo, no nome acessível e no rodapé.
     expect(textoDaPagina(htmlFicha)).not.toContain("Links comerciais");
     expect(textoDaPagina(htmlFicha)).not.toContain(
       "a compra acontece na loja e a comissão, se houver, não custa nada a você",
     );
-    expect(textoDaPagina(htmlFicha)).toContain("link de afiliado");
+    expect(htmlFicha).not.toContain('class="oferta-marcador"');
+    expect(htmlFicha).not.toContain(">link de afiliado</span>");
+    expect(htmlFicha).toContain('title="link de afiliado"');
     expect(htmlFicha).not.toContain(
       "Não fazem parte dos dados técnicos do INMETRO",
     );
 
     expect(lerHtml("analises")).toContain(`href="/analises/${valida.slug}/"`);
 
-    // A home exibe o carrossel de Análises em destaque (ticket 97): título,
-    // descrição e link de cada Análise publicada, todos no HTML do build.
+    // A home exibe a grade estática de Análises em destaque (ticket 108): as
+    // três Análises mais recentes, cada uma num cartão, todos no HTML do build.
     const htmlHome = lerHtml("");
     // A home virou um hub (ticket 46): os nove blocos são gerados no build.
     conferirHomeHub(htmlHome);
@@ -1115,32 +1133,50 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlHome).toContain(analise.descricao);
     }
 
-    // Com três Análises publicadas, o bloco é um carrossel: um grupo por Análise,
-    // controles de anterior/próxima e pausa, indicador e âncora viva. Os três
-    // quadros continuam no HTML (sem JavaScript, a lista aparece inteira).
+    // Com três Análises publicadas, a grade tem três cartões — um por Análise,
+    // na ordem da mais recente para a mais antiga — e nenhum markup ou script
+    // de carrossel. O link “Todas as análises” fica uma vez só, no cabeçalho.
     expect(htmlHome).toContain('class="analises-destaque"');
-    expect(htmlHome).toContain("data-carrossel");
-    expect(htmlHome).toContain('aria-roledescription="carrossel"');
-    // Conta os quadros pelo `<li>`: o script inline também cita o atributo.
-    expect(htmlHome.match(/class="analises-slide"/g) ?? []).toHaveLength(3);
-    expect(htmlHome.match(/aria-roledescription="slide"/g) ?? []).toHaveLength(
+    expect(htmlHome).not.toContain("data-carrossel");
+    expect(htmlHome).not.toContain("aria-roledescription");
+    expect(htmlHome).not.toContain("Pausar");
+    expect(htmlHome).not.toContain("1 / 3");
+    expect(htmlHome).not.toContain("AnalisesCarrossel");
+    expect(htmlHome.match(/Todas as análises/g) ?? []).toHaveLength(1);
+    const inicioDestaques = htmlHome.indexOf('class="analises-destaque"');
+    const destaquesHtml = htmlHome.slice(
+      inicioDestaques,
+      htmlHome.indexOf("</section>", inicioDestaques),
+    );
+    expect(destaquesHtml).toContain('class="analises-destaque-grade"');
+    expect(destaquesHtml.match(/class="analises-cartao"/g) ?? []).toHaveLength(
       3,
     );
-    expect(htmlHome).toContain("data-carrossel-anterior");
-    expect(htmlHome).toContain("data-carrossel-proximo");
-    expect(htmlHome).toContain("data-carrossel-pausa");
-    expect(htmlHome).toContain('aria-label="Análise anterior"');
-    expect(htmlHome).toContain('aria-label="Próxima análise"');
-    // O botão de pausa nomeia a ação: começa "Pausar" e vira "Retomar".
-    expect(htmlHome).toMatch(/data-carrossel-pausa[^>]*>\s*Pausar\s*</);
-    expect(htmlHome).toContain("1 / 3");
-    expect(htmlHome).toContain("data-carrossel-anuncio");
-    const destaquesHtml = htmlHome.slice(
-      htmlHome.indexOf('class="analises-destaque"'),
-      htmlHome.indexOf("Todas as análises"),
+    expect(destaquesHtml).toContain('href="/analises/"');
+    expect(destaquesHtml).toContain("Todas as análises");
+    // A ordem da grade é a ordem das datas, decrescente.
+    const posicoes = [valida, ausente, semOferta].map((analise) =>
+      destaquesHtml.indexOf(`href="/analises/${analise.slug}/"`),
     );
-    expect(destaquesHtml).toContain("Onde comprar");
+    expect(posicoes.every((posicao) => posicao >= 0)).toBe(true);
+    expect(posicoes[0]).toBeLessThan(posicoes[1] as number);
+    expect(posicoes[1]).toBeLessThan(posicoes[2] as number);
+    // Duas Análises com imagem real abrem pelo cartão de imagem (a primeira
+    // eager, a segunda lazy); a terceira, sem imagem, abre pela data e título.
+    expect(destaquesHtml.match(/analises-cartao-imagem/g) ?? []).toHaveLength(
+      2,
+    );
+    expect(destaquesHtml).toContain('alt="Abertura da análise de fixture"');
+    expect(destaquesHtml).toContain(
+      'alt="Abertura da segunda análise de fixture"',
+    );
+    expect(destaquesHtml).toContain('loading="eager"');
+    expect(destaquesHtml).toContain('loading="lazy"');
+    // A Oferta é uma linha por loja, com o aviso no tooltip do logo; o título
+    // “Onde comprar” e o parágrafo de divulgação não existem mais no cartão.
+    expect(destaquesHtml).toContain('title="link de afiliado"');
     expect(destaquesHtml).toContain('rel="sponsored nofollow noopener"');
+    expect(destaquesHtml).not.toContain("Onde comprar");
 
     // O bloco da capacidade (ticket 96) traz o Aparelho da fixture no mesmo
     // cartão: identidade, dados técnicos, link da Análise e link de afiliado.
@@ -1156,11 +1192,11 @@ describe("build com uma Análise de fixture", () => {
     }
     expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.marca);
     expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.modelo);
-    expect(blocoCapacidade).toContain('aria-label="Mercado Livre"');
+    expect(blocoCapacidade).toContain('alt="Mercado Livre"');
     expect(blocoCapacidade).toContain('aria-label="Amazon"');
     expect(blocoCapacidade).not.toContain(">Mercado Livre<");
     expect(blocoCapacidade).not.toContain(">Amazon<");
-    expect(textoDaPagina(blocoCapacidade)).toContain("link de afiliado");
+    expect(blocoCapacidade).toContain('title="link de afiliado"');
 
     // Duas capacidades com conteúdo no build de fixture (9.000 e 12.000): o
     // seletor nasce em chips, na ordem da curadoria, com o primeiro painel
@@ -1222,7 +1258,9 @@ describe("build com uma Análise de fixture", () => {
     }
     expect(htmlHome).toContain('rel="sponsored nofollow noopener"');
     expect(htmlHome).toContain('target="_blank"');
-    expect(htmlHome).toContain("Onde comprar");
+    // O cartão de Análise não abre uma seção “Onde comprar”: a Oferta é uma
+    // linha de loja no rodapé do cartão (ticket 108).
+    expect(htmlHome).not.toContain("Onde comprar");
     // Duas Ofertas no destaque da Análise, duas no cartão de 12.000 (que
     // carrega todas as Ofertas do Aparelho, ticket 106) e uma no cartão da
     // segunda capacidade.
@@ -1393,9 +1431,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     const htmlHome = lerHtml("");
     expect(htmlHome).not.toContain('href="/analises/"');
     expect(htmlHome).not.toContain("Análises em destaque");
-    // Sem Análise, a seção não renderiza nem o carrossel nem seus controles —
-    // e o script de rotação não entra na página.
+    // Sem Análise, a seção não renderiza: nem grade, nem cartões, nem script.
     expect(htmlHome).not.toContain('<section class="analises-destaque"');
+    expect(htmlHome).not.toContain("analises-destaque-grade");
     expect(htmlHome).not.toContain("data-carrossel");
     // Sem Análise, o único link comercial da home é o do bloco de capacidade,
     // que segue com a Oferta publicada em `ofertas.json` (ticket 96).

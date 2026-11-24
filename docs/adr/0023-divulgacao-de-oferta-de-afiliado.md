@@ -53,6 +53,14 @@ Regras que sustentam os três níveis:
 - **Nada de modal, banner, tooltip ou selo colorido**, e nenhuma promessa de preço
   no texto dos CTAs ou das Análises (as duas frases do Samsung foram reescritas).
 
+> **Revisão do ticket 108 (2026-11-23).** O nível 1 deixa de ser um marcador
+> escrito visível: o CTA mostra o logotipo oficial da loja (Mercado Livre) e o
+> aviso **"link de afiliado"** fica no `title` do logo — o tooltip nativo ao
+> passar o ponteiro — e no nome acessível `Ver oferta — <loja> — link de
+> afiliado`. A proibição de tooltip acima valia para selo promocional; este é o
+> único tooltip do CTA e ele apenas nomeia a relação comercial. Os níveis 2 e 3
+> continuam como descritos, e a Análise mantém o banner de transparência no topo.
+
 > **Revisão do ADR-0010.** O ADR-0010 continua valendo no que é estrutural: a
 > Oferta é um insumo curado **só do site** (`apps/site/ofertas.json`), validada no
 > build, nunca um campo de Aparelho, nunca em `data/build/`, na API ou na consulta.
