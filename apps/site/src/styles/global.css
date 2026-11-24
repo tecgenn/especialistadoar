@@ -2892,6 +2892,10 @@ main.principal-leitura {
   scrollbar-width: thin;
 }
 
+/* Seletor de capacidade da home (ticket 107): chips de 44 px em todos os
+   breakpoints — diferem do chip de filtro do DESIGN.md (32 px desktop / 44 px
+   celular) porque são controles de seletor, não de filtro. Com uma única
+   capacidade a seção não nasce com chip: exibe rótulo estático. */
 .home-destaques-chip {
   flex: none;
   min-height: 44px;
@@ -2916,6 +2920,11 @@ main.principal-leitura {
 .home-destaques-chip[aria-pressed="true"] {
   border-color: var(--tinta);
   color: var(--tinta);
+}
+
+.home-destaques-chip:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
 }
 
 .home-destaques-painel[hidden] {
