@@ -741,10 +741,20 @@ describe("CTA de Oferta no cartão", () => {
     const logoMercadoLivre = ctaUm.querySelector("img.loja-logo");
     expect(ctaUm.querySelector(".loja-marca--mercado-livre")).not.toBeNull();
     expect(logoMercadoLivre?.getAttribute("alt")).toBe("Mercado Livre");
+    expect(logoMercadoLivre?.getAttribute("src")).toMatch(
+      /mercado-livre.*\.svg/,
+    );
     expect(logoMercadoLivre?.getAttribute("title")).toBe("link de afiliado");
     const logoAmazon = ctaDois.querySelector("img.loja-logo");
     expect(ctaDois.querySelector(".loja-marca--amazon")).not.toBeNull();
     expect(logoAmazon?.getAttribute("alt")).toBe("Amazon");
+    // O SVG da Amazon é inlinado como data URI; se o Vite parar de inlinar,
+    // o caminho termina em `amazon....svg`. As duas formas são oficiais.
+    const srcAmazon = logoAmazon?.getAttribute("src") ?? "";
+    expect(
+      /amazon.*\.svg/.test(srcAmazon) ||
+        decodeURIComponent(srcAmazon).includes("<title>Amazon</title>"),
+    ).toBe(true);
     expect(logoAmazon?.getAttribute("title")).toBe("link de afiliado");
     expect(primeiro.textContent).not.toContain("Mercado Livre");
     expect(segundo.textContent).not.toContain("amazon");

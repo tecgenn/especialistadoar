@@ -1133,12 +1133,22 @@ describe("build com uma Análise de fixture", () => {
       'class="loja-marca loja-marca--mercado-livre"',
     );
     expect(cartaoOferta).toContain('alt="Mercado Livre"');
+    expect(cartaoOferta).toMatch(/src="[^"]*mercado-livre[^"]*\.svg"/);
     expect(cartaoOferta).toContain('title="link de afiliado"');
     expect(cartaoOferta).not.toContain(">link de afiliado<");
     expect(cartoesOferta?.[1]).toContain(
       'class="loja-marca loja-marca--amazon"',
     );
     expect(cartoesOferta?.[1]).toContain('alt="Amazon"');
+    // O SVG da Amazon é inlinado como data URI; se o Vite parar de inlinar,
+    // o caminho termina em `amazon....svg`. As duas formas são oficiais.
+    const srcAmazon =
+      cartoesOferta?.[1]?.match(/<img class="loja-logo" src="([^"]+)"/)?.[1] ??
+      "";
+    expect(
+      /amazon[^"]*\.svg/.test(srcAmazon) ||
+        decodeURIComponent(srcAmazon).includes("<title>Amazon</title>"),
+    ).toBe(true);
     expect(cartoesOferta?.[1]).toContain('title="link de afiliado"');
     // Nenhum nome de loja aparece como texto visível: só no nome acessível.
     expect(htmlValida).not.toContain(">Mercado Livre<");
@@ -1252,6 +1262,23 @@ describe("build com uma Análise de fixture", () => {
     );
     expect(destaquesHtml).toContain('loading="eager"');
     expect(destaquesHtml).toContain('loading="lazy"');
+    // A terceira Análise não tem imagem: o cartão abre pela data e pelo
+    // título, sem fotografia inventada nem bloco decorativo.
+    const cartoesDestaque = [
+      ...destaquesHtml.matchAll(
+        /<article class="analises-cartao">[\s\S]*?<\/article>/g,
+      ),
+    ].map((match) => match[0]);
+    expect(cartoesDestaque).toHaveLength(3);
+    const cartaoSemImagem = cartoesDestaque[2] ?? "";
+    expect(cartaoSemImagem).not.toContain("analises-cartao-imagem");
+    const dataNoCartao = `<time datetime="${semOferta.data}">${semOferta.data}</time>`;
+    const tituloNoCartao = `>${semOferta.titulo}</a>`;
+    expect(cartaoSemImagem).toContain(dataNoCartao);
+    expect(cartaoSemImagem).toContain(tituloNoCartao);
+    expect(cartaoSemImagem.indexOf(dataNoCartao)).toBeLessThan(
+      cartaoSemImagem.indexOf(tituloNoCartao),
+    );
     // A Oferta é uma linha por loja, com o aviso no tooltip do logo; o título
     // “Onde comprar” e o parágrafo de divulgação não existem mais no cartão.
     expect(destaquesHtml).toContain('title="link de afiliado"');
