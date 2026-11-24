@@ -45,11 +45,6 @@ export function chaveDaLoja(nome: string | null | undefined): ChaveLoja | null {
   return ALIASES[normalizado as keyof typeof ALIASES] ?? null;
 }
 
-/** O nome canônico da loja, para o nome acessível do link. */
-export function nomeDaLoja(chave: ChaveLoja): string {
-  return LOGOS_DAS_LOJAS[chave].nome;
-}
-
 /**
  * O nome da loja dentro do nome acessível do link. Lojas conhecidas usam a
  * grafia canônica; as demais mantêm o texto publicado, sem espaços sobrando.
@@ -57,16 +52,14 @@ export function nomeDaLoja(chave: ChaveLoja): string {
 export function nomeDaLojaParaLeitura(nome: string | null | undefined): string {
   const chave = chaveDaLoja(nome);
   if (chave !== null) {
-    return nomeDaLoja(chave);
+    return LOGOS_DAS_LOJAS[chave].nome;
   }
   return typeof nome === "string" ? nome.trim() : "";
 }
 
-export type DadosDoLogo = {
+/** As medidas e o nome vêm do mesmo registro canônico, sem espelho de campos. */
+export type DadosDoLogo = (typeof LOGOS_DAS_LOJAS)[ChaveLoja] & {
   chave: ChaveLoja;
-  nome: string;
-  largura: number;
-  altura: number;
 };
 
 /**
@@ -80,6 +73,5 @@ export function dadosDoLogoDaLoja(
   if (chave === null) {
     return null;
   }
-  const { nome: nomeCanonico, largura, altura } = LOGOS_DAS_LOJAS[chave];
-  return { chave, nome: nomeCanonico, largura, altura };
+  return { chave, ...LOGOS_DAS_LOJAS[chave] };
 }

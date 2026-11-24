@@ -687,8 +687,7 @@ function conferirHomeHub(html: string): void {
     name: string;
     acceptedAnswer: { "@type": string; text: string };
   }>;
-  expect(entidades.length).toBeGreaterThanOrEqual(9);
-  expect(entidades.length).toBeLessThanOrEqual(10);
+  expect(entidades).toHaveLength(8);
   // O FAQ visível é `<details>` nativo, fechado por padrão, com a pergunta no
   // `summary` — a mesma lista que alimenta o JSON-LD (ticket 71).
   expect(html.match(/<details class="home-pergunta">/g) ?? []).toHaveLength(
@@ -723,6 +722,7 @@ function conferirHomeHub(html: string): void {
   const nomes = entidades.map((entidade) => entidade.name);
   expect(nomes).toContain("O que é BTU/h?");
   expect(nomes).toContain("Qual tensão escolher: 127 V ou 220 V?");
+  expect(nomes).not.toContain("Como comparar o consumo de energia?");
   for (const entidade of entidades) {
     expect(entidade["@type"]).toBe("Question");
     expect(entidade.name.length).toBeGreaterThan(0);
@@ -831,7 +831,7 @@ function conferirHomeHub(html: string): void {
     ),
   ].map((achado) => achado[1]);
   expect(numeros).toHaveLength(entidades.length + temas.length);
-  // O FAQ vai de 01 a 09 (nove perguntas) e a metodologia de 01 a 08.
+  // O FAQ vai de 01 a 08 (oito perguntas) e a metodologia de 01 a 08.
   expect(numeros.slice(0, entidades.length)).toEqual(
     entidades.map((_, indice) => String(indice + 1).padStart(2, "0")),
   );
@@ -856,12 +856,20 @@ function conferirHomeHub(html: string): void {
     "grid-template-columns:repeat(2,minmax(0,1fr))",
   );
   expect(blocoCompacto).toContain("column-gap:var(--esp-8)");
+  // Abaixo de 900 px a grade é uma coluna só: a regra base não declara
+  // `grid-template-columns`, e a media query é a única que o faz.
+  const gradeBase =
+    /\.home-faq-lista,\.home-metodologia-lista\{([^}]*)\}/.exec(css)?.[1] ?? "";
+  expect(gradeBase).toContain("display:grid");
+  expect(gradeBase).not.toContain("grid-template-columns");
   const resumoItem =
     /\.home-pergunta summary,\s*\.home-tema summary\s*\{[^}]*\}/.exec(
       css,
     )?.[0] ?? "";
+  expect(resumoItem).toContain("align-items:start");
   expect(resumoItem).toContain("min-height:56px");
   expect(resumoItem).toContain("padding-block:var(--esp-4)");
+  expect(resumoItem).toContain("grid-template-columns:auto minmax(0,1fr) auto");
   expect(css).toMatch(
     /\.home-item-indice\s*\{[^}]*font-family:\s*var\(--fonte-mono\)/,
   );
@@ -873,11 +881,20 @@ function conferirHomeHub(html: string): void {
   //     o ciclo de 2.080 h/ano, sem duplicar a Versão da tabela e sem uma
   //     quarta coluna.
   const rodape = textoDaPagina(html.slice(html.indexOf('class="site-footer"')));
-  expect(rodape).toContain(
-    "Base construída a partir da exportação oficial de produtos do INMETRO, sob a Portaria INMETRO 269/2021. Os cálculos de custo usam o ciclo de referência de 2.080 h/ano.",
-  );
   expect(rodape.match(/rodape-bloco rodape-/g) ?? []).toHaveLength(3);
   expect(html.match(/Versão da tabela:/g) ?? []).toHaveLength(1);
+  // A frase e a Versão não podem estar soltas em qualquer coluna: as duas
+  // pertencem à Proveniência, junto da origem e da transparência.
+  const inicioProveniencia = html.indexOf(
+    'class="rodape-bloco rodape-proveniencia"',
+  );
+  const proveniencia = textoDaPagina(
+    html.slice(inicioProveniencia, html.indexOf("</div>", inicioProveniencia)),
+  );
+  expect(proveniencia).toContain(
+    "Base construída a partir da exportação oficial de produtos do INMETRO, sob a Portaria INMETRO 269/2021. Os cálculos de custo usam o ciclo de referência de 2.080 h/ano.",
+  );
+  expect(proveniencia).toContain("Versão da tabela:");
 
   // A home continua sem baixar JSON no cliente.
   expect(html).not.toContain("consulta.json");

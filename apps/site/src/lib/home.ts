@@ -96,11 +96,6 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
       "Escolha a tensão da instalação disponível no local: se a tomada é de 127 V, use um aparelho de 127 V; se é de 220 V, use um de 220 V. Muitos modelos são bivolt (127/220 V) e atendem às duas. Não escolha pela conta de luz — o critério é a rede elétrica do imóvel. Em caso de dúvida, confirme com um eletricista.",
   },
   {
-    pergunta: "Como comparar o consumo de energia?",
-    resposta:
-      "O INMETRO declara o consumo anual em kWh para um ciclo de 2.080 horas por ano. Compare aparelhos de capacidade parecida pelo consumo e pelo IDRS: dois modelos de 12.000 BTU/h podem ter consumos bem diferentes.",
-  },
-  {
     pergunta: "Os dados do site são oficiais?",
     resposta:
       "Os dados técnicos vêm da exportação oficial de produtos do INMETRO e são reproduzidos como Valores oficiais. Já a recomendação do Assistente é uma estimativa calculada por heurística, não um cálculo de carga térmica nem um Valor oficial.",

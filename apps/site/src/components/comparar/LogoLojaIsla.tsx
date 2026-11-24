@@ -1,19 +1,9 @@
-import logoAmazon from "../../assets/lojas/amazon.svg?url";
-import logoMercadoLivre from "../../assets/lojas/mercado-livre.svg?url";
-import {
-  type ChaveLoja,
-  dadosDoLogoDaLoja,
-  nomeDaLojaParaLeitura,
-} from "../../lib/lojas";
+import { dadosDoLogoDaLoja, nomeDaLojaParaLeitura } from "../../lib/lojas";
 import { MARCADOR_OFERTA } from "../../lib/ofertas";
+import { URL_DOS_LOGOS_OFICIAIS } from "../urls-dos-logos";
 
 type Props = {
   loja: string;
-};
-
-const URLS: Record<ChaveLoja, string> = {
-  "mercado-livre": logoMercadoLivre,
-  amazon: logoAmazon,
 };
 
 /**
@@ -32,7 +22,7 @@ export default function LogoLojaIsla({ loja }: Props) {
     <span className={`loja-marca loja-marca--${dados.chave}`}>
       <img
         className="loja-logo"
-        src={URLS[dados.chave]}
+        src={URL_DOS_LOGOS_OFICIAIS[dados.chave]}
         width={dados.largura}
         height={dados.altura}
         alt={dados.nome}

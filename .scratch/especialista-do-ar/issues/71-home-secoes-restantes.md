@@ -33,4 +33,4 @@ Implementado em 2026-11-20.
 
 **Verificação:** `pnpm test` 758/758 (50 arquivos), `pnpm typecheck` OK, `pnpm lint` 0 erros e 25 warnings (os 23 pré-existentes e 2 do mesmo falso-positivo de especificidade), `pnpm build` reproduz `data/build` e `reports` byte a byte, `pnpm build:site` 2.236 páginas. No navegador (agent-browser): 0 px de overflow em 1440/1024/768/390/320, imagem real da Análise renderizada com alt, 9 `<details>` fechados que abrem e fecham, 44 px nos alvos e foco âmbar de 2 px.
 
-**Nota:** o ticket fala em "oito perguntas", mas a lista publicada tem nove desde o #64 ("Por que um modelo não aparece na tabela?" é a nona). Todas foram preservadas, e o teste de build confere 9–10.
+**Nota histórica da entrega:** na entrega do #71 o ticket falava em "oito perguntas", mas a lista publicada tinha nove desde o #64 ("Por que um modelo não aparece na tabela?" era a nona). Todas foram preservadas naquele ponto, e o teste de build conferia 9–10. O alinhamento pós-revisão de 2026-11-24 removeu "Como comparar o consumo de energia?" e devolveu o contrato a oito perguntas, como descrevem `DESIGN.md`, o #109 e o `project-state.md`.

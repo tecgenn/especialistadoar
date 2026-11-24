@@ -4,7 +4,6 @@ import {
   chaveDaLoja,
   dadosDoLogoDaLoja,
   LOGOS_DAS_LOJAS,
-  nomeDaLoja,
   nomeDaLojaParaLeitura,
 } from "../src/lib/lojas.ts";
 
@@ -59,7 +58,6 @@ describe("dados do logo da loja", () => {
       largura: 66,
       altura: 20,
     });
-    expect(nomeDaLoja("amazon")).toBe("Amazon");
     const svg = readFileSync(
       new URL("../src/assets/lojas/amazon.svg", import.meta.url),
       "utf8",

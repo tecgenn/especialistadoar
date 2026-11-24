@@ -78,13 +78,20 @@ describe("formatação pt-BR", () => {
 });
 
 describe("FAQ e JSON-LD", () => {
-  it("tem 9–10 perguntas reais com resposta curta", () => {
-    expect(PERGUNTAS_FREQUENTES.length).toBeGreaterThanOrEqual(9);
-    expect(PERGUNTAS_FREQUENTES.length).toBeLessThanOrEqual(10);
+  it("tem oito perguntas reais com resposta curta", () => {
+    expect(PERGUNTAS_FREQUENTES).toHaveLength(8);
     for (const { pergunta, resposta } of PERGUNTAS_FREQUENTES) {
       expect(pergunta.trim().length).toBeGreaterThan(0);
       expect(resposta.trim().length).toBeGreaterThan(0);
     }
+  });
+
+  it("não repete a pergunta de consumo removida no alinhamento do #109", () => {
+    expect(
+      PERGUNTAS_FREQUENTES.some(
+        ({ pergunta }) => pergunta === "Como comparar o consumo de energia?",
+      ),
+    ).toBe(false);
   });
 
   it("responde o que é BTU/h e como escolher a tensão pela instalação", () => {

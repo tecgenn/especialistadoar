@@ -17,7 +17,7 @@
 - [ ] Seletor de capacidade alterna os painéis por teclado e mantém `aria-pressed` correto; sem JavaScript, todos os painéis aparecem
 - [ ] FAQ e metodologia abrem/fecham por teclado, mantêm o índice e não deslocam a coluna vizinha de forma estranha
 - [ ] Nenhum carrossel de Análises, nenhuma contagem “Cobertura da base”, nenhum “Ver os de 12.000 BTU/h”
-- [ ] Marcador “link de afiliado” legível a 0,625 rem; logo da loja com nome acessível; link externo com `rel="sponsored nofollow noopener"`
+- [ ] Aviso de afiliado no `title` do logo e no nome acessível do link, com `rel="sponsored nofollow noopener"`; divulgação por extenso só no rodapé e nos Termos
 - [ ] Foco ciano de 2 px visível em giz, papel e superfície escura; nenhum foco invisível
 - [ ] `axe` sem violações novas; contraste AA em texto e 3:1 em componentes
 - [ ] `prefers-reduced-motion`: nenhuma entrada, nenhuma transição de altura

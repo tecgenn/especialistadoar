@@ -1,12 +1,7 @@
 ---
-import logoAmazon from "../../assets/lojas/amazon.svg?url";
-import logoMercadoLivre from "../../assets/lojas/mercado-livre.svg?url";
-import {
-  type ChaveLoja,
-  dadosDoLogoDaLoja,
-  nomeDaLojaParaLeitura,
-} from "../../lib/lojas.ts";
+import { dadosDoLogoDaLoja, nomeDaLojaParaLeitura } from "../../lib/lojas.ts";
 import { MARCADOR_OFERTA } from "../../lib/ofertas.ts";
+import { URL_DOS_LOGOS_OFICIAIS } from "../urls-dos-logos.ts";
 
 /**
  * A marca da loja no CTA de Oferta (tickets 106 e 108). Os dois SVGs oficiais
@@ -19,11 +14,6 @@ type Props = {
   loja: string;
 };
 
-const URLS: Record<ChaveLoja, string> = {
-  "mercado-livre": logoMercadoLivre,
-  amazon: logoAmazon,
-};
-
 const { loja } = Astro.props;
 const dados = dadosDoLogoDaLoja(loja);
 const nome = nomeDaLojaParaLeitura(loja);
@@ -34,7 +24,7 @@ const nome = nomeDaLojaParaLeitura(loja);
     <span class:list={["loja-marca", `loja-marca--${dados.chave}`]}>
       <img
         class="loja-logo"
-        src={URLS[dados.chave]}
+        src={URL_DOS_LOGOS_OFICIAIS[dados.chave]}
         width={dados.largura}
         height={dados.altura}
         alt={dados.nome}

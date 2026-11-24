@@ -213,6 +213,8 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 **SEO:** preservar H1, description, `WebSite` e `FAQPage` com as mesmas oito perguntas; `FAQPage` só com conteúdo visível.
 
+> **Alinhamento pós-revisão (2026-11-24):** "Como comparar o consumo de energia?" saiu do FAQ para cumprir este contrato de oito perguntas. `PERGUNTAS_FREQUENTES`, `FAQPage`, índice `01`–`08`, testes e `DESIGN.md` descrevem as mesmas oito perguntas; o texto restante e a ordem continuam os mesmos.
+
 **Aceite:** a régua usa contagens derivadas do dataset, não números à mão; cada segmento leva ao recorte correto em `/aparelhos/`; mobile sem overflow horizontal; o texto do FAQ é idêntico ao JSON-LD.
 
 ### 3. Catálogo (`/aparelhos/`)
@@ -543,7 +545,7 @@ A ordem detalhada e as arestas estão nos tickets.
 
 ## Further notes
 
-- O texto do H1 da home (“Ar-condicionado com dados do INMETRO”) e as oito perguntas do FAQ são intocáveis por SEO e por contrato de conteúdo.
+- O texto do H1 da home (“Seu conforto começa pela escolha certa”) e as oito perguntas do FAQ, após a remoção da pergunta de consumo no alinhamento de 2026-11-24, são intocáveis por SEO e por contrato de conteúdo.
 - A frase de independência do INMETRO, o aviso de estimativa e a transparência de afiliado são compromissos de marca; nenhum redesign pode enfraquecê-los.
 - O catálogo abre com 220 V implícito e 2.116 linhas; isso é comportamento, não bug.
 - A régua de capacidade só é assinatura porque usa dados reais. Se um dia as faixas mudarem, a régua muda com elas.
