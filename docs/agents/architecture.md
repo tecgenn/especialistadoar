@@ -410,8 +410,11 @@ Ver ADR-0003 e ADR-0011.
   `OfertaFaixa` renderizam o CTA na ficha, na Análise e nos destaques da home,
   enquanto a ilha usa os espelhos React `components/comparar/LogoLojaIsla.tsx`
   e `OfertaCartaoIsla.tsx` sobre o mesmo contrato puro de `lib/lojas.ts` e
-  `lib/ofertas.ts` (ticket 106). Os cartões de CTA da Análise vêm de
-  `CtaCartao`/`OfertaCta` (ticket 47).
+  `lib/ofertas.ts` (ticket 106). `lib/lojas.ts` normaliza o nome da loja e
+  devolve a chave e as medidas do SVG; os dois traçados oficiais vivem em
+  `src/assets/lojas/{mercado-livre,amazon}.svg` e entram como badge colorido,
+  com “Ver oferta” fora dele e o aviso no `title`/nome acessível. Os cartões de
+  CTA da Análise vêm de `CtaCartao`/`OfertaCta` (ticket 47).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**,
   porque falhas específicas de plataforma não devem travar o merge (decisão do

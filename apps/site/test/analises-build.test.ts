@@ -1120,7 +1120,7 @@ describe("build com uma Análise de fixture", () => {
     expect(htmlValida).toContain('class="botao botao-secundario"');
     // O CTA de Oferta leva ao link afiliado com o logotipo da loja e o nome
     // acessível completo; o aviso visível saiu do cartão (ticket 108) e ficou
-    // no `title` do logo. O Mercado Livre usa o SVG oficial, a Amazon o desenho.
+    // no `title` do logo. As duas lojas usam o SVG oficial em cartão de marca.
     expect(htmlValida).toContain("link de afiliado");
     const cartoesOferta = htmlValida.match(
       /<a class="oferta-cartao oferta-cta oferta-cta--com-logo"[\s\S]*?<\/a>/g,
@@ -1129,12 +1129,17 @@ describe("build com uma Análise de fixture", () => {
     const cartaoOferta = cartoesOferta?.[0] ?? "";
     expect(cartaoOferta).toContain("Ver oferta");
     expect(cartaoOferta).toContain('class="loja-logo"');
+    expect(cartaoOferta).toContain(
+      'class="loja-marca loja-marca--mercado-livre"',
+    );
     expect(cartaoOferta).toContain('alt="Mercado Livre"');
-    expect(cartaoOferta).toMatch(/src="[^"]*mercado-livre[^"]*\.svg"/);
     expect(cartaoOferta).toContain('title="link de afiliado"');
     expect(cartaoOferta).not.toContain(">link de afiliado<");
-    expect(cartoesOferta?.[1]).toContain('aria-label="Amazon"');
-    expect(cartoesOferta?.[1]).toContain("<title>link de afiliado</title>");
+    expect(cartoesOferta?.[1]).toContain(
+      'class="loja-marca loja-marca--amazon"',
+    );
+    expect(cartoesOferta?.[1]).toContain('alt="Amazon"');
+    expect(cartoesOferta?.[1]).toContain('title="link de afiliado"');
     // Nenhum nome de loja aparece como texto visível: só no nome acessível.
     expect(htmlValida).not.toContain(">Mercado Livre<");
     expect(htmlValida).not.toContain(">Amazon<");
@@ -1268,7 +1273,7 @@ describe("build com uma Análise de fixture", () => {
     expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.marca);
     expect(textoDaPagina(blocoCapacidade)).toContain(aparelho.modelo);
     expect(blocoCapacidade).toContain('alt="Mercado Livre"');
-    expect(blocoCapacidade).toContain('aria-label="Amazon"');
+    expect(blocoCapacidade).toContain('alt="Amazon"');
     expect(blocoCapacidade).not.toContain(">Mercado Livre<");
     expect(blocoCapacidade).not.toContain(">Amazon<");
     expect(blocoCapacidade).toContain('title="link de afiliado"');

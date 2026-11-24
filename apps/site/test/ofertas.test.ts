@@ -290,10 +290,13 @@ describe("a apresentação da Oferta segue o sistema visual", () => {
     expect(css).not.toContain("content: none");
   });
 
-  it("herda a cor do link no logotipo e só sublinha o rótulo no hover", () => {
-    expect(regra(".loja-logo")).toContain("color: inherit");
-    expect(regra(".loja-logo")).toContain("height: 20px");
-    expect(regra(".oferta-cta-conteudo")).toContain("gap: 0.6ch");
+  it("mostra a marca em cartão de cor oficial e só sublinha o rótulo no hover", () => {
+    expect(regra(".loja-logo")).toContain("height: 16px");
+    expect(regra(".loja-marca--mercado-livre")).toContain(
+      "background: #f7d032",
+    );
+    expect(regra(".loja-marca--amazon")).toContain("background: #221f1f");
+    expect(regra(".oferta-cta-conteudo")).toContain("gap: var(--esp-2)");
     expect(regra(".oferta-cartao:hover .oferta-cta-rotulo")).toContain(
       "text-decoration: underline",
     );

@@ -1457,21 +1457,40 @@ main.principal-leitura {
   display: flex;
 }
 
-/* O logotipo substitui o nome da loja (tickets 106 e 108): o Mercado Livre usa
-   o SVG oficial em 20 px de altura; a Amazon, o desenho de linha em
-   `currentColor`. Só o rótulo reage ao hover, como antes. */
+/* O logotipo substitui o nome da loja (tickets 106 e 108): cada marca entra
+   num cartão pequeno com a cor oficial — amarelo do Mercado Livre e fundo
+   escuro da Amazon com o wordmark branco —, em 16 px de altura. "Ver oferta"
+   fica fora do cartão, no mesmo link. Só o rótulo reage ao hover, como antes. */
 .oferta-cta-conteudo {
   display: inline-flex;
   align-items: center;
-  gap: 0.6ch;
+  gap: var(--esp-2);
+}
+
+.loja-marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: var(--esp-2);
+  border-radius: var(--raio-xs);
+}
+
+/* Cores de terceiros, exceção documentada no DESIGN.md: não são tokens do
+   sistema e não se aplicam a nenhum outro componente. */
+.loja-marca--mercado-livre {
+  background: #f7d032;
+}
+
+.loja-marca--amazon {
+  background: #221f1f;
 }
 
 .loja-logo {
   display: block;
   flex: none;
   width: auto;
-  height: 20px;
-  color: inherit;
+  height: 16px;
 }
 
 .loja-logo-fallback {

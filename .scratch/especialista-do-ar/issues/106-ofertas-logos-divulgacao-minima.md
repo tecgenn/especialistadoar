@@ -1,27 +1,27 @@
 # 106 — Ofertas: logo da loja e divulgação mínima
 
-**What to build:** o link de Oferta para de escrever o nome da loja e passa a mostrar o **logo do marketplace** em SVG inline, monocromático e herdando `currentColor`: Mercado Livre e Amazon desenhados à mão na grade de 24 px, com fallback em texto para loja desconhecida. O parágrafo longo de divulgação que hoje abre a faixa de Ofertas (“Links comerciais (de afiliado): a compra acontece na loja e a comissão, se houver, não custa nada a você.”) sai de todos os cartões. No lugar fica só o marcador mínimo **“link de afiliado”** a 0,625 rem em `--mudo`, ao lado do CTA, mais o bloco do rodapé e os Termos que já existem. A camada pura da home passa a carregar **todas** as Ofertas de um Aparelho, não só a primeira, para o cartão poder mostrar Mercado Livre e Amazon lado a lado quando houver as duas.
+**What to build:** o link de Oferta para de escrever o nome da loja e passa a mostrar o **logotipo oficial do marketplace** em um badge pequeno com a cor da marca: Mercado Livre sobre amarelo e Amazon sobre fundo escuro, com o wordmark branco e o sorriso laranja. Os dois SVGs vivem em `apps/site/src/assets/lojas/` e são importados pelos componentes; loja desconhecida cai para o nome em texto. O rótulo **“Ver oferta →”** fica fora do badge, dentro do mesmo link, e o nome da loja não se repete em texto. O parágrafo longo de divulgação que abria a faixa de Ofertas sai de todos os cartões, e o aviso **“link de afiliado”** não aparece como texto visível: vive no `title` do logo e no nome acessível do link, com a divulgação por extenso no rodapé e nos Termos. A camada pura da home passa a carregar **todas** as Ofertas de um Aparelho, não só a primeira, para o cartão mostrar uma linha por loja quando houver as duas.
 
 **Blocked by:** 102.
 
-**Skills:** `design-taste-frontend` — `references/icons.md` (marca monocromática dentro da grade) e `references/cards.md`. `impeccable` — `reference/component-review.md` e `reference/clarify.md`. `ui-ux-pro-max` — `"affiliate disclosure microcopy" --domain ux`.
+**Skills:** `design-taste-frontend` — `references/icons.md` (marca dentro da grade) e `references/cards.md`. `impeccable` — `reference/component-review.md` e `reference/clarify.md`. `ui-ux-pro-max` — `"affiliate disclosure microcopy" --domain ux`.
 
 **Status:** done
 
 ## Logos
 
-- [x] `lib/lojas.ts` normaliza o nome (sem acento, minúsculo, `mercado livre`/`mercadolivre`, `amazon`) e devolve a chave da loja ou `null`
-- [x] `components/primitivos/LogoLoja.astro` renderiza o SVG inline com `role="img"` e `aria-label` com o nome da loja; sem logo, cai para o nome em texto
-- [x] Marcas desenhadas como linha, 20–24 px, `currentColor`, sem preenchimento amarelo/colorido: aperto de mão do Mercado Livre e sorriso/seta da Amazon
-- [x] Nenhuma requisição externa, nenhum arquivo de imagem e nenhum pacote de logos
-- [x] O logo herda a cor do link e não muda de cor no hover além do que o texto já muda
+- [x] `lib/lojas.ts` normaliza o nome (sem acento, minúsculo, `mercado livre`/`mercadolivre`, `amazon`) e devolve a chave da loja, o nome canônico e as medidas do SVG ou `null`
+- [x] `components/primitivos/LogoLoja.astro` e `components/comparar/LogoLojaIsla.tsx` renderizam o mesmo badge `.loja-marca loja-marca--<chave>` com o `<img>` do arquivo oficial, `alt`, `title="link de afiliado"` e fallback em texto
+- [x] `assets/lojas/mercado-livre.svg` mantém os traçados oficiais em `<path>` (sem dependência de fonte); `assets/lojas/amazon.svg` usa os paths oficiais com wordmark `#fff` e sorriso `#ff9900`
+- [x] Badge de 2 px de raio, amarelo `#f7d032` no Mercado Livre e `#221f1f` na Amazon; logo em 16 px de altura, proporção preservada
+- [x] Nenhuma requisição externa e nenhum pacote de logos; os SVGs são locais e não são redesenhados em código
+- [x] “Ver oferta →” fica fora do badge, no mesmo link; loja desconhecida cai para o nome em texto, sem badge
 
 ## Divulgação
 
-- [x] `--texto-micro: 0.625rem` adicionado aos tokens
 - [x] `OfertaFaixa` não renderiza mais o parágrafo `intro`; o título e a lista continuam
-- [x] `OfertaCartao` mostra `[logo] Ver oferta →` e o marcador “link de afiliado” em 0,625 rem e `--mudo`
-- [x] O marcador continua dentro do link (o programa exige que a divulgação acompanhe o CTA), sem virar caixa, selo ou pill
+- [x] `OfertaCartao` mostra `[badge da loja] Ver oferta →` num único link com `rel="sponsored nofollow noopener"` e `target="_blank"`
+- [x] O aviso “link de afiliado” não é texto visível do cartão: fica no `title` do logo e no nome acessível `Ver oferta — <loja> — link de afiliado`
 - [x] Ficha, Análise e Comparação herdam o mesmo cartão e a mesma marcação
 - [x] O rodapé (“Transparência com o Leitor”) e os Termos continuam sendo o texto completo; nenhuma explicação longa volta para o cartão
 
@@ -35,6 +35,7 @@
 
 ## Notas
 
-- O logo não substitui o rótulo “Ver oferta”: ele substitui o **nome da loja**, que era texto redundante ao lado do logo. O CTA continua dizendo o que acontece no clique.
-- A divulgação passa de três níveis (parágrafo + marcador + rodapé/Termos) para dois (marcador + rodapé/Termos). O #110 revisa o ADR-0023 e o `CONTEXT.md` para refletir a decisão.
-- Um Aparelho com duas Ofertas mostra duas linhas, cada uma com seu logo; o cartão não escolhe “a melhor” loja.
+- O logo substitui o **nome da loja**, não o rótulo “Ver oferta”: o CTA continua dizendo o que acontece no clique e o texto da marca não aparece duas vezes.
+- A divulgação passa de três níveis (parágrafo + marcador + rodapé/Termos) para dois (tooltip e nome acessível + rodapé/Termos). O ADR-0023 e o `CONTEXT.md` registram a decisão.
+- Um Aparelho com duas Ofertas mostra duas linhas, cada uma com o badge da sua loja; o cartão não escolhe “a melhor” loja.
+- **Revisão visual (2026-11-24):** a direção original pedia logos monocromáticos desenhados à mão e um marcador visível. O produto pediu badges com as cores oficiais e o aviso só no tooltip/nome acessível; esta revisão prevalece sobre o texto original. O SVG do Mercado Livre já no projeto foi mantido por ser path-based; a versão alternativa colada no pedido usava `<text>` e dependeria de fonte local.

@@ -61,6 +61,15 @@ Regras que sustentam os três níveis:
 > único tooltip do CTA e ele apenas nomeia a relação comercial. Os níveis 2 e 3
 > continuam como descritos, e a Análise mantém o banner de transparência no topo.
 
+> **Revisão visual do ticket 106 (2026-11-24).** O nível 1 passa a ser um badge
+> de 2 px de raio com a cor oficial da loja: amarelo do Mercado Livre e fundo
+> escuro da Amazon, cada um com o SVG oficial em 16 px de altura. O rótulo
+> **"Ver oferta →"** fica fora do badge, dentro do mesmo link, e o nome da loja
+> não é repetido em texto. O aviso continua só no `title` do logo e no nome
+> acessível; os níveis 2 e 3 não mudam. O SVG do Mercado Livre existente foi
+> mantido por ser path-based, e o da Amazon foi acrescentado com o wordmark
+> branco e o sorriso laranja.
+
 > **Revisão do ADR-0010.** O ADR-0010 continua valendo no que é estrutural: a
 > Oferta é um insumo curado **só do site** (`apps/site/ofertas.json`), validada no
 > build, nunca um campo de Aparelho, nunca em `data/build/`, na API ou na consulta.
@@ -72,8 +81,9 @@ Regras que sustentam os três níveis:
 
 ## Consequências
 
-- O visitante decide com transparência sem que a página vire anúncio: o marcador é
-  texto pequeno e secundário, e a matriz de dados fica imune ao comercial.
+- O visitante decide com transparência sem que a página vire anúncio: a relação
+  comercial está no tooltip e no nome acessível do CTA, e a matriz de dados fica
+  imune ao comercial.
 - Um CTA novo herda `rel`, `target` e marcador só por usar o componente ou as
   constantes — o risco de um link comercial sem divulgação some no código, não na
   disciplina de quem escreve a página.

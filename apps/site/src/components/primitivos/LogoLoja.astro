@@ -1,21 +1,27 @@
 ---
+import logoAmazon from "../../assets/lojas/amazon.svg?url";
 import logoMercadoLivre from "../../assets/lojas/mercado-livre.svg?url";
 import {
+  type ChaveLoja,
   dadosDoLogoDaLoja,
-  GRADE_DO_LOGO,
-  MEDIDAS_DO_LOGO_MERCADO_LIVRE,
   nomeDaLojaParaLeitura,
 } from "../../lib/lojas.ts";
 import { MARCADOR_OFERTA } from "../../lib/ofertas.ts";
 
 /**
- * A marca da loja no CTA de Oferta (tickets 106 e 108). O Mercado Livre usa o
- * SVG oficial da marca; a Amazon segue desenhada em linha na grade de 24. O
- * `title` — “link de afiliado” — é o único aviso no cartão: a divulgação
- * completa vive no rodapé e nos Termos.
+ * A marca da loja no CTA de Oferta (tickets 106 e 108). Os dois SVGs oficiais
+ * entram como arquivo: o Mercado Livre no amarelo da marca e a Amazon num
+ * cartão escuro com o wordmark branco. O `title` — “link de afiliado” — é o
+ * único aviso no cartão; a divulgação completa vive no rodapé e nos Termos.
+ * "Ver oferta" é escrito por `OfertaCartao`, fora deste cartão da marca.
  */
 type Props = {
   loja: string;
+};
+
+const URLS: Record<ChaveLoja, string> = {
+  "mercado-livre": logoMercadoLivre,
+  amazon: logoAmazon,
 };
 
 const { loja } = Astro.props;
@@ -24,35 +30,19 @@ const nome = nomeDaLojaParaLeitura(loja);
 ---
 
 {
-  dados?.tipo === "arquivo" ? (
-    <img
-      class="loja-logo"
-      src={logoMercadoLivre}
-      width={MEDIDAS_DO_LOGO_MERCADO_LIVRE.largura}
-      height={MEDIDAS_DO_LOGO_MERCADO_LIVRE.altura}
-      alt={dados.nome}
-      title={MARCADOR_OFERTA}
-      loading="lazy"
-      decoding="async"
-    />
-  ) : dados?.tipo === "desenho" ? (
-    <svg
-      class="loja-logo"
-      viewBox={GRADE_DO_LOGO}
-      width="22"
-      height="22"
-      role="img"
-      aria-label={dados.nome}
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      focusable="false"
-    >
-      <title>{MARCADOR_OFERTA}</title>
-      {dados.caminhos.map((caminho) => <path d={caminho} />)}
-    </svg>
+  dados ? (
+    <span class:list={["loja-marca", `loja-marca--${dados.chave}`]}>
+      <img
+        class="loja-logo"
+        src={URLS[dados.chave]}
+        width={dados.largura}
+        height={dados.altura}
+        alt={dados.nome}
+        title={MARCADOR_OFERTA}
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
   ) : (
     <span class="loja-logo-fallback">{nome}</span>
   )

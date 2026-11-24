@@ -1,10 +1,9 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  CAMINHOS_DO_LOGO,
   chaveDaLoja,
   dadosDoLogoDaLoja,
-  GRADE_DO_LOGO,
-  MEDIDAS_DO_LOGO_MERCADO_LIVRE,
+  LOGOS_DAS_LOJAS,
   nomeDaLoja,
   nomeDaLojaParaLeitura,
 } from "../src/lib/lojas.ts";
@@ -36,25 +35,42 @@ describe("chaveDaLoja", () => {
 });
 
 describe("dados do logo da loja", () => {
-  it("manda o Mercado Livre para o arquivo oficial da marca", () => {
+  it("usa o arquivo oficial do Mercado Livre", () => {
     expect(dadosDoLogoDaLoja("mercadolivre")).toEqual({
-      tipo: "arquivo",
       chave: "mercado-livre",
       nome: "Mercado Livre",
+      largura: 79,
+      altura: 20,
     });
+    const svg = readFileSync(
+      new URL("../src/assets/lojas/mercado-livre.svg", import.meta.url),
+      "utf8",
+    );
+    expect(svg).toContain('viewBox="0 0 920.12 233.88"');
+    expect(svg).toContain('fill="#f7d032"');
+    expect(svg).toContain("<path");
+    expect(svg).not.toContain("<text");
   });
 
-  it("devolve a chave, o nome canônico e os caminhos da Amazon", () => {
+  it("usa o arquivo oficial da Amazon com o wordmark em branco", () => {
     expect(dadosDoLogoDaLoja("AMAZON")).toEqual({
-      tipo: "desenho",
       chave: "amazon",
       nome: "Amazon",
-      caminhos: CAMINHOS_DO_LOGO.amazon,
+      largura: 66,
+      altura: 20,
     });
     expect(nomeDaLoja("amazon")).toBe("Amazon");
+    const svg = readFileSync(
+      new URL("../src/assets/lojas/amazon.svg", import.meta.url),
+      "utf8",
+    );
+    expect(svg).toContain('viewBox="0 0 603 182"');
+    expect(svg).toContain('fill="#fff"');
+    expect(svg).toContain('fill="#ff9900"');
+    expect(svg).not.toContain("<text");
   });
 
-  it("devolve null para loja sem desenho — o chamador cai para texto", () => {
+  it("devolve null para loja sem logotipo — o chamador cai para texto", () => {
     expect(dadosDoLogoDaLoja("Loja do teste")).toBeNull();
   });
 
@@ -65,20 +81,13 @@ describe("dados do logo da loja", () => {
     expect(nomeDaLojaParaLeitura(null)).toBe("");
   });
 
-  it("desenha a marca de linha na grade de 24 px, sem cor própria", () => {
-    expect(GRADE_DO_LOGO).toBe("0 0 24 24");
-    expect(Object.keys(CAMINHOS_DO_LOGO)).toEqual(["amazon"]);
-    for (const [chave, caminhos] of Object.entries(CAMINHOS_DO_LOGO)) {
-      expect(caminhos.length, chave).toBeGreaterThanOrEqual(2);
-      for (const caminho of caminhos) {
-        expect(caminho).toMatch(/^[mM]/);
-        expect(caminho).not.toMatch(/#[0-9a-f]{3,8}|fill/i);
-      }
-    }
-  });
-
-  it("reserva a proporção do SVG do Mercado Livre (920,12 × 233,88)", () => {
-    const { largura, altura } = MEDIDAS_DO_LOGO_MERCADO_LIVRE;
-    expect(largura / altura).toBeCloseTo(920.12 / 233.88, 1);
+  it("reserva a proporção dos dois SVGs oficiais", () => {
+    const mercadoLivre = LOGOS_DAS_LOJAS["mercado-livre"];
+    const amazon = LOGOS_DAS_LOJAS.amazon;
+    expect(mercadoLivre.largura / mercadoLivre.altura).toBeCloseTo(
+      920.12 / 233.88,
+      1,
+    );
+    expect(amazon.largura / amazon.altura).toBeCloseTo(603 / 182, 1);
   });
 });

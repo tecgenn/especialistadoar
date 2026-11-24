@@ -712,7 +712,7 @@ describe("CTA de Oferta no cartão", () => {
     expect(cta.querySelector("svg.loja-logo")).toBeNull();
   });
 
-  it("substitui o nome da loja pelo logotipo oficial ou pelo desenho de linha", async () => {
+  it("substitui o nome da loja pelos logotipos oficiais em cartão de marca", async () => {
     await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb", [
       {
         aparelhoId: "ap-aaaaaaaaaaaa",
@@ -735,20 +735,17 @@ describe("CTA de Oferta no cartão", () => {
       name: "Ver oferta — Amazon — link de afiliado",
     });
 
-    // O Mercado Livre usa o SVG oficial da marca; a Amazon continua no desenho
-    // de linha. O aviso de afiliado vive no `title` do logo, não em texto.
+    // As duas lojas usam o SVG oficial em cartão de marca: amarelo do Mercado
+    // Livre e fundo escuro com wordmark branco da Amazon. O aviso de afiliado
+    // vive no `title` do logo, não em texto.
     const logoMercadoLivre = ctaUm.querySelector("img.loja-logo");
+    expect(ctaUm.querySelector(".loja-marca--mercado-livre")).not.toBeNull();
     expect(logoMercadoLivre?.getAttribute("alt")).toBe("Mercado Livre");
-    expect(logoMercadoLivre?.getAttribute("src")).toMatch(
-      /mercado-livre.*\.svg/,
-    );
     expect(logoMercadoLivre?.getAttribute("title")).toBe("link de afiliado");
-    expect(
-      ctaDois.querySelector("svg.loja-logo")?.getAttribute("aria-label"),
-    ).toBe("Amazon");
-    expect(ctaDois.querySelector("svg.loja-logo title")?.textContent).toBe(
-      "link de afiliado",
-    );
+    const logoAmazon = ctaDois.querySelector("img.loja-logo");
+    expect(ctaDois.querySelector(".loja-marca--amazon")).not.toBeNull();
+    expect(logoAmazon?.getAttribute("alt")).toBe("Amazon");
+    expect(logoAmazon?.getAttribute("title")).toBe("link de afiliado");
     expect(primeiro.textContent).not.toContain("Mercado Livre");
     expect(segundo.textContent).not.toContain("amazon");
     // O aviso não é texto do CTA: só o `title` do logo o carrega.

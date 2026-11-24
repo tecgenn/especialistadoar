@@ -23,7 +23,7 @@
 - [x] Cartão com fundo giz, borda de 1 px `--linha`, raio 4 px, padding de 24 px e hover de borda `--tinta` — sem sombra, sem pill
 - [x] Marca em mono pequena, modelo como link em grotesca, capacidade e tipo em uma linha secundária
 - [x] IDRS e consumo anual em duas leituras com rótulo mono e valor tabular, como na ficha
-- [x] Ações: “Ler análise” (quando houver) e uma linha por Oferta com `LogoLoja` + “Ver oferta” + marcador mínimo
+- [x] Ações: “Ler análise” (quando houver) e uma linha por Oferta com o badge oficial de `LogoLoja` + “Ver oferta →” fora dele, aviso no `title` e no nome acessível
 - [x] Nenhum cartão vazio, nenhum CTA desabilitado e nenhum espaço reservado para Oferta ausente
 - [x] Sem contagem de aparelhos, sem “Ver os de …” e sem carrossel
 - [x] `totalNaCapacidade` removido das props e do build; `contagensPorCapacidade` e `linkDaTabela` removidos se ficarem sem consumidor
@@ -35,3 +35,4 @@
 
 - O #96 decidiu “sem seletor” porque só havia uma capacidade com conteúdo. O produto pediu o seletor agora; a decisão é revertida de propósito e o `DESIGN.md` registra a condição (chips só com duas ou mais capacidades) para o componente não nascer com um controle de um item só.
 - O seletor é progressivo: o HTML servido já tem todos os painéis. O script só alterna `hidden` e `aria-pressed`, sem framework e sem nova ilha React.
+- **Alinhamento com o #106 (2026-11-24):** a revisão visual dos CTAs troca o símbolo desenhado por badges com os SVGs oficiais e tira o marcador visível de afiliado. A estrutura do cartão e do seletor não muda; só a linha de Oferta herda a decisão do #106.

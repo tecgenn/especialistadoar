@@ -34,15 +34,16 @@
 Acrescentado a este ticket a pedido do produto, no mesmo commit da grade.
 
 - [x] O SVG oficial do Mercado Livre saiu da raiz e vive em `apps/site/src/assets/lojas/mercado-livre.svg`, com `<title>` e `role="img"` para o lint
-- [x] O CTA de Oferta usa o logotipo real da marca, com as cores da loja, em 20 px de altura e 79 px de largura reservada, no lugar do símbolo desenhado em código
+- [x] O CTA de Oferta usa o logotipo real da marca dentro de um badge com a cor da loja, em 16 px de altura, com “Ver oferta →” fora dele, no lugar do símbolo desenhado em código
 - [x] Logo e rótulo estão no mesmo link, que abre o endereço afiliado do produto em nova aba (`rel="sponsored nofollow noopener"`)
 - [x] O texto visível “link de afiliado” saiu dos cartões (ficha, Análise, Comparação, home); o aviso ficou no `title` do logo — o tooltip ao parar o ponteiro — e no nome acessível `Ver oferta — <loja> — link de afiliado`
 - [x] A divulgação por extenso continua no bloco “Transparência com o Leitor” do rodapé, nos Termos de Uso e no banner do topo de cada Análise
-- [x] A Amazon mantém o desenho de linha de 22 px (não há arquivo oficial no projeto); loja desconhecida segue no nome em texto
+- [x] A Amazon passa a usar o SVG oficial em `apps/site/src/assets/lojas/amazon.svg` (wordmark branco e sorriso laranja sobre fundo escuro); loja desconhecida segue no nome em texto
 - [x] O token `--texto-micro`, que só existia para o marcador visível, foi removido junto do seu teste
 - [x] Testes de build e de ilha conferem o `<img>` do Mercado Livre, o `title`, a ausência do marcador e o destino afiliado
 
 ## Notas
 
 - O #97 aprovou o carrossel; o produto pediu a volta da grade estática. A decisão do #97 é substituída, não convive com ela.
+- **Alinhamento com o #106 (2026-11-24):** os dois CTAs passam a usar badges com as cores oficiais e logotipos de 16 px — Mercado Livre no SVG já existente e Amazon no SVG oficial importado —, com “Ver oferta →” fora do badge. O texto visível de afiliado continua fora dos cartões; a grade e o tooltip não mudam.
 - Com uma Análise só, a grade tem um cartão e não centraliza nem estica o cartão para ocupar a linha inteira: a coluna mantém a largura da grade.
