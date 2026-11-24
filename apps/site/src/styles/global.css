@@ -3067,13 +3067,25 @@ main.principal-leitura {
   text-decoration: none;
 }
 
-/* FAQ (ticket 71) e metodologia (ticket 99): `<details>` nativo, fechado por
-   padrão. O título fica dentro do `summary`, com o marcador desenhado em mono.
+/* FAQ (ticket 71), metodologia (ticket 99) e a densidade do ticket 109:
+   `<details>` nativo, fechado por padrão, em grade de duas colunas a partir de
+   900 px. Cada item fecha em 56 px — índice em mono, título em 1 rem e `+`/`−`
+   em ciano —, então as linhas deixam de ocupar meia página sem perder uma
+   palavra do texto. Abrir um item cresce a própria linha da grade e nada mais.
    A metodologia reaproveita a mesma interação, mas mantém o texto editorial na
    fonte de leitura — ela explica, não é um item de FAQ. */
 .home-faq-lista,
 .home-metodologia-lista {
   display: grid;
+  align-content: start;
+}
+
+@media (min-width: 56.25rem) {
+  .home-faq-lista,
+  .home-metodologia-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--esp-8);
+  }
 }
 
 .home-pergunta,
@@ -3083,11 +3095,11 @@ main.principal-leitura {
 
 .home-pergunta summary,
 .home-tema summary {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--esp-5);
-  min-height: 44px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--esp-4);
+  min-height: 56px;
   padding-block: var(--esp-4);
   cursor: pointer;
   list-style: none;
@@ -3098,26 +3110,27 @@ main.principal-leitura {
   display: none;
 }
 
+.home-item-indice {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-ui);
+}
+
 .home-pergunta summary::after,
 .home-tema summary::after {
   content: "+";
-  flex: none;
-  color: var(--mudo);
+  color: var(--foco-texto);
   font-family: var(--fonte-mono);
   font-size: var(--texto-ui);
   line-height: 1;
-  transition: color var(--mov-hover) var(--curva);
 }
 
 .home-pergunta[open] summary::after,
 .home-tema[open] summary::after {
   content: "−";
-  color: var(--foco-texto);
-}
-
-.home-pergunta summary:hover::after,
-.home-tema summary:hover::after {
-  color: var(--foco-texto);
 }
 
 .home-pergunta h3,
@@ -3137,22 +3150,14 @@ main.principal-leitura {
   line-height: 1.6;
 }
 
-/* Metodologia (ticket 71): coluna de leitura em serifa e as fontes em mono. O
-   conteúdo do `<details>` (ticket 99) mantém a fonte de leitura; só o título do
-   `summary` usa a interface, e o `+`/`−` fica em mono. */
+/* Metodologia (ticket 71): coluna de leitura em serifa. O conteúdo do
+   `<details>` (ticket 99) mantém a fonte de leitura; só o título do `summary`
+   usa a interface, e o `+`/`−` fica em mono. A nota de fontes saiu no ticket
+   109: ela vive no rodapé, junto da Proveniência. */
 .home-metodologia-lista p {
   max-width: 68ch;
   margin: 0;
   padding-block-end: var(--esp-4);
-}
-
-.home-fontes {
-  margin: var(--esp-6) 0 0;
-  color: var(--mudo);
-  font-family: var(--fonte-mono);
-  font-size: var(--texto-rotulo);
-  letter-spacing: var(--tracking-unidade);
-  line-height: var(--entrelinha-pequena);
 }
 
 @media (max-width: 40rem) {

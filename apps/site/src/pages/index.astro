@@ -133,13 +133,25 @@ const jsonLd: Record<string, unknown>[] = [
 
   <AnalisesDestaque destaques={destaques} />
 
+  {/* Ticket 109: FAQ e metodologia em grade de duas colunas a partir de 900 px,
+      com o índice em mono. A numeração sai da posição na lista, não de um
+      literal: o FAQ tem nove perguntas e a metodologia oito tópicos, e o texto
+      de ambos continua exatamente o mesmo. */}
   <section class="home-faq" aria-labelledby="home-faq-titulo">
-    <CabecalhoDeSecao icone="perguntas" id="home-faq-titulo" titulo="Perguntas frequentes" />
+    <CabecalhoDeSecao
+      icone="perguntas"
+      id="home-faq-titulo"
+      titulo="Perguntas frequentes"
+      lead="Respostas curtas sobre BTUs, consumo e dados do INMETRO."
+    />
     <div class="home-faq-lista">
       {
-        PERGUNTAS_FREQUENTES.map(({ pergunta, resposta }) => (
+        PERGUNTAS_FREQUENTES.map(({ pergunta, resposta }, indice) => (
           <details class="home-pergunta">
             <summary>
+              <span class="home-item-indice" aria-hidden="true">
+                {String(indice + 1).padStart(2, "0")}
+              </span>
               <h3>{pergunta}</h3>
             </summary>
             <p>{resposta}</p>
@@ -154,6 +166,7 @@ const jsonLd: Record<string, unknown>[] = [
       icone="camadas"
       id="home-metodologia-titulo"
       titulo="Metodologia e INMETRO"
+      lead="Como os dados do INMETRO viram as fichas e a estimativa do site."
     />
     {/* Ticket 99: cada tópico é um `<details>` nativo, fechado por padrão,
         como o FAQ acima. Fecha o texto longo que antes ficava todo exposto sem
@@ -161,6 +174,7 @@ const jsonLd: Record<string, unknown>[] = [
     <div class="home-metodologia-lista">
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">01</span>
           <h3>De onde vêm os dados</h3>
         </summary>
         <p>
@@ -171,12 +185,14 @@ const jsonLd: Record<string, unknown>[] = [
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">02</span>
           <h3>O recorte da tabela</h3>
         </summary>
         <p>{EXPLICACAO_DO_RECORTE}</p>
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">03</span>
           <h3>IDRS e Classe energética</h3>
         </summary>
         <p>
@@ -189,6 +205,7 @@ const jsonLd: Record<string, unknown>[] = [
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">04</span>
           <h3>Condições de ensaio</h3>
         </summary>
         <p>
@@ -201,6 +218,7 @@ const jsonLd: Record<string, unknown>[] = [
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">05</span>
           <h3>Vigência da classificação</h3>
         </summary>
         <p>
@@ -212,6 +230,7 @@ const jsonLd: Record<string, unknown>[] = [
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">06</span>
           <h3>Aparelhos Inverter</h3>
         </summary>
         <p>
@@ -224,6 +243,7 @@ const jsonLd: Record<string, unknown>[] = [
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">07</span>
           <h3>Simulador e Assistente</h3>
         </summary>
         <p>
@@ -235,6 +255,7 @@ const jsonLd: Record<string, unknown>[] = [
       </details>
       <details class="home-tema">
         <summary>
+          <span class="home-item-indice" aria-hidden="true">08</span>
           <h3>O que é estimativa</h3>
         </summary>
         <p>
@@ -245,10 +266,6 @@ const jsonLd: Record<string, unknown>[] = [
         </p>
       </details>
     </div>
-    <p class="home-fontes">
-      Fontes · exportação oficial de produtos do INMETRO · Portaria INMETRO
-      269/2021 · ciclo de referência de 2.080 h/ano
-    </p>
   </section>
 
   <script>

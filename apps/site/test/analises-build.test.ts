@@ -784,12 +784,17 @@ function conferirHomeHub(html: string): void {
   const temas = secaoMetodologia.match(/<details class="home-tema">/g) ?? [];
   expect(temas).toHaveLength(8);
   expect(secaoMetodologia).not.toContain('<details class="home-tema" open');
-  expect(secaoMetodologia.match(/<summary>\s*<h3>/g) ?? []).toHaveLength(8);
+  expect(
+    secaoMetodologia.match(
+      /<summary>\s*<span class="home-item-indice" aria-hidden="true">\d{2}<\/span>\s*<h3>/g,
+    ) ?? [],
+  ).toHaveLength(8);
   expect(secaoMetodologia.match(/<\/details>/g) ?? []).toHaveLength(8);
-  expect(secaoMetodologia).toContain('<p class="home-fontes">');
-  expect(css).toMatch(
-    /\.home-fontes\s*\{[^}]*font-family:\s*var\(--fonte-mono\)/,
-  );
+  // A nota de fontes saiu da home no ticket 109: a afirmação de proveniência
+  // vive no rodapé, junto da Versão da tabela, em um lugar só.
+  expect(secaoMetodologia).not.toContain("home-fontes");
+  expect(secaoMetodologia).not.toContain("Fontes · exportação");
+  expect(css).not.toMatch(/\.home-fontes/);
   expect(css).toMatch(/\.home-tema summary::-webkit-details-marker/);
   for (const titulo of [
     "De onde vêm os dados",
@@ -803,6 +808,76 @@ function conferirHomeHub(html: string): void {
   ]) {
     expect(secaoMetodologia).toContain(`<h3>${titulo}</h3>`);
   }
+
+  // 11. FAQ e metodologia compactos (ticket 109): grade de duas colunas a
+  //     partir de 900 px, índice em mono e `+`/`−` em ciano. A densidade é a
+  //     única mudança — `PERGUNTAS_FREQUENTES` e o `FAQPage` continuam iguais
+  //     (bloco 8), e a numeração sai da posição na lista.
+  const cabecalhosFaq = textoDaPagina(
+    html.slice(
+      html.indexOf('class="home-faq"'),
+      html.indexOf("</section>", html.indexOf('class="home-faq"')),
+    ),
+  );
+  expect(cabecalhosFaq).toContain(
+    "Respostas curtas sobre BTUs, consumo e dados do INMETRO.",
+  );
+  expect(html).toContain(
+    "Como os dados do INMETRO viram as fichas e a estimativa do site.",
+  );
+  const numeros = [
+    ...html.matchAll(
+      /<span class="home-item-indice" aria-hidden="true">\s*(\d{2})\s*<\/span>/g,
+    ),
+  ].map((achado) => achado[1]);
+  expect(numeros).toHaveLength(entidades.length + temas.length);
+  // O FAQ vai de 01 a 09 (nove perguntas) e a metodologia de 01 a 08.
+  expect(numeros.slice(0, entidades.length)).toEqual(
+    entidades.map((_, indice) => String(indice + 1).padStart(2, "0")),
+  );
+  expect(numeros.slice(entidades.length)).toEqual([
+    "01",
+    "02",
+    "03",
+    "04",
+    "05",
+    "06",
+    "07",
+    "08",
+  ]);
+  // A folha publicada passa pelo minificador, que reescreve a media query como
+  // `(width>=56.25rem)` e remove os espaços — o contrato é a declaração, não a
+  // grafia do arquivo-fonte.
+  const blocoCompacto =
+    /@media \(width>=56\.25rem\)\{\.home-faq-lista,\.home-metodologia-lista\{([^}]*)\}\}/.exec(
+      css,
+    )?.[1] ?? "";
+  expect(blocoCompacto).toContain(
+    "grid-template-columns:repeat(2,minmax(0,1fr))",
+  );
+  expect(blocoCompacto).toContain("column-gap:var(--esp-8)");
+  const resumoItem =
+    /\.home-pergunta summary,\s*\.home-tema summary\s*\{[^}]*\}/.exec(
+      css,
+    )?.[0] ?? "";
+  expect(resumoItem).toContain("min-height:56px");
+  expect(resumoItem).toContain("padding-block:var(--esp-4)");
+  expect(css).toMatch(
+    /\.home-item-indice\s*\{[^}]*font-family:\s*var\(--fonte-mono\)/,
+  );
+  expect(css).toMatch(
+    /\.home-pergunta summary::?after,\s*\.home-tema summary::?after\s*\{[^}]*color:\s*var\(--foco-texto\)/,
+  );
+
+  // 12. A Proveniência do rodapé absorve a linha de fontes: Portaria 269/2021 e
+  //     o ciclo de 2.080 h/ano, sem duplicar a Versão da tabela e sem uma
+  //     quarta coluna.
+  const rodape = textoDaPagina(html.slice(html.indexOf('class="site-footer"')));
+  expect(rodape).toContain(
+    "Base construída a partir da exportação oficial de produtos do INMETRO, sob a Portaria INMETRO 269/2021. Os cálculos de custo usam o ciclo de referência de 2.080 h/ano.",
+  );
+  expect(rodape.match(/rodape-bloco rodape-/g) ?? []).toHaveLength(3);
+  expect(html.match(/Versão da tabela:/g) ?? []).toHaveLength(1);
 
   // A home continua sem baixar JSON no cliente.
   expect(html).not.toContain("consulta.json");

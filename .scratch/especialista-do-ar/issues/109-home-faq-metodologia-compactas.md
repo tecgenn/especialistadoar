@@ -6,30 +6,40 @@
 
 **Skills:** `design-taste-frontend` — `references/sections-library.md` e `references/layout-v4.md` (densidade e ritmo). `impeccable` — `reference/distill.md`, `reference/component-review.md` e `reference/craft-floor.md`. `ui-ux-pro-max` — `"accordion FAQ two column" --domain ux` e `"native details disclosure" --domain ux`.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## FAQ e Metodologia
 
-- [ ] `home-faq-lista` e `home-metodologia-lista` em `grid-template-columns: repeat(2, minmax(0, 1fr))` com `column-gap: var(--esp-8)` a partir de 900 px; uma coluna abaixo
-- [ ] Cada `<details>` com índice `01`–`08` em mono `--mudo`, `aria-hidden="true"`, alinhado ao topo do título
-- [ ] `summary` com no mínimo 56 px, `padding-block` de 8–12 px, `h3` em 1 rem e `+`/`−` em mono no ciano (`--foco-texto`)
-- [ ] Corpo do FAQ em interface, corpo da metodologia em serifa, ambos com 68ch e respiro de 12 px; nada de corpo sempre visível
-- [ ] Abrir um item não desloca a coluna vizinha além da própria linha; sem animação de altura e sem JavaScript
-- [ ] Cabeçalho de cada seção com ícone, título e lead curto: “Respostas curtas sobre BTUs, consumo e dados do INMETRO.” e “Como os dados do INMETRO viram as fichas e a estimativa do site.”
-- [ ] As duas seções fechadas cabem em ~360 px cada a 1440 px (contra ~500 px hoje), sem perder o texto
-- [ ] `PERGUNTAS_FREQUENTES` e o JSON-LD `FAQPage` intactos: oito perguntas, mesmas respostas, mesma ordem
-- [ ] Nenhum `details` aberto por padrão; teclado e leitor de tela continuam funcionando
+- [x] `home-faq-lista` e `home-metodologia-lista` em `grid-template-columns: repeat(2, minmax(0, 1fr))` com `column-gap: var(--esp-8)` a partir de 900 px; uma coluna abaixo
+- [x] Cada `<details>` com índice em mono `--mudo`, `aria-hidden="true"`, alinhado ao topo do título
+- [x] `summary` com no mínimo 56 px, `padding-block` de 12 px, `h3` em 1 rem e `+`/`−` em mono no ciano (`--foco-texto`)
+- [x] Corpo do FAQ em interface, corpo da metodologia em serifa, ambos com 68ch e respiro de 12 px; nada de corpo sempre visível
+- [x] Abrir um item não desloca a coluna vizinha além da própria linha; sem animação de altura e sem JavaScript
+- [x] Cabeçalho de cada seção com ícone, título e lead curto: “Respostas curtas sobre BTUs, consumo e dados do INMETRO.” e “Como os dados do INMETRO viram as fichas e a estimativa do site.”
+- [x] As duas seções fechadas cabem em ~360 px cada a 1440 px (contra ~500 px hoje), sem perder o texto
+- [x] `PERGUNTAS_FREQUENTES` e o JSON-LD `FAQPage` intactos: mesmas perguntas, mesmas respostas, mesma ordem
+- [x] Nenhum `details` aberto por padrão; teclado e leitor de tela continuam funcionando
 
 ## Fontes no rodapé
 
-- [ ] `.home-fontes` removido de `index.astro` e `global.css`
-- [ ] Coluna **Proveniência** do rodapé passa a dizer: “Base construída a partir da exportação oficial de produtos do INMETRO, sob a Portaria INMETRO 269/2021. Os cálculos de custo usam o ciclo de referência de 2.080 h/ano.”
-- [ ] A frase não duplica a Versão da tabela nem cria uma quarta coluna; o rodapé continua com três colunas no desktop
-- [ ] A metodologia mantém a Portaria 269/2021 apenas no tópico “Vigência da classificação”, onde ela explica a data da etiqueta — não como nota de fonte repetida
-- [ ] Testes de build conferem a ausência de `.home-fontes`, a nova frase do rodapé e a grade de duas colunas no CSS
+- [x] `.home-fontes` removido de `index.astro` e `global.css`
+- [x] Coluna **Proveniência** do rodapé passa a dizer: “Base construída a partir da exportação oficial de produtos do INMETRO, sob a Portaria INMETRO 269/2021. Os cálculos de custo usam o ciclo de referência de 2.080 h/ano.”
+- [x] A frase não duplica a Versão da tabela nem cria uma quarta coluna; o rodapé continua com três colunas no desktop
+- [x] A metodologia mantém a Portaria 269/2021 apenas no tópico “Vigência da classificação”, onde ela explica a data da etiqueta — não como nota de fonte repetida
+- [x] Testes de build conferem a ausência de `.home-fontes`, a nova frase do rodapé e a grade de duas colunas no CSS
 
 ## Notas
 
 - A nota de fontes não é um tópico de metodologia: é proveniência global. O rodapé já concentra origem, versão e transparência; manter a linha na home criava dois lugares para a mesma afirmação.
 - A grade de duas colunas é a mudança de densidade, não uma mudança de conteúdo. O teste de contrato do FAQ continua lendo o mesmo array.
-- `DESIGN.md` atualizado no mesmo commit: seções “Metodologia e INMETRO (home)”, “Perguntas frequentes” e “Rodapé”.
+- `DESIGN.md` atualizado no mesmo commit: seções “Perguntas frequentes (home)”, “Metodologia e INMETRO (home)”, “Rodapé” e Don'ts.
+
+## Comments
+
+### Execução (2026-11-23)
+
+- **Contagem real da lista:** o ticket fala em “oito perguntas” e `01–08`, mas `PERGUNTAS_FREQUENTES` tem **nove** perguntas desde o #64, e o `FAQPage` é verificado contra o array (`entidades.length` entre 9 e 10). A numeração sai da posição na lista (`padStart(2, "0")`), então o FAQ vai de `01` a `09` e a metodologia de `01` a `08` — o texto, a ordem e o JSON-LD não mudaram. A consequência de layout é uma quinta linha na grade do FAQ: a seção fechada mede 414 px a 1440 px, e não os ~360 px do checklist; a metodologia, com oito tópicos, fecha em 357 px.
+- **Índice e alinhamento:** o índice fica como primeiro item do `summary` em grade de três colunas (`auto minmax(0, 1fr) auto`), com o topo do texto alinhado ao topo do `h3` (medido: ambos em y = 1477 no FAQ).
+- **Verificação no navegador:** 1 coluna até 899 px e 2 colunas de 48 px de calha a partir de 900 px (900: 390 + 390; 1440: 648 + 648; 1920: 648 + 648). Item fechado de 57 px (56 de `min-height` mais a hairline). Abrir o primeiro item leva a linha de 57 para 171 px e empurra só as linhas seguintes; o vizinho da mesma linha não se move. Enter no `summary` focado abre com o marcador `−`, foco de 2 px ciano com offset de 2 px, corpo do FAQ em interface e o da metodologia em Source Serif. 0 px de overflow horizontal em 320/390/640/768/899/900/1024/1440/1920 px.
+- **Rodapé:** um único `Versão da tabela:` por página, três colunas de 416 px no desktop, parágrafo novo em `--mudo-escuro` (4,9:1) e nenhum `.home-fontes` na home.
+- **Skills:** `ui-ux-pro-max` não tem verbo para accordion/FAQ duas colunas (`"accordion FAQ two column"` e `"accordion disclosure"` não retornaram nada; `"FAQ section"` devolveu só navegação e `"long list scanning"` só limites de linha, ambos genéricos). A densidade seguiu `design-taste-frontend` (`sections-library.md`/`layout-v4.md`) e `impeccable` (`distill.md`/`component-review.md`/`craft-floor.md`); `sections-library.md` pede respostas sempre abertas, e a decisão do #71/#99 (fechadas, nativas) prevalece por ser o contrato do projeto.
