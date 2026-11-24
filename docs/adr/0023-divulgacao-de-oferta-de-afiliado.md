@@ -39,10 +39,11 @@ Regras que sustentam os três níveis:
   próprio.
 - **Atributos centralizados**: `ATRIBUTOS_OFERTA`
   (`rel="sponsored nofollow noopener"`, `target="_blank"`) e `MARCADOR_OFERTA` vivem
-  em `apps/site/src/lib/ofertas.ts`. O único componente que escreve o link é
-  `OfertaCartao`; a ilha da comparação usa as mesmas constantes. Assim o marcador, a
-  nova aba e o `rel` acompanham **todo** CTA — ficha, Análise, destaques da home e
-  comparação — sem duplicação.
+  em `apps/site/src/lib/ofertas.ts`. `OfertaCartao` e o espelho `OfertaCartaoIsla`
+  escrevem o mesmo link a partir dessas constantes, sem duplicar a política de
+  `rel`, `target` e nome acessível. Assim o marcador, a nova aba e o `rel`
+  acompanham **todo** CTA — ficha, Análise, destaques da home e comparação — sem
+  duplicação de regra.
 - **CTA na comparação, fora da matriz.** Com 2 ou 3 modelos, o cartão de cada
   modelo com Oferta publicada mostra "Ver oferta — Loja · link de afiliado" na área
   de ações, ao lado de "Trocar" e "Remover". Modelo sem Oferta não gera CTA, espaço

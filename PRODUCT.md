@@ -48,7 +48,7 @@ The only Brazilian air-conditioner research platform that shows the full INMETRO
 - **Independence from INMETRO and from commerce.** The site is not INMETRO; it reproduces official values and never presents an estimate as official.
 - **No price, discount or savings promise.** Offers may say where to buy; they may not claim a price, the lowest price, or a saving.
 - **Neutral comparison.** No winner, star rating, "best" badge or commercial ordering inside the technical matrix.
-- **Affiliate transparency at three levels:** beside the link, in the Terms and in the footer.
+- **Affiliate transparency at three levels:** the CTA’s accessible name and logo tooltip, the footer disclosure, and the Terms; the full notice also opens each Análise. No affiliate copy is visible inside offer cards.
 - **Plain, credible Portuguese.** No hype, no fake urgency, no invented testimonials, statistics or products.
 - The name **Especialista do Ar** is fixed.
 
