@@ -1047,14 +1047,16 @@ describe("chips de marca, capacidade, função, tipo e classe", () => {
   });
 });
 
-describe("layout central (ticket 50)", () => {
-  it("não tem barra lateral e usa a coluna de até 72 rem", async () => {
+describe("layout central (tickets 50 e 67)", () => {
+  it("não tem barra lateral e acompanha a largura da página ampla", async () => {
     await montar(curadoria, "/", { abrir: false });
     expect(document.querySelector(".filtros-sidebar")).toBeNull();
     expect(document.querySelector(".consulta-layout")).toBeNull();
 
     const css = cssDaConsulta();
-    expect(css).toMatch(/\.pagina-aparelhos\s*\{[^}]*max-width:\s*72rem/);
+    // A coluna central acompanha o shell (ticket 67): sem o teto antigo de
+    // 72 rem, a tabela alinha às bordas do cabeçalho e do rodapé.
+    expect(css).not.toMatch(/\.pagina-aparelhos\s*\{[^}]*max-width/);
     expect(css).not.toMatch(/\.filtros-sidebar/);
   });
 

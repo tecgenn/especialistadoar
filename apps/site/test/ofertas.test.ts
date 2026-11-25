@@ -7,6 +7,7 @@ import {
   indexarOfertas,
   MARCADOR_OFERTA,
   type Oferta,
+  ofertaExibida,
   ROTULO_OFERTA_PADRAO,
   rotuloDaOferta,
   validarOfertas,
@@ -65,6 +66,21 @@ describe("validarOfertas", () => {
 
   it("recusa Oferta duplicada para o mesmo Aparelho", () => {
     expect(() => validarOfertas([oferta(), oferta()])).toThrow(/duplicada/);
+  });
+});
+
+describe("ofertaExibida", () => {
+  it("resolve url, loja e rótulo no contrato do cartão compartilhado", () => {
+    expect(ofertaExibida(oferta({ loja: "Amazon" }))).toEqual({
+      url: "https://loja.example.com/aparelho",
+      loja: "Amazon",
+      rotulo: "Comprar",
+    });
+    expect(ofertaExibida(oferta({ titulo: undefined }))).toEqual({
+      url: "https://loja.example.com/aparelho",
+      loja: "Loja",
+      rotulo: ROTULO_OFERTA_PADRAO,
+    });
   });
 });
 
@@ -196,8 +212,7 @@ describe("a divulgação da Oferta não promete preço", () => {
 });
 
 /**
- * A ilha de consulta (filtros + busca, ADR-0008) roda no cliente sobre
- * `consulta.json` e **não** conhece Oferta (ADR-0010): nada de anúncio no
+ * Ofertas ficam fora da ilha de consulta (ADR-0010): nada de anúncio no
  * resultado da busca.
  */
 describe("Ofertas ficam fora da ilha de consulta", () => {
@@ -218,6 +233,72 @@ describe("Ofertas ficam fora da ilha de consulta", () => {
   it("ofertas.json não é um arquivo público servido pelo site", () => {
     expect(existsSync(new URL("../public/ofertas.json", import.meta.url))).toBe(
       false,
+    );
+  });
+});
+
+/**
+ * O ticket 69 tira a caixa azul de promoção e o pill da apresentação comercial
+ * e a coloca no sistema visual: hairline, tokens de cor, raio de 2 px e alvo de
+ * 44 px. O teste lê o CSS normativo (como `tokens.test.ts`) para a superfície
+ * não voltar a ter cor hard-coded ou alvo pequeno.
+ */
+describe("a apresentação da Oferta segue o sistema visual", () => {
+  const css = readFileSync(
+    fileURLToPath(new URL("../src/styles/global.css", import.meta.url)),
+    "utf8",
+  );
+
+  function regra(seletor: string): string {
+    const escapado = seletor.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const encontrada = css.match(
+      new RegExp(`^${escapado} \\{([\\s\\S]*?)\\n\\}`, "m"),
+    );
+    expect(encontrada, `regra ${seletor} ausente`).not.toBeNull();
+    return encontrada?.[1] ?? "";
+  }
+
+  it("não usa hex de promoção nem raio de pill", () => {
+    for (const seletor of [
+      ".oferta-cartao",
+      ".ofertas .oferta-cartao",
+      ".cta-ofertas .oferta-cartao",
+      ".cta-cartao",
+    ]) {
+      const texto = regra(seletor);
+      expect(texto).not.toMatch(/#[0-9a-f]{3,8}/i);
+      expect(texto).not.toMatch(/999px/);
+    }
+  });
+
+  it("garante alvo de 44 px e separação por hairline", () => {
+    expect(regra(".oferta-cartao")).toContain("min-height: 44px");
+    expect(regra(".ofertas")).toContain("border-top: 1px solid var(--linha)");
+    expect(regra(".cta-ofertas .oferta-cartao")).toContain("min-height: 44px");
+  });
+
+  it("tira o marcador escrito do cartão: a divulgação vive no tooltip do logo", () => {
+    expect(css).not.toContain(".oferta-marcador");
+    expect(css).not.toContain("--texto-micro");
+  });
+
+  it("remove apresentação longa, separador, nota de cartão e empilhamento", () => {
+    expect(css).not.toMatch(/\.ofertas\s+\.intro/);
+    expect(css).not.toContain(".cta-cartao-nota");
+    expect(css).not.toContain(".oferta-marcador::before");
+    expect(css).not.toContain("@media (max-width: 30rem)");
+    expect(css).not.toContain("content: none");
+  });
+
+  it("mostra a marca em cartão de cor oficial e só sublinha o rótulo no hover", () => {
+    expect(regra(".loja-logo")).toContain("height: 16px");
+    expect(regra(".loja-marca--mercado-livre")).toContain(
+      "background: #f7d032",
+    );
+    expect(regra(".loja-marca--amazon")).toContain("background: #221f1f");
+    expect(regra(".oferta-cta-conteudo")).toContain("gap: var(--esp-2)");
+    expect(regra(".oferta-cartao:hover .oferta-cta-rotulo")).toContain(
+      "text-decoration: underline",
     );
   });
 });

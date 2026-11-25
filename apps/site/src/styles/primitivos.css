@@ -1,0 +1,640 @@
+/* ==========================================================================
+   Primitivos — o vocabulário compartilhado das páginas (ticket 68).
+
+   Botão, campo, seleção, chip, etiqueta de Classe, leitura de dado, régua de
+   seção, cabeçalho de seção, trilha, aviso, estado vazio e ícone. DESIGN.md
+   (Components) é o contrato: 44 px de alvo, raio de 2 px, nenhum pill, nenhuma
+   sombra em repouso, foco ciano herdado do global e um acento de sinal.
+   ========================================================================== */
+
+/* --- Ícone ------------------------------------------------------------- */
+
+.icone {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* --- Cabeçalho de seção ------------------------------------------------
+   Ícone de linha em tile hairline ao lado do `h2`, lead opcional e ações à
+   direita. O tile não é um selo colorido: fundo giz, borda hairline e ícone
+   azul-frio-texto, os três do sistema.                                      */
+
+.cabecalho-secao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--esp-4) var(--esp-8);
+}
+
+.cabecalho-secao-corpo {
+  min-width: 0;
+  max-width: 62ch;
+}
+
+.cabecalho-secao-icone {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--azul-frio-texto);
+}
+
+.cabecalho-secao-titulo {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+  margin: 0;
+}
+
+.cabecalho-secao-lead {
+  margin: var(--esp-3) 0 0;
+}
+
+@media (max-width: 40rem) {
+  .cabecalho-secao {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Texto só para leitor de tela: o dado continua na árvore de acessibilidade. */
+.apenas-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* --- Botão -------------------------------------------------------------
+   O mesmo par de tamanhos para as três variantes; a diferença é a superfície.
+   O primário (e o `.botao` sem variante) usa a família azul-frio do ticket
+   92 em repouso, hover e ativo — a tinta fica só para superfícies escuras.
+   Nenhuma sombra, nenhum raio acima de 2 px, nenhum gradiente.              */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--esp-3);
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-xs);
+  background: var(--azul-frio);
+  color: var(--giz);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--mov-hover) var(--curva),
+    border-color var(--mov-hover) var(--curva),
+    color var(--mov-hover) var(--curva);
+}
+
+.botao-primario {
+  background: var(--azul-frio);
+  color: var(--giz);
+}
+
+.botao-primario:hover {
+  background: var(--azul-frio-hover);
+  color: var(--giz);
+}
+
+.botao-secundario {
+  border-color: var(--linha);
+  background: var(--giz);
+  color: var(--tinta);
+}
+
+.botao-secundario:hover {
+  border-color: var(--grafite);
+  background: var(--papel);
+}
+
+.botao-texto {
+  padding-inline: var(--esp-2);
+  border-color: transparent;
+  background: transparent;
+  color: var(--tinta);
+}
+
+.botao-texto:hover {
+  background: transparent;
+  color: var(--tinta);
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.botao:active {
+  background: var(--azul-frio-ativo);
+}
+
+.botao-secundario:active {
+  background: var(--mineral);
+}
+
+.botao-primario:active {
+  background: var(--azul-frio-ativo);
+  color: var(--giz);
+}
+
+.botao-texto:active {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .botao-primario:active {
+    transform: translateY(1px);
+  }
+}
+
+.botao:disabled,
+.botao-desabilitado {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.botao:disabled:hover,
+.botao-desabilitado:hover {
+  background: var(--azul-frio);
+}
+
+.botao-secundario:disabled:hover {
+  background: var(--giz);
+}
+
+.botao-texto:disabled:hover {
+  background: transparent;
+}
+
+/* --- Campo ------------------------------------------------------------- */
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--esp-2);
+  min-width: 0;
+}
+
+.campo-rotulo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--esp-1);
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.campo-obrigatorio {
+  color: var(--foco-texto);
+}
+
+.campo-controle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.campo-entrada {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  line-height: var(--entrelinha-rotulo);
+  appearance: none;
+}
+
+.campo-entrada:hover {
+  border-color: var(--grafite);
+}
+
+.campo-entrada:focus-visible {
+  border-color: var(--tinta);
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.campo-entrada:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.campo-entrada::placeholder {
+  color: var(--mudo);
+}
+
+/* O valor e a unidade não se sobrepõem à seta nem ao sufixo. */
+.campo-sufixo,
+.campo-seta {
+  position: absolute;
+  inset-inline-end: 12px;
+  pointer-events: none;
+}
+
+.campo-sufixo {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-unidade);
+  letter-spacing: var(--tracking-unidade);
+}
+
+.campo-seta {
+  color: var(--grafite);
+}
+
+.campo-entrada:has(+ .campo-sufixo),
+.campo-select {
+  padding-inline-end: 40px;
+}
+
+.campo-ajuda {
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  line-height: 1.45;
+  letter-spacing: var(--tracking-unidade);
+}
+
+/* Erro: a cor nunca é o único sinal — a mensagem fica visível e ligada ao campo. */
+.campo[data-estado="erro"] .campo-entrada {
+  border-color: var(--classe-f);
+}
+
+.campo-erro {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  margin: 0;
+  color: var(--classe-f);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* --- Chip -------------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: var(--raio-xs);
+  background: var(--papel);
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--mov-hover) var(--curva),
+    border-color var(--mov-hover) var(--curva),
+    color var(--mov-hover) var(--curva);
+}
+
+.chip-filtro:hover,
+.chip-resumo:hover {
+  border-color: var(--grafite);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.chip[aria-pressed="true"],
+.chip-resumo[data-ativo] {
+  background: var(--tinta);
+  color: var(--giz);
+}
+
+.chip[aria-pressed="true"]:hover {
+  border-color: var(--azul-frio-hover);
+  background: var(--azul-frio-hover);
+  color: var(--giz);
+}
+
+.chip-remover {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  /* O alvo do “×” é de 44 px mesmo com o chip em 32 px: a sobra é área de
+     clique, não desenho. A margem negativa mantém o chip na altura do
+     sistema e o “×” centrado. */
+  margin-block: -13px;
+  margin-inline-end: -10px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--raio-xs);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.chip-remover:hover {
+  color: var(--foco);
+}
+
+.chip-resumo[data-ativo] .chip-remover:hover {
+  color: var(--foco);
+}
+
+@media (max-width: 639px) {
+  .chip,
+  .chip-filtro {
+    min-height: 44px;
+  }
+}
+
+/* --- Etiqueta de Classe ------------------------------------------------ */
+
+.etiqueta-classe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 2px 6px;
+  border: 1px solid var(--cor-classe, var(--linha));
+  border-radius: var(--raio-xs);
+  background: color-mix(
+    in srgb,
+    var(--cor-classe, var(--linha)) 10%,
+    var(--giz)
+  );
+  color: var(--cor-classe, var(--tinta));
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-semi);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-rotulo);
+  white-space: nowrap;
+}
+
+.etiqueta-classe[data-classe="A"] {
+  --cor-classe: var(--classe-a);
+}
+
+.etiqueta-classe[data-classe="B"] {
+  --cor-classe: var(--classe-b);
+}
+
+.etiqueta-classe[data-classe="C"] {
+  --cor-classe: var(--classe-c);
+}
+
+.etiqueta-classe[data-classe="D"] {
+  --cor-classe: var(--classe-d);
+}
+
+.etiqueta-classe[data-classe="E"] {
+  --cor-classe: var(--classe-e);
+}
+
+.etiqueta-classe[data-classe="F"] {
+  --cor-classe: var(--classe-f);
+}
+
+/* --- Leitura de dado ---------------------------------------------------
+   Sem caixa: a hairline acima e o tamanho do número fazem a hierarquia.     */
+
+.leitura {
+  display: grid;
+  gap: var(--esp-2);
+  margin: 0;
+  padding-block-start: var(--esp-4);
+  border-top: 1px solid var(--linha);
+}
+
+.leitura-rotulo {
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.leitura-valor {
+  display: flex;
+  align-items: baseline;
+  gap: var(--esp-2);
+  margin: 0;
+  color: var(--tinta);
+}
+
+.leitura-numero {
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-leitura);
+  font-weight: var(--peso-medio);
+  letter-spacing: -0.02em;
+  line-height: var(--entrelinha-leitura);
+  font-variant-numeric: tabular-nums;
+}
+
+.leitura-unidade {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-unidade);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-unidade);
+}
+
+.leitura-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--esp-2);
+  color: inherit;
+  text-decoration: none;
+}
+
+.leitura-link:hover .leitura-numero {
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.08em;
+}
+
+.leitura-legenda {
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* --- Régua de seção ---------------------------------------------------- */
+
+.regua-secao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-2) var(--esp-5);
+  padding-block-start: var(--esp-4);
+  border-top: 1px solid var(--linha);
+}
+
+.regua-rotulo {
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.regua-contagem {
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Trilha ------------------------------------------------------------ */
+
+.trilha ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-2);
+  margin: 0;
+  padding: 0;
+  font-size: var(--texto-pequeno);
+  list-style: none;
+}
+
+.trilha li {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  margin: 0;
+}
+
+/* O separador é decoração: não entra na árvore de acessibilidade. */
+.trilha li + li::before {
+  content: "/";
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+}
+
+.trilha a {
+  color: var(--grafite);
+  text-decoration-color: var(--linha);
+}
+
+.trilha a:hover {
+  color: var(--tinta);
+  text-decoration-color: var(--foco);
+}
+
+.trilha [aria-current="page"] {
+  color: var(--tinta);
+}
+
+/* --- Aviso ------------------------------------------------------------- */
+
+.aviso {
+  display: grid;
+  gap: var(--esp-2);
+  padding: var(--esp-3) 0 var(--esp-3) var(--esp-5);
+  border-inline-start: 2px solid var(--foco);
+}
+
+.aviso-frio {
+  border-inline-start-color: var(--frio);
+}
+
+.aviso-rotulo {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.aviso-texto {
+  max-width: 62ch;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+.aviso-texto > :last-child {
+  margin-block-end: 0;
+}
+
+/* --- Estado vazio ------------------------------------------------------ */
+
+.estado-vazio {
+  display: grid;
+  justify-items: start;
+  gap: var(--esp-3);
+  padding-block: var(--esp-7);
+  border-block: 1px solid var(--linha);
+}
+
+.estado-vazio-titulo {
+  margin: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-semi);
+  line-height: var(--entrelinha-apertada);
+}
+
+.estado-vazio-frase {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-leitura);
+  font-size: var(--texto-corpo);
+  line-height: var(--entrelinha-corpo);
+}
+
+.estado-vazio-acao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+}

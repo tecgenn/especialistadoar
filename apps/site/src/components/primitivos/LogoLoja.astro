@@ -1,0 +1,39 @@
+---
+import { dadosDoLogoDaLoja, nomeDaLojaParaLeitura } from "../../lib/lojas.ts";
+import { MARCADOR_OFERTA } from "../../lib/ofertas.ts";
+import { URL_DOS_LOGOS_OFICIAIS } from "../urls-dos-logos.ts";
+
+/**
+ * A marca da loja no CTA de Oferta (tickets 106 e 108). Os dois SVGs oficiais
+ * entram como arquivo: o Mercado Livre no amarelo da marca e a Amazon num
+ * cartão escuro com o wordmark branco. O `title` — “link de afiliado” — é o
+ * único aviso no cartão; a divulgação completa vive no rodapé e nos Termos.
+ * "Ver oferta" é escrito por `OfertaCartao`, fora deste cartão da marca.
+ */
+type Props = {
+  loja: string;
+};
+
+const { loja } = Astro.props;
+const dados = dadosDoLogoDaLoja(loja);
+const nome = nomeDaLojaParaLeitura(loja);
+---
+
+{
+  dados ? (
+    <span class:list={["loja-marca", `loja-marca--${dados.chave}`]}>
+      <img
+        class="loja-logo"
+        src={URL_DOS_LOGOS_OFICIAIS[dados.chave]}
+        width={dados.largura}
+        height={dados.altura}
+        alt={dados.nome}
+        title={MARCADOR_OFERTA}
+        loading="lazy"
+        decoding="async"
+      />
+    </span>
+  ) : (
+    <span class="loja-logo-fallback">{nome}</span>
+  )
+}

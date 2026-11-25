@@ -1,0 +1,167 @@
+/* ==========================================================================
+   Tokens — a camada normativa do sistema "Instrumento de climatização".
+
+   DESIGN.md, na raiz do repositório, é o contrato documentado; este arquivo é
+   a grafia única dos mesmos valores. Nenhum componente inventa um valor
+   paralelo: cor, tipografia, espaço, raio, elevação, movimento, largura e
+   z-index saem daqui.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* --- Cor: primitivas ------------------------------------------------ */
+  --tinta: #0a1f22;
+
+  /* Petróleo (legado): mantidos como dado histórico; não são mais a cor de ação primária. */
+  --petroleo: #123f45;
+  --petroleo-profundo: #0b2c30;
+
+  /* Giz e papel: branco quase puro e neutro, sem viés mineral esverdeado. */
+  --giz: #fdfdfb;
+  --papel: #f8f8f7;
+  --mineral: #ececeb;
+  --linha: #d5d8d5;
+  --linha-escura: #24454a;
+
+  --grafite: #4b5d5f;
+  --mudo: #5f6f70;
+  /* Texto secundário sobre superfície escura. #9fb0ae dava 4,1:1 sobre
+     --azul-frio-escuro (rodapé); este tom, derivado da família azul-frio, dá 4,9:1
+     e não lê como cinza lavado sobre o fundo colorido. */
+  --mudo-escuro: #a9c0c6;
+
+  /* Acento de interação e de dado analisado (ticket 102): ciano frio da
+     família do azul-frio. `--foco` é gráfico (3,8:1 sobre giz/papel, mínimo
+     para contorno e sublinhado); como texto, usar `--foco-texto` (5,8:1). */
+  --foco: #0f8fa8;
+  --foco-texto: #0b6f83;
+  --foco-lavado: color-mix(in srgb, var(--foco) 18%, var(--giz));
+
+  /* Azul-frio / gelo: família primária do sistema "instrumento de climatização".
+     Base: #0E6B8A — azul frio puro, sem viés esverdeado, AA sobre giz/papel.
+     Estados derivados para hover, active, texto e fundo lavado (chips/badges). */
+  --azul-frio: #0e6b8a;
+  --azul-frio-hover: #1579a0;
+  --azul-frio-ativo: #0b5a73;
+  --azul-frio-texto: #0e6b8a;
+  --azul-frio-lavado: color-mix(in srgb, var(--azul-frio) 8%, var(--giz));
+  --azul-frio-escuro: #084d66;
+
+  /* Frio: estado informativo (ex.: aviso-frio), não é cor de ação. */
+  --frio: #2f7f8c;
+  --frio-texto: #1d5b66;
+  --frio-lavado: #e3eff0;
+
+  /* Classe energética: cada cor é AA sobre giz e papel. */
+  --classe-a: #1b6a4e;
+  --classe-b: #467536;
+  --classe-c: #6e691b;
+  --classe-d: #96601c;
+  --classe-e: #9f4529;
+  --classe-f: #8e2f35;
+
+  --classe-a-lavado: color-mix(in srgb, var(--classe-a) 10%, var(--giz));
+  --classe-b-lavado: color-mix(in srgb, var(--classe-b) 10%, var(--giz));
+  --classe-c-lavado: color-mix(in srgb, var(--classe-c) 10%, var(--giz));
+  --classe-d-lavado: color-mix(in srgb, var(--classe-d) 10%, var(--giz));
+  --classe-e-lavado: color-mix(in srgb, var(--classe-e) 10%, var(--giz));
+  --classe-f-lavado: color-mix(in srgb, var(--classe-f) 10%, var(--giz));
+
+  /* --- Tipografia ----------------------------------------------------- */
+  --fonte-interface:
+    "Schibsted Grotesk Variable", "Grotesca Fallback", system-ui, sans-serif;
+  --fonte-leitura: "Source Serif 4 Variable", "Serifa Fallback", Georgia, serif;
+  --fonte-mono:
+    "Azeret Mono Variable", "Mono Fallback", ui-monospace, SFMono-Regular,
+    Menlo, monospace;
+
+  --texto-display: clamp(2.75rem, 5.2vw, 4.5rem);
+  --texto-manchete: clamp(2rem, 3.2vw, 2.75rem);
+  --texto-secao: 1.5rem;
+  --texto-bloco: 1.25rem;
+  --texto-corpo: 1.0625rem;
+  --texto-ui: 1rem;
+  --texto-pequeno: 0.875rem;
+  --texto-rotulo: 0.75rem;
+  --texto-leitura: clamp(1.75rem, 3vw, 2.5rem);
+  --texto-unidade: 0.75rem;
+
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-semi: 600;
+  --peso-forte: 700;
+
+  --entrelinha-display: 0.98;
+  --entrelinha-manchete: 1.05;
+  --entrelinha-apertada: 1.2;
+  --entrelinha-corpo: 1.65;
+  --entrelinha-ui: 1.55;
+  --entrelinha-pequena: 1.5;
+  --entrelinha-rotulo: 1.2;
+  --entrelinha-leitura: 1;
+
+  --tracking-display: -0.03em;
+  --tracking-manchete: -0.02em;
+  --tracking-apertado: -0.01em;
+  --tracking-rotulo: 0.08em;
+  --tracking-unidade: 0.02em;
+
+  /* --- Espaço: múltiplos de 8 px, com 2 e 4 para ajuste fino ---------- */
+  --esp-1: 2px;
+  --esp-2: 4px;
+  --esp-3: 8px;
+  --esp-4: 12px;
+  --esp-5: 16px;
+  --esp-6: 24px;
+  --esp-7: 32px;
+  --esp-8: 48px;
+  --esp-9: 64px;
+  --esp-10: 96px;
+  --esp-11: 128px;
+
+  /* --- Raio: 2 px em controles, 4 px em painéis, 8 px em sobreposição -- */
+  --raio-xs: 2px;
+  --raio-sm: 4px;
+  --raio-md: 8px;
+
+  /* --- Elevação: quase plana; a única sombra é a de sobreposição ------- */
+  --sombra-sobreposicao: 0 1px 0 var(--linha), 0 16px 40px rgb(10 31 34 / 0.1);
+
+  /* --- Movimento ------------------------------------------------------ */
+  --mov-hover: 120ms;
+  --mov-painel: 180ms;
+  --mov-destaque: 240ms;
+  --curva: cubic-bezier(0.2, 0, 0, 1);
+
+  /* --- Larguras e ritmo ----------------------------------------------- */
+  --largura-shell: 90rem;
+  --largura-leitura: 68ch;
+  --largura-catalogo: var(--largura-shell);
+  --calha: clamp(1rem, 4vw, 3rem);
+  --altura-cabecalho: 64px;
+
+  /* --- z-index -------------------------------------------------------- */
+  --z-conteudo: 1;
+  --z-barra: 20;
+  --z-dock: 30;
+  --z-painel: 40;
+  --z-menu: 50;
+
+  /* --- Compatibilidade --------------------------------------------------
+     Nomes anteriores ao redesign, preservados para as 663 asserções e as
+     quatro ilhas que dependem das classes e variáveis atuais. Apontam para
+     os tokens acima; nenhum valor novo nasce aqui.                         */
+  --texto: var(--tinta);
+  --texto-suave: var(--grafite);
+  --borda: var(--linha);
+  --fundo: var(--papel);
+  --superficie: var(--giz);
+  --primaria: var(--azul-frio);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --altura-cabecalho: 72px;
+  }
+}

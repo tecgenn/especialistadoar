@@ -11,6 +11,7 @@ import type {
 import { versaoAtualDo } from "@especialista-do-ar/pipeline";
 import CtaCartao from "../../components/CtaCartao.astro";
 import OfertaCta from "../../components/OfertaCta.astro";
+import Botao from "../../components/primitivos/Botao.astro";
 import {
   carregarAnalises,
   type EntradaAnalise,
@@ -105,6 +106,7 @@ const jsonLd: Record<string, unknown> = {
   descricao={analise.descricao}
   canonical={url}
   jsonLd={jsonLd}
+  largura="leitura"
 >
   <article class="analise">
     <p><a href="/analises/">← Todas as análises</a></p>
@@ -134,9 +136,9 @@ const jsonLd: Record<string, unknown> = {
           titulo="Ver todos os aparelhos"
           descricao="O modelo desta análise não consta na Versão atual, mas a tabela traz os aparelhos comparáveis."
         >
-          <a class="cta-acao" href="/aparelhos/">
+          <Botao href="/aparelhos/" variante="secundario">
             Abrir a tabela
-          </a>
+          </Botao>
         </CtaCartao>
       ) : ofertas.length > 0 ? (
         <OfertaCta
@@ -149,9 +151,9 @@ const jsonLd: Record<string, unknown> = {
           titulo="Ver ficha técnica"
           descricao="Capacidade, consumo, IDRS, Classe e tensão nos dados oficiais do INMETRO."
         >
-          <a class="cta-acao" href={`/aparelhos/${aparelho.id}/`}>
+          <Botao href={`/aparelhos/${aparelho.id}/`} variante="secundario">
             Abrir ficha técnica
-          </a>
+          </Botao>
         </CtaCartao>
       )
     }
@@ -167,9 +169,9 @@ const jsonLd: Record<string, unknown> = {
         titulo="Calcular os BTUs do meu ambiente"
         descricao="Responda cinco perguntas e veja a capacidade ideal, com a conta aberta."
       >
-        <a class="cta-acao" href="/assistente/">
+        <Botao href="/assistente/" variante="secundario">
           Abrir o Assistente
-        </a>
+        </Botao>
       </CtaCartao>
     }
 
@@ -219,25 +221,25 @@ const jsonLd: Record<string, unknown> = {
           titulo="Continue a pesquisa"
           descricao="Compare outros aparelhos pelos dados oficiais do INMETRO."
         >
-          <a class="cta-acao" href="/aparelhos/">
+          <Botao href="/aparelhos/" variante="secundario">
             Ver todos os aparelhos
-          </a>
-          <a class="cta-acao" href="/analises/">
+          </Botao>
+          <Botao href="/analises/" variante="secundario">
             Ver todas as análises
-          </a>
+          </Botao>
         </CtaCartao>
       ) : (
         <CtaCartao
           titulo="Continue a pesquisa"
           descricao="Confira os números oficiais e compare com aparelhos da mesma capacidade."
         >
-          <a class="cta-acao" href={`/aparelhos/${aparelho.id}/`}>
+          <Botao href={`/aparelhos/${aparelho.id}/`} variante="secundario">
             Ver ficha técnica
-          </a>
+          </Botao>
           {linksTabela.map((link) => (
-            <a class="cta-acao" href={link.href}>
+            <Botao href={link.href} variante="secundario">
               {link.rotulo}
-            </a>
+            </Botao>
           ))}
         </CtaCartao>
       )

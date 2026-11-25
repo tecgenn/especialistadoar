@@ -1,49 +1,102 @@
 ---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import type { DestaqueAnalise } from "../lib/analises.ts";
-import OfertaFaixa from "./OfertaFaixa.astro";
+import { ofertaExibida } from "../lib/ofertas.ts";
+import CabecalhoDeSecao from "./primitivos/CabecalhoDeSecao.astro";
+import Icone from "./primitivos/Icone.astro";
+import OfertaCartao from "./primitivos/OfertaCartao.astro";
 
 /**
- * Bloco estático de Análises em destaque na home. As Análises e as Ofertas de
- * cada uma chegam já resolvidas do build — o cliente não baixa `analises.json`
- * nem `ofertas.json` para renderizá-lo. Sem Análise, não renderiza nada: a home
- * fica exatamente como antes.
+ * "Análises em destaque" da home (tickets 71 e 108). As Análises e as Ofertas
+ * de cada uma chegam já resolvidas do build — o cliente não baixa
+ * `analises.json` nem `ofertas.json` para renderizá-lo.
  *
- * O CTA usa o mesmo `OfertaFaixa` da ficha e da Análise; sem Oferta (ou com o
- * Aparelho Ausente), nada dele aparece.
+ * Desde o #108 a seção é uma grade estática: no máximo as três Análises mais
+ * recentes, cada uma num cartão com a imagem de abertura real quando existe.
+ * Sem imagem, o cartão abre pela data e pelo título — nunca por uma fotografia
+ * inventada nem por um ícone de imagem quebrada. Sem JavaScript a grade é o que
+ * já está no HTML; a seção não carrega script nem some quando há uma Análise só.
+ *
+ * A Análise pode comparar dois Aparelhos: o cartão mostra as Ofertas de todos
+ * eles (o `ofertas` já vem somado do build), uma linha por loja.
  */
 interface Props {
   destaques: DestaqueAnalise[];
 }
 
 const { destaques } = Astro.props;
+
+// As imagens de abertura vivem em `src/assets`; o frontmatter aponta o caminho
+// relativo a essa pasta e o glob resolve o arquivo (e as larguras) no build.
+const imagens = import.meta.glob<ImageMetadata>(
+  "../assets/**/*.{avif,jpeg,jpg,png,webp}",
+  { eager: true, import: "default" },
+);
+
+function imagemDe(caminho: string | undefined): ImageMetadata | undefined {
+  if (caminho === undefined) {
+    return undefined;
+  }
+  return imagens[`../assets/${caminho}`];
+}
 ---
 
 {
   destaques.length > 0 ? (
-    <section class="analises-destaque">
-      <h2>Análises em destaque</h2>
-      <p class="intro">
-        Leituras editoriais sobre aparelhos de ar-condicionado, com link para os
-        dados oficiais do INMETRO na ficha de cada Aparelho.
-      </p>
-      <ul class="analises-destaque-lista">
-        {destaques.map(({ analise, ofertas }) => (
-          <li>
-            <h3>
-              <a href={analise.url}>{analise.titulo}</a>
-            </h3>
-            <p class="intro">{analise.descricao}</p>
-            <OfertaFaixa
-              ofertas={ofertas}
-              titulo="Onde comprar"
-              nivelTitulo={4}
-            />
-          </li>
-        ))}
+    <section class="analises-destaque" aria-labelledby="analises-destaque-titulo">
+      <CabecalhoDeSecao
+        icone="analise"
+        id="analises-destaque-titulo"
+        titulo="Análises em destaque"
+        lead="Leituras editoriais sobre modelos da base INMETRO."
+        class="analises-destaque-cabecalho"
+      >
+        <a class="analises-destaque-todas" href="/analises/" slot="acoes">
+          Todas as análises
+          <Icone nome="seta-direita" tamanho={16} />
+        </a>
+      </CabecalhoDeSecao>
+      <ul class="analises-destaque-grade">
+        {destaques.map(({ analise, ofertas }, indice) => {
+          const imagem = imagemDe(analise.imagem);
+          return (
+            <li>
+              <article class="analises-cartao">
+                {imagem ? (
+                  <div class="analises-cartao-imagem">
+                    <Image
+                      src={imagem}
+                      alt={analise.imagemAlt ?? ""}
+                      widths={[360, 540, 720]}
+                      sizes="(min-width: 64rem) 26rem, (min-width: 40rem) 45vw, 100vw"
+                      loading={indice === 0 ? "eager" : "lazy"}
+                    />
+                  </div>
+                ) : null}
+                <div class="analises-cartao-texto">
+                  <p class="analises-destaque-data">
+                    <time datetime={analise.data}>{analise.data}</time>
+                  </p>
+                  <h3>
+                    <a href={analise.url}>{analise.titulo}</a>
+                  </h3>
+                  <p class="analises-cartao-resumo">{analise.descricao}</p>
+                  {ofertas.length > 0 ? (
+                    <ul class="analises-cartao-ofertas">
+                      {ofertas.map((oferta) => (
+                        <li>
+                          <OfertaCartao oferta={ofertaExibida(oferta)} />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              </article>
+            </li>
+          );
+        })}
       </ul>
-      <p>
-        <a href="/analises/">Todas as análises</a>
-      </p>
     </section>
   ) : null
 }

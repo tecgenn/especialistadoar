@@ -699,12 +699,72 @@ describe("CTA de Oferta no cartão", () => {
 
     const comOferta = cartoes()[0] as HTMLElement;
     const cta = within(comOferta).getByRole("link", {
-      name: "Ver oferta — Loja do teste · link de afiliado",
+      name: "Ver oferta — Loja do teste — link de afiliado",
     });
     expect(cta.getAttribute("href")).toBe("https://loja.example.com/windfree");
     expect(cta.getAttribute("rel")).toBe("sponsored nofollow noopener");
     expect(cta.getAttribute("target")).toBe("_blank");
-    expect(cta.className).toBe("oferta-cartao");
+    expect(cta.className).toBe("oferta-cartao oferta-cta oferta-cta--com-logo");
+    // Loja desconhecida: o nome continua legível como texto, sem SVG.
+    expect(cta.querySelector(".loja-logo-fallback")?.textContent).toBe(
+      "Loja do teste",
+    );
+    expect(cta.querySelector("svg.loja-logo")).toBeNull();
+  });
+
+  it("substitui o nome da loja pelos logotipos oficiais em cartão de marca", async () => {
+    await montar("/comparar/?ids=ap-aaaaaaaaaaaa,ap-bbbbbbbbbbbb", [
+      {
+        aparelhoId: "ap-aaaaaaaaaaaa",
+        loja: "Mercado Livre",
+        url: "https://www.mercadolivre.com.br/windfree",
+      },
+      {
+        aparelhoId: "ap-bbbbbbbbbbbb",
+        loja: "amazon",
+        url: "https://www.amazon.com.br/dual-inverter",
+      },
+    ]);
+
+    const primeiro = cartoes()[0] as HTMLElement;
+    const segundo = cartoes()[1] as HTMLElement;
+    const ctaUm = within(primeiro).getByRole("link", {
+      name: "Ver oferta — Mercado Livre — link de afiliado",
+    });
+    const ctaDois = within(segundo).getByRole("link", {
+      name: "Ver oferta — Amazon — link de afiliado",
+    });
+
+    // As duas lojas usam o SVG oficial em cartão de marca: amarelo do Mercado
+    // Livre e fundo escuro com wordmark branco da Amazon. O aviso de afiliado
+    // vive no `title` do logo, não em texto.
+    const logoMercadoLivre = ctaUm.querySelector("img.loja-logo");
+    expect(ctaUm.querySelector(".loja-marca--mercado-livre")).not.toBeNull();
+    expect(logoMercadoLivre?.getAttribute("alt")).toBe("Mercado Livre");
+    expect(logoMercadoLivre?.getAttribute("src")).toMatch(
+      /mercado-livre.*\.svg/,
+    );
+    expect(logoMercadoLivre?.getAttribute("title")).toBe("link de afiliado");
+    const logoAmazon = ctaDois.querySelector("img.loja-logo");
+    expect(ctaDois.querySelector(".loja-marca--amazon")).not.toBeNull();
+    expect(logoAmazon?.getAttribute("alt")).toBe("Amazon");
+    // O SVG da Amazon é inlinado como data URI; se o Vite parar de inlinar,
+    // o caminho termina em `amazon....svg`. As duas formas são oficiais.
+    const srcAmazon = logoAmazon?.getAttribute("src") ?? "";
+    expect(
+      /amazon.*\.svg/.test(srcAmazon) ||
+        decodeURIComponent(srcAmazon).includes("<title>Amazon</title>"),
+    ).toBe(true);
+    expect(logoAmazon?.getAttribute("title")).toBe("link de afiliado");
+    expect(primeiro.textContent).not.toContain("Mercado Livre");
+    expect(segundo.textContent).not.toContain("amazon");
+    // O aviso não é texto do CTA: só o `title` do logo o carrega.
+    expect(
+      ctaUm.querySelector(".oferta-cta-rotulo")?.textContent,
+    ).not.toContain("link de afiliado");
+    expect(
+      ctaDois.querySelector(".oferta-cta-rotulo")?.textContent,
+    ).not.toContain("link de afiliado");
   });
 
   it("fica na área de ações do cartão, junto de Trocar e Remover", async () => {
@@ -713,19 +773,25 @@ describe("CTA de Oferta no cartão", () => {
     const acoes = cartoes()[0]?.querySelector(
       ".comparar-cartao-acoes",
     ) as HTMLElement;
+    const cta = within(acoes).getByRole("link", { name: /Ver oferta/ });
+    const trocar = within(acoes).getByRole("button", {
+      name: "Trocar SAMSUNG WindFree AI Pro",
+    });
+    const remover = within(acoes).getByRole("button", {
+      name: "Remover SAMSUNG WindFree AI Pro",
+    });
+    expect(cta).toBeDefined();
+    expect(trocar).toBeDefined();
+    expect(remover).toBeDefined();
+    // A ordem do DOM é a ordem de leitura: a Oferta vem antes de "Trocar"
+    // (ticket 69), nunca depois das ações destrutivas.
     expect(
-      within(acoes).getByRole("link", { name: /Ver oferta/ }),
-    ).toBeDefined();
+      cta.compareDocumentPosition(trocar) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(
-      within(acoes).getByRole("button", {
-        name: "Trocar SAMSUNG WindFree AI Pro",
-      }),
-    ).toBeDefined();
-    expect(
-      within(acoes).getByRole("button", {
-        name: "Remover SAMSUNG WindFree AI Pro",
-      }),
-    ).toBeDefined();
+      trocar.compareDocumentPosition(remover) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it("não renderiza CTA, espaço reservado nem botão desabilitado sem Oferta", async () => {

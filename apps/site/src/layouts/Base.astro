@@ -6,6 +6,12 @@ import { carregarAnalises } from "../conteudo/analises.ts";
 import { secaoVisivel } from "../lib/analises.ts";
 import { PAGINAS_INSTITUCIONAIS } from "../lib/institucionais.ts";
 import "../styles/global.css";
+import grotescaLatim from "@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url";
+
+/** Larguras do shell (ticket 67): o catálogo, a ficha e a home usam a largura
+ *  de shell; artigos e institucionais usam a coluna de leitura; a página
+ *  ampla dispensa o teto e alinha cabeçalho, main e rodapé na largura útil. */
+type Largura = "shell" | "leitura" | "ampla";
 
 interface Props {
   titulo: string;
@@ -15,16 +21,34 @@ interface Props {
   /** Dados estruturados (JSON-LD) da página, quando houver. Uma lista gera um
    *  `<script>` por bloco — a home publica `WebSite` + `FAQPage` (ticket 46). */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
-  /** Quando verdadeiro (página de Aparelhos), header/main/footer ocupam a
-   *  largura útil, sem o teto de 64 rem das páginas de leitura. */
-  ampla?: boolean;
+  /** Largura da moldura: shell (padrão), leitura ou ampla. */
+  largura?: Largura;
 }
 
-const { titulo, descricao, canonical, jsonLd, ampla = false } = Astro.props;
+const { titulo, descricao, canonical, jsonLd, largura = "shell" } = Astro.props;
 const blocosJsonLd =
   jsonLd === undefined ? [] : Array.isArray(jsonLd) ? jsonLd : [jsonLd];
 const versao = versaoAtualDo(manifestJson as Manifest);
 const { analises } = await carregarAnalises();
+
+const NOME_DO_SITE = "Especialista do Ar";
+const TEMA_COR = "#F2F5F1";
+
+const caminho = Astro.url.pathname;
+
+/** O item ativo é o da rota atual (ou de uma rota filha, como uma ficha). */
+function estaAtivo(href: string): boolean {
+  return caminho === href || caminho.startsWith(href);
+}
+
+const navegacao = [
+  { href: "/aparelhos/", rotulo: "Aparelhos" },
+  { href: "/comparar/", rotulo: "Comparar" },
+  { href: "/assistente/", rotulo: "Assistente" },
+  ...(secaoVisivel(analises)
+    ? [{ href: "/analises/", rotulo: "Análises" }]
+    : []),
+];
 ---
 
 <!doctype html>
@@ -35,52 +59,110 @@ const { analises } = await carregarAnalises();
     <title>{titulo}</title>
     {descricao ? <meta name="description" content={descricao} /> : null}
     <link rel="canonical" href={canonical ?? Astro.url.href} />
+    <meta name="theme-color" content={TEMA_COR} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titulo} />
+    {descricao ? <meta property="og:description" content={descricao} /> : null}
+    <meta property="og:site_name" content={NOME_DO_SITE} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary" />
+    <link
+      rel="preload"
+      href={grotescaLatim}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     {
       blocosJsonLd.map((bloco) => (
         <script type="application/ld+json" set:html={JSON.stringify(bloco)} />
       ))
     }
   </head>
-  <body class={ampla ? "ampla" : undefined}>
-    <header>
-      <a class="marca" href="/">Especialista do Ar</a>
-      <nav>
-        <a href="/aparelhos/">Aparelhos</a>
-        <a href="/comparar/">Comparar</a>
-        <a href="/assistente/">Assistente</a>
-        {secaoVisivel(analises) ? <a href="/analises/">Análises</a> : null}
-      </nav>
+  <body data-largura={largura}>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <header class="site-header">
+      <div class="shell site-header-inner">
+        <a class="marca" href="/">{NOME_DO_SITE}</a>
+        <nav class="site-nav" aria-label="Navegação principal">
+          <ul>
+            {
+              navegacao.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    aria-current={estaAtivo(item.href) ? "page" : undefined}
+                  >
+                    {item.rotulo}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
     </header>
-    <main>
+    <main
+      id="conteudo"
+      class:list={["shell", `principal-${largura}`]}
+      tabindex="-1"
+    >
       <slot />
     </main>
-    <footer>
-      <p>
-        Base construída a partir da exportação oficial de produtos do INMETRO.
-        {
-          versao ? (
-            <>
-              Versão da tabela: {versao.obtidoEm}
-              {versao.contagemLinhas === null
-                ? ""
-                : ` (${versao.contagemLinhas} Linhas da tabela)`}
-              .
-            </>
-          ) : null
-        }
-        {" "}Alguns links deste site são de afiliado —{" "}
-        <a href={PAGINAS_INSTITUCIONAIS.termos.href}>
-          saiba mais nos Termos de Uso
-        </a>
-        .
-      </p>
-      <nav class="rodape-institucional" aria-label="Páginas institucionais">
-        {
-          Object.values(PAGINAS_INSTITUCIONAIS).map((pagina) => (
-            <a href={pagina.href}>{pagina.rotuloRodape}</a>
-          ))
-        }
-      </nav>
+    <footer class="site-footer" data-superficie="escura">
+      <div class="shell site-footer-grid">
+        <div class="rodape-bloco rodape-proveniencia">
+          <p class="rodape-rotulo">Proveniência</p>
+          <p>
+            Base construída a partir da exportação oficial de produtos do
+            INMETRO, sob a Portaria INMETRO 269/2021. Os cálculos de custo usam
+            o ciclo de referência de 2.080 h/ano.
+          </p>
+          {
+            versao ? (
+              <p class="rodape-versao">
+                Versão da tabela: {versao.hash.slice(0, 12)} · obtida em {versao.obtidoEm}
+                {versao.contagemLinhas === null
+                  ? ""
+                  : ` · ${versao.contagemLinhas} Linhas da tabela`}
+                .
+              </p>
+            ) : null
+          }
+        </div>
+        <nav
+          class="rodape-bloco rodape-institucional"
+          aria-label="Páginas institucionais"
+        >
+          <p class="rodape-rotulo">Institucional</p>
+          <ul>
+            {
+              Object.values(PAGINAS_INSTITUCIONAIS).map((pagina) => (
+                <li>
+                  <a href={pagina.href}>{pagina.rotuloRodape}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+        <div class="rodape-bloco rodape-transparencia">
+          <p class="rodape-rotulo">Transparência com o Leitor</p>
+          <p>
+            O Especialista do Ar é um projeto técnico e editorial independente.
+            Não é filiado ao INMETRO nem ao Procel e não vende produtos
+            diretamente.
+          </p>
+          <p>
+            Acompanhamos preços em lojas parceiras e podemos receber comissão de
+            afiliado quando alguém compra por um link deste site, sem custo
+            adicional para o visitante. Alguns links deste site são de afiliado —{" "}
+            <a href={PAGINAS_INSTITUCIONAIS.termos.href}>
+              saiba mais nos Termos de Uso
+            </a>
+            .
+          </p>
+        </div>
+      </div>
     </footer>
   </body>
 </html>

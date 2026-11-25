@@ -1,18 +1,20 @@
 /**
  * A home como hub (ticket 46): tudo o que ela mostra é derivado no build — as
- * contagens da base, as capacidades e marcas populares, o FAQ e o JSON-LD
- * `FAQPage`. Este módulo é a parte pura (sem I/O e sem Astro), para o build e os
- * testes usarem a mesma definição.
+ * contagens da base, os blocos de Aparelhos em destaque por capacidade (ticket
+ * 96), o FAQ e o JSON-LD `FAQPage`. Este módulo é a parte pura (sem I/O e sem
+ * Astro), para o build e os testes usarem a mesma definição.
  *
  * Nenhuma contagem é escrita à mão: `contarBase` lê o dataset de consulta
- * publicado. As capacidades e marcas populares saem da curadoria do site
- * (`filtros.json`), escondendo em silêncio o valor que não existe na base — a
- * mesma regra dos chips da tabela.
+ * publicado. As capacidades em destaque saem da curadoria do site
+ * (`filtros.json`), escondendo em silêncio o valor que não existe na base e a
+ * capacidade sem nenhum Aparelho com Análise publicada ou Oferta.
  */
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
-import type { FiltrosCurados, MarcaCurada } from "./filtros.ts";
+import type { FiltrosCurados } from "./filtros.ts";
+import type { Oferta, OfertaExibida } from "./ofertas.ts";
+import { ofertaExibida } from "./ofertas.ts";
 
-/** As contagens reais da base servida, exibidas na faixa de confiança. */
+/** As contagens reais da base servida, usadas na `description` da home. */
 export interface ContagensDaBase {
   aparelhos: number;
   marcas: number;
@@ -94,11 +96,6 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
       "Escolha a tensão da instalação disponível no local: se a tomada é de 127 V, use um aparelho de 127 V; se é de 220 V, use um de 220 V. Muitos modelos são bivolt (127/220 V) e atendem às duas. Não escolha pela conta de luz — o critério é a rede elétrica do imóvel. Em caso de dúvida, confirme com um eletricista.",
   },
   {
-    pergunta: "Como comparar o consumo de energia?",
-    resposta:
-      "O INMETRO declara o consumo anual em kWh para um ciclo de 2.080 horas por ano. Compare aparelhos de capacidade parecida pelo consumo e pelo IDRS: dois modelos de 12.000 BTU/h podem ter consumos bem diferentes.",
-  },
-  {
     pergunta: "Os dados do site são oficiais?",
     resposta:
       "Os dados técnicos vêm da exportação oficial de produtos do INMETRO e são reproduzidos como Valores oficiais. Já a recomendação do Assistente é uma estimativa calculada por heurística, não um cálculo de carga térmica nem um Valor oficial.",
@@ -106,25 +103,6 @@ export const PERGUNTAS_FREQUENTES: readonly PerguntaFrequente[] = [
   {
     pergunta: "Por que um modelo não aparece na tabela?",
     resposta: EXPLICACAO_DO_RECORTE,
-  },
-];
-
-/** Os três passos do Assistente, na chamada do meio da home. */
-export const PASSOS_ASSISTENTE: readonly { titulo: string; texto: string }[] = [
-  {
-    titulo: "Responda cinco perguntas",
-    texto:
-      "Ambiente, área, incidência de sol, pessoas e equipamentos — uma pergunta por tela.",
-  },
-  {
-    titulo: "Veja a conta aberta",
-    texto:
-      "A capacidade recomendada aparece com os fatores usados, a fórmula resumida e o nível de confiança.",
-  },
-  {
-    titulo: "Compare antes de comprar",
-    texto:
-      "O resultado leva aos aparelhos analisados daquela capacidade e à tabela já filtrada.",
   },
 ];
 
@@ -150,46 +128,115 @@ export function jsonLdPerguntasFrequentes(
   };
 }
 
-/** As capacidades populares que existem na base, na ordem curada. */
-export function capacidadesPopulares(
-  dataset: readonly ItemConsulta[],
-  curadoria: FiltrosCurados,
-): number[] {
-  const presentes = new Set(dataset.flatMap((item) => item.capacidadesBtu));
-  return curadoria.btus.filter((capacidade) => presentes.has(capacidade));
+/**
+ * Um cartão da entrada editorial por capacidade da home (ticket 96). Os valores
+ * técnicos são os oficiais do `consulta.json`; a Análise e a Oferta são site-only
+ * e chegam indexadas pelo build. Nunca há um cartão só com Oferta órfã, porque
+ * o glue das Ofertas valida os ids antes de indexar.
+ */
+export interface CartaoDestaquePorCapacidade {
+  aparelhoId: string;
+  marca: string;
+  modelo: string;
+  /** A capacidade exata do bloco, não a lista de Variantes do Aparelho. */
+  capacidadeBtu: number;
+  tipo: string | null;
+  /** Todos os IDRS declarados: a ficha mostra faixa quando as Variantes divergem. */
+  idrs: readonly number[];
+  /** Todos os consumos anuais declarados, em kWh/ano. */
+  consumoAnualKwh: readonly number[];
+  analise: { titulo: string; url: string } | null;
+  /** Todas as Ofertas do Aparelho, na ordem do arquivo — nunca só a primeira. */
+  ofertas: readonly OfertaExibida[];
 }
 
-/** As marcas populares que existem na base, na ordem curada. */
-export function marcasPopulares(
-  dataset: readonly ItemConsulta[],
-  curadoria: FiltrosCurados,
-): MarcaCurada[] {
-  const presentes = new Set(
-    dataset.map((item) => item.marcaCatalogo).filter((marca) => marca !== ""),
-  );
-  return curadoria.marcas
-    .filter((marca) => presentes.has(marca.valor))
-    .map(({ valor, rotulo }) => ({ valor, rotulo }));
+/** Os índices site-only que o build junta ao dataset de consulta. */
+export interface IndiceDestaquesHome {
+  dataset: readonly ItemConsulta[];
+  /** Análises publicadas, indexadas pelo `aparelhoId`. */
+  analisesPorAparelho: ReadonlyMap<string, { titulo: string; url: string }>;
+  /** Ofertas publicadas e validadas, indexadas pelo `aparelhoId`. */
+  ofertasPorAparelho: ReadonlyMap<string, readonly Oferta[]>;
+}
+
+const MAXIMO_CARTOES_POR_CAPACIDADE = 3;
+
+/**
+ * Seleciona até três Aparelhos de uma capacidade que tenham Análise publicada
+ * e/ou Oferta. Não é um ranking: os analisados abrem e os demais seguem a ordem
+ * do dataset, sem promessa de serem "os melhores". Um Aparelho com as duas
+ * coisas ocupa um único cartão. IDRS e consumo seguem declarados como faixa
+ * quando as Variantes divergem, como na ficha — não vale só a última.
+ */
+export function destaquesPorCapacidade(
+  indice: IndiceDestaquesHome,
+  capacidadeBtu: number,
+): CartaoDestaquePorCapacidade[] {
+  const { dataset, analisesPorAparelho, ofertasPorAparelho } = indice;
+  return dataset
+    .map((item, ordem) => ({ item, ordem }))
+    .filter(({ item }) => {
+      if (!item.capacidadesBtu.includes(capacidadeBtu)) {
+        return false;
+      }
+      return (
+        analisesPorAparelho.has(item.id) ||
+        (ofertasPorAparelho.get(item.id)?.length ?? 0) > 0
+      );
+    })
+    .sort((a, b) => {
+      const analiseA = analisesPorAparelho.has(a.item.id) ? 0 : 1;
+      const analiseB = analisesPorAparelho.has(b.item.id) ? 0 : 1;
+      return analiseA - analiseB || a.ordem - b.ordem;
+    })
+    .slice(0, MAXIMO_CARTOES_POR_CAPACIDADE)
+    .map(({ item }) => {
+      const analise = analisesPorAparelho.get(item.id);
+      return {
+        aparelhoId: item.id,
+        marca: item.marca,
+        modelo: item.modelo,
+        capacidadeBtu,
+        tipo: item.tipo,
+        idrs: item.idrs,
+        consumoAnualKwh: item.consumosKwh,
+        analise:
+          analise === undefined
+            ? null
+            : { titulo: analise.titulo, url: analise.url },
+        ofertas: (ofertasPorAparelho.get(item.id) ?? []).map(ofertaExibida),
+      };
+    });
+}
+
+export interface BlocoDestaquePorCapacidade {
+  capacidadeBtu: number;
+  cartoes: CartaoDestaquePorCapacidade[];
 }
 
 /**
- * O link para a tabela já recortada. A presença de uma chave de filtro desliga
- * os filtros padrão (ADR-0019), então `?btu=` e `?marca=` mostram todos os
- * aparelhos daquele recorte.
+ * As capacidades exatas da curadoria que existem na base e têm pelo menos um
+ * Aparelho com Análise ou Oferta, na ordem da curadoria. Não há teto de blocos:
+ * toda capacidade com conteúdo aparece. Uma capacidade sem destaque não vira
+ * bloco vazio — o recorte segue disponível na tabela, caminho completo da base.
  */
-export function linkDaTabela(filtro: { marca?: string; btu?: number }): string {
-  const busca = new URLSearchParams();
-  if (filtro.marca !== undefined) {
-    busca.set("marca", filtro.marca);
-  }
-  if (filtro.btu !== undefined) {
-    busca.set("btu", String(filtro.btu));
-  }
-  const querystring = busca.toString();
-  return querystring === "" ? "/aparelhos/" : `/aparelhos/?${querystring}`;
+export function capacidadesComDestaque(
+  indice: IndiceDestaquesHome,
+  curadoria: FiltrosCurados,
+): BlocoDestaquePorCapacidade[] {
+  const presentes = new Set(
+    indice.dataset.flatMap((item) => item.capacidadesBtu),
+  );
+  return curadoria.btus
+    .filter((capacidade) => presentes.has(capacidade))
+    .map((capacidadeBtu) => ({
+      capacidadeBtu,
+      cartoes: destaquesPorCapacidade(indice, capacidadeBtu),
+    }))
+    .filter((bloco) => bloco.cartoes.length > 0);
 }
 
-/** Número no formato pt-BR (2.227), para as contagens da faixa de confiança. */
+/** Número no formato pt-BR (2.227), para as contagens e as capacidades. */
 export function formatarNumero(valor: number): string {
   return new Intl.NumberFormat("pt-BR").format(valor);
 }

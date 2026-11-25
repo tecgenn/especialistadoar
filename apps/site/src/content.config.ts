@@ -23,6 +23,8 @@ const analises = defineCollection({
   }),
   schema: z.object({
     aparelhoId: z.string(),
+    // Os Aparelhos que a Análise compara com o principal (ticket 97).
+    aparelhosComparados: z.array(z.string()).optional(),
     slug: z.string(),
     titulo: z.string(),
     descricao: z.string(),
@@ -33,6 +35,9 @@ const analises = defineCollection({
       .transform((valor) =>
         valor instanceof Date ? valor.toISOString().slice(0, 10) : valor,
       ),
+    // Imagem de abertura no destaque da home, relativa a `src/assets`.
+    imagem: z.string().optional(),
+    imagemAlt: z.string().optional(),
   }),
 });
 

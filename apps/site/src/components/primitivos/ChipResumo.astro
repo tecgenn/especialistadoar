@@ -1,0 +1,48 @@
+---
+import Icone from "./Icone.astro";
+
+/**
+ * Chip do recorte efetivo (ticket 68): mostra o filtro ativo e um “×” que o
+ * remove. O alvo do “×” é de 44 px mesmo com o chip em 32 px, e o rótulo de
+ * remoção diz qual filtro sai (“Remover filtro Marca: Samsung”). Com `href` a
+ * remoção é um link (o filtro vive na URL); sem ele, um botão que a ilha dona
+ * do estado conecta. Em página estática o botão não faz nada — quem tem estado
+ * é a ilha.
+ */
+interface Props {
+  rotulo: string;
+  /** Quando presente, o “×” é um link que remove o filtro pela URL. */
+  href?: string;
+  /** O chip representa um filtro ativo; fica em tinta. */
+  ativo?: boolean;
+  class?: string;
+}
+
+const { rotulo, href, ativo = true, class: classe } = Astro.props;
+const rotuloDaRemocao = `Remover filtro ${rotulo}`;
+---
+
+<span class:list={["chip", "chip-resumo", classe]} data-ativo={ativo ? "" : undefined}>
+  <span class="chip-texto">{rotulo}</span>
+  {
+    href ? (
+      <a
+        class="chip-remover"
+        href={href}
+        aria-label={rotuloDaRemocao}
+        title={rotuloDaRemocao}
+      >
+        <Icone nome="x" tamanho={16} />
+      </a>
+    ) : (
+      <button
+        class="chip-remover"
+        type="button"
+        aria-label={rotuloDaRemocao}
+        title={rotuloDaRemocao}
+      >
+        <Icone nome="x" tamanho={16} />
+      </button>
+    )
+  }
+</span>

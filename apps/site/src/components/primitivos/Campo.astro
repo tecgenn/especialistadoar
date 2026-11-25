@@ -1,0 +1,105 @@
+---
+import { idDaAjuda, idDoErro, idsDaDescricao } from "../../lib/primitivos.ts";
+import Icone from "./Icone.astro";
+
+/**
+ * Campo de texto (ticket 68): rótulo mono associado por `for`/`id`, ajuda em
+ * mono e erro em grotesca pequena com ícone, ambos conectados ao controle por
+ * `aria-describedby`. O foco é o do sistema (borda tinta e anel ciano de 2 px)
+ * e o erro troca a borda para a cor da Classe F — nunca só a cor: a mensagem
+ * fica visível junto ao campo.
+ */
+type TipoDeCampo = "text" | "search" | "number" | "email" | "tel" | "url";
+
+interface Props {
+  /** `id` estável do controle; ajuda e erro derivam dele. */
+  id: string;
+  rotulo: string;
+  tipo?: TipoDeCampo;
+  nome?: string;
+  valor?: string | number;
+  placeholder?: string;
+  /** Linha de ajuda em mono, sempre visível. */
+  ajuda?: string;
+  /** Mensagem de erro legível, visível junto ao campo. */
+  erro?: string;
+  /** Unidade à direita do valor (BTU/h, kWh/ano, R$). */
+  sufixo?: string;
+  desabilitado?: boolean;
+  obrigatorio?: boolean;
+  autocomplete?: string;
+  inputmode?:
+    | "text"
+    | "numeric"
+    | "decimal"
+    | "search"
+    | "email"
+    | "tel"
+    | "url";
+  min?: number | string;
+  max?: number | string;
+  step?: number | string;
+  class?: string;
+}
+
+const {
+  id,
+  rotulo,
+  tipo = "text",
+  nome = id,
+  valor,
+  placeholder,
+  ajuda,
+  erro,
+  sufixo,
+  desabilitado = false,
+  obrigatorio = false,
+  autocomplete,
+  inputmode,
+  min,
+  max,
+  step,
+  class: classe,
+} = Astro.props;
+
+const descricao = idsDaDescricao(id, {
+  ajuda: Boolean(ajuda),
+  erro: Boolean(erro),
+});
+---
+
+<div class:list={["campo", classe]} data-estado={erro ? "erro" : undefined}>
+  <label class="campo-rotulo" for={id}>
+    {rotulo}
+    {obrigatorio ? <span class="campo-obrigatorio" aria-hidden="true">*</span> : null}
+  </label>
+  <div class="campo-controle">
+    <input
+      class="campo-entrada"
+      id={id}
+      name={nome}
+      type={tipo}
+      value={valor}
+      placeholder={placeholder}
+      aria-describedby={descricao}
+      aria-invalid={erro ? "true" : undefined}
+      autocomplete={autocomplete}
+      inputmode={inputmode}
+      min={min}
+      max={max}
+      step={step}
+      required={obrigatorio}
+      disabled={desabilitado}
+    />
+    {sufixo ? <span class="campo-sufixo" aria-hidden="true">{sufixo}</span> : null}
+  </div>
+  {ajuda ? <p class="campo-ajuda" id={idDaAjuda(id)}>{ajuda}</p> : null}
+  {
+    erro ? (
+      <p class="campo-erro" id={idDoErro(id)}>
+        <Icone nome="alerta" tamanho={16} />
+        {erro}
+      </p>
+    ) : null
+  }
+</div>

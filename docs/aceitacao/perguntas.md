@@ -34,5 +34,5 @@ proveniência — Aparelho, Registro INMETRO e/ou Linha da tabela).
    **R$ 0,95/kWh**? Apresente o valor, a fórmula e as entradas usadas, deixando claro
    que não é um Valor oficial do INMETRO.
 
-10. A Linha 892 traz uma Anomalia. Qual campo, qual valor original e que tipo de
+10. A Linha 746 traz uma Anomalia. Qual campo, qual valor original e que tipo de
     Anomalia é?

@@ -22,16 +22,11 @@ import {
   resumoDaSugestao,
   textoDescartes,
 } from "../lib/comparacao";
-import {
-  ATRIBUTOS_OFERTA,
-  indexarOfertas,
-  MARCADOR_OFERTA,
-  type Oferta,
-  rotuloDaOferta,
-} from "../lib/ofertas.ts";
+import { indexarOfertas, type Oferta, ofertaExibida } from "../lib/ofertas.ts";
 import type { TarifasCuradas } from "../lib/tarifas.ts";
 import { caminhoComBusca, mesclarChaves } from "../lib/url.ts";
 import CamposCusto from "./CamposCusto.tsx";
+import OfertaCartaoIsla from "./comparar/OfertaCartaoIsla.tsx";
 import { useCusto } from "./useCusto.ts";
 
 /**
@@ -345,24 +340,12 @@ export default function Comparar({
                 ) : null}
                 <div className="comparar-cartao-acoes">
                   {(ofertasPorAparelho.get(item.id) ?? []).map((oferta) => (
-                    // Mesmo CTA da ficha, em React: mesmas classes, mesmo
-                    // rótulo e mesmo marcador, com os atributos de afiliado
-                    // vindos do módulo puro.
-                    <a
-                      className="oferta-cartao"
-                      href={oferta.url}
+                    // Mesmo cartão da ficha e da home (tickets 106 e 108): o
+                    // nome da loja vira logotipo e o aviso fica no tooltip.
+                    <OfertaCartaoIsla
                       key={`${oferta.aparelhoId}-${oferta.url}`}
-                      {...ATRIBUTOS_OFERTA}
-                    >
-                      <span className="oferta-titulo">
-                        {rotuloDaOferta(oferta)}
-                      </span>
-                      {" — "}
-                      <span className="oferta-loja">{oferta.loja}</span>{" "}
-                      <span className="oferta-marcador">
-                        · {MARCADOR_OFERTA}
-                      </span>
-                    </a>
+                      oferta={ofertaExibida(oferta)}
+                    />
                   ))}
                   <button
                     type="button"

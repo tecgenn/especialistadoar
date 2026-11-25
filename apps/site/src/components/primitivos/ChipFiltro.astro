@@ -1,0 +1,22 @@
+---
+/**
+ * Chip de filtro (ticket 68): um botão nativo com `aria-pressed`, porque o chip
+ * alterna um recorte. Ativo é fundo tinta e texto giz, com a letra sempre
+ * visível; hover ganha borda grafite. Nunca um pill (raio de 2 px).
+ */
+interface Props {
+  rotulo: string;
+  ativo?: boolean;
+  class?: string;
+}
+
+const { rotulo, ativo = false, class: classe } = Astro.props;
+---
+
+<button
+  type="button"
+  class:list={["chip", "chip-filtro", classe]}
+  aria-pressed={ativo ? "true" : "false"}
+>
+  <slot>{rotulo}</slot>
+</button>

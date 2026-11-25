@@ -1,0 +1,20 @@
+---
+/**
+ * Régua de seção (ticket 68): hairline de largura total, rótulo mono à
+ * esquerda e contagem opcional à direita. É o fio que separa escalas na home e
+ * na ficha — não carrega o heading, que continua sendo do `<h2>` da seção.
+ */
+interface Props {
+  rotulo: string;
+  /** Contagem à direita, em mono tabular (“1.294 aparelhos”). */
+  contagem?: string | number;
+  class?: string;
+}
+
+const { rotulo, contagem, class: classe } = Astro.props;
+---
+
+<div class:list={["regua-secao", classe]}>
+  <p class="regua-rotulo">{rotulo}</p>
+  {contagem === undefined ? null : <p class="regua-contagem">{contagem}</p>}
+</div>

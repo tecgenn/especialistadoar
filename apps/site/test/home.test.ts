@@ -1,17 +1,16 @@
 import type { ItemConsulta } from "@especialista-do-ar/api/consulta";
 import { describe, expect, it } from "vitest";
 import {
-  capacidadesPopulares,
+  capacidadesComDestaque,
   contarBase,
+  destaquesPorCapacidade,
   EXPLICACAO_DO_RECORTE,
   formatarCapacidade,
   formatarNumero,
   jsonLdPerguntasFrequentes,
-  linkDaTabela,
-  marcasPopulares,
-  PASSOS_ASSISTENTE,
   PERGUNTAS_FREQUENTES,
 } from "../src/lib/home.ts";
+import type { Oferta } from "../src/lib/ofertas.ts";
 
 function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
   return {
@@ -71,40 +70,6 @@ describe("contagens da base", () => {
   });
 });
 
-describe("capacidades e marcas populares", () => {
-  it("mantém a ordem curada e esconde o valor ausente da base", () => {
-    const dataset = [
-      item({ id: "a", capacidadesBtu: [9000, 12000] }),
-      item({ id: "b", capacidadesBtu: [36000] }),
-    ];
-    expect(capacidadesPopulares(dataset, curadoria)).toEqual([
-      36000, 9000, 12000,
-    ]);
-  });
-
-  it("resolve as marcas curadas presentes na base, com o rótulo", () => {
-    const dataset = [
-      item({ id: "a", marca: "SAMSUNG" }),
-      item({ id: "b", marca: "SPRINGER MIDEA", marcaCatalogo: "MIDEA" }),
-    ];
-    expect(marcasPopulares(dataset, curadoria)).toEqual([
-      { valor: "MIDEA", rotulo: "Midea" },
-      { valor: "SAMSUNG", rotulo: "Samsung" },
-    ]);
-  });
-});
-
-describe("links da tabela", () => {
-  it("aponta para a tabela sem filtro quando não há recorte", () => {
-    expect(linkDaTabela({})).toBe("/aparelhos/");
-  });
-
-  it("filtra por capacidade e por Marca de catálogo", () => {
-    expect(linkDaTabela({ btu: 12000 })).toBe("/aparelhos/?btu=12000");
-    expect(linkDaTabela({ marca: "MIDEA" })).toBe("/aparelhos/?marca=MIDEA");
-  });
-});
-
 describe("formatação pt-BR", () => {
   it("usa o separador de milhar", () => {
     expect(formatarNumero(2227)).toBe("2.227");
@@ -113,13 +78,20 @@ describe("formatação pt-BR", () => {
 });
 
 describe("FAQ e JSON-LD", () => {
-  it("tem 9–10 perguntas reais com resposta curta", () => {
-    expect(PERGUNTAS_FREQUENTES.length).toBeGreaterThanOrEqual(9);
-    expect(PERGUNTAS_FREQUENTES.length).toBeLessThanOrEqual(10);
+  it("tem oito perguntas reais com resposta curta", () => {
+    expect(PERGUNTAS_FREQUENTES).toHaveLength(8);
     for (const { pergunta, resposta } of PERGUNTAS_FREQUENTES) {
       expect(pergunta.trim().length).toBeGreaterThan(0);
       expect(resposta.trim().length).toBeGreaterThan(0);
     }
+  });
+
+  it("não repete a pergunta de consumo removida no alinhamento do #109", () => {
+    expect(
+      PERGUNTAS_FREQUENTES.some(
+        ({ pergunta }) => pergunta === "Como comparar o consumo de energia?",
+      ),
+    ).toBe(false);
   });
 
   it("responde o que é BTU/h e como escolher a tensão pela instalação", () => {
@@ -172,8 +144,208 @@ describe("FAQ e JSON-LD", () => {
       });
     });
   });
+});
 
-  it("descreve o Assistente em três passos", () => {
-    expect(PASSOS_ASSISTENTE).toHaveLength(3);
+describe("destaques por capacidade (ticket 96)", () => {
+  function oferta(
+    aparelhoId: string,
+    titulo?: string,
+    loja = "Loja Fixture",
+    indice = 1,
+  ): Oferta {
+    return {
+      aparelhoId,
+      loja,
+      url: `https://loja.example.com/${aparelhoId}${indice === 1 ? "" : `/${indice}`}`,
+      ...(titulo === undefined ? {} : { titulo }),
+    };
+  }
+
+  it("só inclui Aparelhos da capacidade com Análise publicada ou Oferta", () => {
+    const dataset = [
+      item({ id: "sem", capacidadesBtu: [9000] }),
+      item({ id: "analisado", capacidadesBtu: [9000] }),
+      item({ id: "ofertado", capacidadesBtu: [9000] }),
+      item({ id: "outra", capacidadesBtu: [12000] }),
+    ];
+    const cartoes = destaquesPorCapacidade(
+      {
+        dataset,
+        analisesPorAparelho: new Map([
+          ["analisado", { titulo: "Análise A", url: "/analises/a/" }],
+        ]),
+        ofertasPorAparelho: new Map([["ofertado", [oferta("ofertado")]]]),
+      },
+      9000,
+    );
+    expect(cartoes.map((cartao) => cartao.aparelhoId)).toEqual([
+      "analisado",
+      "ofertado",
+    ]);
+  });
+
+  it("limita a três cartões e não repete um Aparelho com Análise e Oferta", () => {
+    const dataset = ["a", "b", "c", "d", "e"].map((id) =>
+      item({ id, capacidadesBtu: [12000] }),
+    );
+    const cartoes = destaquesPorCapacidade(
+      {
+        dataset,
+        analisesPorAparelho: new Map([
+          ["a", { titulo: "Análise A", url: "/analises/a/" }],
+        ]),
+        ofertasPorAparelho: new Map(
+          ["a", "b", "c", "d", "e"].map((id) => [id, [oferta(id)]]),
+        ),
+      },
+      12000,
+    );
+    expect(cartoes.map((cartao) => cartao.aparelhoId)).toEqual(["a", "b", "c"]);
+  });
+
+  it("abre com os analisados e depois mantém a ordem da base", () => {
+    const dataset = [
+      item({ id: "ofertado-1", capacidadesBtu: [9000] }),
+      item({ id: "analisado", capacidadesBtu: [9000] }),
+      item({ id: "ofertado-2", capacidadesBtu: [9000] }),
+    ];
+    const cartoes = destaquesPorCapacidade(
+      {
+        dataset,
+        analisesPorAparelho: new Map([
+          ["analisado", { titulo: "Análise A", url: "/analises/a/" }],
+        ]),
+        ofertasPorAparelho: new Map([
+          ["ofertado-1", [oferta("ofertado-1")]],
+          ["ofertado-2", [oferta("ofertado-2")]],
+        ]),
+      },
+      9000,
+    );
+    expect(cartoes.map((cartao) => cartao.aparelhoId)).toEqual([
+      "analisado",
+      "ofertado-1",
+      "ofertado-2",
+    ]);
+  });
+
+  it("expõe marca, modelo, capacidade, tipo, IDRS, consumo e os links", () => {
+    const [cartao] = destaquesPorCapacidade(
+      {
+        dataset: [
+          item({
+            id: "a",
+            marca: "MIDEA",
+            modelo: "Modelo A",
+            capacidadesBtu: [12000],
+            tipo: "Split Hi-Wall",
+            idrs: [3.5, 4.2],
+            consumosKwh: [300, 420],
+          }),
+        ],
+        analisesPorAparelho: new Map([
+          ["a", { titulo: "Análise A", url: "/analises/a/" }],
+        ]),
+        ofertasPorAparelho: new Map([["a", [oferta("a", "Comprar na Loja")]]]),
+      },
+      12000,
+    );
+    expect(cartao).toEqual({
+      aparelhoId: "a",
+      marca: "MIDEA",
+      modelo: "Modelo A",
+      capacidadeBtu: 12000,
+      tipo: "Split Hi-Wall",
+      idrs: [3.5, 4.2],
+      consumoAnualKwh: [300, 420],
+      analise: { titulo: "Análise A", url: "/analises/a/" },
+      ofertas: [
+        {
+          url: "https://loja.example.com/a",
+          loja: "Loja Fixture",
+          rotulo: "Comprar na Loja",
+        },
+      ],
+    });
+  });
+
+  it("entrega uma única Oferta como uma lista de um, sem descartá-la", () => {
+    const [cartao] = destaquesPorCapacidade(
+      {
+        dataset: [item({ id: "a", capacidadesBtu: [12000] })],
+        analisesPorAparelho: new Map(),
+        ofertasPorAparelho: new Map([
+          ["a", [oferta("a", undefined, "Mercado Livre")]],
+        ]),
+      },
+      12000,
+    );
+    expect(cartao?.ofertas).toEqual([
+      {
+        url: "https://loja.example.com/a",
+        loja: "Mercado Livre",
+        rotulo: "Ver oferta",
+      },
+    ]);
+  });
+
+  it("mantém as duas Ofertas na ordem do arquivo, sem escolher a melhor loja", () => {
+    const [cartao] = destaquesPorCapacidade(
+      {
+        dataset: [item({ id: "a", capacidadesBtu: [12000] })],
+        analisesPorAparelho: new Map(),
+        ofertasPorAparelho: new Map([
+          [
+            "a",
+            [
+              oferta("a", undefined, "Mercado Livre", 1),
+              oferta("a", undefined, "Amazon", 2),
+            ],
+          ],
+        ]),
+      },
+      12000,
+    );
+    expect(cartao?.ofertas).toEqual([
+      {
+        url: "https://loja.example.com/a",
+        loja: "Mercado Livre",
+        rotulo: "Ver oferta",
+      },
+      {
+        url: "https://loja.example.com/a/2",
+        loja: "Amazon",
+        rotulo: "Ver oferta",
+      },
+    ]);
+  });
+
+  it("escolhe só capacidades curadas com destaque, na ordem da curadoria e sem teto", () => {
+    const dataset = [
+      item({ id: "a", capacidadesBtu: [9000] }),
+      item({ id: "b", capacidadesBtu: [12000] }),
+      item({ id: "c", capacidadesBtu: [18000] }),
+      item({ id: "d", capacidadesBtu: [36000] }),
+    ];
+    const analisesPorAparelho = new Map<
+      string,
+      { titulo: string; url: string }
+    >();
+    const ofertasPorAparelho = new Map<string, Oferta[]>([
+      ["a", [oferta("a")]],
+      ["b", [oferta("b")]],
+      ["c", [oferta("c")]],
+      ["d", [oferta("d")]],
+    ]);
+    const blocos = capacidadesComDestaque(
+      { dataset, analisesPorAparelho, ofertasPorAparelho },
+      curadoria,
+    );
+    expect(blocos.map((bloco) => bloco.capacidadeBtu)).toEqual([
+      36000, 9000, 12000,
+    ]);
+    expect(
+      blocos.map((bloco) => bloco.cartoes.map((cartao) => cartao.aparelhoId)),
+    ).toEqual([["d"], ["a"], ["b"]]);
   });
 });

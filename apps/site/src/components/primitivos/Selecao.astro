@@ -1,0 +1,98 @@
+---
+import { idDaAjuda, idDoErro, idsDaDescricao } from "../../lib/primitivos.ts";
+import Icone from "./Icone.astro";
+
+/**
+ * Campo de seleção nativo (ticket 68). O `<select>` continua nativo — teclado,
+ * leitor de tela e lista do sistema —, com a seta desenhada ao lado
+ * (decorativa) no lugar da seta do navegador. Rótulo, ajuda e erro seguem o
+ * mesmo contrato do `Campo`.
+ */
+export interface OpcaoDeSelecao {
+  valor: string;
+  rotulo: string;
+  desabilitado?: boolean;
+}
+
+interface Props {
+  id: string;
+  rotulo: string;
+  opcoes: OpcaoDeSelecao[];
+  nome?: string;
+  /** Valor selecionado; sem ele, a primeira opção é a mostrada. */
+  valor?: string;
+  /** Primeira opção vazia (“Todas as marcas”). */
+  placeholder?: string;
+  ajuda?: string;
+  erro?: string;
+  desabilitado?: boolean;
+  obrigatorio?: boolean;
+  class?: string;
+}
+
+const {
+  id,
+  rotulo,
+  opcoes,
+  nome = id,
+  valor,
+  placeholder,
+  ajuda,
+  erro,
+  desabilitado = false,
+  obrigatorio = false,
+  class: classe,
+} = Astro.props;
+
+const descricao = idsDaDescricao(id, {
+  ajuda: Boolean(ajuda),
+  erro: Boolean(erro),
+});
+---
+
+<div class:list={["campo", "campo-selecao", classe]} data-estado={erro ? "erro" : undefined}>
+  <label class="campo-rotulo" for={id}>
+    {rotulo}
+    {obrigatorio ? <span class="campo-obrigatorio" aria-hidden="true">*</span> : null}
+  </label>
+  <div class="campo-controle">
+    <select
+      class="campo-entrada campo-select"
+      id={id}
+      name={nome}
+      aria-describedby={descricao}
+      aria-invalid={erro ? "true" : undefined}
+      required={obrigatorio}
+      disabled={desabilitado}
+    >
+      {
+        placeholder ? (
+          <option value="" selected={!valor} disabled={obrigatorio}>
+            {placeholder}
+          </option>
+        ) : null
+      }
+      {
+        opcoes.map((opcao) => (
+          <option
+            value={opcao.valor}
+            selected={opcao.valor === valor}
+            disabled={opcao.desabilitado}
+          >
+            {opcao.rotulo}
+          </option>
+        ))
+      }
+    </select>
+    <Icone class="campo-seta" nome="seta-baixo" tamanho={16} />
+  </div>
+  {ajuda ? <p class="campo-ajuda" id={idDaAjuda(id)}>{ajuda}</p> : null}
+  {
+    erro ? (
+      <p class="campo-erro" id={idDoErro(id)}>
+        <Icone nome="alerta" tamanho={16} />
+        {erro}
+      </p>
+    ) : null
+  }
+</div>

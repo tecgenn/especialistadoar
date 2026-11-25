@@ -6,16 +6,21 @@ import {
   type AnaliseFrontmatter,
   type AparelhoComCapacidades,
   agruparAnalisadosPorCapacidade,
+  aparelhosDaAnalise,
+  DESTAQUES_HOME_MAXIMO,
+  destaquesDaHome,
   indexarAnalises,
   linksDaTabelaPorCapacidade,
   listaAnalisesJson,
   mapaPorAparelho,
   montarAnalises,
   montarVitrine,
+  ofertasDoDestaque,
   secaoVisivel,
   VITRINE_MAXIMO,
   validarAnalises,
 } from "../src/lib/analises.ts";
+import type { Oferta } from "../src/lib/ofertas.ts";
 
 function analise(over: Partial<AnaliseFrontmatter> = {}): AnaliseFrontmatter {
   return {
@@ -122,6 +127,78 @@ describe("validarAnalises", () => {
     );
   });
 
+  it("recusa imagem em branco e imagem sem texto alternativo", () => {
+    expect(() => validarAnalises([analise({ imagem: " " })])).toThrow(/imagem/);
+    expect(() =>
+      validarAnalises([analise({ imagem: "analises/modelo/abertura.webp" })]),
+    ).toThrow(/imagemAlt/);
+    expect(() =>
+      validarAnalises([
+        analise({
+          imagem: "analises/modelo/abertura.webp",
+          imagemAlt: "Unidade interna do split, na cor branca",
+        }),
+      ]),
+    ).not.toThrow();
+  });
+
+  it("aceita Aparelhos comparados bem formados e os devolve na ordem", () => {
+    const comparada = montada({
+      aparelhosComparados: ["ap-bbbbbbbbbbbb", "ap-cccccccccccc"],
+    });
+    expect(aparelhosDaAnalise(comparada)).toEqual([
+      "ap-aaaaaaaaaaaa",
+      "ap-bbbbbbbbbbbb",
+      "ap-cccccccccccc",
+    ]);
+    expect(aparelhosDaAnalise(montada())).toEqual(["ap-aaaaaaaaaaaa"]);
+  });
+
+  it("recusa aparelhosComparados mal formados", () => {
+    expect(() =>
+      validarAnalises([analise({ aparelhosComparados: ["ap-123"] })]),
+    ).toThrow(/aparelhosComparados/);
+    expect(() =>
+      validarAnalises([analise({ aparelhosComparados: [" "] })]),
+    ).toThrow(/aparelhosComparados/);
+    expect(() =>
+      validarAnalises([analise({ aparelhosComparados: ["ap-aaaaaaaaaaaa"] })]),
+    ).toThrow(/principal/);
+    expect(() =>
+      validarAnalises([
+        analise({
+          aparelhosComparados: ["ap-bbbbbbbbbbbb", "ap-bbbbbbbbbbbb"],
+        }),
+      ]),
+    ).toThrow(/repetido/);
+  });
+
+  it("soma as Ofertas do Aparelho principal e dos comparados no destaque", () => {
+    const oferta = (aparelhoId: string, url: string): Oferta => ({
+      aparelhoId,
+      loja: "Loja de teste",
+      url,
+    });
+    const porAparelho = new Map<string, Oferta[]>([
+      ["ap-aaaaaaaaaaaa", [oferta("ap-aaaaaaaaaaaa", "https://loja.test/a")]],
+      ["ap-bbbbbbbbbbbb", [oferta("ap-bbbbbbbbbbbb", "https://loja.test/b")]],
+    ]);
+    const comparada = montada({ aparelhosComparados: ["ap-bbbbbbbbbbbb"] });
+
+    expect(
+      ofertasDoDestaque(comparada, porAparelho).map((item) => item.url),
+    ).toEqual(["https://loja.test/a", "https://loja.test/b"]);
+    // Aparelho sem Oferta não deixa buraco nem erro.
+    expect(
+      ofertasDoDestaque(
+        comparada,
+        new Map([
+          ["ap-aaaaaaaaaaaa", porAparelho.get("ap-aaaaaaaaaaaa") ?? []],
+        ]),
+      ).map((item) => item.url),
+    ).toEqual(["https://loja.test/a"]);
+  });
+
   it("recusa slug repetido", () => {
     expect(() =>
       validarAnalises([analise(), analise({ aparelhoId: "ap-bbbbbbbbbbbb" })]),
@@ -166,6 +243,34 @@ describe("montarAnalises", () => {
 
   it("valida antes de montar", () => {
     expect(() => montarAnalises([analise({ titulo: "" })])).toThrow(/titulo/);
+  });
+});
+
+describe("destaquesDaHome", () => {
+  it("ordena da mais recente para a mais antiga e corta em três", () => {
+    const [d1, d2, d3, d4] = [
+      montada({ slug: "d1", data: "2026-10-17" }),
+      montada({ slug: "d2", data: "2026-10-20" }),
+      montada({ slug: "d3", data: "2026-10-18" }),
+      montada({ slug: "d4", data: "2026-10-19" }),
+    ];
+    const lista = [d1, d2, d3, d4];
+    expect(destaquesDaHome(lista).map((item) => item.slug)).toEqual([
+      "d2",
+      "d4",
+      "d3",
+    ]);
+    expect(DESTAQUES_HOME_MAXIMO).toBe(3);
+  });
+
+  it("não altera a lista recebida", () => {
+    const original = [
+      montada({ slug: "antiga", data: "2026-10-01" }),
+      montada({ slug: "recente", data: "2026-10-20" }),
+    ];
+    const copia = structuredClone(original);
+    destaquesDaHome(original);
+    expect(original).toEqual(copia);
   });
 });
 

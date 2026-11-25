@@ -1,0 +1,30 @@
+---
+import { nomeDaLojaParaLeitura } from "../../lib/lojas";
+import {
+  ATRIBUTOS_OFERTA,
+  MARCADOR_OFERTA,
+  type OfertaExibida,
+} from "../../lib/ofertas";
+import LogoLoja from "./LogoLoja.astro";
+
+type Props = {
+  oferta: OfertaExibida;
+};
+
+const { oferta } = Astro.props;
+const nomeDaLoja = nomeDaLojaParaLeitura(oferta.loja);
+---
+
+<a
+  class:list={["oferta-cartao", "oferta-cta", "oferta-cta--com-logo"]}
+  href={oferta.url}
+  {...ATRIBUTOS_OFERTA}
+  aria-label={`${oferta.rotulo} — ${nomeDaLoja} — ${MARCADOR_OFERTA}`}
+>
+  <span class="oferta-cta-conteudo">
+    <LogoLoja loja={oferta.loja} />
+    <span class="oferta-cta-rotulo">
+      {oferta.rotulo} <span aria-hidden="true">→</span>
+    </span>
+  </span>
+</a>

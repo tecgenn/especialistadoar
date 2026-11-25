@@ -17,7 +17,7 @@ interface Props {
 const { titulo, descricao, ofertas } = Astro.props;
 ---
 
-<CtaCartao titulo={titulo} descricao={descricao} comercial>
+<CtaCartao titulo={titulo} descricao={descricao}>
   <ul class="cta-ofertas">
     {ofertas.map((oferta) => (
       <li>

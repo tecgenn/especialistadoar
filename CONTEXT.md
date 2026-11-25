@@ -37,11 +37,11 @@ Um Aparelho presente na tabela que não traz Dados declarados. É um estado, nã
 _Avoid_: Produto incompleto, registro vazio
 
 **Oferta**:
-Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos. Aparece com o rótulo **"Ver oferta"** — o site não exibe preços, então o link não promete nenhum —, sempre com a loja e o marcador **"link de afiliado"**, em texto pequeno e cor secundária. A divulgação acontece em **três níveis**: junto do link, numa seção própria dos Termos de Uso e numa linha discreta no rodapé de todas as páginas. O CTA fica na ficha, na Análise, nos destaques da home e no cartão do modelo na Comparação — nunca na matriz de atributos. Ver ADR-0010 e ADR-0023.
+Um link comercial de afiliado para um Aparelho, exibido apenas no site e nunca misturado aos dados técnicos. Aparece com o rótulo **"Ver oferta"** — o site não exibe preços, então o link não promete nenhum — fora do badge com o logotipo oficial da loja (Mercado Livre e Amazon), que substitui o nome da loja em texto. O aviso **"link de afiliado"** fica no `title` do logo (o tooltip ao parar o ponteiro) e no nome acessível do link, nunca como texto visível do cartão (tickets 106 e 108). A divulgação tem **dois níveis**: junto do link, por esse aviso no tooltip e no nome acessível; e institucional, com a divulgação por extenso no bloco "Transparência com o Leitor" do rodapé de todas as páginas, nos Termos de Uso e no banner do topo de cada Análise. O CTA fica na ficha, na Análise, nos destaques da home e no cartão do modelo na Comparação — nunca na matriz de atributos. Ver ADR-0010 e ADR-0023.
 _Avoid_: Link de compra, anúncio, "Ver preço e comprar" (promete um preço que o site não mostra)
 
 **Análise**:
-Texto editorial sobre um único Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial.
+Texto editorial sobre um Aparelho, publicado no site numa seção própria e separado dos dados técnicos. Pode trazer números próprios, que não são Valores oficiais; a ficha do Aparelho continua sendo a fonte oficial. Uma Análise pode **comparar** o Aparelho principal com outros (`aparelhosComparados`): a comparação é editorial, aparece no texto e, no destaque da home, soma as Ofertas de todos os Aparelhos citados — mas só o principal vira Aparelho analisado e ganha ficha ligada à Análise.
 _Avoid_: Artigo, review, resenha
 
 **Aparelho analisado**:

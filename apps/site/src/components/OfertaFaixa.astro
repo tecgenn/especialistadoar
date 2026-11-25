@@ -8,8 +8,9 @@ import OfertaCartao from "./OfertaCartao.astro";
  * um `aparelhoId` (nesse caso busca e valida as Ofertas no build) — é o mesmo
  * componente na ficha do Aparelho, na Análise e no MDX de uma Análise.
  *
- * Sem Oferta, não renderiza nada: nunca há CTA vazio. O aviso de link comercial
- * acompanha os cartões, separando-os dos dados técnicos (ADR-0010).
+ * Sem Oferta, não renderiza nada: nunca há CTA vazio. O cartão leva o logo da
+ * loja e o aviso de afiliado no tooltip, separando-o dos dados técnicos
+ * (tickets 106 e 108).
  */
 interface Props {
   ofertas?: Oferta[];
@@ -33,10 +34,6 @@ const Titulo = `h${nivelTitulo}`;
   ofertas.length > 0 ? (
     <section class="ofertas" id={id}>
       <Titulo>{titulo}</Titulo>
-      <p class="intro">
-        Links comerciais (de afiliado): a compra acontece na loja e a comissão,
-        se houver, não custa nada a você.
-      </p>
       <ul>
         {ofertas.map((oferta) => (
           <li>

@@ -1,0 +1,55 @@
+---
+import type { NomeDeIcone } from "../../lib/icones.ts";
+import Icone from "./Icone.astro";
+
+/**
+ * Botão do sistema (ticket 68): primário em tinta, secundário em giz com
+ * hairline e de texto sem fundo. Todos com 44 px de altura, raio de 2 px,
+ * foco visível herdado do global e nenhuma sombra em repouso. Com `href` vira
+ * um link; desabilitado, um `<button disabled>` ou um `<span aria-disabled>`,
+ * porque um link que não navega não é link.
+ */
+type Variante = "primario" | "secundario" | "texto";
+
+interface Props {
+  variante?: Variante;
+  /** Quando presente, a ação é navegação: o primitivo rende um `<a>`. */
+  href?: string;
+  /** Tipo do `<button>`; ignorado no link. */
+  tipo?: "button" | "submit" | "reset";
+  desabilitado?: boolean;
+  /** Ícone decorativo à direita do rótulo. */
+  icone?: NomeDeIcone;
+  class?: string;
+}
+
+const {
+  variante = "primario",
+  href,
+  tipo = "button",
+  desabilitado = false,
+  icone,
+  class: classe,
+} = Astro.props;
+
+const classes = ["botao", `botao-${variante}`, classe];
+---
+
+{
+  href && desabilitado ? (
+    <span class:list={[...classes, "botao-desabilitado"]} aria-disabled="true">
+      <slot />
+      {icone ? <Icone nome={icone} tamanho={16} /> : null}
+    </span>
+  ) : href ? (
+    <a class:list={classes} href={href}>
+      <slot />
+      {icone ? <Icone nome={icone} tamanho={16} /> : null}
+    </a>
+  ) : (
+    <button class:list={classes} type={tipo} disabled={desabilitado}>
+      <slot />
+      {icone ? <Icone nome={icone} tamanho={16} /> : null}
+    </button>
+  )
+}

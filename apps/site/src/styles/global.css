@@ -1,106 +1,239 @@
-:root {
-  --texto: #0f172a;
-  --texto-suave: #475569;
-  --borda: #e2e8f0;
-  --fundo: #f8fafc;
-  --superficie: #ffffff;
-  --primaria: #0369a1;
-}
+@import "./tokens.css";
+@import "./fontes.css";
+@import "./base.css";
+@import "./primitivos.css";
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.5;
-  color: var(--texto);
-  background: var(--fundo);
-}
-
-body {
-  margin: 0;
-}
-
-a {
-  color: var(--primaria);
-}
+/* ==========================================================================
+   Shell global (ticket 67) — a mesma moldura calibrada em todas as rotas:
+   skip link, cabeçalho, larguras e rodapé. DESIGN.md, seções Layout e
+   Components, é o contrato.
+   ========================================================================== */
 
 header,
 main,
 footer {
   width: 100%;
-  max-width: 64rem;
-  margin: 0 auto;
-  padding: 0 1rem;
 }
 
-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: baseline;
-  justify-content: space-between;
-  padding-block: 1rem;
-  border-bottom: 1px solid var(--borda);
+/* A coluna do shell é a medida de header, footer e main. A página ampla
+   (catálogo) dispensa o teto; as três bordas continuam alinhadas. */
+.shell {
+  width: 100%;
+  max-width: var(--largura-shell);
+  margin-inline: auto;
+  padding-inline: var(--calha);
 }
 
-header .marca {
-  font-weight: 700;
-  font-size: 1.15rem;
-  text-decoration: none;
-}
-
-header nav {
-  display: flex;
-  gap: 1rem;
+body[data-largura="ampla"] .shell {
+  max-width: none;
 }
 
 main {
-  padding-block: 1.5rem 3rem;
+  padding-block: var(--esp-6) var(--esp-9);
 }
 
-footer {
-  padding-block: 1.5rem;
-  border-top: 1px solid var(--borda);
-  color: var(--texto-suave);
-  font-size: 0.9rem;
+/* Artigos e institucionais usam a coluna de leitura (68ch); a medida fica
+   descontada do padding do shell. */
+main.principal-leitura {
+  max-width: calc(var(--largura-leitura) + 2 * var(--calha));
 }
 
-/* ticket 39: layout amplo — /aparelhos/ ocupa a largura útil; header, main e
-   footer alinham sem o teto de 64 rem das páginas de leitura. */
-body.ampla header,
-body.ampla main,
-body.ampla footer {
-  max-width: none;
+/* Skip link: primeiro focável do DOM, visível só no foco, leva ao main. */
+.skip-link {
+  position: absolute;
+  inset-block-start: var(--esp-3);
+  inset-inline-start: var(--esp-3);
+  z-index: var(--z-menu);
+  padding: var(--esp-3) var(--esp-5);
+  border: 1px solid var(--linha-escura);
+  border-radius: var(--raio-xs);
+  background: var(--tinta);
+  color: var(--giz);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform var(--mov-hover) var(--curva);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-header {
+  background: var(--giz);
+  border-bottom: 1px solid var(--linha);
+}
+
+.site-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-6);
+  min-height: var(--altura-cabecalho);
+}
+
+.marca {
+  flex-shrink: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: 1.0625rem;
+  font-weight: var(--peso-semi);
+  letter-spacing: var(--tracking-apertado);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* No celular a navegação é uma faixa horizontal com rolagem: as quatro seções
+   continuam no DOM e nenhuma é escondida atrás de um menu. */
+.site-nav {
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.site-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.site-nav ul {
+  display: flex;
+  align-items: stretch;
+  gap: var(--esp-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-nav li {
+  margin: 0;
+}
+
+.site-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--altura-cabecalho);
+  box-shadow: inset 0 -2px 0 transparent;
+  color: var(--grafite);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--mov-hover) var(--curva),
+    box-shadow var(--mov-hover) var(--curva);
+}
+
+.site-nav a:hover {
+  color: var(--tinta);
+}
+
+/* O item ativo tem barra ciano de 2 px embaixo — nunca um pill. */
+.site-nav a[aria-current="page"] {
+  box-shadow: inset 0 -2px 0 var(--foco);
+  color: var(--tinta);
+}
+
+.site-footer {
+  background: var(--azul-frio-escuro);
+  color: var(--giz);
+}
+
+/* Rodapé (tickets 67, 95 e 100): proveniência, navegação institucional e um
+   bloco único de transparência com o leitor. Três colunas no desktop;
+   empilhado no celular, com a proveniência primeiro. */
+.site-footer a {
+  color: var(--giz);
+  text-decoration-color: var(--linha-escura);
+  text-underline-offset: 0.2em;
+}
+
+.site-footer a:hover {
+  text-decoration-color: var(--foco);
+}
+
+.site-footer-grid {
+  display: grid;
+  gap: var(--esp-8);
+  padding-block: var(--esp-8) var(--esp-9);
+}
+
+@media (min-width: 64rem) {
+  .site-footer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--esp-8);
+    padding-block: var(--esp-9);
+  }
+}
+
+.rodape-bloco {
+  display: grid;
+  align-content: start;
+  gap: var(--esp-3);
+  min-width: 0;
+}
+
+.rodape-rotulo {
+  margin: 0;
+  color: var(--mudo-escuro);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.rodape-bloco p:not(.rodape-rotulo) {
+  margin: 0;
+  color: var(--mudo-escuro);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* A Versão da tabela é a única linha de dado do rodapé: mono pequeno, sem
+   competir com a proveniência. */
+.rodape-bloco p.rodape-versao {
+  color: var(--giz);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+}
+
+.rodape-institucional ul {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  font-size: var(--texto-pequeno);
+  list-style: none;
+}
+
+.rodape-institucional li {
+  margin: 0;
+}
+
+/* Cada destino institucional tem alvo de 44 px, no desktop e no celular. */
+.rodape-institucional a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-block: var(--esp-2);
 }
 
 .intro {
   color: var(--texto-suave);
 }
 
-.botao {
-  display: inline-block;
-  padding: 0.6rem 1rem;
-  border-radius: 0.375rem;
-  background: var(--primaria);
-  color: #fff;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.botao:hover {
-  background: #0284c7;
-  color: #fff;
-}
-
-/* Layout da consulta (ticket 50): sem barra lateral — busca, Pesquisa
-   avançada, vitrine de Análises, ordenação e tabela numa coluna central única
-   de até 72 rem. */
+/* Layout da consulta (tickets 50 e 67): sem barra lateral — busca, Pesquisa
+   avançada, vitrine de Análises, ordenação e tabela numa coluna única. A
+   coluna acompanha a página ampla, alinhada às bordas do cabeçalho e do
+   rodapé. */
 .pagina-aparelhos {
   width: 100%;
-  max-width: 72rem;
-  margin-inline: auto;
 }
 
 .consulta {
@@ -199,7 +332,7 @@ body.ampla footer {
 }
 
 .consulta .chip-filtro:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -801,7 +934,7 @@ body.ampla footer {
 }
 
 .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
-  border-left: 3px solid var(--primaria);
+  border-left: 2px solid var(--foco);
 }
 
 /* Selo "Análise" (ticket 44): etiqueta de contorno, distinta da pílula azul
@@ -837,7 +970,7 @@ body.ampla footer {
 }
 
 .consulta a.analisado-etiqueta:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -938,7 +1071,7 @@ body.ampla footer {
 }
 
 .consulta .com-analise-item:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -983,7 +1116,7 @@ body.ampla footer {
 
 @media (max-width: 40rem) {
   .consulta .tabela-aparelhos tbody tr.linha-analisado {
-    border-left: 3px solid var(--primaria);
+    border-left: 2px solid var(--foco);
     background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
   }
 
@@ -1080,7 +1213,7 @@ body.ampla footer {
 
 .aparelho section[id]:target,
 .aparelho section[id]:focus {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 0.5rem;
   border-radius: 0.25rem;
 }
@@ -1157,7 +1290,7 @@ body.ampla footer {
 }
 
 .ficha-comparar:hover {
-  border-color: #075985;
+  border-color: var(--azul-frio-hover);
   background: color-mix(in srgb, var(--primaria) 8%, var(--superficie));
 }
 
@@ -1267,42 +1400,108 @@ body.ampla footer {
   color: var(--texto-suave);
 }
 
+/* ==========================================================================
+   Ofertas (ticket 69) — a apresentação comercial é um bloco separado do dado
+   técnico: hairline, tipografia de interface e o marcador de transparência.
+   Nenhum preço, selo de urgência ou cor de promoção. DESIGN.md, componente
+   Oferta, é o contrato.
+   ========================================================================== */
+
 .ofertas {
-  margin-block: 1.5rem 1rem;
-  padding: 1rem;
-  border: 1px dashed var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  margin-block: var(--esp-9) 0;
+  padding-block-start: var(--esp-5);
+  border-top: 1px solid var(--linha);
 }
 
 .ofertas h2,
 .ofertas h3,
 .ofertas h4 {
-  margin-top: 0;
+  margin: 0 0 var(--esp-2);
 }
 
 .ofertas ul {
-  margin: 0.5rem 0 0;
-  padding-left: 1.25rem;
+  display: grid;
+  margin: var(--esp-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Cada Oferta é uma linha da régua: a hairline separa, o alvo de 44 px vem do
+   próprio link. */
+.ofertas li {
+  margin: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.ofertas li:last-child {
+  border-bottom: 1px solid var(--linha);
 }
 
 .oferta-cartao {
-  display: inline-block;
-  margin-block: 0.15rem;
-  font-weight: 600;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 44px;
+  padding-block: var(--esp-3);
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-apertada);
+  text-decoration: none;
 }
 
-.oferta-loja {
-  color: var(--texto-suave);
-  font-weight: 400;
+/* Na faixa, o link ocupa a linha inteira da régua: alvo contínuo no celular. */
+.ofertas .oferta-cartao {
+  display: flex;
 }
 
-/* Divulgação junto do link (ticket 58): texto pequeno e cor secundária, na
-   mesma linha da loja. Sem ícone, selo ou cor de destaque. */
-.oferta-marcador {
-  color: var(--texto-suave);
-  font-size: 0.8rem;
-  font-weight: 400;
+/* O logotipo substitui o nome da loja (tickets 106 e 108): cada marca entra
+   num cartão pequeno com a cor oficial — amarelo do Mercado Livre e fundo
+   escuro da Amazon com o wordmark branco —, em 16 px de altura. "Ver oferta"
+   fica fora do cartão, no mesmo link. Só o rótulo reage ao hover, como antes. */
+.oferta-cta-conteudo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+}
+
+.loja-marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: var(--esp-2);
+  border-radius: var(--raio-xs);
+}
+
+/* Cores de terceiros, exceção documentada no DESIGN.md: não são tokens do
+   sistema e não se aplicam a nenhum outro componente. */
+.loja-marca--mercado-livre {
+  background: #f7d032;
+}
+
+.loja-marca--amazon {
+  background: #221f1f;
+}
+
+.loja-logo {
+  display: block;
+  flex: none;
+  width: auto;
+  height: 16px;
+}
+
+.loja-logo-fallback {
+  font-weight: var(--peso-normal);
+}
+
+.oferta-cartao:hover .oferta-cta-rotulo {
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 .analise-corpo {
@@ -1345,79 +1544,77 @@ body.ampla footer {
 .analise-transparencia {
   margin-block: 1.25rem;
   padding: 0.75rem 1rem;
-  border-left: 4px solid var(--primaria);
+  border-left: 2px solid var(--foco);
   border-radius: 0.5rem;
   background: var(--superficie);
 }
 
-/* CTAs da Análise (ticket 47): sempre um cartão destacado, nunca um link solto
-   no meio do texto. As ações dentro do cartão são botões. */
+/* CTAs da Análise (ticket 47): sempre um cartão no sistema, nunca um link
+   solto no meio do texto. As ações dentro do cartão usam o botão do sistema
+   (ticket 68). A divulgação de afiliado vive no link de Oferta (ticket 106),
+   nunca numa nota de cartão — e menos ainda em cor de promoção. */
 .cta-cartao {
-  margin-block: 1.5rem;
-  padding: 1.25rem;
-  border: 2px solid var(--primaria);
-  border-radius: 0.75rem;
-  background: #e0f2fe;
+  display: grid;
+  gap: var(--esp-3);
+  margin-block: var(--esp-8);
+  padding: var(--esp-5);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  background: var(--giz);
 }
 
 .cta-cartao-titulo {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-semi);
+  line-height: var(--entrelinha-apertada);
+  letter-spacing: var(--tracking-apertado);
 }
 
 .cta-cartao-descricao {
-  margin: 0.25rem 0 0.75rem;
-  color: var(--texto-suave);
+  max-width: 60ch;
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
 }
 
 .cta-cartao-acoes {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.cta-acao {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  background: var(--primaria);
-  color: var(--superficie);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.cta-acao:hover {
-  background: #075985;
+  gap: var(--esp-3);
 }
 
 .cta-ofertas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  gap: var(--esp-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.cta-ofertas .oferta-cartao {
-  display: inline-block;
+.cta-ofertas li {
   margin: 0;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--primaria);
-  border-radius: 999px;
-  background: var(--superficie);
-  text-decoration: none;
+}
+
+/* O link de Oferta dentro do cartão é a ação do bloco: mesma forma do botão
+   secundário do sistema, com o marcador de afiliado na linha. */
+.cta-ofertas .oferta-cartao {
+  min-height: 44px;
+  padding: var(--esp-3) var(--esp-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  font-size: var(--texto-pequeno);
+  transition:
+    background-color var(--mov-hover) var(--curva),
+    border-color var(--mov-hover) var(--curva);
 }
 
 .cta-ofertas .oferta-cartao:hover {
-  border-color: #075985;
-}
-
-.cta-cartao-nota {
-  margin: 0.75rem 0 0;
-  color: var(--texto-suave);
-  font-size: 0.85rem;
+  border-color: var(--grafite);
+  background: var(--papel);
 }
 
 .analise-aviso,
@@ -1450,44 +1647,158 @@ body.ampla footer {
   font-size: 0.9rem;
 }
 
+/* Análises em destaque na home (tickets 71 e 108): grade estática com as três
+   Análises mais recentes. Cada cartão é imagem real (16:10) quando existe,
+   data em mono, título, resumo e uma linha de Oferta por loja. Sem imagem, o
+   cartão abre pela data — nunca por uma fotografia inventada. Sem carrossel,
+   sem controles e sem script: a seção é HTML puro. */
 .analises-destaque {
-  margin-block: 1.5rem;
-  padding: 1rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  padding-block: var(--esp-6);
+  margin-block: 0;
+  border-top: 1px solid var(--linha);
 }
 
-.analises-destaque h2 {
-  margin-top: 0;
+/* O cabeçalho da seção é o primitivo do ticket 102; aqui só o respiro até a
+   grade é próprio da seção. */
+.analises-destaque-cabecalho {
+  margin-bottom: var(--esp-6);
 }
 
-.analises-destaque-lista {
-  list-style: none;
-  margin: 1rem 0;
+/* “Todas as análises” vive no slot de ações do cabeçalho (ticket 108): alvo de
+   44 px, seta desenhada e sublinhado só no hover. */
+.analises-destaque-todas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  min-height: 44px;
+  color: var(--tinta);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+}
+
+.analises-destaque-todas:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-underline-offset: 0.2em;
+}
+
+/* 1 coluna no celular, 2 a partir de 640 px e 3 a partir de 1024 px. Com uma
+   Análise só, a coluna mantém a largura da grade — o cartão não estica para a
+   linha inteira. */
+.analises-destaque-grade {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  gap: var(--esp-5);
+  margin: 0;
   padding: 0;
+  list-style: none;
 }
 
-.analises-destaque-lista li {
-  padding-block: 0.75rem;
-  border-bottom: 1px solid var(--borda);
+.analises-destaque-grade > li {
+  display: flex;
 }
 
-.analises-destaque-lista li:first-child {
-  padding-top: 0;
+@media (min-width: 40rem) {
+  .analises-destaque-grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
-.analises-destaque-lista li:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
+@media (min-width: 64rem) {
+  .analises-destaque-grade {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
-.analises-destaque-lista h3 {
-  margin: 0 0 0.25rem;
+/* O cartão é uma caixa de giz com hairline e raio de 4 px, sem sombra. Só a
+   borda reage ao hover; a imagem não dá zoom. */
+.analises-cartao {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  background: var(--giz);
+  transition: border-color var(--mov-hover) var(--curva);
 }
 
-.analises-destaque-lista .ofertas {
-  margin-block: 0.75rem 0;
+.analises-cartao-imagem {
+  overflow: hidden;
+  background: var(--mineral);
+}
+
+.analises-cartao-imagem img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.analises-cartao-texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--esp-2);
+  padding: var(--esp-6);
+}
+
+.analises-destaque-data {
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.analises-cartao h3 {
+  margin: 0;
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: var(--entrelinha-apertada);
+}
+
+.analises-cartao a {
+  text-decoration: none;
+}
+
+.analises-cartao:hover {
+  border-color: var(--tinta);
+}
+
+.analises-cartao:hover h3 a,
+.analises-cartao h3 a:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-underline-offset: 0.15em;
+}
+
+.analises-cartao-resumo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-ui);
+}
+
+/* A Oferta fica no rodapé do cartão, uma linha por loja; o `margin-top: auto`
+   alinha as linhas comerciais entre os cartões da mesma fileira. */
+.analises-cartao-ofertas {
+  display: grid;
+  margin: auto 0 0;
+  padding: var(--esp-2) 0 0;
+  border-top: 1px solid var(--linha);
+  list-style: none;
+}
+
+.analises-cartao-ofertas li + li {
+  border-top: 1px solid var(--linha);
 }
 
 /* Ficha no celular: o resumo vira uma coluna e as células da grade de condições
@@ -1604,7 +1915,7 @@ body.ampla footer {
 }
 
 .consulta .mostrar-mais:focus {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -1651,7 +1962,7 @@ body.ampla footer {
 }
 
 .assistente-titulo:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 4px;
 }
 
@@ -1681,7 +1992,7 @@ body.ampla footer {
 
 .assistente-cartao[aria-pressed="true"] {
   border-color: var(--primaria);
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 1px;
 }
 
@@ -1952,7 +2263,7 @@ body.ampla footer {
 }
 
 .assistente-analisado:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -2004,7 +2315,7 @@ body.ampla footer {
 }
 
 .assistente button:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 2px;
 }
 
@@ -2026,147 +2337,874 @@ body.ampla footer {
   }
 }
 
-/* Home como hub (ticket 46): hero, dois cartões de entrada, faixa de confiança,
-   capacidades e marcas populares, Análises em destaque, chamada do Assistente,
-   FAQ e metodologia. Tudo é gerado no build — nada depende de JSON no cliente. */
+/* Home como hub (ticket 46): hero, leitura de cobertura, capacidades em destaque,
+   Análises em destaque, FAQ e metodologia.
+   Tudo é gerado no build — nada depende de JSON no cliente. O topo foi refeito
+   no ticket 93: o H1 é o elemento gráfico da primeira tela — display grande em
+   duas linhas, com entrada por mask — e o simulador de ambiente é a única
+   leitura de escala (ticket 94 removeu a régua de capacidade). Não há painel
+   lateral nem linha decorativa animada. Nada depende de Análise para o hero
+   existir. */
 .home-hero {
-  margin-bottom: 2rem;
-}
-
-.home-cartoes {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--esp-6);
+  margin-bottom: var(--esp-8);
 }
 
-.home-cartao {
+/* O H1 é a peça da primeira tela: a escala display abre acima do token só aqui,
+   porque é a única linha do site que precisa carregar a página inteira. No
+   celular o texto flui e quebra sozinho; no desktop ele vira duas linhas fixas,
+   cada uma com o próprio mask para a entrada. */
+.home-titulo {
+  margin: 0;
+  font-size: clamp(2.75rem, 6.4vw, 5.25rem);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--entrelinha-display);
+  text-wrap: balance;
+}
+
+/* Abaixo do desktop as linhas são inline: a quebra é a natural do texto, sem
+   uma palavra órfã criada pelo split. */
+.home-titulo-linha,
+.home-titulo-texto {
+  display: inline;
+}
+
+/* Em 320 px a palavra mais longa do título precisa caber sem overflow: abaixo
+   de 22 rem o display desce para o token de manchete em vez de criar rolagem
+   horizontal (ou de cair no tamanho herdado do corpo). */
+@media (max-width: 22rem) {
+  .home-titulo {
+    font-size: var(--texto-manchete);
+  }
+}
+
+.home-hero-lead {
+  max-width: 56ch;
+  margin: 0;
+  font-family: var(--fonte-leitura);
+  font-size: var(--texto-bloco);
+  line-height: var(--entrelinha-corpo);
+}
+
+/* Ação única do hero (ticket 103): ancora no simulador, que abre a resposta
+   para a primeira pergunta do visitante. O alvo de 44 px vem do primitivo
+   `.botao`; aqui só o respiro até o simulador. */
+.home-hero-acao {
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding: 1.5rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
-  color: var(--texto);
-  text-decoration: none;
 }
 
-.home-cartao strong {
-  font-size: 1.2rem;
+/* --- Simulador do hero (tickets 93 e 104) -------------------------------
+   A promessa da home executada: área + sol viram capacidade comercial, com a
+   conta aberta e a contagem real de Aparelhos. É instrumento, não card: uma
+   hairline abre o bloco e a leitura grande fica em mono. O título e o rótulo
+   de "Incidência de sol" falam a língua da interface — o simulador é o
+   primeiro instrumento de decisão da página, não um formulário técnico.     */
+.hero-simulador {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--esp-6);
+  padding-top: var(--esp-6);
+  border-top: 1px solid var(--linha);
 }
 
-.home-cartao span {
-  color: var(--texto-suave);
+.hero-simulador-controles {
+  display: grid;
+  gap: var(--esp-5);
+  min-width: 0;
 }
 
-.home-cartao:hover {
-  border-color: var(--primaria);
+.hero-simulador-etiqueta,
+.hero-area-rotulo,
+.hero-area-valor,
+.hero-area-limites,
+.hero-simulador-nota {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
 }
 
-.home-cartao-destaque {
-  border-color: var(--primaria);
-  background: #e0f2fe;
+.hero-simulador-cabecalho {
+  display: grid;
+  gap: var(--esp-2);
 }
 
-.home-cartao-destaque strong {
-  color: var(--primaria);
+/* O título é interface em caixa de frase, no tamanho de seção: a promessa do
+   bloco antes do controle, não um rótulo mono em caixa alta. */
+.hero-simulador-titulo {
+  margin: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-secao);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: 1.2;
+  text-wrap: balance;
 }
 
-.home-confianca {
+.hero-simulador-apoio {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+.hero-simulador-etiqueta {
+  color: var(--mudo);
+  text-transform: uppercase;
+}
+
+.hero-area {
+  display: grid;
+  gap: var(--esp-2);
+}
+
+.hero-area-topo {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
   align-items: baseline;
-  padding-block: 0.75rem;
-  margin-bottom: 2rem;
-  border-block: 1px solid var(--borda);
+  justify-content: space-between;
+  gap: var(--esp-1) var(--esp-5);
 }
 
-.home-confianca p {
+.hero-area-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
+  color: var(--mudo);
+  text-transform: uppercase;
+}
+
+/* "Incidência de sol" sobe ao peso da interface, com o ícone de 16 px: o
+   único pictograma do bloco — os chips continuam texto puro. */
+.hero-sol-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--esp-2);
   margin: 0;
+  padding: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-apertada);
 }
 
-.home-populares {
-  margin-bottom: 2rem;
+.hero-area-valor {
+  color: var(--tinta);
+  font-size: var(--texto-ui);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
 }
 
-.home-links {
+/* Trilho e preenchimento em duas camadas: o controle nativo fica transparente
+   por cima, então não há gradiente nem pseudo-trilho de navegador diferente. */
+.hero-area-trilho {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.hero-area-trilho::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--linha);
+}
+
+.hero-area-preenchimento {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 2px;
+  background: var(--azul-frio);
+  transform: translateY(-50%);
+  transition: width 120ms var(--curva);
+}
+
+.hero-area-campo {
+  position: relative;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hero-area-campo::-webkit-slider-runnable-track {
+  height: 44px;
+  background: transparent;
+}
+
+.hero-area-campo::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: 13px;
+  border: 2px solid var(--azul-frio);
+  border-radius: 50%;
+  background: var(--giz);
+}
+
+.hero-area-campo::-moz-range-track {
+  height: 44px;
+  background: transparent;
+}
+
+.hero-area-campo::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--azul-frio);
+  border-radius: 50%;
+  background: var(--giz);
+}
+
+.hero-area-limites {
+  display: flex;
+  justify-content: space-between;
+  color: var(--mudo);
+  font-size: var(--texto-unidade);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+.hero-sol {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.hero-sol-opcoes {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  gap: var(--esp-2);
+  margin-top: var(--esp-3);
 }
 
-.home-links a {
-  display: inline-block;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--borda);
-  border-radius: 999px;
-  background: var(--superficie);
-  text-decoration: none;
+.hero-sol-opcao {
+  min-height: 32px;
+  padding: 0 var(--esp-4);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  cursor: pointer;
+  transition:
+    background-color 120ms var(--curva),
+    border-color 120ms var(--curva);
 }
 
-.home-links a:hover {
-  border-color: var(--primaria);
-  background: #e0f2fe;
+.hero-sol-opcao:hover {
+  border-color: var(--grafite);
 }
 
-.home-assistente {
-  margin-block: 2.5rem;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  background: var(--superficie);
-  border: 1px solid var(--borda);
+.hero-sol-opcao[aria-pressed="true"] {
+  border-color: var(--tinta);
+  background: var(--tinta);
+  color: var(--giz);
 }
 
-.home-passos {
+.hero-simulador-resultado {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  padding: 0;
-  margin: 1.25rem 0;
-  list-style: none;
+  align-content: start;
+  gap: var(--esp-3);
+  min-width: 0;
 }
 
-.home-passos li {
+.hero-simulador-leitura {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  padding-left: 0.75rem;
-  border-left: 3px solid var(--primaria);
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--esp-2);
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-variant-numeric: tabular-nums;
 }
 
-.home-passos span {
-  color: var(--texto-suave);
-  font-size: 0.9rem;
+.hero-simulador-numero {
+  font-size: var(--texto-leitura);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 
+/* O número entra de novo a cada mudança: um passo de 12 px que acompanha o
+   controle, como um ponteiro que assenta. Desligado com movimento reduzido. */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-simulador-numero {
+    animation: hero-entra 240ms var(--curva) both;
+  }
+}
+
+.hero-simulador-unidade {
+  color: var(--mudo);
+  font-size: var(--texto-unidade);
+  letter-spacing: var(--tracking-unidade);
+}
+
+/* A conta aberta em três linhas: rótulo à esquerda, valor em mono tabular à
+   direita, sem espremer a leitura grande acima. */
+.hero-simulador-calculo {
+  display: grid;
+  gap: var(--esp-2);
+  max-width: 42ch;
+  margin: 0;
+}
+
+.hero-simulador-calculo > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  min-width: 0;
+}
+
+.hero-simulador-calculo dt {
+  color: var(--mudo);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+}
+
+.hero-simulador-calculo dd {
+  margin: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  text-align: end;
+}
+
+.hero-simulador-contagem {
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+.hero-simulador-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-3);
+  margin-top: var(--esp-2);
+}
+
+.hero-simulador-nota {
+  max-width: 46ch;
+  color: var(--mudo);
+  font-size: var(--texto-unidade);
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+/* Entrada única do hero: o conteúdo já nasce no estado final no HTML; a
+   animação só descreve a chegada quando o visitante permite movimento. O
+   título sobe linha a linha do mask (700 ms cada, 80 ms de intervalo) e a leitura
+   e as ações chegam enquanto a última linha assenta, com 12 px de subida. É a
+   única sequência orquestrada da página. */
+@keyframes hero-entra {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes hero-linha-sobe {
+  from {
+    transform: translate3d(0, 110%, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Abaixo do desktop o título entra inteiro; aqui ele sobe linha a linha. */
+  .home-titulo {
+    animation: hero-entra 520ms var(--curva) 80ms both;
+  }
+
+  .home-hero-lead {
+    animation: hero-entra 520ms var(--curva) 260ms both;
+  }
+
+  .home-hero-acao {
+    animation: hero-entra 520ms var(--curva) 300ms both;
+  }
+
+  .hero-simulador {
+    animation: hero-entra 520ms var(--curva) 340ms both;
+  }
+}
+
+/* Cores forçadas não têm opacidade intermediária confiável: mostra o final. */
+@media (forced-colors: active) {
+  .home-titulo,
+  .home-titulo-texto,
+  .home-hero-lead,
+  .home-hero-acao,
+  .hero-simulador {
+    animation: none;
+  }
+}
+
+/* Desktop (ticket 93): o título ocupa a largura toda e a leitura divide a linha
+   com as ações, alinhadas à direita na base da coluna. As colunas usam
+   minmax(0, …) para nenhuma marca longa empurrar a página para fora da
+   viewport em 1024 px. */
+@media (min-width: 64rem) {
+  .home-hero {
+    gap: var(--esp-8);
+    margin-bottom: var(--esp-9);
+    padding-top: var(--esp-5);
+  }
+
+  /* Duas linhas fixas, cada uma num mask próprio: o título sobe de baixo do
+     recorte em vez de aparecer de uma vez. O padding/recuo negativo deixam
+     respiro para descendentes (g, q) sem abrir um vão entre as linhas. */
+  .home-titulo-linha {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.08em;
+    margin-block: -0.08em;
+  }
+
+  .home-titulo-texto {
+    display: block;
+  }
+
+  /* Controles à esquerda, leitura e ação à direita: a linha fecha no mesmo
+     eixo da régua abaixo. */
+  .hero-simulador {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    column-gap: var(--esp-8);
+    row-gap: var(--esp-5);
+    align-items: start;
+  }
+}
+
+/* No desktop as duas linhas fixas sobem do próprio mask, 80 ms uma da outra;
+   a leitura e as ações chegam quando a segunda já está assentando. */
+@media (min-width: 64rem) {
+  @media (prefers-reduced-motion: no-preference) {
+    .home-titulo {
+      animation: none;
+    }
+
+    .home-titulo-texto {
+      animation: hero-linha-sobe 700ms var(--curva) both;
+    }
+
+    .home-titulo-linha:nth-child(2) .home-titulo-texto {
+      animation-delay: 80ms;
+    }
+
+    .home-hero-lead {
+      animation-delay: 340ms;
+    }
+
+    .home-hero-acao {
+      animation-delay: 380ms;
+    }
+
+    .hero-simulador {
+      animation-delay: 400ms;
+    }
+  }
+}
+
+/* O percurso da home (tickets 71, 96, 98, 105 e 107): o hero termina no
+   simulador e a primeira seção abaixo dele (Aparelhos em destaque) assume a
+   régua de 1 px; daí vêm análises → perguntas → metodologia. Cada bloco respira
+   com o mesmo ritmo; nenhum deles flutua. A faixa de cobertura saiu no 105. */
+.home-destaques,
 .home-faq,
 .home-metodologia {
-  margin-bottom: 2rem;
+  padding-block: var(--esp-6);
+  margin-block: 0;
+  border-top: 1px solid var(--linha);
 }
 
-.home-pergunta {
-  padding-block: 0.75rem;
-  border-bottom: 1px solid var(--borda);
+.home-destaques .cabecalho-secao {
+  margin-bottom: var(--esp-5);
 }
 
-.home-pergunta h3 {
-  margin: 0 0 0.35rem;
-  font-size: 1.05rem;
+.home-faq .cabecalho-secao,
+.home-metodologia .cabecalho-secao {
+  margin-bottom: var(--esp-4);
+}
+
+/* Aparelhos em destaque (tickets 96 e 107): uma seção só, com o seletor de
+   capacidade no cabeçalho e os modelos em cartões separados. O seletor nasce
+   com duas ou mais capacidades; com uma só, a capacidade é um rótulo estático.
+   Rolagem horizontal dos chips no celular, nunca quebra de linha. */
+.home-destaques-seletor {
+  display: grid;
+  gap: var(--esp-1);
+  justify-items: start;
+  min-width: 0;
+}
+
+.home-destaques-seletor-rotulo,
+.home-destaques-rotulo {
+  margin: 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-destaques-rotulo {
+  color: var(--tinta);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+}
+
+.home-destaques-chips {
+  display: flex;
+  gap: var(--esp-3);
+  max-width: 100%;
+  padding-block-end: var(--esp-1);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+/* Seletor de capacidade da home (ticket 107): chips de 44 px em todos os
+   breakpoints — diferem do chip de filtro do DESIGN.md (32 px desktop / 44 px
+   celular) porque são controles de seletor, não de filtro. Com uma única
+   capacidade a seção não nasce com chip: exibe rótulo estático. */
+.home-destaques-chip {
+  flex: none;
+  min-height: 44px;
+  padding-inline: var(--esp-5);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-rotulo);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--mov-hover) var(--curva),
+    color var(--mov-hover) var(--curva);
+}
+
+.home-destaques-chip:hover,
+.home-destaques-chip[aria-pressed="true"] {
+  border-color: var(--tinta);
+  color: var(--tinta);
+}
+
+.home-destaques-chip:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.home-destaques-painel[hidden] {
+  display: none;
+}
+
+.home-destaques-painel + .home-destaques-painel {
+  margin-block-start: var(--esp-5);
+}
+
+.home-destaques-cartoes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: stretch;
+  gap: var(--esp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 40rem) {
+  .home-destaques-cartoes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .home-destaques-cartoes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.home-destaque-cartao {
+  min-width: 0;
+  margin-block: 0;
+  padding: var(--esp-6);
+  background: var(--giz);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  transition: border-color var(--mov-hover) var(--curva);
+}
+
+.home-destaque-cartao:hover {
+  border-color: var(--tinta);
+}
+
+.home-destaque-cartao article {
+  display: grid;
+  gap: var(--esp-4);
+  align-content: start;
+  height: 100%;
+}
+
+.home-destaque-identidade {
+  display: grid;
+  gap: var(--esp-1);
+  margin: 0;
+}
+
+.home-destaque-marca {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-destaque-modelo {
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-apertado);
+  line-height: var(--entrelinha-apertada);
+  overflow-wrap: anywhere;
+}
+
+.home-destaque-modelo a {
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.home-destaque-modelo a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--foco);
+  text-underline-offset: 0.15em;
+}
+
+.home-destaque-atributos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--esp-2) var(--esp-4);
+  margin: 0;
+  color: var(--grafite);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
+}
+
+.home-destaque-leituras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--esp-4);
+  margin: 0;
+}
+
+.home-destaque-leituras div {
+  display: grid;
+  gap: var(--esp-1);
+  min-width: 0;
+}
+
+.home-destaque-leituras dt {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
+  text-transform: uppercase;
+}
+
+.home-destaque-leituras dd {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-pequena);
+}
+
+.home-destaque-acoes {
+  display: grid;
+  gap: var(--esp-2);
+  margin: auto 0 0;
+  padding-block-start: var(--esp-3);
+  font-size: var(--texto-pequeno);
+}
+
+.home-destaque-acoes a {
+  color: var(--azul-frio-texto);
+  text-decoration: underline;
+  text-decoration-color: var(--linha);
+  text-underline-offset: 0.15em;
+}
+
+.home-destaque-acoes a:hover {
+  text-decoration-color: var(--foco);
+}
+
+.home-destaque-analise {
+  align-items: center;
+  justify-self: start;
+  min-height: 44px;
+  display: inline-flex;
+}
+
+/* Uma linha por Oferta, cada uma com o logo da loja e o marcador mínimo dentro
+   do link (ticket 106): o cartão não escolhe "a melhor" loja. */
+.home-destaque-ofertas {
+  display: grid;
+  gap: var(--esp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* O CTA de Oferta compartilhado mantém a cor do link, sem herdar o
+   sublinhado dos links editoriais do cartão (ticket 106). */
+.home-destaque-acoes .oferta-cartao {
+  text-decoration: none;
+}
+
+/* FAQ (ticket 71), metodologia (ticket 99) e a densidade do ticket 109:
+   `<details>` nativo, fechado por padrão, em grade de duas colunas a partir de
+   900 px. Cada item fecha em 56 px — índice em mono, título em 1 rem e `+`/`−`
+   em ciano —, então as linhas deixam de ocupar meia página sem perder uma
+   palavra do texto. Abrir um item cresce a própria linha da grade e nada mais.
+   A metodologia reaproveita a mesma interação, mas mantém o texto editorial na
+   fonte de leitura — ela explica, não é um item de FAQ. */
+.home-faq-lista,
+.home-metodologia-lista {
+  display: grid;
+  align-content: start;
+}
+
+@media (min-width: 56.25rem) {
+  .home-faq-lista,
+  .home-metodologia-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--esp-8);
+  }
+}
+
+.home-pergunta,
+.home-tema {
+  border-top: 1px solid var(--linha);
+}
+
+.home-pergunta summary,
+.home-tema summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--esp-4);
+  min-height: 56px;
+  padding-block: var(--esp-4);
+  cursor: pointer;
+  list-style: none;
+}
+
+.home-pergunta summary::-webkit-details-marker,
+.home-tema summary::-webkit-details-marker {
+  display: none;
+}
+
+.home-item-indice {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-ui);
+}
+
+.home-pergunta summary::after,
+.home-tema summary::after {
+  content: "+";
+  color: var(--foco-texto);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-ui);
+  line-height: 1;
+}
+
+.home-pergunta[open] summary::after,
+.home-tema[open] summary::after {
+  content: "−";
+}
+
+.home-pergunta h3,
+.home-tema h3 {
+  margin: 0;
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-ui);
 }
 
 .home-pergunta p {
+  max-width: 68ch;
   margin: 0;
-  color: var(--texto-suave);
+  padding-block-end: var(--esp-4);
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  line-height: 1.6;
+}
+
+/* Metodologia (ticket 71): coluna de leitura em serifa. O conteúdo do
+   `<details>` (ticket 99) mantém a fonte de leitura; só o título do `summary`
+   usa a interface, e o `+`/`−` fica em mono. A nota de fontes saiu no ticket
+   109: ela vive no rodapé, junto da Proveniência. */
+.home-metodologia-lista p {
+  max-width: 68ch;
+  margin: 0;
+  padding-block-end: var(--esp-4);
 }
 
 @media (max-width: 40rem) {
-  .home-cartoes,
-  .home-passos {
+  .home-hero {
+    gap: var(--esp-5);
+    margin-bottom: var(--esp-7);
+  }
+
+  .hero-simulador-acoes {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-sol-opcao {
+    min-height: 44px;
+  }
+
+  .home-destaques-cartoes {
     grid-template-columns: 1fr;
   }
 }
@@ -2206,7 +3244,7 @@ body.ampla footer {
 }
 
 .comparar-campo input:focus-visible {
-  outline: 2px solid var(--primaria);
+  outline: 2px solid var(--foco);
   outline-offset: 1px;
 }
 
@@ -2304,11 +3342,14 @@ body.ampla footer {
   margin-top: 0.4rem;
 }
 
-/* O CTA de Oferta no cartão (ticket 59) usa o mesmo visual da ficha; na barra
-   de ações ele divide espaço com "Trocar" e "Remover". */
+/* O CTA de Oferta no cartão (ticket 59) entra na área de ações, antes de
+   "Trocar", e fala a mesma língua da ficha (ticket 69). A matriz continua sem
+   qualquer elemento comercial. */
 .comparar-cartao-acoes .oferta-cartao {
+  display: inline-flex;
   margin-inline-end: auto;
-  font-size: 0.85rem;
+  padding-block: var(--esp-2);
+  font-size: var(--texto-pequeno);
 }
 
 .comparar-cartao-acoes button,
@@ -2365,7 +3406,7 @@ body.ampla footer {
   padding: 0.6rem 0.85rem;
   margin: 1.25rem 0 0;
   border-radius: 0.5rem;
-  background: #e0f2fe;
+  background: var(--azul-frio-lavado);
   font-size: 0.9rem;
 }
 
@@ -2614,11 +3655,4 @@ body.ampla footer {
 .assuntos-contato li p {
   margin: 0.25rem 0 0;
   font-size: 0.9rem;
-}
-
-.rodape-institucional {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-top: 0.5rem;
 }

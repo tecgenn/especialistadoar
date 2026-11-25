@@ -1,0 +1,161 @@
+---
+import Aviso from "../../../../src/components/primitivos/Aviso.astro";
+import Botao from "../../../../src/components/primitivos/Botao.astro";
+import Campo from "../../../../src/components/primitivos/Campo.astro";
+import ChipFiltro from "../../../../src/components/primitivos/ChipFiltro.astro";
+import ChipResumo from "../../../../src/components/primitivos/ChipResumo.astro";
+import EstadoVazio from "../../../../src/components/primitivos/EstadoVazio.astro";
+import EtiquetaClasse from "../../../../src/components/primitivos/EtiquetaClasse.astro";
+import Icone from "../../../../src/components/primitivos/Icone.astro";
+import Leitura from "../../../../src/components/primitivos/Leitura.astro";
+import ReguaSecao from "../../../../src/components/primitivos/ReguaSecao.astro";
+import Selecao from "../../../../src/components/primitivos/Selecao.astro";
+import Trilha from "../../../../src/components/primitivos/Trilha.astro";
+import "../../../../src/styles/global.css";
+
+/**
+ * Página de teste dos primitivos (ticket 68). Não é uma rota do site: o teste
+ * de renderização constrói este fixture com o Astro real e olha o HTML. Ele
+ * prova que uma página nova se monta só com primitivos e composição, sem ilha
+ * e sem JavaScript de cliente.
+ */
+const opcoes = [
+  { valor: "split", rotulo: "Split Hi-Wall" },
+  { valor: "janela", rotulo: "Janela" },
+  { valor: "cassete", rotulo: "Cassete", desabilitado: true },
+];
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Primitivos</title>
+  </head>
+  <body>
+    <main>
+      <Trilha
+        itens={[
+          { rotulo: "Início", href: "/" },
+          { rotulo: "Aparelhos", href: "/aparelhos/" },
+          { rotulo: "Samsung — WindFree AI Pro" },
+        ]}
+      />
+
+      <h1>Primitivos</h1>
+
+      <section aria-label="Botões">
+        <Botao href="/aparelhos/" icone="seta-direita">Explorar o catálogo</Botao>
+        <Botao variante="secundario" href="/assistente/">
+          Dimensionar meu ambiente
+        </Botao>
+        <Botao variante="texto" href="/comparar/">Comparar modelos</Botao>
+        <Botao desabilitado>Indisponível</Botao>
+        <Botao href="/aparelhos/" desabilitado>Link indisponível</Botao>
+        <Botao tipo="submit" variante="secundario">Aplicar</Botao>
+      </section>
+
+      <section aria-label="Campos">
+        <Campo
+          id="capacidade"
+          rotulo="Capacidade"
+          tipo="number"
+          valor={12000}
+          sufixo="BTU/h"
+          ajuda="Faixa comercial mais comum em quartos."
+          inputmode="numeric"
+          min={0}
+        />
+        <Campo
+          id="modelo"
+          rotulo="Modelo"
+          valor=""
+          erro="Informe o modelo do aparelho."
+          ajuda="O texto do INMETRO."
+          obrigatorio
+        />
+        <Campo id="marca" rotulo="Marca" desabilitado valor="Samsung" />
+        <Selecao
+          id="tipo"
+          rotulo="Tipo"
+          opcoes={opcoes}
+          placeholder="Todos os tipos"
+          ajuda="Filtra a tabela inteira."
+        />
+        <Selecao
+          id="tipo-erro"
+          rotulo="Tipo"
+          opcoes={opcoes}
+          valor="janela"
+          erro="Tipo fora da base."
+          desabilitado
+        />
+      </section>
+
+      <section aria-label="Chips">
+        <ChipFiltro rotulo="Samsung" ativo />
+        <ChipFiltro rotulo="LG" />
+        <ChipResumo rotulo="Marca: Samsung" href="/aparelhos/?tipo=split" />
+        <ChipResumo rotulo="Tensão: 220 V" />
+      </section>
+
+      <section aria-label="Classes">
+        <EtiquetaClasse classes={["A"]} />
+        <EtiquetaClasse classes={["C", "A", "C"]} />
+        <EtiquetaClasse classes={[]} />
+      </section>
+
+      <section aria-label="Leituras">
+        <Leitura
+          rotulo="IDRS"
+          valor="7,42"
+          legenda="Quanto maior, mais eficiente."
+        />
+        <Leitura
+          rotulo="Consumo anual"
+          valor="416"
+          unidade="kWh/ano"
+          href="#consumo-e-custo"
+          legenda="Ciclo de referência de 2.080 h/ano."
+        />
+        <Leitura
+          rotulo="Capacidade"
+          valor="9.000 – 12.000"
+          unidade="BTU/h"
+          legenda="Faixa das Variantes."
+        />
+      </section>
+
+      <section aria-label="Réguas">
+        <ReguaSecao rotulo="Cobertura da base" contagem="2.227 aparelhos" />
+        <ReguaSecao rotulo="Sem contagem" />
+      </section>
+
+      <section aria-label="Avisos">
+        <Aviso rotulo="Estimativa">
+          <p>O custo é estimativa, não um Valor oficial.</p>
+        </Aviso>
+        <Aviso tom="frio">
+          <p>Os dados vêm da exportação oficial do INMETRO.</p>
+        </Aviso>
+      </section>
+
+      <section aria-label="Estados vazios">
+        <EstadoVazio
+          titulo="Nenhum aparelho neste recorte"
+          frase="Ajuste os filtros ou comece por uma faixa de capacidade."
+        >
+          <Botao href="/aparelhos/">Limpar filtros</Botao>
+        </EstadoVazio>
+        <EstadoVazio
+          titulo="Sem consumo declarado"
+          frase="Este Aparelho não traz o dado do INMETRO, então não há o que calcular."
+        />
+      </section>
+
+      <p>
+        <Icone nome="lupa" tamanho={16} />
+        <Icone nome="seta-baixo" tamanho={12} />
+      </p>
+    </main>
+  </body>
+</html>

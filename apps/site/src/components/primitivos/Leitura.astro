@@ -1,0 +1,41 @@
+---
+/**
+ * Leitura de dado (ticket 68): rótulo mono, valor em mono grande, unidade e
+ * legenda. Não é um card de estatística — não há caixa, fundo nem sombra; a
+ * hierarquia vem do tamanho e da hairline acima. Com `href`, o valor vira um
+ * link (o consumo anual da ficha leva a “Consumo e custo”).
+ */
+interface Props {
+  rotulo: string;
+  valor: string | number;
+  /** Unidade sempre explícita: BTU/h, kWh/ano, R$. */
+  unidade?: string;
+  /** Legenda curta: método, contexto ou faixa das Variantes. */
+  legenda?: string;
+  /** Torna o valor um link para a seção que o explica. */
+  href?: string;
+  class?: string;
+}
+
+const { rotulo, valor, unidade, legenda, href, class: classe } = Astro.props;
+---
+
+<dl class:list={["leitura", classe]}>
+  <dt class="leitura-rotulo">{rotulo}</dt>
+  <dd class="leitura-valor">
+    {
+      href ? (
+        <a class="leitura-link" href={href}>
+          <span class="leitura-numero">{valor}</span>
+          {unidade ? <span class="leitura-unidade">{unidade}</span> : null}
+        </a>
+      ) : (
+        <>
+          <span class="leitura-numero">{valor}</span>
+          {unidade ? <span class="leitura-unidade">{unidade}</span> : null}
+        </>
+      )
+    }
+  </dd>
+  {legenda ? <dd class="leitura-legenda">{legenda}</dd> : null}
+</dl>

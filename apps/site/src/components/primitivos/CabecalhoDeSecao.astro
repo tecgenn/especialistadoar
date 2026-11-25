@@ -1,0 +1,37 @@
+---
+import type { NomeDeIcone } from "../../lib/icones.ts";
+import Icone from "./Icone.astro";
+
+/**
+ * Cabeçalho de seção padrão da home (ticket 102): ícone de linha de 20 px num
+ * tile hairline de 32 px ao lado do `h2`, com lead opcional e um slot para as
+ * ações da seção. O tile não é selo: fundo giz, borda `--linha`, ícone
+ * `--azul-frio-texto` e `aria-hidden` — o significado está no título.
+ */
+interface Props {
+  icone: NomeDeIcone;
+  titulo: string;
+  /** `id` do `h2`, referenciado pelo `aria-labelledby` da seção. */
+  id: string;
+  lead?: string;
+  class?: string;
+}
+
+const { icone, titulo, id, lead, class: classe } = Astro.props;
+---
+
+<header class:list={["cabecalho-secao", classe]}>
+  <div class="cabecalho-secao-corpo">
+    {/* O tile fica dentro do `h2`, ao lado do texto: um bloco de ícone
+        empilhado acima do título é o padrão de card genérico que o
+        `impeccable detect` recusa. */}
+    <h2 id={id} class="cabecalho-secao-titulo">
+      <span class="cabecalho-secao-icone">
+        <Icone nome={icone} tamanho={20} />
+      </span>
+      {titulo}
+    </h2>
+    {lead ? <p class="intro cabecalho-secao-lead">{lead}</p> : null}
+  </div>
+  <slot name="acoes" />
+</header>

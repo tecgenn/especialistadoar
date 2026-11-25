@@ -220,7 +220,7 @@ nova exportação CSV
   entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
   vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
   botão ao lado de "Ordenar por" inverte a direção. A página usa a variante
-  **ampla** do layout e uma coluna central de até 72 rem (ticket 50), sem barra
+  **ampla** do shell (ticket 67), sem barra
   lateral: busca em largura total, a linha de **Pesquisa avançada** com os chips
   do recorte efetivo (inclusive o padrão implícito de Tensão 220 V, cujo "×"
   grava `tensao=`), o painel recolhível com Marca, Capacidade, Função, Tensão,
@@ -235,15 +235,35 @@ nova exportação CSV
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e
   modelo; com busca e sem coluna escolhida, é a relevância. `/` é a **home**
-  (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`; o bloco de
-  capacidades e marcas populares vem de `HomePopulares.astro`) com hero, dois
-  cartões de entrada (tabela e
-  Assistente, este em destaque de cor), faixa de confiança com contagens
-  derivadas do `consulta.json` (Aparelhos, marcas, capacidades) e a Versão da
-  tabela, capacidades e marcas populares ligadas à tabela filtrada, Análises em
-  destaque (condicional), chamada do Assistente em três passos, FAQ e
-  metodologia/INMETRO. O `<head>` publica `WebSite` e `FAQPage`; a home não baixa
-  JSON no cliente. Os links antigos
+  (ticket 46): um hub gerado no build (módulo puro `src/lib/home.ts`) com o H1 e
+  o lead preservados, um **hero renovado** (ticket 93): H1 display em duas
+  linhas com entrada por mask, lead em serifa e o **simulador de ambiente** —
+  área e sol viram
+  capacidade comercial pelo motor puro do Assistente, com a conta aberta e as
+  contagens daquela capacidade e de Classe A calculadas no build a partir do
+  `consulta.json`. A **régua de capacidade** do ticket 70 foi removida no
+  ticket 94 (componente, módulo puro, teste e CSS): o simulador é a única
+  leitura de escala da primeira tela, e a navegação por faixa continua no
+  catálogo, nos chips de Faixa de capacidade. A faixa "Cobertura da base" (contagens
+  de Aparelhos, marcas e capacidades) saiu no ticket 105; abaixo do hero vem a
+  seção única de **Aparelhos em destaque** (tickets 96 e 107 — substitui
+  "Capacidades populares" e "Marcas populares", e vive em
+  `components/HomeDestaques.astro`): capacidade no cabeçalho
+  (chips com 2+ capacidades, rótulo estático com uma só), todos os painéis no
+  HTML e um script inline que só esconde os inativos, e os modelos em cartões
+  separados. Depois vem a grade estática de **Análises em destaque** (ticket
+  108 — substitui o carrossel do #97): até três Análises, as mais recentes,
+  vindas de `destaquesDaHome`, cada uma num cartão com imagem 16:10 quando
+  existe, data, título, resumo e uma linha de Oferta por loja; o link “Todas
+  as análises” fica no cabeçalho e nenhum script é servido. A chamada do Assistente
+  saiu da home no ticket 98: repetia a estimativa do hero sem acrescentar
+  fatores, conta aberta por fator ou confiança. O caminho para a ferramenta
+  completa fica na ação "Continuar no Assistente" do resultado, na nota do
+  simulador e na metodologia (ticket 104), e a constante
+  `PASSOS_ASSISTENTE` foi removida. FAQ e
+  Metodologia/INMETRO em `<details>` nativo (ticket 99). O `<head>` publica
+  `WebSite` e `FAQPage`; a home não baixa JSON no cliente. A Versão da base
+  aparece apenas no footer, em fonte pequena (ticket 95). Os links antigos
   `/?marca=…` são levados a `/aparelhos/` com a mesma querystring por um script
   curto na home (o `_redirects` não separa a mesma URL por parâmetros), e o menu
   tem Aparelhos, Assistente e, com ≥ 1 Análise, Análises.
@@ -306,12 +326,16 @@ nova exportação CSV
   com aviso, sem bloco de dados e sem CTA. Nada disso entra em `data/build/`, na
   API ou na consulta. Ver ADR-0015.
 
+- **shell global** — `apps/site/src/layouts/Base.astro` (ticket 67) é a moldura de todas as rotas: `<html lang="pt-BR">`, skip link como primeiro focável, cabeçalho de 64/72 px com marca e navegação (`aria-current="page"` e barra ciano de 2 px no item ativo, rolagem horizontal no celular), rodapé em azul-frio escuro com proveniência e Versão da tabela, institucionais e o bloco único de Transparência com o Leitor (ticket 100), além de `theme-color`/Open Graph/Twitter mínimos. A prop `largura` (`shell`, `leitura`, `ampla`) define a coluna do `main`: shell de 90 rem na home, ficha, comparação e Assistente; 68 ch nos artigos e institucionais; ampla no catálogo, que alinha cabeçalho, conteúdo e rodapé sem teto. Título, description, canonical e JSON-LD continuam vindo de cada página; `og:image` e `BreadcrumbList` ficam para o ticket 86.
+
+- **primitivos de interface** — `apps/site/src/components/primitivos/` (ticket 68) é o vocabulário compartilhado das páginas, todo em Astro estático e sem hidratação: `Botao`, `Campo`, `Selecao`, `ChipFiltro`, `ChipResumo`, `EtiquetaClasse`, `Leitura`, `ReguaSecao`, `Trilha`, `Aviso`, `EstadoVazio`, `Icone`, `LogoLoja`, `OfertaCartao` e `CabecalhoDeSecao` (ticket 102 — ícone de linha num tile hairline ao lado do `h2`, lead opcional e slot de ações, usado pelas seções da home). O CSS vive numa camada só (`src/styles/primitivos.css`, importada por `global.css` depois de `base.css`), com os tokens de `tokens.css` e os mesmos 44 px, raio de 2 px e foco ciano do resto do site. O contrato puro fica em `src/lib/primitivos.ts` (a etiqueta de Classe a partir das Classes das Variantes — faixa com a pior — e os ids de ajuda/erro do campo) e `src/lib/icones.ts` (12 ícones de linha em `d` de `<path>`, traço de 1,5 px, `currentColor`, `aria-hidden`; nome desconhecido falha o build). Nenhum primitivo cria ilha, `client:` ou `<script>`; o seam de renderização `apps/site/test/primitivos-build.test.ts` constrói o fixture `apps/site/test/primitivos-fixture/` com o Astro real e confere o HTML — labels, `aria-describedby`, `aria-invalid`, `aria-pressed`, `aria-current` e estados de erro, seleção e desabilitado.
+
 - **assistente** — em `apps/site/src/lib/assistente.ts`, o motor puro do Assistente de dimensionamento (ticket 41): recebe as respostas das cinco telas do wizard (`/assistente/`) e devolve a Recomendação do Assistente — capacidade comercial recomendada, fatores usados, nível de confiança, explicação curta e orientações. Coeficientes fixos e auditáveis: base por m² conforme incidência solar (600/650/750/800 BTU/h), +600 BTU/h por pessoa adicional (limite superior da faixa), +600 BTU/h por eletrônico, +100 BTU/h por lâmpada, +200 BTU/h por janela a partir da 3ª, arredondamento comercial para cima (9.000 a 60.000 BTU/h), teto de 60.000 com alternativa dividida (2 × metade da capacidade quando for comercial e ≥ 9.000). A ilha React `Assistente.tsx` apenas coleta respostas e renderiza; não calcula. Todo o estado vive na URL, então recarregar e compartilhar preservam o resultado. No build, o mapa capacidade → analisados (ticket 42) é montado a partir das Análises publicadas e das `capacidadesBtu` do `consulta.json`, e só o valor recomendado é consultado — sem busca no cliente. ADR-0020 registra a decisão (heurística de mercado, sem LLM/Worker, Valor calculado nunca oficial, acima de 60.000 BTU/h indica mais de uma unidade e avaliação técnica).
 
 - **calculadora de custo** — em `apps/site`, o motor puro `src/lib/custo.ts` (ADR-0022) e o insumo curado `src/lib/tarifas.ts` + `tarifas.json`. O motor não tem DOM nem Astro: recebe os consumos anuais das Variantes (`kWh/ano`, do INMETRO), a tarifa (R$/kWh), as horas por dia e os dias por mês e devolve consumo por hora, consumo mensal, custo mensal e custo anual, sempre com as **entradas** usadas. Fórmula sobre o ciclo de medição do INMETRO (**2.080 h/ano**): por hora = anual ÷ 2.080; mensal = por hora × horas × dias; custo mensal = consumo mensal × tarifa; custo anual = custo mensal × 12. Aparelho com mais de uma Variante devolve **faixa** (mínimo–máximo); entrada fora do contrato ou consumo ausente devolve `null` e a interface explica em vez de calcular. A formatação pt-BR (`Intl`: R$ com duas casas, kWh com duas casas) também vive aqui. As **Tarifas de referência** são um insumo **somente do site** — as 27 UFs, cada uma com `tarifa`, `referencia` (`AAAA-MM`) e `fonte` —, validadas no build pelo glue `src/conteudo/tarifas.ts` (UF faltando, repetida, tarifa não positiva/finita ou `referencia`/`fonte` em branco **falham o build**); nunca entram em `data/build/`, na API ou na consulta. O contrato de URL (`uf`, `tarifa`, `horas`, `dias`) vive no mesmo módulo: os padrões (São Paulo, 8 h/dia, 30 dias) não aparecem na URL (ADR-0019), `uf=` vazia é "Tarifa informada", a tarifa digitada tem precedência e valores inválidos caem no padrão em silêncio. É estado de interface, separado de `FiltrosConsulta`.
 
 - **comparação** — em `apps/site`, a sessão de Comparação (tickets 49–52, 56): a página `/comparar/` (item "Comparar" no menu, entre Aparelhos e Assistente) e a ilha `Comparar.tsx`. Três campos de busca posicionais (`Modelo 1`, `Modelo 2`, `Modelo 3`) são comboboxes acessíveis sobre o mesmo `consulta.json` e motor MiniSearch da tabela (~8 sugestões com marca, modelo, capacidade e tipo); a escolha vira um cartão com "Trocar"/"Remover" e os campos aproximam ao remover o do meio. A seleção vive em `?ids=id1,id2,id3` — mesmo contrato da tabela, máximo de 3, ordem preservada, ids repetidos/desconhecidos descartados com aviso — separada de `FiltrosConsulta`, então nunca se mistura com filtros, busca ou ordenação. A página abre vazia (estado que explica a ferramenta), mostra um convite com 1 modelo e a matriz neutra de atributos (Tipo, Função, Capacidade, Tensão, Consumo anual, IDRS e Classe, como faixa quando há mais de uma Variante) com 2 ou 3 modelos; sem destaque de "melhor valor". Com 2 ou 3 modelos, um painel no topo repete os quatro campos da calculadora da ficha — UF, tarifa, horas e dias — e cada cartão ganha Consumo mensal, Custo mensal e Custo anual; a matriz abre uma segunda seção "Custo estimado (seu uso)" com essas três linhas depois das técnicas, e uma frase abaixo dá o menor e o maior custo anual e a diferença, sem apontar modelo nem eleger vencedor. Quando as capacidades diferem, um aviso explica que custo menor não implica maior eficiência e remete ao IDRS; o rodapé separa os Dados declarados do INMETRO das estimativas. Os quatro campos e a escrita na URL são compartilhados com a ficha pelo hook `useCusto.ts` e pelo componente `CamposCusto.tsx` (a aritmética continua só no módulo puro `src/lib/custo.ts`), e `src/lib/url.ts` (`mesclarChaves`, `caminhoComBusca`) junta as chaves da calculadora com `?ids=` para uma ilha não apagar o estado da outra — um link da ficha abre a comparação no mesmo cenário. O contrato puro vive em `apps/site/src/lib/comparacao.ts` (`lerIds`, `escreverIds`, `linhasDaComparacao`, `custosDaComparacao`, `linhasDeCustoComparacao`, `fraseDiferencaCustoAnual`, `capacidadesDiferem`, `MAXIMO_COMPARACAO`), sem DOM, e a página publica canonical sem `ids` (não indexada). Ver ADR-0021.
-- **institucionais** — em `apps/site`, as três páginas estáticas do rodapé: `/contato/`, `/politica-de-privacidade/` e `/termos-de-uso/` (ticket 57). O módulo puro `src/lib/institucionais.ts` guarda o endereço único de contato (`EMAIL_CONTATO`), os três assuntos com `mailto:` de assunto pré-preenchido, os metadados (título, descrição, rótulo do rodapé) e o canonical de cada página — o rodapé de `Base.astro` e o sitemap saem da mesma lista. As páginas usam o layout de leitura (sem `ampla`) e descrevem só o que existe hoje: sem cadastro, login, cookies próprios ou formulário; Cloudflare Web Analytics sem cookies e hospedagem Cloudflare; Ofertas como links comerciais; calculadora e Assistente processados no navegador, com o digitado indo apenas para a URL; LGPD; e Valores oficiais × Valores calculados. Nenhuma delas promete preço, economia ou recomendação, e nada disso toca em `data/build/`.
+- **institucionais** — em `apps/site`, as três páginas estáticas do rodapé: `/contato/`, `/politica-de-privacidade/` e `/termos-de-uso/` (ticket 57). O módulo puro `src/lib/institucionais.ts` guarda o endereço único de contato (`EMAIL_CONTATO`), os três assuntos com `mailto:` de assunto pré-preenchido, os metadados (título, descrição, rótulo do rodapé) e o canonical de cada página — o rodapé de `Base.astro` e o sitemap saem da mesma lista. As páginas usam o layout de leitura (`largura="leitura"`) e descrevem só o que existe hoje: sem cadastro, login, cookies próprios ou formulário; Cloudflare Web Analytics sem cookies e hospedagem Cloudflare; Ofertas como links comerciais; calculadora e Assistente processados no navegador, com o digitado indo apenas para a URL; LGPD; e Valores oficiais × Valores calculados. Nenhuma delas promete preço, economia ou recomendação, e nada disso toca em `data/build/`.
 - **aparelho:buscar** — `apps/site/src/lib/buscar-aparelho.ts` (busca pura) + `apps/site/scripts/buscar-aparelho.ts` (CLI, `pnpm aparelho:buscar`): procura na base servida por marca ou modelo (trecho, sem caixa nem acento) ou por potência exata em BTU e imprime marca, modelo, potência e `id` — o valor do `aparelhoId` de uma Análise (ticket 16). Só leitura: não cria artefato nem toca no pipeline.
 
 ## Interfaces
@@ -383,9 +407,15 @@ Ver ADR-0003 e ADR-0011.
   MiniSearch roda dentro da ilha sobre `data/build/consulta.json`. A consulta é
   100% estática (ADR-0008). As Ofertas (links comerciais) são um insumo curado do
   site (`apps/site/ofertas.json`), validado no build e verificado sob demanda
-  (ADR-0010 e ADR-0014); os componentes `OfertaCartao`/`OfertaFaixa` renderizam o
-  CTA na ficha, na Análise e nos destaques da home sem tocar na ilha, e os
-  cartões de CTA da Análise vêm de `CtaCartao`/`OfertaCta` (ticket 47).
+  (ADR-0010 e ADR-0014); os componentes Astro `LogoLoja`/`OfertaCartao` e
+  `OfertaFaixa` renderizam o CTA na ficha, na Análise e nos destaques da home,
+  enquanto a ilha usa os espelhos React `components/comparar/LogoLojaIsla.tsx`
+  e `OfertaCartaoIsla.tsx` sobre o mesmo contrato puro de `lib/lojas.ts` e
+  `lib/ofertas.ts` (ticket 106). `lib/lojas.ts` normaliza o nome da loja e
+  devolve a chave e as medidas do SVG; os dois traçados oficiais vivem em
+  `src/assets/lojas/{mercado-livre,amazon}.svg` e entram como badge colorido,
+  com “Ver oferta” fora dele e o aviso no `title`/nome acessível. Os cartões de
+  CTA da Análise vêm de `CtaCartao`/`OfertaCta` (ticket 47).
 - **CI/CD:** GitHub Actions (`.github/workflows/ci.yml` + `publish.yml`), matrix
   Linux + Windows. O Linux é a referência e o Windows é **não-bloqueante**,
   porque falhas específicas de plataforma não devem travar o merge (decisão do
