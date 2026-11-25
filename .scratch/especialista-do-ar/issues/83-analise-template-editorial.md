@@ -1,6 +1,6 @@
 # 83 — Análise: template editorial
 
-**What to build:** o artigo de Análise passa a ler como uma publicação técnica: coluna de 68 ch, serifa no corpo, grotesca nos subtítulos, mono na data e nas legendas, aviso de transparência com borda âmbar, figuras com legenda real e CTAs separados por hairline. O texto, as imagens e o `Article` JSON-LD atuais são preservados.
+**What to build:** o artigo de Análise passa a ler como uma publicação técnica: coluna de 68 ch, serifa no corpo, grotesca nos subtítulos, mono na data e nas legendas, aviso de transparência com borda ciano de 2 px, figuras com legenda real e CTAs separados por hairline. O texto, as imagens e o `Article` JSON-LD atuais são preservados.
 
 **Blocked by:** 69 — Ofertas.
 
@@ -9,7 +9,7 @@
 **Status:** ready-for-agent
 
 - [ ] A coluna de leitura é de 68 ch; o H1 é display; data e tempo de leitura usam mono; breadcrumb presente.
-- [ ] O aviso de transparência é um bloco de nota com borda âmbar e o mesmo texto.
+- [ ] O aviso de transparência é um bloco de nota com borda esquerda ciano de 2 px (`--foco`, ticket 102) e o mesmo texto.
 - [ ] O corpo MDX usa serifa 1,0625 rem/1,65, H2/H3 em grotesca, listas com marcador de 1 px, links sublinhados e citações em serifa itálica.
 - [ ] Figuras usam `<Image>` com dimensões, `loading="lazy"` abaixo da dobra, `decoding="async"` e legenda mono; nenhuma imagem é trocada ou inventada.
 - [ ] O CTA de topo (Oferta ou ficha), o CTA do Assistente, o bloco de dados oficiais e o CTA final mantêm a ordem e a transparência.

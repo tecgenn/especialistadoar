@@ -1,8 +1,10 @@
-# 110 — Fechamento: QA visual, documentação e contrato da fase
+# 110 — Fechamento da home: QA visual, documentação e contrato
 
 **What to build:** fechar a revisão da home com a mesma régua dos tickets de QA da fase: navegador real em cinco larguras, foco e teclado, contraste, `axe`, `impeccable detect`, suíte completa e build que reproduz `data/build` e `reports` byte a byte. No mesmo commit, sincronizar os documentos normativos com o que foi entregue: `DESIGN.md` (hero, simulador, aparelhos, análises, FAQ/metodologia, rodapé, cor e ícones), `docs/agents/architecture.md` (estrutura da home sem cobertura nem carrossel), `CONTEXT.md` (Oferta com dois níveis de divulgação), ADR-0023 (revisão da divulgação), a nota de revisão da `spec-fase12.md` e o `project-state.md`.
 
 **Blocked by:** 102–109.
+
+**Relação com o #89:** este ticket fecha a série da home (#92–#110). O #89 fecha a Fase 12 inteira, depende dele e cobre catálogo, ficha, comparação, Assistente, Análises, institucionais e 404. Nenhum dos dois substitui o outro.
 
 **Skills:** `impeccable` — `reference/audit.md`, `reference/document.md` e `reference/craft-floor.md`. `design-taste-frontend` — `references/gate.md` (checklist final). `seo-audit` para conferir que o H1 novo não derrubou título, description e `FAQPage`.
 

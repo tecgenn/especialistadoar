@@ -12,7 +12,7 @@
 - [ ] Cabeçalhos ordenáveis têm seta, `aria-sort` correto e alvo de 44 px; a ordenação por clique continua igual.
 - [ ] Valores numéricos usam mono tabular e alinhamento à direita; unidades aparecem de forma consistente.
 - [ ] A Classe é uma etiqueta com letra A–F e cor; a cor nunca é o único sinal.
-- [ ] A linha de Aparelho analisado tem marcador âmbar de 2 px e selo "Análise" discreto, sem puxar a linha para o topo.
+- [ ] A linha de Aparelho analisado tem marcador ciano de 2 px (`--foco`, ticket 102) e selo "Análise" discreto, sem puxar a linha para o topo.
 - [ ] Abaixo de 900 px a tabela permanece uma `<table>` sem conversão para cartões: um contêiner de rolagem horizontal (`role="region"`, `aria-label`, `tabindex="0"`) mantém todas as colunas; as colunas de seleção e Modelo ficam `position: sticky; left: 0` com fundo opaco; o cabeçalho acompanha a rolagem vertical, com `z-index` em camadas para nada se sobrepor.
 - [ ] A página nunca rola na horizontal; só o contêiner da tabela rola (`overscroll-behavior-x: contain`). O aviso "Deslize para ver as colunas" aparece abaixo de 900 px e desaparece após a primeira rolagem onde houver suporte a animação dirigida por rolagem; sem suporte, permanece.
 - [ ] Nenhuma coluna, segunda linha `Função · Tensão`, ordenação ou estado é perdido no mobile; o comportamento é feito só com CSS, sem JS novo.

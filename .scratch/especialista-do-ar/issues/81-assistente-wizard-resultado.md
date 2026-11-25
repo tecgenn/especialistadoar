@@ -8,7 +8,7 @@
 
 **Status:** ready-for-agent
 
-- [ ] O trilho mostra 5 segmentos, o atual em âmbar e o texto "Etapa N de 5" em mono, com `role="progressbar"` e valores acessíveis.
+- [ ] O trilho mostra 5 segmentos, o atual em ciano (`--foco`, ticket 102) e o texto "Etapa N de 5" em mono, com `role="progressbar"` e valores acessíveis.
 - [ ] Cada etapa tem uma pergunta, campos/opções com alvo de 56 px, sufixo de unidade e "Voltar"/"Continuar" com hierarquia correta.
 - [ ] Contadores +/− têm `aria-label`, `aria-live` no valor e 44 px; o teclado numérico é usado no celular.
 - [ ] Erros de campo aparecem junto ao campo, com `aria-describedby` e foco; "Continuar" bloqueado explica o motivo.

@@ -3,7 +3,9 @@
 **Status:** ready-for-agent
 **Escopo:** todas as rotas, layouts, componentes e estados responsivos do site Astro.
 **Contrato visual:** `DESIGN.md` na raiz do repositório.
-**Tracker:** local, `.scratch/especialista-do-ar/` — spec `spec-fase12.md`, tickets **#66–#91** (o `#91` corre antes do `#69`).
+**Tracker:** local, `.scratch/especialista-do-ar/` — spec `spec-fase12.md`, tickets **#66–#110** (o `#91` corre antes do `#69`; os **#92–#110** redesenham a home depois do `#71`, e o `#110` fecha essa série).
+
+**Contrato vigente:** o `DESIGN.md` atual é a fonte normativa — paleta azul-frio/gelo do #92, acento ciano do #102, Oferta com badge oficial do #106 e Análises em grade do #108. As descrições antigas de âmbar, escala térmica e régua de capacidade foram substituídas neste documento; o histórico das mudanças fica nas notas de revisão dos tickets 91–110.
 
 ---
 
@@ -56,7 +58,7 @@ Isso custa confiança justamente no momento em que o visitante decide: ao compar
 
 ## Solution
 
-Substituir o mundo visual atual por **um instrumento de climatização**: uma superfície calibrada, mate e mineral, com grade visível, leituras em mono, serifa editorial e um único acento âmbar de sinal. A home ganha uma **régua de capacidade** construída com as contagens reais da base; o catálogo vira uma tabela de instrumento com barra de ferramentas sticky; a ficha vira um datasheet navegável com topo de leituras e calculadora em painel; a comparação vira uma matriz neutra com cartões de instrumento; o Assistente vira um diagnóstico em cinco etapas; a análise vira leitura editorial de verdade.
+Substituir o mundo visual atual por **um instrumento de climatização**: uma superfície calibrada e neutra, com grade visível, leituras em mono, serifa editorial, ação em azul-frio e um único acento ciano de interação. A home abre com um **simulador de ambiente** no hero, que estima a capacidade a partir da área e do sol com as contagens reais da base; o catálogo vira uma tabela de instrumento com barra de ferramentas sticky; a ficha vira um datasheet navegável com topo de leituras e calculadora em painel; a comparação vira uma matriz neutra com cartões de instrumento; o Assistente vira um diagnóstico em cinco etapas; a análise vira leitura editorial de verdade.
 
 O resultado deve parecer desenhado por uma equipe de produto e engenharia, não gerado por IA: cada ornamento tem função, cada número tem unidade e origem, cada superfície pertence ao mesmo sistema.
 
@@ -64,14 +66,12 @@ O resultado deve parecer desenhado por uma equipe de produto e engenharia, não 
 
 **"Instrumento de climatização"** — um painel de HVAC/pesquisa calibrado, enraizado na engenharia climática brasileira, no rigor de datasheet oficial e na autoridade editorial.
 
-- **Chão:** papel mineral frio (`#F2F5F1`), giz (`#FCFDFB`), tinta petróleo (`#0A1F22`), petróleo (`#123F45`), grafite (`#4B5D5F`).
-- **Sinal:** âmbar (`#E8A33D`) para ação, foco, calor e capacidade ativa. Frios em `#2F7F8C`.
-
-> **Ajuste #91 (executar antes de #69):** o chão passa a giz `#FDFDFB` e papel `#F8F8F7` — branco quase puro, neutro, sem viés mineral esverdeado. Tinta, petróleo, âmbar, frio e Classes A–F não mudam. `DESIGN.md` e `tokens.css` são atualizados nesse ticket; até lá, os valores acima descrevem a base atual.
-- **Matéria:** quase nenhuma sombra; hairlines de 1 px, ticks, réguas, numeração, bordas de 2 px só em seleção/foco.
+- **Chão:** giz `#FDFDFB`, papel `#F8F8F7`, mineral `#ECECEB`, tinta petróleo (`#0A1F22`), petróleo (`#123F45`), grafite (`#4B5D5F`).
+- **Ação e sinal:** azul-frio (`#0E6B8A`) na ação primária, nos links e nos chips ativos; ciano (`#0F8FA8`, com `--foco-texto` `#0B6F83` para texto) no foco, na seleção, no item ativo, na linha analisada e no dado analisado. Frios de apoio em `--frio`.
+- **Matéria:** quase nenhuma sombra; hairlines de 1 px, ticks, réguas de seção, numeração, bordas de 2 px só em seleção/foco.
 - **Forma:** raios 2/4/8 px; nenhum pill; nenhum gradiente de fundo; nenhum vidro.
 - **Vozes:** Schibsted Grotesk (operar), Source Serif 4 (ler), Azeret Mono (medir).
-- **Assinatura:** a escala térmica frio → neutro → âmbar → quente usada como dado, e a régua de capacidade da home.
+- **Assinatura:** o simulador de ambiente do hero e as Cores de Classe A–F como únicos dados coloridos; o resto é tinta, grafite e ciano de sinal.
 - **Anti-referências:** SaaS azul, dashboard genérico, landing page de startup, "organic biophilic" verde, cartões flutuantes, glassmorphism, ilustrações decorativas, rankings com estrelas.
 
 Mundos considerados e recusados: grade suíça de Crouwel (competitiva, doou a disciplina da grade visível), manuscrito técnico, teletexto, ASCII, papercut e noite de chuva (doaram uma disciplina cada: entrada única, leituras numeradas, gradiente térmico, camadas de filtro). A direção escolhida é a que melhor carrega **medição + confiança + decisão** sem virar fantasia.
@@ -112,7 +112,7 @@ Mundos considerados e recusados: grade suíça de Crouwel (competitiva, doou a d
 23. Como leitor de análise, quero ler o artigo em uma coluna confortável, com figuras e legendas, para avaliar o modelo com contexto.
 24. Como leitor de análise, quero saber que o artigo tem links de afiliado e que os dados oficiais vêm do INMETRO, para separar opinião de dado.
 25. Como visitante novo, quero entender a cobertura da base na home, para confiar que o catálogo é completo.
-26. Como visitante novo, quero usar a régua de capacidade como navegação, para ir direto ao recorte que me interessa.
+26. Como visitante novo, quero usar o simulador de ambiente como ponto de partida, para chegar direto ao recorte de capacidade que me interessa.
 27. Como visitante novo, quero ler as perguntas frequentes sem abrir um modal, para tirar dúvidas básicas.
 28. Como visitante, quero falar com o site por e-mail com o assunto certo já preenchido, para não perder tempo.
 29. Como visitante, quero entender o que o site coleta e como as Ofertas funcionam, para decidir com transparência.
@@ -146,9 +146,9 @@ Mundos considerados e recusados: grade suíça de Crouwel (competitiva, doou a d
 | `/termos-de-uso/` | Termos | Astro puro | nenhum |
 | `404` | Página de erro | Astro puro (novo) | nenhum |
 
-Componentes existentes: `Base.astro`, `Consulta.tsx`, `Comparar.tsx`, `Assistente.tsx`, `CalculadoraCusto.tsx`, `CamposCusto.tsx`, `useCusto.ts`, `OfertaCartao.astro`, `OfertaCta.astro`, `OfertaFaixa.astro`, `CtaCartao.astro`, `HomePopulares.astro`, `AnalisesDestaque.astro`.
+Componentes existentes: `Base.astro`, `Consulta.tsx`, `Comparar.tsx`, `Assistente.tsx`, `CalculadoraCusto.tsx`, `CamposCusto.tsx`, `useCusto.ts`, `OfertaCartao.astro`, `OfertaCta.astro`, `OfertaFaixa.astro`, `CtaCartao.astro`, `AnalisesDestaque.astro`, `HomeDestaques.astro` e `SimuladorHero.tsx`.
 
-Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLink`, `Icon`, `SectionRule`, `Readout`, `ClasseBadge`, `CapacityRuler`, `EmptyState`, `Breadcrumbs`, `Field`, `SelectField`, `Notice`, `DataNote`, `PageIntro`, `PrintHeader`.
+Primitivos já entregues em `components/primitivos/` (Astro, sem hidratação): `Aviso`, `Botao`, `CabecalhoDeSecao`, `Campo`, `ChipFiltro`, `ChipResumo`, `EstadoVazio`, `EtiquetaClasse`, `Icone`, `Leitura`, `LogoLoja`, `ReguaSecao`, `Selecao`, `Trilha`. Ainda pertencem aos tickets de página: o breadcrumb (ficha e Análise, #75/#86) e o cabeçalho de impressão (#78).
 
 ---
 
@@ -159,8 +159,8 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 **Objetivo:** dar a todas as rotas a mesma moldura calibrada e o mesmo contrato de metadados.
 
 - `<html lang="pt-BR">`, skip link, header, main, footer.
-- Header de 64/72 px: marca, navegação com `aria-current="page"` e barra âmbar de 2 px no item ativo. No celular, navegação em faixa horizontal com rolagem; nenhum item escondido.
-- Footer em tinta: proveniência e Versão da tabela; navegação institucional; nota de afiliado. Texto em giz/mudo escuro, links sublinhados no hover.
+- Header de 64/72 px: marca, navegação com `aria-current="page"` e sublinhado ciano de 2 px no item ativo. No celular, navegação em faixa horizontal com rolagem; nenhum item escondido.
+- Footer em **azul-frio escuro** (`--azul-frio-escuro`, `#084D66`) com texto giz, em três colunas iguais a partir de 1024 px: proveniência e **Versão da tabela** (única por página, em mono de 0,75 rem com `tabular-nums`), navegação institucional com alvos de 44 px e o bloco único **"Transparência com o Leitor"**, que absorve a nota de afiliado. Abaixo de 1024 px empilha com a proveniência primeiro; rótulos e textos secundários usam `--mudo-escuro` (`#A9C0C6`), e os links são giz com sublinhado hairline-escura e hover ciano.
 - `main` com largura de shell (90 rem) ou leitura (68 ch) por prop; a ficha e o catálogo usam shell; artigos e institucionais usam leitura.
 - Metadados: title, description, canonical, `og:type`, `og:title`, `og:description`, `og:site_name`, `og:locale`, `twitter:card`, `theme-color`, `robots` quando aplicável. `og:image` só quando houver imagem real (Análise).
 - JSON-LD existente preservado; `BreadcrumbList` novo na ficha e na Análise.
@@ -172,32 +172,23 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 ### 2. Home (`/`)
 
-**Objetivo:** provar a direção em uma tela e levar a três caminhos: catálogo, Assistente, capacidade.
+**Objetivo:** provar a direção em uma tela e levar a três caminhos: simulador, catálogo e Assistente.
 
-**Hierarquia acima da dobra (desktop):**
-1. Régua superior com `BASE INMETRO · VERSÃO {hash}` e a data.
-2. H1 “Ar-condicionado com dados do INMETRO” em display, com o lead em serifa.
-3. Régua de capacidade interativa ocupando 8–12 colunas, com as seis faixas e as contagens reais (368 / 492 / 324 / 362 / 197 / 487).
-4. Duas ações: “Explorar o catálogo” (primária) e “Dimensionar meu ambiente” (secundária).
-5. Leitura de cobertura: `2.227 aparelhos`, `70 marcas`, `44 capacidades`, com origem e versão.
+**Estrutura final da home:**
+1. **Hero:** H1 “Seu conforto começa pela escolha certa”, lead funcional em serifa e CTA único “Encontrar meu ar ideal →” ancorado no simulador. Sem fita de versão acima do H1.
+2. **Simulador do hero** (`id="simulador"`): área e incidência de sol, capacidade recomendada em leitura grande, a conta aberta em três linhas e a contagem do catálogo para aquela capacidade; ações para `/assistente/` (com `forma`, `area` e `sol`) e `/aparelhos/?btu=`.
+3. **Aparelhos em destaque:** uma única seção, com o seletor de capacidade no cabeçalho (chips quando há 2+ capacidades, rótulo estático com uma) e cartões separados; cada cartão tem leitura de IDRS e consumo, “Ler análise” quando existe e uma linha de Oferta por loja.
+4. **Análises em destaque:** grade estática das até três Análises mais recentes, com “Todas as análises →” no cabeçalho; sem carrossel e sem script.
+5. **Perguntas frequentes:** oito `<details>` nativos, fechados por padrão, em grade de duas colunas a partir de 900 px.
+6. **Metodologia e INMETRO:** oito `<details>` nativos na mesma grade compacta; a nota de fontes vive na Proveniência do rodapé.
 
-**Ordem das seções:**
-- Hero + régua.
-- Cobertura da base (leitura de dados, não cartão).
-- Capacidades populares (links com contagem, não chips soltos).
-- Marcas populares (mesma linguagem).
-- Análises em destaque (cartão editorial com imagem real, título, data e link).
-- Assistente em 3 passos (régua numerada, CTA).
-- FAQ (8 perguntas, `<details>` nativo, texto preservado, correspondência exata com o `FAQPage`).
-- Metodologia e INMETRO (texto preservado, em coluna de leitura, com notas mono de fonte).
+**Mobile:** hero em uma coluna com o CTA empilhado; simulador com chips de 44 px; cartões de 1 → 2 → 3 colunas; FAQ e metodologia em uma coluna; nenhum carrossel.
 
-**Mobile:** régua vira lista de seis linhas com barra de proporção e contagem; hero em uma coluna; CTAs empilhados; FAQ mantém `<details>`; nenhum carrossel.
+> **Revisão (2026-11-21, ticket 94):** a régua de capacidade foi **removida da home** nos dois breakpoints. O simulador do ambiente do #93 é a única leitura de escala da primeira tela e a página segue dele para os Aparelhos em destaque. A navegação por faixa (`?btuMin=&btuMax=`) continua nos chips de Faixa de capacidade da Pesquisa avançada do catálogo; a entrada editorial por faixa da home nasceu no #96 e foi consolidada no #107. A estrutura final da home está descrita acima e no `DESIGN.md`.
 
-> **Revisão (2026-11-21, ticket 94):** a régua de capacidade foi **removida da home** nos dois breakpoints. O simulador do ambiente do #93 é a única leitura de escala da primeira tela e a página segue dele para a cobertura da base. A navegação por faixa (`?btuMin=&btuMax=`) continua nos chips de Faixa de capacidade da Pesquisa avançada do catálogo, e a entrada editorial por faixa da home pertence ao #96. Onde este documento ainda descreve a régua, vale a decisão do #94 e o `DESIGN.md`.
+> **Revisão (2026-11-21, ticket 95):** a fita `BASE INMETRO · VERSÃO {hash}` foi **removida**, e a cobertura e a metodologia não repetem a versão. A linha da **Versão da tabela** — hash curto, data de obtenção e contagem de linhas quando disponível — aparece uma única vez por página, no rodapé, em mono de 0,75 rem com tabular-nums. A data na nota do "Modelo fora da tabela atual" permanece: é o estado da análise, não a linha de versão.
 
-> **Revisão (2026-11-21, ticket 95):** a fita `BASE INMETRO · VERSÃO {hash}` foi **removida**, e a cobertura e a metodologia não repetem a versão. A linha da **Versão da tabela** — hash curto, data de obtenção e contagem de linhas quando disponível — aparece uma única vez por página, no rodapé, em mono de 0,75 rem com tabular-nums. A data na nota do "Modelo fora da tabela atual" permanece: é o estado da análise, não a linha de versão. Onde este documento ainda descreve a fita ou a versão na cobertura, vale a decisão do #95 e o `DESIGN.md`.
-
-> **Revisão (2026-11-21, ticket 97):** "nenhum carrossel" no mobile deixou de valer para **Análises em destaque**. Com duas ou mais Análises publicadas, a seção é um carrossel em todos os breakpoints — um quadro por vez, controles de 44 px, pausa explícita e rotação que para no ponteiro, no foco, fora da tela e em `prefers-reduced-motion`; sem JavaScript, a lista aparece inteira. Com uma Análise, o bloco continua estático. Fora dessa seção, o carrossel segue proibido. Ver `DESIGN.md`, seção "Análises em destaque (home)".
+> **Revisão (2026-11-21, ticket 97):** A seção de Análises em destaque chegou a ser um carrossel com o #97. **Decisão substituída pelo #108:** a seção passou a ser uma grade estática das até três Análises mais recentes, sem carrossel, sem script e sem controles; `carrossel.ts` e o script da seção foram removidos. A proibição de carrossel continua valendo para o resto do site. Ver `DESIGN.md`, seção "Análises em destaque (home)".
 
 > **Revisão (2026-11-21, ticket 98):** "Assistente em 3 passos (régua numerada, CTA)" foi **removido da home**. A seção só repetia a estimativa de 20 m² do simulador do hero, sem trazer os fatores que ele não pergunta, a conta aberta fator por fator ou a confiança. O caminho para o Assistente completo continua na nota do simulador e agora também na metodologia, que explica o que a ferramenta acrescenta. Ver `DESIGN.md`, seções "Simulador do hero" e "Assistente".
 
@@ -207,15 +198,13 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 > **Revisão (2026-11-22, tickets 102–110):** a home é redesenhada com acento ciano `#0F8FA8` em vez do âmbar. O H1 passa a ser “Seu conforto começa pela escolha certa”, com lead funcional “Descubra quantos BTUs seu ambiente precisa e compare modelos de ar-condicionado por capacidade, consumo e eficiência energética, com base em dados oficiais do INMETRO.” e CTA “Encontrar meu ar ideal →” ancorado no simulador. O simulador ganha título “Descubra quantos BTUs o seu ambiente precisa”, rótulo de resultado “Capacidade recomendada” e ações para `/assistente/` (pré-preenchido com área e sol) e `/aparelhos/?btu=`. A faixa “Cobertura da base” é removida do meio da home; nenhuma contagem da base é repetida em outro lugar. Os aparelhos em destaque passam a ter seletor de capacidade em chips e cartões separados, sem contagem nem “Ver os de …”, com badges de loja em SVG oficial e cores da marca, com “Ver oferta” fora do badge e o aviso de afiliado no tooltip/nome acessível. As análises em destaque viram grade estática de no máximo 3 mais recentes + “Todas as análises”; o carrossel é excluído. O FAQ e a Metodologia tornam-se grades de dois colunas de `<details>` compactos, que abrem no clique e preservam o texto. A linha de Fontes passa para o rodapé (coluna Proveniência). Os ícones de linha funcionais (ar-condicionado, análise, perguntas, camadas, sol) e as logos de marketplace entram na grade existente. Tickets: `102-acento-ciano-icones-secao`, `103-home-hero-escolha-certa`, `104-home-simulador-hierarquia`, `105-home-remover-cobertura-base`, `106-ofertas-logos-divulgacao-minima`, `107-home-aparelhos-seletor-cartoes`, `108-home-analises-grade-cartoes`, `109-home-faq-metodologia-compactas`, `110-home-qa-fechamento-fase12`.
 
-**Nota de dados:** as contagens por faixa medem Aparelhos com ao menos uma Variante na faixa; por isso a soma das seis pode passar do total de 2.227. A interface não apresenta uma faixa como partição exata — o rótulo diz "aparelhos com capacidade na faixa".
-
-**Estados:** base carregada no build (não há estado vazio); versão ausente não renderiza a linha; sem Análise publicada, a seção de destaques desaparece; sem Oferta, o cartão não mostra CTA.
+**Estados:** base carregada no build (não há estado vazio); sem Análise publicada, a seção de destaques desaparece; capacidade sem Aparelho em destaque não vira chip nem painel vazio; sem Oferta, o cartão não mostra CTA.
 
 **SEO:** preservar H1, description, `WebSite` e `FAQPage` com as mesmas oito perguntas; `FAQPage` só com conteúdo visível.
 
 > **Alinhamento pós-revisão (2026-11-24):** "Como comparar o consumo de energia?" saiu do FAQ para cumprir este contrato de oito perguntas. `PERGUNTAS_FREQUENTES`, `FAQPage`, índice `01`–`08`, testes e `DESIGN.md` descrevem as mesmas oito perguntas; o texto restante e a ordem continuam os mesmos.
 
-**Aceite:** a régua usa contagens derivadas do dataset, não números à mão; cada segmento leva ao recorte correto em `/aparelhos/`; mobile sem overflow horizontal; o texto do FAQ é idêntico ao JSON-LD.
+**Aceite:** o simulador usa contagens derivadas do dataset, não números à mão, e as ações levam ao recorte correto em `/aparelhos/` e ao Assistente pré-preenchido; mobile sem overflow horizontal; o texto do FAQ é idêntico ao JSON-LD.
 
 ### 3. Catálogo (`/aparelhos/`)
 
@@ -233,7 +222,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 **Tabela:**
 - Colunas: seleção, Marca, Modelo (com `Função · Tensão`), Capacidade, Consumo, IDRS, Classe, Tipo, Análise.
 - Cabeçalho ordenável com seta, `aria-sort` e alvo de 44 px.
-- Linha analisada com marcador âmbar de 2 px e selo “Análise” discreto.
+- Linha analisada com marcador ciano de 2 px (`--foco`) e selo “Análise” discreto.
 - Classe como etiqueta com letra e cor; nunca só cor.
 - “Mostrar mais” em blocos de 50, com contagem restante.
 - Mobile: a tabela continua tabela. Um contêiner de rolagem horizontal (focável, `tabindex="0"`, `role="region"` com rótulo) mantém todas as colunas; seleção e Modelo ficam fixas à esquerda com `position: sticky`; o cabeçalho acompanha a rolagem vertical. Aviso textual “Deslize para ver as colunas” aparece abaixo de 900 px e some após a primeira rolagem quando houver suporte a animação dirigida por rolagem; nenhum JS novo. Nenhuma linha vira cartão e nenhuma coluna é escondida.
@@ -265,7 +254,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 - Ações: “Comparar este modelo” (secundária) e “Imprimir ficha” (texto).
 - Três leituras: IDRS, Consumo anual, Capacidade, com unidade, legenda e faixa quando houver Variantes. O consumo é link para `#consumo-e-custo`.
 
-**Índice:** faixa horizontal sticky no desktop; lista quebrada no mobile; seção atual com barra âmbar; âncoras com `scroll-margin-top`.
+**Índice:** faixa horizontal sticky no desktop; lista quebrada no mobile; seção atual com barra ciano de 2 px (`--foco`); âncoras com `scroll-margin-top`.
 
 **Seções na ordem:** Resumo, Entenda os números, Consumo e custo, Condições de ensaio, Especificações, Registros INMETRO, Proveniência, Leia a análise, Ofertas, “Ver outros da marca”.
 
@@ -347,9 +336,9 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 **Objetivo:** leitura editorial com autoridade e transparência.
 
 - Coluna de 68 ch; H1 display; data e tempo de leitura em mono; breadcrumb.
-- Aviso de transparência em bloco de nota com borda âmbar.
+- Aviso de transparência em bloco de nota com borda esquerda ciano de 2 px (`--foco`).
 - CTA de topo (Oferta ou ficha) separado por hairline.
-- Corpo MDX: serifa 1,0625 rem/1,65; H2 em grotesca; H3 em grotesca menor; parágrafos com 1em; listas com marcador de 1 px; figuras com legenda mono; citações em serifa itálica; links sublinhados com cor `signal-ink`.
+- Corpo MDX: serifa 1,0625 rem/1,65; H2 em grotesca; H3 em grotesca menor; parágrafos com 1em; listas com marcador de 1 px; figuras com legenda mono; citações em serifa itálica; links sublinhados com `--azul-frio-texto`.
 - CTA do Assistente depois do corpo.
 - Bloco “Dados oficiais do INMETRO” com link para a ficha.
 - CTA final de Oferta/ficha/tabela.
@@ -379,7 +368,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 **Objetivo:** recuperar o visitante sem humor forçado.
 
-- Título “Fora da escala”; frase curta; régua de capacidade como caminho; links para Aparelhos, Assistente, Comparar e Home.
+- Título “Fora da escala”; frase curta; links para Aparelhos, Assistente, Comparar e Home. Sem gráfico de recuperação: a régua saiu do site no #94 e a página não a recria.
 - Sem header/footer diferentes; mesma moldura.
 - `noindex`.
 
@@ -392,12 +381,12 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 ### Arquitetura CSS
 
 - Um único ponto de entrada (`global.css`) importa partials em camadas: `tokens`, `base`, `layout`, `components`, `pages`, `utilities`. Ordem declarada com `@layer`, sem `!important`.
-- Tokens em `:root`: cor, tipografia, espaço, raio, sombra, movimento, larguras, z-index. Nomes em português, coerentes com o domínio (`--tinta`, `--papel`, `--sinal`, `--linha`, `--leitura`, `--shell`).
+- Tokens em `:root`: cor, tipografia, espaço, raio, sombra, movimento, larguras, z-index. Nomes em português, coerentes com o domínio (`--tinta`, `--papel`, `--azul-frio`, `--foco`, `--linha`, `--leitura`, `--shell`).
 - **Preservar os seletores existentes.** O redesign reescreve os valores e a composição, não renomeia classes usadas pelas ilhas e pelos testes. Classes novas só para componentes novos.
 - CSS modular por superfície: `catalogo.css`, `ficha.css`, `comparacao.css`, `assistente.css`, `editorial.css`, `institucional.css`, `print.css`. Cada partial entra em `@layer pages`.
 - Sem Tailwind, CSS-in-JS, Sass ou pré-processador. CSS moderno: custom properties, `clamp()`, `min()`, `:focus-visible`, `:has()` com fallback, `color-mix()` com fallback.
 - Estados de foco, hover, active, disabled e selecionado definidos por componente; nenhum estado só por cor.
-- `prefers-reduced-motion` global desliga transições e a entrada da régua.
+- `prefers-reduced-motion` global desliga transições e a entrada do hero.
 - `forced-colors` preserva bordas e foco.
 
 ### Fontes
@@ -419,7 +408,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 
 ### Componentes e reuso
 
-- Primitivos Astro para o que é estático: header, footer, ícone, régua de seção, leitura, etiqueta de Classe, régua de capacidade, estado vazio, breadcrumb, campo, aviso.
+- Primitivos Astro para o que é estático: header, footer, ícone, régua de seção, leitura, etiqueta de Classe, cabeçalho de seção, estado vazio, breadcrumb, campo, aviso.
 - Não criar um "design system" de 40 componentes. A regra é: repete em três lugares → primitivo; aparece uma vez → CSS local.
 - Ícones em SVG inline, 1,5 px, `currentColor`, `aria-hidden` quando decorativos; nenhum pacote de ícones.
 - `OfertaCartao` continua sendo o único lugar com `rel="sponsored nofollow noopener"`, `target="_blank"` e o marcador.
@@ -427,7 +416,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 ### Dados e build
 
 - Nenhuma alteração em `packages/pipeline`, `packages/api`, `data/build/` ou `reports/`.
-- Contagens da home e da régua vêm de `consulta.json` no build, com as mesmas funções puras.
+- Contagens do simulador e dos Aparelhos em destaque vêm de `consulta.json` no build, com as mesmas funções puras.
 - Nenhum número de contagem escrito à mão.
 - O build do site continua copiando `data/build/` para `dist/`; a API estática não muda.
 
@@ -464,7 +453,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 ### Movimento
 
 - 120/180/240 ms; curva `cubic-bezier(0.2, 0, 0, 1)`.
-- Uma entrada orquestrada: ticks da régua na home.
+- Uma entrada orquestrada por página: o hero da home.
 - Nenhum parallax, scroll-jacking, autoplay ou animação contínua.
 - Toda animação tem estado final imediato em `prefers-reduced-motion`.
 
@@ -475,7 +464,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 - **Testar comportamento externo, não implementação.** Os testes atuais de ilha continuam a ser o padrão: consulta, comparação, assistente, calculadora, ficha, resumo, estado, ofertas, institucionais.
 - **Seams existentes:** testes puros em `src/lib` e testes de ilha em jsdom; o seam de build (`analises-build.test.ts`) exercita o Astro real e o HTML gerado.
 - **Novos testes:**
-  - `design-tokens.test.ts` (puro): lê os tokens do CSS e verifica os pares de contraste documentados (texto sobre giz/papel, giz sobre tinta, âmbar sobre tinta, Classes A–F sobre giz).
+  - `design-tokens.test.ts` (puro): lê os tokens do CSS e verifica os pares de contraste documentados (texto sobre giz/papel, giz sobre tinta, `--foco` e `--foco-texto` sobre giz/papel, Classes A–F sobre giz).
   - `base-build.test.ts` ou extensão do seam de build: skip link, `aria-current`, `og:*`, `twitter:card`, `BreadcrumbList` na ficha e na Análise, `404.html` gerado e fora do sitemap.
   - `print.test.ts` (build): a ficha contém a classe/mídia de impressão e o cabeçalho de impressão.
   - Testes de ilha ampliados: `aria-sort`, estado de erro com retry, painel mobile com `Esc`, foco no título da etapa do Assistente, resultado da calculadora com faixa.
@@ -490,7 +479,7 @@ Componentes novos (Astro, sem hidratação): `SiteHeader`, `SiteFooter`, `SkipLi
 1. Fundação de tokens, fontes e base.
 2. Shell global e primitivos.
 3. Calibração do chão visual (#91) — antes de qualquer página.
-4. Home (hero + régua) e o resto da home.
+4. Home (hero, simulador, destaques, FAQ, metodologia) e a série de ajustes #92–#110.
 5. Catálogo (tabela, filtros, seleção, vitrine).
 6. Ficha (topo, corpo, calculadora, impressão).
 7. Comparação (seleção, matriz, custo).
@@ -523,7 +512,7 @@ A ordem detalhada e as arestas estão nos tickets.
 - **Barra sticky + dock no celular.** Mitigação: altura máxima da barra, dock em uma linha, teste em 320 px; se cobrir a tabela, o dock vira uma faixa no rodapé da viewport só no mobile.
 - **Tabela no mobile.** A tabela continua tabela, com rolagem horizontal contida e colunas de seleção/Modelo fixas. Mitigação: testar todas as colunas em 320, 390 e 768 px, garantir que a página não role na horizontal, que o contêiner seja focável por teclado, que o `z-index` das células fixas e do cabeçalho não se sobreponha e que o aviso “Deslize para ver as colunas” apareça abaixo de 900 px. Nenhuma conversão para cartões.
 - **Prefetch em excesso.** Mitigação: `prefetchAll` desligado, `data-astro-prefetch` só em links de navegação deliberada, `false` explícito na tabela e nos links de Oferta; medir requisições por hover no ticket 90.
-- **Contraste do âmbar.** O âmbar claro não é texto em fundo claro; usar `signal-ink` e validar no teste de tokens.
+- **Contraste do ciano.** O ciano cheio passa em contorno, sublinhado e marcador (3:1), não em texto; usar `--foco-texto` e validar no teste de tokens.
 - **Uma única Análise publicada.** O template precisa funcionar com título longo, sem Oferta e com imagem ausente; testar com fixtures existentes.
 - **OG image.** Não há imagem de marca; a decisão é usar a imagem real da Análise quando existir e omitir `og:image` nas demais páginas até haver um ativo aprovado. Não inventar.
 - **Design tokens duplicados (CSS + DESIGN.md).** Mitigação: CSS é a fonte normativa; o teste de contraste lê o CSS; o `DESIGN.md` é atualizado no ticket de fechamento.
@@ -548,5 +537,5 @@ A ordem detalhada e as arestas estão nos tickets.
 - O texto do H1 da home (“Seu conforto começa pela escolha certa”) e as oito perguntas do FAQ, após a remoção da pergunta de consumo no alinhamento de 2026-11-24, são intocáveis por SEO e por contrato de conteúdo.
 - A frase de independência do INMETRO, o aviso de estimativa e a transparência de afiliado são compromissos de marca; nenhum redesign pode enfraquecê-los.
 - O catálogo abre com 220 V implícito e 2.116 linhas; isso é comportamento, não bug.
-- A régua de capacidade só é assinatura porque usa dados reais. Se um dia as faixas mudarem, a régua muda com elas.
+- O simulador do hero só é assinatura porque usa as contagens reais da base; se as faixas mudarem, o resultado muda com elas.
 - A impressão da ficha é um requisito de produto: o visitante técnico precisa levar o datasheet para uma conversa de instalação.
