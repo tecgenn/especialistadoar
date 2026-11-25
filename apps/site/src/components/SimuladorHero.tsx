@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   calcularAssistente,
   escreverEstadoAssistente,
@@ -73,6 +73,20 @@ function hrefDoAssistente(area: number, sol: IncidenciaSolar): string {
 export default function SimuladorHero({ resumos }: Props) {
   const [area, setArea] = useState(AREA_PADRAO);
   const [sol, setSol] = useState<IncidenciaSolar>(SOL_PADRAO);
+  const campoArea = useRef<HTMLInputElement>(null);
+
+  // O CTA do hero aponta para `#simulador`; o fragmento sozinho só move o ponto
+  // de partida do Tab. O primeiro controle do simulador recebe o foco de fato,
+  // sem pular a rolagem que o `scroll-margin-top` já resolveu (ticket 110).
+  useEffect(() => {
+    const focarArea = () => {
+      if (window.location.hash !== "#simulador") return;
+      campoArea.current?.focus({ preventScroll: true });
+    };
+    focarArea();
+    window.addEventListener("hashchange", focarArea);
+    return () => window.removeEventListener("hashchange", focarArea);
+  }, []);
 
   const recomendacao = calcularAssistente(respostasPara(area, sol));
   const capacidade = recomendacao.capacidadeRecomendadaBtu ?? 60000;
@@ -114,6 +128,7 @@ export default function SimuladorHero({ resumos }: Props) {
             />
             <input
               id="hero-area"
+              ref={campoArea}
               className="hero-area-campo"
               type="range"
               min={AREA_MINIMA}

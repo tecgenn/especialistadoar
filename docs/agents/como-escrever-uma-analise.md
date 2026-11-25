@@ -58,8 +58,8 @@ Regras:
 
 Per `CONTEXT.md` (entidade **Oferta**):
 - Rótulo: **"Ver oferta"** — nunca "Ver preço", "Comprar", "Ver preço e comprar" (o site não exibe preço).
-- Sempre com a loja e o marcador **"link de afiliado"**, em texto pequeno e cor secundária.
-- Divulgação em três níveis: junto do link (banner de transparência da Análise), seção própria nos Termos de Uso, linha discreta no rodapé de todas as páginas.
+- Sem nome de loja em texto: o badge com o logotipo oficial (Mercado Livre, Amazon) identifica a loja e o aviso **"link de afiliado"** fica no `title` do logo e no nome acessível do link — nunca como texto visível do cartão.
+- Divulgação em dois níveis: junto do link (tooltip e nome acessível) e institucional (banner de transparência da Análise, Termos de Uso e bloco "Transparência com o Leitor" do rodapé de todas as páginas).
 - O CTA fica na ficha, na Análise, nos destaques da home e no cartão do modelo na Comparação — **nunca na matriz de atributos**.
 - Não prometer preço, desconto, economia ou prazo no texto editorial.
 

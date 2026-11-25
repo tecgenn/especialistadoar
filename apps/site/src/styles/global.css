@@ -3174,6 +3174,7 @@ main.principal-leitura {
   margin: 0;
   padding-block-end: var(--esp-4);
   color: var(--grafite);
+  font-family: var(--fonte-interface);
   font-size: var(--texto-ui);
   line-height: 1.6;
 }

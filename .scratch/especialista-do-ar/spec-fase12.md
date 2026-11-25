@@ -204,6 +204,8 @@ Primitivos já entregues em `components/primitivos/` (Astro, sem hidratação): 
 
 > **Alinhamento pós-revisão (2026-11-24):** "Como comparar o consumo de energia?" saiu do FAQ para cumprir este contrato de oito perguntas. `PERGUNTAS_FREQUENTES`, `FAQPage`, índice `01`–`08`, testes e `DESIGN.md` descrevem as mesmas oito perguntas; o texto restante e a ordem continuam os mesmos.
 
+> **Fechamento da home (2026-11-24, ticket 110):** o QA visual fechou a série #92–#110 sem categoria nova de anti-padrão. Duas correções saíram daí: o corpo do FAQ passou a usar a fonte de interface (o `DESIGN.md` e o comentário do CSS já diziam isso, mas a regra herda a serifa do `body`) e o CTA do hero agora leva o foco ao controle de área ao abrir `#simulador`, em vez de só mover o ponto de partida do Tab. `DESIGN.md`, `docs/agents/architecture.md`, `CONTEXT.md`, o ADR-0023 e o `project-state.md` foram sincronizados no mesmo commit.
+
 **Aceite:** o simulador usa contagens derivadas do dataset, não números à mão, e as ações levam ao recorte correto em `/aparelhos/` e ao Assistente pré-preenchido; mobile sem overflow horizontal; o texto do FAQ é idêntico ao JSON-LD.
 
 ### 3. Catálogo (`/aparelhos/`)

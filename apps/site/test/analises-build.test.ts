@@ -876,6 +876,14 @@ function conferirHomeHub(html: string): void {
   expect(css).toMatch(
     /\.home-pergunta summary::?after,\s*\.home-tema summary::?after\s*\{[^}]*color:\s*var\(--foco-texto\)/,
   );
+  // O FAQ responde em interface e a metodologia explica na fonte de leitura,
+  // que vem do `body` (tokens.test) — a distinção que o `DESIGN.md` descreve.
+  expect(css).toMatch(
+    /\.home-pergunta p\s*\{[^}]*font-family:\s*var\(--fonte-interface\)/,
+  );
+  expect(
+    /\.home-metodologia-lista p\s*\{([^}]*)\}/.exec(css)?.[1] ?? "",
+  ).not.toContain("font-family");
 
   // 12. A Proveniência do rodapé absorve a linha de fontes: Portaria 269/2021 e
   //     o ciclo de 2.080 h/ano, sem duplicar a Versão da tabela e sem uma
