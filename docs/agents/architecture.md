@@ -297,7 +297,7 @@ nova exportação CSV
   formato do id e da data, slug único, uma por Aparelho) e constrói os índices; o
   glue `src/conteudo/analises.ts` lê a coleção. A seção é **condicional**: com zero
   Análises, `/analises/`, o item de menu, o sitemap e o `analises.json` não existem
-  e o site segue com as 2.230 páginas (2.227 fichas + `/` + `/aparelhos/` + `/assistente/`). Com ≥ 1, o índice, o menu, o inventário
+  e o site segue com as páginas da base (hoje 2.430: 2.423 fichas + `/` + `/aparelhos/` + `/assistente/` + `/comparar/` + as três institucionais). Com ≥ 1, o índice, o menu, o inventário
   `analises.json` (na raiz do site, com slug/url/aparelhoId/título/descrição/data),
   o JSON-LD aparecem automaticamente; a ficha ganha "Leia a análise",
   a Análise abre com o banner de transparência e ganha **3 cartões de CTA**

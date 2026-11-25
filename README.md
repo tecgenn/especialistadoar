@@ -232,8 +232,8 @@ pnpm build && pnpm build:site && pnpm lint && pnpm typecheck && pnpm test
 
 Esse é o **comando de validação da fase**: no fechamento de cada fase, confirme
 também que `pnpm build` reproduz `data/build` + `reports` byte a byte, que
-`pnpm build:site` gera o número esperado de páginas (**2.236** com a Fase 11 —
-2.234 base + a Análise publicada + o índice, incluindo `/comparar/` e as três
+`pnpm build:site` gera o número esperado de páginas (**2.433** —
+2.430 base + duas Análises publicadas + o índice, incluindo `/comparar/` e as três
 institucionais `/contato/`, `/politica-de-privacidade/` e `/termos-de-uso/`) e que
 `pnpm test`, `pnpm typecheck` e `pnpm lint` estão verdes.
 

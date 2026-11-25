@@ -1529,7 +1529,7 @@ describe("build com uma Análise de fixture", () => {
     // O Pagefind saiu (ticket 30): nem o índice nem a página /busca/ são gerados,
     // e os links antigos são redirecionados para a tabela de Aparelhos.
     esperarSemBuscaAntiga();
-    // As 2.234 páginas base mais as 3 Análises da fixture e o índice `/analises/`.
+    // As páginas base mais as 3 Análises da fixture e o índice `/analises/`.
     expect(contarHtml(distDir)).toBe(PAGINAS_BASE + 3 + 1);
   }, 600_000);
 });
@@ -1558,7 +1558,7 @@ describe("build com Análise inválida", () => {
 });
 
 describe("build sem nenhuma Análise (estado zero)", () => {
-  it("mantém as 2.234 páginas e omite seção, menu e analises.json", () => {
+  it("mantém as páginas base e omite seção, menu e analises.json", () => {
     // Diretório vazio explícito: o conteúdo publicado já pode ter Análises.
     buildarSite(criarDiretorioTemporario());
 
