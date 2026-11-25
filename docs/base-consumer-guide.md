@@ -65,11 +65,11 @@ Cada item traz duas marcas:
 - `marcaCatalogo` — a **Marca de catálogo**: o agrupamento curado sob o nome que
   as pessoas procuram. É igual a `marca` quando não há agrupamento.
 
-Na Versão atual, MIDEA agrupa `MIDEA` e `SPRINGER MIDEA` (163 Aparelhos) e
-FUJITSU agrupa `FUJITSU/AIRSTAGE` e `AIRSTAGE` (26). O filtro `marca` casa a
-`marcaCatalogo` **e** a `marca` oficial, então `marca: "MIDEA"` devolve 163 e
+Na Versão atual, MIDEA agrupa `MIDEA` e `SPRINGER MIDEA` (164 Aparelhos) e
+FUJITSU agrupa `FUJITSU/AIRSTAGE` e `AIRSTAGE` (43). O filtro `marca` casa a
+`marcaCatalogo` **e** a `marca` oficial, então `marca: "MIDEA"` devolve 164 e
 `marca: "SPRINGER MIDEA"` (o valor oficial antigo) devolve os 67 da família;
-`q: "fujitsu"` encontra os 26. Use `marcaCatalogo` para agrupar, e `marca` quando
+`q: "fujitsu"` encontra os 43. Use `marcaCatalogo` para agrupar, e `marca` quando
 precisar citar o Valor oficial. A curadoria exata está em
 `marcas-catalogo.jsonl`.
 

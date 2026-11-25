@@ -59,7 +59,7 @@ The only Brazilian air-conditioner research platform that shows the full INMETRO
 - `apps/site/ofertas.json`: one live affiliate offer (Mercado Livre) for the Samsung WindFree AI Pro 12.000.
 - `apps/site/tarifas.json`: reference tariffs for the 27 UFs with month and source.
 - `apps/site/src/content/analises/`: one published editorial analysis, with real product photography.
-- `reports/revisao-2026-10-12.md` and `data/build/manifest.json`: provenance, version hash and row counts.
+- `reports/revisao-2026-11-25.md` and `data/build/manifest.json`: provenance, version hash and row counts.
 - There are no customer logos, testimonials, press mentions, team photographs or commercial photography beyond the analysis image. Future work must not fabricate them.
 
 ## Product Principles

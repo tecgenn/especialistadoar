@@ -3,14 +3,14 @@
   "perguntas": [
     {
       "id": 1,
-      "resposta": "Versão da tabela obtida em 2026-10-12 (arquivo raw/inmetro-export-2026-10-12.csv, origem \"INMETRO — exportação de produtos\"), com 5867 Linhas. É a versão identificada pelo sha256 ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407.",
+      "resposta": "Versão da tabela obtida em 2026-11-25 (arquivo raw/inmetro-export-2026-11-25.csv, origem \"INMETRO — exportação de produtos\"), com 6169 Linhas. É a versão identificada pelo sha256 f54badb067eea9ff540f7bf3d9ed932f6b097f4310c7a21827842fb843bd22d6.",
       "verificacoes": [
-        { "tipo": "manifest", "campo": "obtidoEm", "esperado": "2026-10-12" },
-        { "tipo": "manifest", "campo": "contagemLinhas", "esperado": 5867 },
+        { "tipo": "manifest", "campo": "obtidoEm", "esperado": "2026-11-25" },
+        { "tipo": "manifest", "campo": "contagemLinhas", "esperado": 6169 },
         {
           "tipo": "manifest",
           "campo": "arquivo",
-          "esperado": "raw/inmetro-export-2026-10-12.csv"
+          "esperado": "raw/inmetro-export-2026-11-25.csv"
         },
         {
           "tipo": "manifest",
@@ -20,21 +20,21 @@
         {
           "tipo": "manifest",
           "campo": "hash",
-          "esperado": "ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407"
+          "esperado": "f54badb067eea9ff540f7bf3d9ed932f6b097f4310c7a21827842fb843bd22d6"
         }
       ]
     },
     {
       "id": 2,
-      "resposta": "A base servida tem 2227 Aparelhos (só os com Dados declarados) e 108 Anomalias sinalizadas.",
+      "resposta": "A base servida tem 2423 Aparelhos (só os com Dados declarados) e 117 Anomalias sinalizadas.",
       "verificacoes": [
-        { "tipo": "contagem-aparelhos", "esperado": 2227 },
-        { "tipo": "contagem-anomalias", "esperado": 108 }
+        { "tipo": "contagem-aparelhos", "esperado": 2423 },
+        { "tipo": "contagem-anomalias", "esperado": 117 }
       ]
     },
     {
       "id": 3,
-      "resposta": "ap-4693b862644d é o Aparelho da marca KENNEDY, modelo \"KEN01F12INT - KEN01F12EXT\", tipo Split Hi-Wall. Seu Registro INMETRO é 003694/2023, com status Ativo. Proveniência: Linha 445 da Versão da tabela.",
+      "resposta": "ap-4693b862644d é o Aparelho da marca KENNEDY, modelo \"KEN01F12INT - KEN01F12EXT\", tipo Split Hi-Wall. Seu Registro INMETRO é 003694/2023, com status Ativo. Proveniência: Linha 487 da Versão da tabela.",
       "verificacoes": [
         {
           "tipo": "campo-aparelho",
@@ -70,34 +70,34 @@
           "tipo": "campo-aparelho",
           "id": "ap-4693b862644d",
           "caminho": "linhas",
-          "esperado": [445]
+          "esperado": [487]
         }
       ]
     },
     {
       "id": 4,
-      "resposta": "Há 309 Aparelhos do tipo Split Cassete na base servida.",
+      "resposta": "Há 330 Aparelhos do tipo Split Cassete na base servida.",
       "verificacoes": [
         {
           "tipo": "contagem-consulta",
           "filtros": { "tipo": "Split Cassete" },
-          "esperado": 309
+          "esperado": 330
         }
       ]
     },
     {
       "id": 5,
-      "resposta": "112 Aparelhos atendem 127 V e 17 são bivolt (aceitam mais de uma tensão, tipicamente 127 e 220 V).",
+      "resposta": "134 Aparelhos atendem 127 V e 24 são bivolt (aceitam mais de uma tensão, tipicamente 127 e 220 V).",
       "verificacoes": [
         {
           "tipo": "contagem-consulta",
           "filtros": { "tensao": 127 },
-          "esperado": 112
+          "esperado": 134
         },
         {
           "tipo": "contagem-consulta",
           "filtros": { "variasTensoes": true },
-          "esperado": 17
+          "esperado": 24
         }
       ]
     },
@@ -187,11 +187,11 @@
     },
     {
       "id": 10,
-      "resposta": "Na Linha 892, o campo \"Carga do Fluido Refrigerante (g)\" veio com o valor \"640g / 600g / 690g\" — uma Anomalia do tipo valor_multiplo (múltiplos números onde se esperava um só). O valor original é preservado.",
+      "resposta": "Na Linha 746, o campo \"Carga do Fluido Refrigerante (g)\" veio com o valor \"640g / 600g / 690g\" — uma Anomalia do tipo valor_multiplo (múltiplos números onde se esperava um só). O valor original é preservado.",
       "verificacoes": [
         {
           "tipo": "anomalia",
-          "linha": 892,
+          "linha": 746,
           "campo": "Carga do Fluido Refrigerante (g)",
           "valor": "640g / 600g / 690g",
           "tipoAnomalia": "valor_multiplo"

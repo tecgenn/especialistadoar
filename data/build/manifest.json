@@ -1,5 +1,5 @@
 {
-  "versaoAtual": "ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407",
+  "versaoAtual": "f54badb067eea9ff540f7bf3d9ed932f6b097f4310c7a21827842fb843bd22d6",
   "versoes": [
     {
       "hash": "ba3e2a66c5a089e02323fd07784da1a5400d2d11d4242159d7ae6efbb6e47407",
@@ -7,6 +7,13 @@
       "obtidoEm": "2026-10-12",
       "origem": "INMETRO — exportação de produtos",
       "contagemLinhas": 5867
+    },
+    {
+      "hash": "f54badb067eea9ff540f7bf3d9ed932f6b097f4310c7a21827842fb843bd22d6",
+      "arquivo": "raw/inmetro-export-2026-11-25.csv",
+      "obtidoEm": "2026-11-25",
+      "origem": "INMETRO — exportação de produtos",
+      "contagemLinhas": 6169
     }
   ]
 }

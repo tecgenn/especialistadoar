@@ -41,6 +41,8 @@ interface AparelhoDaBase {
   id: string;
   marca: string;
   modelo: string;
+  linhas: number[];
+  registros: Array<{ numero: string }>;
 }
 
 type AnaliseFixture = AnaliseFrontmatter;
@@ -73,13 +75,14 @@ function lerHtmlInstitucional(href: string): string {
 }
 
 /**
- * Páginas do site sem nenhuma Análise: 2.227 fichas + `/` + `/aparelhos/` +
- * `/assistente/` (ticket 41) + `/comparar/` (ticket 49) + as três institucionais
- * (ticket 57). Caiu de 2.460 fichas quando a pipeline passou a excluir Model
- * Status = "Excluído" (ticket 31); a curadoria de Análises pode apontar para um
- * id fora da base, então o número é o que o build realmente gera.
+ * Páginas do site sem nenhuma Análise: uma ficha por Aparelho com Dados
+ * declarados na Versão atual + `/` + `/aparelhos/` + `/assistente/` (ticket 41)
+ * + `/comparar/` (ticket 49) + as três institucionais (ticket 57). Derivado da
+ * base publicada para que uma nova exportação não deixe o número parado; a
+ * curadoria de Análises pode apontar para um id fora da base, então o build sem
+ * Análise é o que o teste conta.
  */
-const PAGINAS_BASE = 2234;
+const PAGINAS_BASE = aparelhosDaBase().length + 7;
 
 /**
  * O build não gera mais o Pagefind nem a página `/busca/` (ticket 30) e publica
@@ -955,12 +958,17 @@ function buildarSite(analisesBase?: string, ofertasJson?: string): void {
   }
 }
 
-function primeiroAparelho(): AparelhoDaBase {
-  const [primeiro] = aparelhosDaBase();
-  if (primeiro === undefined) {
-    throw new Error("data/build/aparelhos.json está vazio.");
-  }
-  return primeiro;
+/** Aparelhos da base publicada que têm a capacidade curada pedida. */
+function aparelhosNaCapacidade(capacidadeBtu: number): AparelhoDaBase[] {
+  const itens = JSON.parse(
+    readFileSync(join(dataBuildDir, "consulta.json"), "utf8"),
+  ) as Array<{ id: string; capacidadesBtu: number[] }>;
+  const ids = new Set(
+    itens
+      .filter((item) => item.capacidadesBtu.includes(capacidadeBtu))
+      .map((item) => item.id),
+  );
+  return aparelhosDaBase().filter((item) => ids.has(item.id));
 }
 
 /** A capacidade que a Análise usa no CTA da tabela filtrada. */
@@ -971,18 +979,18 @@ function capacidadeDoAparelho(id: string): number | undefined {
   return itens.find((item) => item.id === id)?.capacidadesBtu[0];
 }
 
-function aparelhoDiferente(id: string): AparelhoDaBase {
-  const encontrado = aparelhosDaBase().find((item) => item.id !== id);
-  if (encontrado === undefined) {
-    throw new Error(
-      "data/build/aparelhos.json precisa de mais de um Aparelho.",
-    );
-  }
-  return encontrado;
+/**
+ * Dois Aparelhos distintos de 12.000 BTU/h: o build de fixture continua
+ * exercitando o painel curado de 12.000 mesmo quando a ordem do CSV muda de
+ * Versão. O seletor de duas capacidades vem da Oferta em 9.000 abaixo.
+ */
+const [aparelho, outroAparelho] = aparelhosNaCapacidade(12000);
+if (aparelho === undefined || outroAparelho === undefined) {
+  throw new Error(
+    "data/build/consulta.json precisa de dois Aparelhos de 12.000 BTU/h.",
+  );
 }
-
-const aparelho = primeiroAparelho();
-const outroAparelho = aparelhoDiferente(aparelho.id);
+const idsConhecidos = new Set([aparelho.id, outroAparelho.id]);
 
 /**
  * Um Aparelho de uma segunda capacidade curada (9.000 BTU/h) e sem 12.000, para
@@ -990,7 +998,6 @@ const outroAparelho = aparelhoDiferente(aparelho.id);
  * painéis — o dado publicado tem uma capacidade só com destaque.
  */
 function idNaCapacidade(capacidadeBtu: number): string {
-  const idsConhecidos = new Set([aparelho.id, outroAparelho.id]);
   const itens = JSON.parse(
     readFileSync(join(dataBuildDir, "consulta.json"), "utf8"),
   ) as Array<{ id: string; capacidadesBtu: number[] }>;
@@ -1740,7 +1747,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlGree).toContain("Tensão: 220 V · monofásico, bifásico");
     // As 13 linhas repetidas por Variante saíram da ficha.
     expect(htmlGree).not.toContain("Potência — 35 °C total");
-    expect(htmlGree).toContain("Linhas da tabela: 784");
+    expect(htmlGree).toContain(`Linhas da tabela: ${gree?.linhas.join(", ")}`);
     // `rotacao` saiu do contrato do Aparelho no ticket 31: a ficha não pode
     // renderizar uma linha de Rotação vazia.
     expect(htmlGree).not.toContain("Rotação");
@@ -1762,7 +1769,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(textoGree).toContain("Classe A");
     expect(htmlGree).toContain('data-classe="A"');
     expect(textoGree).toContain("Situação: Ativo");
-    expect(textoGree).toContain("Registros 000377/2021, 004629/2020");
+    expect(textoGree).toContain(
+      `Registros ${gree?.registros.map((registro) => registro.numero).join(", ")}`,
+    );
 
     // Três cartões de destaque com unidade e legenda; o de Consumo anual leva
     // à seção "Consumo e custo".
