@@ -225,6 +225,23 @@ function cssDaConsulta(): string {
   );
 }
 
+/**
+ * Simula a faixa estreita (ticket 73): a ilha lê `matchMedia` para decidir se o
+ * painel é a sobreposição modal ou o painel embutido do desktop.
+ */
+function simularCelular() {
+  vi.stubGlobal("matchMedia", (consulta: string) => ({
+    matches: consulta.includes("max-width"),
+    media: consulta,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  }));
+}
+
 beforeEach(() => {
   servirConsulta();
   window.history.replaceState(null, "", "/");
@@ -1080,7 +1097,7 @@ describe("layout central (tickets 50 e 67)", () => {
     expect(css).not.toMatch(/\.filtros-sidebar/);
   });
 
-  it("ordena a leitura: busca, Pesquisa avançada, vitrine, ordenação e tabela", async () => {
+  it("ordena a leitura: busca, Pesquisa avançada, ordenação, vitrine e tabela", async () => {
     window.history.replaceState(null, "", TODOS);
     render(
       <Consulta
@@ -1102,10 +1119,11 @@ describe("layout central (tickets 50 e 67)", () => {
     const antes = (a: Node, b: Node) =>
       Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
 
+    // Ticket 73: contagem e ordenação entram na barra, antes da vitrine.
     expect(antes(busca, avancon)).toBe(true);
-    expect(antes(avancon, vitrine)).toBe(true);
-    expect(antes(vitrine, ordenacao)).toBe(true);
-    expect(antes(ordenacao, tabela)).toBe(true);
+    expect(antes(avancon, ordenacao)).toBe(true);
+    expect(antes(ordenacao, vitrine)).toBe(true);
+    expect(antes(vitrine, tabela)).toBe(true);
   });
 });
 
@@ -2131,5 +2149,187 @@ describe("tabela de instrumento (ticket 72)", () => {
     ) as HTMLElement;
     fireEvent.click(acao);
     await waitFor(() => expect(screen.queryByRole("table")).not.toBeNull());
+  });
+});
+
+/**
+ * Ticket 73: a barra de ferramentas junta busca, recorte, contagem e ordenação
+ * num instrumento sticky; no celular a Pesquisa avançada vira sobreposição modal
+ * com foco preso, `Esc`, retorno de foco e "Ver N resultados".
+ */
+describe("barra de ferramentas e painel mobile (ticket 73)", () => {
+  function barra(): HTMLElement {
+    return document.querySelector(".barra-ferramentas") as HTMLElement;
+  }
+
+  function painel(): HTMLElement {
+    return document.getElementById("pesquisa-avancada") as HTMLElement;
+  }
+
+  function focaveisDoPainel(): HTMLElement[] {
+    return [
+      ...painel().querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ];
+  }
+
+  it("junta busca, botão, chips, contagem e ordenação na barra sticky", async () => {
+    await montar(curadoria, "/", { abrir: false });
+
+    const elemento = barra();
+    expect(elemento.tagName).toBe("FORM");
+    expect(
+      elemento.contains(screen.getByRole("searchbox", { name: "Busca" })),
+    ).toBe(true);
+    expect(
+      elemento.contains(
+        screen.getByRole("button", { name: "Pesquisa avançada" }),
+      ),
+    ).toBe(true);
+    expect(
+      elemento.contains(screen.getByRole("group", { name: "Filtros ativos" })),
+    ).toBe(true);
+    expect(
+      elemento.contains(screen.getByRole("combobox", { name: "Ordenar por" })),
+    ).toBe(true);
+    expect(
+      elemento.contains(
+        screen.getByText("8 aparelho(s) com Dados declarados."),
+      ),
+    ).toBe(true);
+    // O recorte efetivo inclui o padrão implícito de 220 V.
+    expect(elemento.textContent).toContain("Tensão: 220 V");
+
+    const css = cssDaConsulta();
+    const regra =
+      css.match(/\n\.consulta \.barra-ferramentas \{([^}]*)\}/)?.[1] ?? "";
+    expect(regra).toMatch(/position:\s*sticky/);
+    expect(regra).toMatch(/top:\s*0/);
+    expect(regra).toMatch(/background:\s*var\(--giz\)/);
+    expect(regra).toMatch(/border-bottom:\s*1px solid var\(--linha\)/);
+    expect(regra).toMatch(/z-index:\s*var\(--z-barra\)/);
+  });
+
+  it("deixa o cabeçalho da tabela abaixo da barra e usa o chip do sistema", () => {
+    const css = cssDaConsulta();
+
+    // A altura medida da barra empurra o <thead> sticky para baixo dela.
+    expect(css).toMatch(
+      /thead th\s*\{[^}]*top:\s*var\(--altura-barra-catalogo/,
+    );
+    // Chips de 32 px e raio de 2 px — nenhum pill, nenhum hex de Classe.
+    const chip = css.match(/\n\.consulta \.chip-filtro \{([^}]*)\}/)?.[1] ?? "";
+    expect(chip).toMatch(/min-height:\s*32px/);
+    expect(chip).toMatch(/border-radius:\s*var\(--raio-xs\)/);
+    expect(css).not.toMatch(/\.consulta \.chip-filtro \{[^}]*999px/);
+    expect(css).not.toMatch(/\.consulta \.chips button \{[^}]*999px/);
+    expect(css).not.toMatch(/classes-chips[^}]*#16a34a/);
+    expect(css).not.toMatch(/classes-chips[^}]*#2563eb/);
+  });
+
+  it("a contagem da barra reage a cada mudança de recorte", async () => {
+    await montar(curadoria, "/", { abrir: true });
+    expect(barra().textContent).toContain(
+      "8 aparelho(s) com Dados declarados.",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Classe B" }));
+    await waitFor(() =>
+      expect(barra().textContent).toContain(
+        "1 aparelho(s) com Dados declarados.",
+      ),
+    );
+  });
+
+  it("no desktop o painel continua embutido, sem role de diálogo", async () => {
+    await montar(curadoria, "/", { abrir: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    expect(painel().hidden).toBe(false);
+    expect(painel().hasAttribute("role")).toBe(false);
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    const css = cssDaConsulta();
+    const celular = css.slice(css.indexOf("@media (max-width: 55.999rem)"));
+    // Abaixo de 900 px a barra empilha e o painel vira sobreposição com rolagem
+    // própria e a saída no rodapé.
+    expect(celular).toMatch(
+      /\.consulta \.barra-ferramentas \{[^}]*grid-template-areas/,
+    );
+    expect(celular).toMatch(
+      /\.consulta \.filtros-avancados \{[^}]*position:\s*fixed/,
+    );
+    expect(celular).toMatch(
+      /\.consulta \.filtros-avancados \{[^}]*overflow-y:\s*auto/,
+    );
+    expect(celular).toMatch(
+      /\.consulta \.aplicar-filtros \{[^}]*display:\s*inline-flex/,
+    );
+  });
+
+  it("no celular abre como diálogo modal, com o foco dentro do painel", async () => {
+    simularCelular();
+    await montar(curadoria, "/", { abrir: false });
+
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    const dialogo = screen.getByRole("dialog", { name: "Pesquisa avançada" });
+    expect(dialogo).toBe(painel());
+    expect(dialogo.getAttribute("aria-modal")).toBe("true");
+    expect(dialogo.hidden).toBe(false);
+    expect(dialogo.contains(document.activeElement)).toBe(true);
+  });
+
+  it("prende o foco, fecha com Esc e devolve o foco ao botão", async () => {
+    simularCelular();
+    await montar(curadoria, "/", { abrir: false });
+    const botao = screen.getByRole("button", { name: "Pesquisa avançada" });
+    fireEvent.click(botao);
+
+    const dialogo = screen.getByRole("dialog", { name: "Pesquisa avançada" });
+    const focaveis = focaveisDoPainel();
+    const primeiro = focaveis[0] as HTMLElement;
+    const ultimo = focaveis.at(-1) as HTMLElement;
+    expect(ultimo.classList.contains("aplicar-filtros")).toBe(true);
+
+    // Tab no último volta ao primeiro; Shift+Tab no primeiro vai ao último.
+    ultimo.focus();
+    fireEvent.keyDown(dialogo, { key: "Tab" });
+    expect(document.activeElement).toBe(primeiro);
+
+    primeiro.focus();
+    fireEvent.keyDown(dialogo, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(ultimo);
+
+    fireEvent.keyDown(dialogo, { key: "Escape" });
+    expect(painel().hidden).toBe(true);
+    expect(document.activeElement).toBe(botao);
+    expect(botao.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("mostra 'Ver N resultados' no rodapé e fecha o painel ao aplicá-lo", async () => {
+    simularCelular();
+    await montar(curadoria, "/", { abrir: false });
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+
+    const rodape = document.querySelector(".rodape-filtros") as HTMLElement;
+    expect(within(rodape).getByText("8 resultado(s) no recorte")).toBeDefined();
+
+    fireEvent.click(
+      within(rodape).getByRole("button", { name: "Ver 8 resultados" }),
+    );
+    expect(painel().hidden).toBe(true);
+
+    fireEvent.click(screen.getByRole("button", { name: "Pesquisa avançada" }));
+    fireEvent.click(screen.getByRole("button", { name: "Classe B" }));
+    await waitFor(() =>
+      expect(
+        within(rodape).getByText("1 resultado(s) no recorte"),
+      ).toBeDefined(),
+    );
+    expect(
+      within(rodape).getByRole("button", { name: "Ver 1 resultado" }),
+    ).toBeDefined();
   });
 });

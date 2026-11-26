@@ -231,12 +231,17 @@ nova exportação CSV
   esqueleto de linhas, o erro de rede tem "Tentar de novo" e o recorte vazio
   tem ação; um botão ao lado de "Ordenar por" inverte a direção. A página usa a
   variante **ampla** do shell (ticket 67), sem barra
-  lateral: busca em largura total, a linha de **Pesquisa avançada** com os chips
-  do recorte efetivo (inclusive o padrão implícito de Tensão 220 V, cujo "×"
-  grava `tensao=`), o painel recolhível com Marca, Capacidade, Função, Tensão,
-  Tipo e Classe (fechado por padrão e aberto sozinho quando a URL traz um filtro
-  avançado), a vitrine de Análises e, acima da tabela, a linha compacta de
-  "Ordenar por". Ao abrir
+  lateral: a **barra de ferramentas** (ticket 73) é sticky (`top: 0`, `--z-barra`,
+  fundo giz e hairline inferior) e junta a busca, o botão de **Pesquisa
+  avançada**, os chips do recorte efetivo (inclusive o padrão implícito de Tensão
+  220 V, cujo "×" grava `tensao=`), a contagem e a ordenação. A ilha mede a
+  altura da barra e publica em `--altura-barra-catalogo`, usada no `top` do
+  `<thead>` sticky da tabela. O painel recolhível (Marca, Tipo, Função,
+  Capacidade, Classe e Tensão) está fechado por padrão e abre sozinho quando a
+  URL traz um filtro avançado; no desktop é embutido e no celular vira
+  sobreposição `role="dialog"` de tela cheia, com foco preso, `Esc`, retorno de
+  foco, rolagem interna e "Ver N resultados" no rodapé. Depois da barra vêm a
+  vitrine de Análises e a tabela; a contagem e a ordenação vivem na barra. Ao abrir
   sem querystring, o **filtro padrão** — Tensão 220 V — vale como estado inicial
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e

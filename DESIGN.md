@@ -280,10 +280,12 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 - Skip link visível no foco, primeiro elemento do DOM.
 
 ### Barra de ferramentas do catálogo
-- `position: sticky; top: 0`, fundo giz, hairline inferior, `z-index: 20`.
-- Contém busca, botão "Pesquisa avançada", chips do recorte, contagem e ordenação.
+- `position: sticky; top: 0`, fundo giz, hairline inferior, `z-index: 20` (`--z-barra`).
+- Contém a busca (rótulo só para leitor de tela), o botão "Pesquisa avançada", os chips do recorte, a contagem em mono tabular e a ordenação com direção.
+- A altura da barra é medida pela ilha e publicada em `--altura-barra-catalogo`; o `<thead>` sticky da tabela usa esse valor em `top`, para o cabeçalho parar logo abaixo da barra em vez de sumir atrás dela.
+- No desktop são duas faixas: busca + botão; chips + contagem/ordenação.
+- No celular são três faixas compactas, todas de 44 px e sem overflow: busca + botão; chips do recorte (quebram linha); contagem + ordenação. O rótulo "Ordenar por" fica só no nome acessível do campo e a contagem encurta com reticências.
 - Quando a seleção para comparar tem ao menos um item, o dock sobe acima da barra com sombra única do sistema; nunca cobre a linha que está sendo lida.
-- No celular, a barra empilha em duas linhas: busca + botão; chips + contagem.
 
 ### Tabela
 - Cabeçalho em mono maiúsculo, fundo papel, hairline inferior de 1 px.
@@ -407,7 +409,9 @@ Decisão do ticket 72 sobre a base do 27/50/63: a tabela deixa de ser uma grade 
 - **Estados.** Carregando é um esqueleto de oito linhas (com o anúncio em região viva); erro de rede é um alerta com "Tentar de novo"; recorte vazio é um estado com título, uma frase e "Limpar filtros". "Mostrar mais" continua em blocos de 50 e informa quantos restam em mono.
 
 ### Painel de filtros
-Duas faixas nomeadas — **Aparelho** e **Desempenho** —, cada uma com rótulo mono e hairline superior. Campos em largura total, chips quebrando linha. A **Faixa de capacidade** (seis intervalos derivados dos dados) vive aqui, nos chips de Desempenho: é o caminho de descoberta por faixa que a home deixou de oferecer quando a régua saiu (ticket 94), com o contrato `?btuMin=&btuMax=` intacto. Rodapé com contagem do recorte e "Limpar filtros" (só quando fora do padrão). No desktop, painel embutido abaixo da barra; no celular, painel sobreposto de altura máxima com rolagem interna e botão "Aplicar" fixo.
+Duas faixas nomeadas — **Aparelho** e **Desempenho** —, cada uma com rótulo mono maiúsculo e hairline superior. Campos em largura total, chips quebrando linha, no primitivo do sistema (32 px, raio de 2 px; 44 px no celular) e sem pill. A **Faixa de capacidade** (seis intervalos derivados dos dados) vive aqui, nos chips de Desempenho: é o caminho de descoberta por faixa que a home deixou de oferecer quando a régua saiu (ticket 94), com o contrato `?btuMin=&btuMax=` intacto. Rodapé com contagem do recorte, "Limpar filtros" (só quando fora do padrão) e, no celular, "Ver N resultados".
+
+No desktop o painel é embutido abaixo da barra (fundo giz, hairline, raio de 4 px). No celular vira uma sobreposição de tela cheia (`position: fixed; inset: 0`, `--z-painel`, rolagem interna e `overscroll-behavior: contain`), com `role="dialog"`, `aria-modal="true"` e nome "Pesquisa avançada"; o foco entra no painel ao abrir e fica preso ali, `Esc` fecha, o foco volta ao botão que abriu e o rodapé fica fixo com a contagem e o botão "Ver N resultados". Aberto por link com filtro avançado, o painel já abre como sobreposição.
 
 ### Dock de seleção
 Barra escura (tinta) acima da tabela, com contagem `2 de 3`, nomes dos modelos em mono e ações "Limpar seleção" e "Comparar". Aparece só com ao menos um selecionado; com dois ou três, "Comparar" vira link primário em azul-frio. No celular, ocupa a largura toda e mantém 44 px de alvo.

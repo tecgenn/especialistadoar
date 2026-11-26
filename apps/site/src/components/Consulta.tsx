@@ -7,7 +7,7 @@ import {
   type OrdemConsulta,
   ordenar,
 } from "@especialista-do-ar/api/consulta";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type AnalisadoVitrine, montarVitrine } from "../lib/analises";
 import {
   escreverIds,
@@ -50,13 +50,16 @@ import {
  * (`criarConsulta`/`ordenar`). O estado vive na URL. A consulta é 100% estática:
  * o dataset é baixado como arquivo.
  *
- * O layout (ticket 50) é uma coluna central de até 72 rem, sem barra lateral:
- * busca em largura total, a linha de "Pesquisa avançada" com os chips do recorte
- * efetivo (inclusive o padrão implícito de 220 V), o painel avançado recolhível
- * e, por fim, a linha de ordenação acima da tabela. O painel (ticket 61) tem duas
- * faixas nomeadas — Aparelho (Marca, Tipo, Função) e Desempenho (Capacidade,
- * Classe, Tensão) —, campos em largura total e rodapé com contagem e "Limpar
- * filtros".
+ * O layout (tickets 50 e 73) é uma coluna central sem barra lateral: a **barra
+ * de ferramentas** junta busca, botão "Pesquisa avançada", chips do recorte
+ * efetivo (inclusive o padrão implícito de 220 V), contagem e ordenação, e gruda
+ * no topo ao rolar. A altura medida da barra vira `--altura-barra-catalogo` no
+ * contêiner, para o cabeçalho da tabela (também sticky) parar logo abaixo dela
+ * em vez de sumir atrás. O painel (ticket 61) tem duas faixas nomeadas —
+ * Aparelho (Marca, Tipo, Função) e Desempenho (Capacidade, Classe, Tensão) —,
+ * campos em largura total e rodapé com contagem e "Limpar filtros". No desktop
+ * ele é embutido; abaixo de 900 px vira uma sobreposição de tela cheia com foco
+ * preso, `Esc`, retorno de foco ao botão e "Ver N resultados" no rodapé.
  *
  * A tabela é um instrumento (ticket 72): identificação, medida e qualificação em
  * hierarquia, números em mono tabular alinhados à direita, Classe como etiqueta
@@ -82,6 +85,20 @@ const LINHAS_ESQUELETO = ["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"];
 
 /** Os campos que a tabela sabe ordenar (as colunas ordenáveis do ticket 31). */
 const CAMPOS_ORDENAVEIS = new Set<string>(ORDENS_CONSULTA);
+
+/** O corte do painel sobreposto (ticket 73): o mesmo 900 px da tabela. */
+const CONSULTA_CELULAR = "(max-width: 55.999rem)";
+
+/** Os focáveis que entram na armadilha de foco do painel mobile (ticket 73). */
+const FOCAVEIS =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Os elementos focáveis e visíveis de um contêiner, na ordem do DOM. */
+function focaveisDe(raiz: HTMLElement): HTMLElement[] {
+  return [...raiz.querySelectorAll<HTMLElement>(FOCAVEIS)].filter(
+    (elemento) => !elemento.closest("[hidden]"),
+  );
+}
 
 /** Uma marca nos chips: `valor` é o filtro, `rotulo` o que se lê. */
 interface OpcaoChip {
@@ -405,6 +422,12 @@ export default function Consulta({
   const [selecao, setSelecao] = useState<string[]>([]);
   /** Quantos ids da URL caíram na leitura: repetidos, desconhecidos ou além do limite. */
   const [descartadosSelecao, setDescartadosSelecao] = useState(0);
+  /** Abaixo de 900 px o painel vira sobreposição modal (ticket 73). */
+  const [ehCelular, setEhCelular] = useState(false);
+  const raizRef = useRef<HTMLElement>(null);
+  const barraRef = useRef<HTMLFormElement>(null);
+  const botaoAvancadaRef = useRef<HTMLButtonElement>(null);
+  const painelRef = useRef<HTMLDivElement>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `tentativa` não é lida no corpo; ela refaz o pedido em "Tentar de novo".
   useEffect(() => {
@@ -432,6 +455,114 @@ export default function Consulta({
       cancelado = true;
     };
   }, [consultaUrl, tentativa]);
+
+  // O painel só é modal no celular: aqui o componente sabe em que faixa está,
+  // para alternar `role="dialog"`, a armadilha de foco e o retorno de foco.
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") {
+      return;
+    }
+    const consulta = window.matchMedia(CONSULTA_CELULAR);
+    const atualizar = () => setEhCelular(consulta.matches);
+    atualizar();
+    consulta.addEventListener("change", atualizar);
+    return () => consulta.removeEventListener("change", atualizar);
+  }, []);
+
+  // A barra gruda no topo; o cabeçalho da tabela gruda logo abaixo dela. A
+  // altura de uma barra que quebra linha não é fixa, então medimos e publicamos
+  // em `--altura-barra-catalogo` (ticket 73). Sem `ResizeObserver`, o evento de
+  // `resize` cobre a troca de faixa.
+  useEffect(() => {
+    const barra = barraRef.current;
+    const raiz = raizRef.current;
+    if (barra === null || raiz === null) {
+      return;
+    }
+    const medir = () => {
+      raiz.style.setProperty(
+        "--altura-barra-catalogo",
+        `${Math.round(barra.getBoundingClientRect().height)}px`,
+      );
+    };
+    medir();
+    window.addEventListener("resize", medir);
+    const observador =
+      typeof ResizeObserver === "undefined" ? null : new ResizeObserver(medir);
+    observador?.observe(barra);
+    return () => {
+      window.removeEventListener("resize", medir);
+      observador?.disconnect();
+    };
+  }, []);
+
+  // Abrir o painel no celular leva o foco para dentro dele; o foco nunca sai
+  // enquanto ele estiver aberto (ticket 73).
+  useEffect(() => {
+    if (!ehCelular || !painelAberto) {
+      return;
+    }
+    const painel = painelRef.current;
+    if (painel === null) {
+      return;
+    }
+    const [primeiro] = focaveisDe(painel);
+    (primeiro ?? painel).focus();
+  }, [ehCelular, painelAberto]);
+
+  /** Fecha o painel e devolve o foco ao botão que o abriu (ticket 73). */
+  const fecharPainel = useCallback(() => {
+    setPainelAberto(false);
+    if (ehCelular) {
+      botaoAvancadaRef.current?.focus();
+    }
+  }, [ehCelular]);
+
+  /** `Esc` fecha; `Tab` não escapa do painel modal (ticket 73). */
+  const aoTeclarNoPainel = useCallback(
+    (evento: KeyboardEvent) => {
+      if (evento.key === "Escape") {
+        evento.preventDefault();
+        fecharPainel();
+        return;
+      }
+      if (!ehCelular || evento.key !== "Tab") {
+        return;
+      }
+      const painel = painelRef.current;
+      if (painel === null) {
+        return;
+      }
+      const focaveis = focaveisDe(painel);
+      const primeiro = focaveis[0];
+      const ultimo = focaveis.at(-1);
+      if (primeiro === undefined || ultimo === undefined) {
+        return;
+      }
+      if (evento.shiftKey && document.activeElement === primeiro) {
+        evento.preventDefault();
+        ultimo.focus();
+      } else if (!evento.shiftKey && document.activeElement === ultimo) {
+        evento.preventDefault();
+        primeiro.focus();
+      }
+    },
+    [ehCelular, fecharPainel],
+  );
+
+  // O teclado é tratado no DOM, e só enquanto a sobreposição está aberta: o
+  // painel embutido do desktop não prende foco nem reage a `Esc`.
+  useEffect(() => {
+    if (!ehCelular || !painelAberto) {
+      return;
+    }
+    const painel = painelRef.current;
+    if (painel === null) {
+      return;
+    }
+    painel.addEventListener("keydown", aoTeclarNoPainel);
+    return () => painel.removeEventListener("keydown", aoTeclarNoPainel);
+  }, [ehCelular, painelAberto, aoTeclarNoPainel]);
 
   /** "Tentar de novo" volta ao esqueleto e pede a base outra vez. */
   const tentarDeNovo = () => {
@@ -692,11 +823,24 @@ export default function Consulta({
     ? `/comparar/?${escreverIds(selecao).toString()}`
     : undefined;
 
+  /** Só o painel do celular é um diálogo modal; no desktop ele é embutido. */
+  const atributosDoDialogo = ehCelular
+    ? {
+        role: "dialog",
+        "aria-modal": true,
+        "aria-label": "Pesquisa avançada",
+      }
+    : {};
+
   return (
-    <section className="consulta">
-      <form className="filtros" onSubmit={(evento) => evento.preventDefault()}>
-        <label className="busca campo-full">
-          <span>Busca</span>
+    <section className="consulta" ref={raizRef}>
+      <form
+        ref={barraRef}
+        className="filtros barra-ferramentas"
+        onSubmit={(evento) => evento.preventDefault()}
+      >
+        <label className="busca">
+          <span className="sr-only">Busca</span>
           <input
             type="search"
             value={estado.q ?? ""}
@@ -707,212 +851,268 @@ export default function Consulta({
           />
         </label>
 
-        <div className="linha-pesquisa">
+        <div className="barra-ferramentas-acoes">
           <button
+            ref={botaoAvancadaRef}
             type="button"
             className="botao-pesquisa-avancada"
             aria-expanded={painelAberto}
             aria-controls="pesquisa-avancada"
-            onClick={() => setPainelAberto((aberto) => !aberto)}
+            onClick={() =>
+              painelAberto ? fecharPainel() : setPainelAberto(true)
+            }
           >
             Pesquisa avançada
           </button>
-
-          <fieldset className="resumo-filtros">
-            <legend className="sr-only">Filtros ativos</legend>
-            {resumo.length === 0 ? (
-              <p className="resumo-vazio">Nenhum filtro ativo.</p>
-            ) : (
-              resumo.map((filtro) => (
-                <button
-                  key={filtro.campo}
-                  type="button"
-                  className="chip-filtro"
-                  data-campo={filtro.campo}
-                  aria-label={filtro.remover}
-                  onClick={() => removerFiltro(filtro.campo)}
-                >
-                  {filtro.rotulo}
-                  <span className="chip-x" aria-hidden="true">
-                    ×
-                  </span>
-                </button>
-              ))
-            )}
-          </fieldset>
         </div>
 
-        <div
-          className="filtros-avancados"
-          id="pesquisa-avancada"
-          hidden={!painelAberto}
-        >
-          <fieldset className="faixa-filtros faixa-aparelho">
-            <legend>Aparelho</legend>
-
-            <fieldset className="campo-chips campo-marca">
-              <legend>Marca</legend>
-              <Chips
-                opcoes={opcoes.marcasChip}
-                estaAtivo={(valor) => estado.marca === valor}
-                selecionar={(valor) =>
-                  atualizar({
-                    marca: estado.marca === valor ? undefined : valor,
-                  })
-                }
-              />
-              <BuscaMarca
-                valor={marcaDaBusca}
-                onChange={(valor) =>
-                  atualizar({ marca: valor === "" ? undefined : valor })
-                }
-              />
-            </fieldset>
-
-            <fieldset className="campo-chips campo-tipo">
-              <legend>Tipo</legend>
-              <Chips
-                opcoes={tipos}
-                estaAtivo={(valor) => estado.tipo === valor}
-                selecionar={(valor) =>
-                  atualizar({
-                    tipo: estado.tipo === valor ? undefined : valor,
-                  })
-                }
-              />
-            </fieldset>
-
-            <fieldset className="campo-chips campo-funcao">
-              <legend>Função</legend>
-              <Chips
-                opcoes={funcoes}
-                estaAtivo={(valor) => estado.funcao === valor}
-                selecionar={(valor) =>
-                  atualizar({
-                    funcao: estado.funcao === valor ? undefined : valor,
-                  })
-                }
-              />
-            </fieldset>
-          </fieldset>
-
-          <fieldset className="faixa-filtros faixa-desempenho">
-            <legend>Desempenho</legend>
-
-            <fieldset className="campo-chips campo-capacidade">
-              <legend>Capacidade</legend>
-              <Chips
-                opcoes={faixas.map((faixa) => ({
-                  valor: rotuloDaFaixa(faixa),
-                  rotulo: rotuloDaFaixa(faixa),
-                }))}
-                estaAtivo={(valor) => {
-                  const faixa = faixaPorRotulo(faixas, valor);
-                  return faixa !== undefined && estadoNaFaixa(estado, faixa);
-                }}
-                selecionar={(valor) => {
-                  const faixa = faixaPorRotulo(faixas, valor);
-                  if (faixa === undefined) {
-                    return;
-                  }
-                  // Faixa e capacidade exata são exclusivas: escolher a faixa
-                  // (ou desligá-la) sempre limpa `btu`.
-                  atualizar({
-                    btu: undefined,
-                    btuMin: estadoNaFaixa(estado, faixa)
-                      ? undefined
-                      : faixa.min,
-                    btuMax: estadoNaFaixa(estado, faixa)
-                      ? undefined
-                      : faixa.max,
-                  });
-                }}
-              />
-              <SelectOutras
-                rotulo="Capacidade exata"
-                vazio="Todas as capacidades"
-                valor={btuDoSelect}
-                opcoes={capacidades.map((btu) => ({
-                  valor: String(btu),
-                  rotulo: btu.toLocaleString("pt-BR"),
-                }))}
-                onChange={(valor) =>
-                  // Escolher a exata limpa as duas chaves da faixa.
-                  atualizar({
-                    btu: valor === "" ? undefined : Number(valor),
-                    btuMin: undefined,
-                    btuMax: undefined,
-                  })
-                }
-              />
-            </fieldset>
-
-            <fieldset className="campo-chips campo-classe">
-              <legend>Classe</legend>
-              <ChipsClass
-                opcoes={opcoes.classesChip}
-                estaAtivo={(valor) => estado.classe === valor}
-                selecionar={(valor) =>
-                  atualizar({
-                    classe: estado.classe === valor ? undefined : valor,
-                  })
-                }
-              />
-              {classesExtras.length > 0 ? (
-                <SelectOutras
-                  rotulo="Outras classes"
-                  valor={
-                    estado.classe !== undefined &&
-                    classesExtras.includes(estado.classe)
-                      ? estado.classe
-                      : ""
-                  }
-                  opcoes={classesExtras.map((classe) => ({
-                    valor: classe,
-                    rotulo: classe,
-                  }))}
-                  onChange={(valor) =>
-                    atualizar({ classe: valor || undefined })
-                  }
-                />
-              ) : null}
-            </fieldset>
-
-            <label className="campo-tensao">
-              <span>Tensão (V)</span>
-              <select
-                value={estado.tensao === undefined ? "" : String(estado.tensao)}
-                onChange={(evento) =>
-                  atualizar({
-                    tensao:
-                      evento.target.value === ""
-                        ? undefined
-                        : Number(evento.target.value),
-                  })
-                }
+        <fieldset className="resumo-filtros">
+          <legend className="sr-only">Filtros ativos</legend>
+          {resumo.length === 0 ? (
+            <p className="resumo-vazio">Nenhum filtro ativo.</p>
+          ) : (
+            resumo.map((filtro) => (
+              <button
+                key={filtro.campo}
+                type="button"
+                className="chip-filtro"
+                data-campo={filtro.campo}
+                aria-label={filtro.remover}
+                onClick={() => removerFiltro(filtro.campo)}
               >
-                <option value="">Todas</option>
-                {opcoes.tensoes.map((tensao) => (
-                  <option key={tensao} value={tensao}>
-                    {tensao}
+                {filtro.rotulo}
+                <span className="chip-x" aria-hidden="true">
+                  ×
+                </span>
+              </button>
+            ))
+          )}
+        </fieldset>
+
+        <div className="linha-ordenacao">
+          {motor === null ? null : (
+            <p role="status">
+              {resultados.length} aparelho(s) com Dados declarados.
+            </p>
+          )}
+          <label className="campo-ordenar">
+            <span className="campo-ordenar-rotulo">Ordenar por</span>
+            <select
+              value={estado.ordem ?? ""}
+              onChange={(evento) => trocarOrdem(evento.target.value)}
+            >
+              <option value="">
+                {estado.q === undefined || estado.q.trim() === ""
+                  ? "Padrão (A–Z)"
+                  : "Padrão (relevância)"}
+              </option>{" "}
+              {colunas
+                .filter((coluna) => CAMPOS_ORDENAVEIS.has(coluna.campo))
+                .map((coluna) => (
+                  <option key={coluna.campo} value={coluna.campo}>
+                    {coluna.rotulo}
                   </option>
                 ))}
-              </select>
-            </label>
+            </select>
+          </label>
+
+          {/* O cabeçalho da tabela acompanha a rolagem, então a direção também
+              precisa de um controle próprio — o seletor ordena, este botão inverte. */}
+          {estado.ordem !== undefined ? (
+            <button
+              type="button"
+              className="ordem-direcao"
+              aria-label={
+                estado.dir === "desc"
+                  ? "Ordenar de forma crescente"
+                  : "Ordenar de forma decrescente"
+              }
+              onClick={alternarDirecao}
+            >
+              {estado.dir === "desc" ? "Decrescente" : "Crescente"}
+            </button>
+          ) : null}
+        </div>
+      </form>
+
+      <div
+        {...atributosDoDialogo}
+        ref={painelRef}
+        className="filtros-avancados"
+        id="pesquisa-avancada"
+        hidden={!painelAberto}
+        tabIndex={ehCelular ? -1 : undefined}
+      >
+        <fieldset className="faixa-filtros faixa-aparelho">
+          <legend>Aparelho</legend>
+
+          <fieldset className="campo-chips campo-marca">
+            <legend>Marca</legend>
+            <Chips
+              opcoes={opcoes.marcasChip}
+              estaAtivo={(valor) => estado.marca === valor}
+              selecionar={(valor) =>
+                atualizar({
+                  marca: estado.marca === valor ? undefined : valor,
+                })
+              }
+            />
+            <BuscaMarca
+              valor={marcaDaBusca}
+              onChange={(valor) =>
+                atualizar({ marca: valor === "" ? undefined : valor })
+              }
+            />
           </fieldset>
 
-          <div className="rodape-filtros">
-            <p className="contagem-recorte">
-              {resultados.length} resultado(s) no recorte
-            </p>
+          <fieldset className="campo-chips campo-tipo">
+            <legend>Tipo</legend>
+            <Chips
+              opcoes={tipos}
+              estaAtivo={(valor) => estado.tipo === valor}
+              selecionar={(valor) =>
+                atualizar({
+                  tipo: estado.tipo === valor ? undefined : valor,
+                })
+              }
+            />
+          </fieldset>
+
+          <fieldset className="campo-chips campo-funcao">
+            <legend>Função</legend>
+            <Chips
+              opcoes={funcoes}
+              estaAtivo={(valor) => estado.funcao === valor}
+              selecionar={(valor) =>
+                atualizar({
+                  funcao: estado.funcao === valor ? undefined : valor,
+                })
+              }
+            />
+          </fieldset>
+        </fieldset>
+
+        <fieldset className="faixa-filtros faixa-desempenho">
+          <legend>Desempenho</legend>
+
+          <fieldset className="campo-chips campo-capacidade">
+            <legend>Capacidade</legend>
+            <Chips
+              opcoes={faixas.map((faixa) => ({
+                valor: rotuloDaFaixa(faixa),
+                rotulo: rotuloDaFaixa(faixa),
+              }))}
+              estaAtivo={(valor) => {
+                const faixa = faixaPorRotulo(faixas, valor);
+                return faixa !== undefined && estadoNaFaixa(estado, faixa);
+              }}
+              selecionar={(valor) => {
+                const faixa = faixaPorRotulo(faixas, valor);
+                if (faixa === undefined) {
+                  return;
+                }
+                // Faixa e capacidade exata são exclusivas: escolher a faixa
+                // (ou desligá-la) sempre limpa `btu`.
+                atualizar({
+                  btu: undefined,
+                  btuMin: estadoNaFaixa(estado, faixa) ? undefined : faixa.min,
+                  btuMax: estadoNaFaixa(estado, faixa) ? undefined : faixa.max,
+                });
+              }}
+            />
+            <SelectOutras
+              rotulo="Capacidade exata"
+              vazio="Todas as capacidades"
+              valor={btuDoSelect}
+              opcoes={capacidades.map((btu) => ({
+                valor: String(btu),
+                rotulo: btu.toLocaleString("pt-BR"),
+              }))}
+              onChange={(valor) =>
+                // Escolher a exata limpa as duas chaves da faixa.
+                atualizar({
+                  btu: valor === "" ? undefined : Number(valor),
+                  btuMin: undefined,
+                  btuMax: undefined,
+                })
+              }
+            />
+          </fieldset>
+
+          <fieldset className="campo-chips campo-classe">
+            <legend>Classe</legend>
+            <ChipsClass
+              opcoes={opcoes.classesChip}
+              estaAtivo={(valor) => estado.classe === valor}
+              selecionar={(valor) =>
+                atualizar({
+                  classe: estado.classe === valor ? undefined : valor,
+                })
+              }
+            />
+            {classesExtras.length > 0 ? (
+              <SelectOutras
+                rotulo="Outras classes"
+                valor={
+                  estado.classe !== undefined &&
+                  classesExtras.includes(estado.classe)
+                    ? estado.classe
+                    : ""
+                }
+                opcoes={classesExtras.map((classe) => ({
+                  valor: classe,
+                  rotulo: classe,
+                }))}
+                onChange={(valor) => atualizar({ classe: valor || undefined })}
+              />
+            ) : null}
+          </fieldset>
+
+          <label className="campo-tensao">
+            <span>Tensão (V)</span>
+            <select
+              value={estado.tensao === undefined ? "" : String(estado.tensao)}
+              onChange={(evento) =>
+                atualizar({
+                  tensao:
+                    evento.target.value === ""
+                      ? undefined
+                      : Number(evento.target.value),
+                })
+              }
+            >
+              <option value="">Todas</option>
+              {opcoes.tensoes.map((tensao) => (
+                <option key={tensao} value={tensao}>
+                  {tensao}
+                </option>
+              ))}
+            </select>
+          </label>
+        </fieldset>
+
+        <div className="rodape-filtros">
+          <p className="contagem-recorte">
+            {resultados.length} resultado(s) no recorte
+          </p>
+          <div className="rodape-filtros-acoes">
             {temFiltro ? (
               <button type="button" className="limpar-filtros" onClick={limpar}>
                 Limpar filtros
               </button>
             ) : null}
+            {/* No celular o rodapé é a saída do painel sobreposto (ticket 73). */}
+            <button
+              type="button"
+              className="botao aplicar-filtros"
+              onClick={fecharPainel}
+            >
+              Ver {resultados.length} resultado
+              {resultados.length === 1 ? "" : "s"}
+            </button>
           </div>
         </div>
-      </form>
+      </div>
 
       {erro !== null ? (
         <div className="consulta-alerta" role="alert">
@@ -1008,51 +1208,6 @@ export default function Consulta({
               )}
             </>
           )}
-
-          <div className="linha-ordenacao">
-            {motor === null ? null : (
-              <p role="status">
-                {resultados.length} aparelho(s) com Dados declarados.
-              </p>
-            )}
-            <label className="campo-ordenar">
-              <span>Ordenar por</span>
-              <select
-                value={estado.ordem ?? ""}
-                onChange={(evento) => trocarOrdem(evento.target.value)}
-              >
-                <option value="">
-                  {estado.q === undefined || estado.q.trim() === ""
-                    ? "Padrão (A–Z)"
-                    : "Padrão (relevância)"}
-                </option>{" "}
-                {colunas
-                  .filter((coluna) => CAMPOS_ORDENAVEIS.has(coluna.campo))
-                  .map((coluna) => (
-                    <option key={coluna.campo} value={coluna.campo}>
-                      {coluna.rotulo}
-                    </option>
-                  ))}
-              </select>
-            </label>
-
-            {/* O cabeçalho da tabela acompanha a rolagem, então a direção também
-                precisa de um controle próprio — o seletor ordena, este botão inverte. */}
-            {estado.ordem !== undefined ? (
-              <button
-                type="button"
-                className="ordem-direcao"
-                aria-label={
-                  estado.dir === "desc"
-                    ? "Ordenar de forma crescente"
-                    : "Ordenar de forma decrescente"
-                }
-                onClick={alternarDirecao}
-              >
-                {estado.dir === "desc" ? "Decrescente" : "Crescente"}
-              </button>
-            ) : null}
-          </div>
 
           {motor === null ? null : resultados.length === 0 ? (
             <div className="consulta-vazio">

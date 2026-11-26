@@ -1676,7 +1676,14 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // o cabeçalho e vira cada linha em cartão abaixo de 640 px.
     const htmlTabela = lerHtml("aparelhos");
     expect(htmlTabela).toContain("<h1>Aparelhos de ar-condicionado</h1>");
-    expect(htmlTabela).toContain("<span>Ordenar por</span>");
+    expect(htmlTabela).toContain(
+      '<span class="campo-ordenar-rotulo">Ordenar por</span>',
+    );
+    // A barra de ferramentas (ticket 73) junta busca, recorte e ordenação no
+    // mesmo formulário sticky, e o painel sobreposto tem a saída "Ver N".
+    expect(htmlTabela).toContain('class="filtros barra-ferramentas"');
+    expect(htmlTabela).toContain('aria-controls="pesquisa-avancada"');
+    expect(htmlTabela).toContain('class="botao aplicar-filtros"');
     // Os filtros do redesign (ticket 34): cada um é um fieldset com legenda.
     for (const filtro of ["Marca", "Capacidade", "Função", "Tipo", "Classe"]) {
       expect(htmlTabela).toContain(`<legend>${filtro}</legend>`);
