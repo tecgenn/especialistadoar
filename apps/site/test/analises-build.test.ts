@@ -1718,8 +1718,17 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlHome).not.toContain(">Midea</button>");
     expect(htmlHome).not.toContain(">Até 9.000 BTU/h</button>");
 
-    expect(cssDaPagina(htmlTabela)).toMatch(
-      /@media \(width<=40rem\)\{[^@]*\.consulta \.tabela-aparelhos td\{[^}]*display:grid/,
+    // Ticket 72: a tabela continua tabela em todas as larguras. Abaixo de
+    // 900 px ela ganha largura mínima dentro do contêiner que rola; nenhuma
+    // célula vira cartão e o cabeçalho não some.
+    const cssDaTabela = cssDaPagina(htmlTabela);
+    expect(cssDaTabela).toMatch(
+      /@media \(width<56\.25rem\)\{[^@]*\.consulta \.tabela-aparelhos\{min-width:60rem/,
+    );
+    expect(cssDaTabela).toContain("overscroll-behavior-x:contain");
+    // O minificador funde os eixos em `overflow: auto clip`.
+    expect(cssDaTabela).toMatch(
+      /\.consulta \.tabela-rolagem\{[^}]*overflow:auto clip/,
     );
 
     // Ficha nova (ticket 26): resumo no topo, grade 2×2 das condições de ensaio

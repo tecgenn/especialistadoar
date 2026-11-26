@@ -5,9 +5,10 @@ import type {
 import { formatarFaixa } from "./ficha.ts";
 
 /**
- * Metadados da tabela de Aparelhos (ticket 31): as colunas de exibição na ordem
- * em que aparecem na tela. O rótulo serve ao cabeçalho, ao seletor "Ordenar por"
- * e ao cartão do celular (`data-label`).
+ * Metadados da tabela de Aparelhos (ticket 31, reorganizados no 72): as colunas
+ * de exibição na ordem em que aparecem na tela — identificação (Marca, Modelo),
+ * medida (Capacidade, Consumo, IDRS) e qualificação (Classe, Tipo). O rótulo
+ * serve ao cabeçalho, ao seletor "Ordenar por" e ao `data-label` da célula.
  */
 export interface ColunaTabela {
   campo: ColunaExibicao;
@@ -17,13 +18,28 @@ export interface ColunaTabela {
 export const COLUNAS_TABELA: readonly ColunaTabela[] = [
   { campo: "marca", rotulo: "Marca" },
   { campo: "modelo", rotulo: "Modelo" },
-  // Tipo é somente leitura (ticket 43): aparece após Modelo, mas não ordena.
-  { campo: "tipo", rotulo: "Tipo" },
-  { campo: "btu", rotulo: "BTU/h" },
-  { campo: "consumo", rotulo: "Consumo (kWh)" },
+  { campo: "btu", rotulo: "Capacidade" },
+  { campo: "consumo", rotulo: "Consumo" },
   { campo: "idrs", rotulo: "IDRS" },
   { campo: "classe", rotulo: "Classe" },
+  // Tipo é somente leitura (ticket 43): fecha a leitura, mas não ordena.
+  { campo: "tipo", rotulo: "Tipo" },
 ];
+
+/**
+ * A unidade de uma coluna numérica (ticket 72): aparece uma vez por célula, em
+ * mono menor — "12.000 BTU/h", "416 kWh/ano". IDRS e Classe são adimensionais.
+ */
+export function unidadeDaColuna(campo: ColunaExibicao): string | null {
+  switch (campo) {
+    case "btu":
+      return "BTU/h";
+    case "consumo":
+      return "kWh/ano";
+    default:
+      return null;
+  }
+}
 
 /**
  * As colunas renderizadas na tabela de Aparelhos. A tag "Análise" não é uma

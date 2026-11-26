@@ -31,6 +31,7 @@ import {
 } from "../lib/faixas-capacidade";
 import { formatarFaixa } from "../lib/ficha";
 import type { OpcoesConsulta } from "../lib/opcoes";
+import { etiquetaDaClasse } from "../lib/primitivos";
 import {
   type CampoResumoFiltro,
   resumoDosFiltros,
@@ -38,6 +39,7 @@ import {
 import {
   colunasDaTabela,
   detalheDoAparelho,
+  unidadeDaColuna,
   valorDaColuna,
 } from "../lib/tabela";
 
@@ -54,8 +56,14 @@ import {
  * e, por fim, a linha de ordenação acima da tabela. O painel (ticket 61) tem duas
  * faixas nomeadas — Aparelho (Marca, Tipo, Função) e Desempenho (Capacidade,
  * Classe, Tensão) —, campos em largura total e rodapé com contagem e "Limpar
- * filtros". A coluna "Análise" é a última e só existe quando há ao menos uma
- * Análise publicada.
+ * filtros".
+ *
+ * A tabela é um instrumento (ticket 72): identificação, medida e qualificação em
+ * hierarquia, números em mono tabular alinhados à direita, Classe como etiqueta
+ * com letra e cor e o selo "Análise" na última coluna. Abaixo de 900 px ela
+ * **continua tabela**: rola na horizontal dentro do próprio contêiner (focável,
+ * `role="region"`), com a seleção e o Modelo fixos à esquerda e o cabeçalho
+ * acompanhando a rolagem vertical. Nenhum JS foi acrescentado para isso.
  */
 export interface PropsConsulta {
   /** Opções dos filtros, derivadas do dataset no build do site. */
@@ -68,6 +76,9 @@ export interface PropsConsulta {
 
 /** Quantas linhas aparecem por vez na tabela. */
 const TAMANHO_PAGINA = 50;
+
+/** As linhas do esqueleto de carregamento — chaves estáveis, sem índice. */
+const LINHAS_ESQUELETO = ["l1", "l2", "l3", "l4", "l5", "l6", "l7", "l8"];
 
 /** Os campos que a tabela sabe ordenar (as colunas ordenáveis do ticket 31). */
 const CAMPOS_ORDENAVEIS = new Set<string>(ORDENS_CONSULTA);
@@ -183,9 +194,49 @@ function BuscaMarca({
 }
 
 /**
+ * Uma seta de ordenação desenhada (ticket 72): chevron de 8 px em traço, no
+ * lugar do glifo ↑/↓ — o sistema não usa caractere no papel de ícone. A ativa
+ * herda a cor de ação, a outra fica na hairline.
+ */
+function SetaDeOrdenacao({
+  direcao,
+  ativa,
+}: {
+  direcao: "asc" | "desc";
+  ativa: boolean;
+}) {
+  return (
+    <span
+      className={`seta seta-${direcao}${ativa ? " seta-ativa" : ""}`}
+      data-direcao={direcao}
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        width="8"
+        height="8"
+        viewBox="0 0 8 8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path
+          d={
+            direcao === "asc" ? "M1.5 5.5 4 3l2.5 2.5" : "M1.5 2.5 4 5l2.5-2.5"
+          }
+        />
+      </svg>
+    </span>
+  );
+}
+
+/**
  * Um cabeçalho ordenável (ticket 43): as duas setas ficam **sempre visíveis**,
  * a direção ativa em destaque e a outra apagada — assim se descobre que o
  * cabeçalho é clicável. O botão alterna a direção; `aria-sort` fica no `th`.
+ * Desde o ticket 72 o alvo do botão tem 44 px de altura.
  */
 function Cabecalho({
   campo,
@@ -211,16 +262,8 @@ function Cabecalho({
       <button type="button" onClick={() => alternar(campo)}>
         {rotulo}
         <span className="setas" aria-hidden="true">
-          <span
-            className={`seta seta-asc${direcao === "asc" ? " seta-ativa" : ""}`}
-          >
-            ↑
-          </span>
-          <span
-            className={`seta seta-desc${direcao === "desc" ? " seta-ativa" : ""}`}
-          >
-            ↓
-          </span>
+          <SetaDeOrdenacao direcao="asc" ativa={direcao === "asc"} />
+          <SetaDeOrdenacao direcao="desc" ativa={direcao === "desc"} />
         </span>
       </button>
     </th>
@@ -267,6 +310,34 @@ function SeloAnalise({
         {analise.titulo}
       </span>
     </span>
+  );
+}
+
+/**
+ * O esqueleto de linhas do carregamento (ticket 72): a forma da tabela antes de
+ * o `consulta.json` chegar, sem texto solto no lugar do conteúdo. É decorativo —
+ * o estado real é anunciado pela região viva ao lado.
+ */
+function EsqueletoTabela() {
+  return (
+    <div className="consulta-carregando">
+      <p className="sr-only" role="status">
+        Carregando a base…
+      </p>
+      <div className="consulta-esqueleto" aria-hidden="true">
+        {LINHAS_ESQUELETO.map((linha) => (
+          <div className="esqueleto-linha" key={linha}>
+            <span className="esqueleto-celula esqueleto-selecao" />
+            <span className="esqueleto-celula esqueleto-marca" />
+            <span className="esqueleto-celula esqueleto-modelo" />
+            <span className="esqueleto-celula esqueleto-numero" />
+            <span className="esqueleto-celula esqueleto-numero" />
+            <span className="esqueleto-celula esqueleto-numero" />
+            <span className="esqueleto-celula esqueleto-classe" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -318,6 +389,9 @@ export default function Consulta({
   /** O dataset como veio do `consulta.json`, para o bloco "Com análise". */
   const [itens, setItens] = useState<ItemConsulta[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  /** Quantas vezes a base já foi pedida: "Tentar de novo" incrementa e refaz o
+   *  `fetch` (ticket 72). */
+  const [tentativa, setTentativa] = useState(0);
   const [estado, setEstado] = useState<FiltrosConsulta>(FILTROS_PADRAO);
   const [paginacao, setPaginacao] = useState({
     chave: "",
@@ -332,6 +406,7 @@ export default function Consulta({
   /** Quantos ids da URL caíram na leitura: repetidos, desconhecidos ou além do limite. */
   const [descartadosSelecao, setDescartadosSelecao] = useState(0);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `tentativa` não é lida no corpo; ela refaz o pedido em "Tentar de novo".
   useEffect(() => {
     let cancelado = false;
     fetch(consultaUrl)
@@ -343,6 +418,7 @@ export default function Consulta({
       })
       .then((dataset) => {
         if (!cancelado) {
+          setErro(null);
           setItens(dataset);
           setMotor(criarConsulta(dataset));
         }
@@ -355,7 +431,15 @@ export default function Consulta({
     return () => {
       cancelado = true;
     };
-  }, [consultaUrl]);
+  }, [consultaUrl, tentativa]);
+
+  /** "Tentar de novo" volta ao esqueleto e pede a base outra vez. */
+  const tentarDeNovo = () => {
+    setErro(null);
+    setItens(null);
+    setMotor(null);
+    setTentativa((atual) => atual + 1);
+  };
 
   useEffect(() => {
     const lerDaUrl = () => {
@@ -553,6 +637,10 @@ export default function Consulta({
   const mostrados =
     paginacao.chave === chaveEstado ? paginacao.quantidade : TAMANHO_PAGINA;
   const exibidos = resultados.slice(0, mostrados);
+  /** Quantos Aparelhos ainda cabem em "Mostrar mais" (ticket 72). */
+  const restantes = Math.max(0, resultados.length - mostrados);
+  /** A coluna "Análise" só existe quando há ao menos uma Análise publicada. */
+  const temAnalises = analisados.size > 0;
 
   // O chip aceso **é** o valor do filtro: o campo de busca "Outras marcas" não
   // repete esse valor e fica vazio enquanto o chip estiver ativo (um valor por
@@ -827,11 +915,18 @@ export default function Consulta({
       </form>
 
       {erro !== null ? (
-        <p role="alert">Não foi possível carregar a base: {erro}.</p>
+        <div className="consulta-alerta" role="alert">
+          <p className="consulta-alerta-texto">
+            Não foi possível carregar a base: {erro}.
+          </p>
+          <button type="button" className="botao" onClick={tentarDeNovo}>
+            Tentar de novo
+          </button>
+        </div>
       ) : (
         <>
           {motor === null ? (
-            <p role="status">Carregando a base…</p>
+            <EsqueletoTabela />
           ) : (
             <>
               <section
@@ -941,9 +1036,8 @@ export default function Consulta({
               </select>
             </label>
 
-            {/* Abaixo de 640 px o cabeçalho da tabela some (a linha vira cartão), então
-                a direção precisa de um controle próprio — sem ele, o celular só
-                ordenaria crescente. */}
+            {/* O cabeçalho da tabela acompanha a rolagem, então a direção também
+                precisa de um controle próprio — o seletor ordena, este botão inverte. */}
             {estado.ordem !== undefined ? (
               <button
                 type="button"
@@ -955,130 +1049,183 @@ export default function Consulta({
                 }
                 onClick={alternarDirecao}
               >
-                {estado.dir === "desc" ? "Decrescente ↓" : "Crescente ↑"}
+                {estado.dir === "desc" ? "Decrescente" : "Crescente"}
               </button>
             ) : null}
           </div>
 
-          {motor === null ? null : (
+          {motor === null ? null : resultados.length === 0 ? (
+            <div className="consulta-vazio">
+              <p className="consulta-vazio-titulo">
+                Nenhum Aparelho neste recorte
+              </p>
+              <p className="consulta-vazio-frase">
+                Nenhum Aparelho com Dados declarados combina com a busca e os
+                filtros atuais. Tente uma faixa de capacidade mais ampla ou
+                limpe os filtros.
+              </p>
+              <div className="consulta-vazio-acao">
+                <button type="button" className="botao" onClick={limpar}>
+                  Limpar filtros
+                </button>
+              </div>
+            </div>
+          ) : (
             <>
-              <table className="tabela-aparelhos">
-                <caption className="sr-only">
-                  Aparelhos de ar-condicionado, uma linha por Aparelho
-                </caption>
-                <colgroup>
-                  <col className="col-selecao" />
-                  {colunas.map((coluna) => (
-                    <col key={coluna.campo} className={`col-${coluna.campo}`} />
-                  ))}
-                </colgroup>
-                <thead>
-                  <tr>
-                    <th scope="col" data-campo="selecao"></th>
-                    {colunas.map((coluna) =>
-                      CAMPOS_ORDENAVEIS.has(coluna.campo) ? (
-                        <Cabecalho
-                          key={coluna.campo}
-                          campo={coluna.campo as OrdemConsulta}
-                          rotulo={coluna.rotulo}
-                          estado={estado}
-                          alternar={alternar}
-                        />
-                      ) : (
-                        <th
-                          key={coluna.campo}
-                          scope="col"
-                          data-campo={coluna.campo}
-                        >
-                          {coluna.rotulo}
-                        </th>
-                      ),
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {exibidos.map((item) => {
-                    const analise = analisados.get(item.id);
-                    const detalhe = detalheDoAparelho(item);
-                    return (
-                      <tr
-                        key={item.id}
-                        className={
-                          analise === undefined ? undefined : "linha-analisado"
-                        }
-                      >
-                        <td data-campo="selecao" data-label="Comparar">
-                          <input
-                            type="checkbox"
-                            checked={selecionados.has(item.id)}
-                            disabled={
-                              !selecionados.has(item.id) && selecaoCheia
-                            }
-                            aria-label={`Comparar ${item.marcaCatalogo} ${item.modelo}`}
-                            onChange={() => alternarSelecao(item.id)}
+              {/* A região rolável só é operável pelo teclado se receber foco
+                  (WCAG 2.1.1); o `tabIndex` vem por espalhamento porque o
+                  `noNoninteractiveTabindex` do Biome não conhece o padrão de
+                  scroll region e o marcaria como erro. */}
+              <section
+                {...{ tabIndex: 0 }}
+                className="tabela-rolagem"
+                aria-label="Tabela de Aparelhos; role horizontalmente para ver todas as colunas"
+              >
+                <p className="consulta-rolagem-aviso">
+                  Deslize para ver as colunas
+                </p>
+                <table className="tabela-aparelhos">
+                  <caption className="sr-only">
+                    Aparelhos de ar-condicionado, uma linha por Aparelho
+                  </caption>
+                  <colgroup>
+                    <col className="col-selecao" />
+                    {colunas.map((coluna) => (
+                      <col
+                        key={coluna.campo}
+                        className={`col-${coluna.campo}`}
+                      />
+                    ))}
+                    {temAnalises ? <col className="col-analise" /> : null}
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th scope="col" data-campo="selecao"></th>
+                      {colunas.map((coluna) =>
+                        CAMPOS_ORDENAVEIS.has(coluna.campo) ? (
+                          <Cabecalho
+                            key={coluna.campo}
+                            campo={coluna.campo as OrdemConsulta}
+                            rotulo={coluna.rotulo}
+                            estado={estado}
+                            alternar={alternar}
                           />
-                        </td>
-                        {colunas.map((coluna) => {
-                          const campo = coluna.campo;
-                          const valor = valorDaColuna(item, campo);
-                          return (
-                            <td
-                              key={campo}
-                              data-label={coluna.rotulo}
-                              data-campo={campo}
-                              data-classe={
-                                campo === "classe" && item.classes.length > 0
-                                  ? item.classes.join(" ")
-                                  : undefined
-                              }
-                            >
-                              {campo === "modelo" ? (
-                                <span className="celula-modelo">
-                                  <a href={`/aparelhos/${item.id}`}>{valor}</a>
-                                  {detalhe === null ? null : (
-                                    <span className="modelo-detalhe">
-                                      {detalhe}
-                                    </span>
-                                  )}
-                                </span>
-                              ) : campo === "classe" ? (
-                                item.classes.length === 0 ? (
-                                  "—"
-                                ) : (
-                                  <span className="classe-selos">
-                                    {item.classes.map((classe) => (
-                                      <span
-                                        key={classe}
-                                        className="classe-selo"
-                                        data-classe={classe}
-                                      >
-                                        Classe {classe}
+                        ) : (
+                          <th
+                            key={coluna.campo}
+                            scope="col"
+                            data-campo={coluna.campo}
+                          >
+                            {coluna.rotulo}
+                          </th>
+                        ),
+                      )}
+                      {temAnalises ? (
+                        <th scope="col" data-campo="analise">
+                          Análise
+                        </th>
+                      ) : null}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {exibidos.map((item) => {
+                      const analise = analisados.get(item.id);
+                      const detalhe = detalheDoAparelho(item);
+                      return (
+                        <tr
+                          key={item.id}
+                          className={
+                            analise === undefined
+                              ? undefined
+                              : "linha-analisado"
+                          }
+                        >
+                          <td data-campo="selecao" data-label="Comparar">
+                            {/* O selo de 20 px vive dentro de um alvo de 44 px. */}
+                            <label className="celula-selecao">
+                              <input
+                                type="checkbox"
+                                checked={selecionados.has(item.id)}
+                                disabled={
+                                  !selecionados.has(item.id) && selecaoCheia
+                                }
+                                aria-label={`Comparar ${item.marcaCatalogo} ${item.modelo}`}
+                                onChange={() => alternarSelecao(item.id)}
+                              />
+                            </label>
+                          </td>
+                          {colunas.map((coluna) => {
+                            const campo = coluna.campo;
+                            const valor = valorDaColuna(item, campo);
+                            const unidade = unidadeDaColuna(campo);
+                            const etiqueta =
+                              campo === "classe"
+                                ? etiquetaDaClasse(item.classes)
+                                : null;
+                            return (
+                              <td
+                                key={campo}
+                                data-label={coluna.rotulo}
+                                data-campo={campo}
+                              >
+                                {campo === "modelo" ? (
+                                  <span className="celula-modelo">
+                                    <a href={`/aparelhos/${item.id}`}>
+                                      {valor}
+                                    </a>
+                                    {detalhe === null ? null : (
+                                      <span className="modelo-detalhe">
+                                        {detalhe}
                                       </span>
-                                    ))}
+                                    )}
                                   </span>
-                                )
-                              ) : campo === "marca" ? (
-                                <>
-                                  {valor}
-                                  {analise !== undefined && (
-                                    <SeloAnalise
-                                      itemId={item.id}
-                                      analise={analise}
-                                    />
-                                  )}
-                                </>
-                              ) : (
-                                valor
+                                ) : campo === "classe" ? (
+                                  etiqueta === null ? (
+                                    "—"
+                                  ) : (
+                                    <span
+                                      className="etiqueta-classe"
+                                      data-classe={etiqueta.pior}
+                                      title={etiqueta.explicacao}
+                                    >
+                                      <span aria-hidden="true">
+                                        {etiqueta.texto}
+                                      </span>
+                                      <span className="apenas-leitor">
+                                        {etiqueta.explicacao}
+                                      </span>
+                                    </span>
+                                  )
+                                ) : unidade === null || valor === "—" ? (
+                                  valor
+                                ) : (
+                                  <span className="celula-medida">
+                                    {valor}{" "}
+                                    <span className="celula-unidade">
+                                      {unidade}
+                                    </span>
+                                  </span>
+                                )}
+                              </td>
+                            );
+                          })}
+                          {temAnalises ? (
+                            <td data-campo="analise" data-label="Análise">
+                              {analise === undefined ? null : (
+                                <SeloAnalise
+                                  itemId={item.id}
+                                  analise={analise}
+                                />
                               )}
                             </td>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {resultados.length > mostrados ? (
+                          ) : null}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </section>
+              {restantes > 0 ? (
                 <button
                   type="button"
                   className="mostrar-mais"
@@ -1089,7 +1236,10 @@ export default function Consulta({
                     })
                   }
                 >
-                  Mostrar mais
+                  Mostrar mais{" "}
+                  <span className="mostrar-mais-restante">
+                    {restantes} restante{restantes === 1 ? "" : "s"}
+                  </span>
                 </button>
               ) : null}
             </>

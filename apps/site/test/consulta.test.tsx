@@ -262,23 +262,25 @@ describe("ilha de consulta (ADR-0008)", () => {
     expect(primeira?.textContent).toContain("Classe F");
   });
 
-  it("marca cada célula com o rótulo da coluna, para o cartão no celular", async () => {
+  it("renderiza uma célula por coluna, na ordem do cabeçalho", async () => {
     await montar();
     const [primeira] = screen.getAllByRole("row").slice(1);
     const rotulos = [...(primeira?.querySelectorAll("td") ?? [])].map(
       (celula) => celula.getAttribute("data-label"),
     );
-    // Não há célula própria da tag "Análise": o selo viaja inline dentro da
-    // célula da Marca (não é uma coluna de dados, ticket 54).
+    // Sem Análise publicada no fixture, a coluna "Análise" não existe; a
+    // leitura vai da identificação à qualificação (ticket 72). O
+    // `data-label` acompanha cada célula mesmo sem cartão: a tabela é a mesma
+    // em todas as larguras.
     expect(rotulos).toEqual([
       "Comparar",
       "Marca",
       "Modelo",
-      "Tipo",
-      "BTU/h",
-      "Consumo (kWh)",
+      "Capacidade",
+      "Consumo",
       "IDRS",
       "Classe",
+      "Tipo",
     ]);
   });
 
@@ -483,9 +485,11 @@ describe("ordenação da tabela", () => {
       ]),
     );
     expect(cabecalho(/Consumo/).getAttribute("aria-sort")).toBe("ascending");
-    expect(cabecalho(/Consumo/).querySelector("button")?.textContent).toContain(
-      "↑",
-    );
+    expect(
+      cabecalho(/Consumo/)
+        .querySelector(".seta-asc")
+        ?.classList.contains("seta-ativa"),
+    ).toBe(true);
     expect(new URLSearchParams(window.location.search).get("ordem")).toBe(
       "consumo",
     );
@@ -537,8 +541,8 @@ describe("ordenação da tabela", () => {
     await montar();
     expect(opcoesDoSelect("Ordenar por")).toEqual([
       "Padrão (A–Z)",
-      "BTU/h",
-      "Consumo (kWh)",
+      "Capacidade",
+      "Consumo",
       "IDRS",
       "Classe",
     ]);
@@ -622,9 +626,9 @@ describe("ordenação da tabela", () => {
  * as duas direções de uma vez — não só a ativa.
  */
 describe("colunas e setas de ordenação (ticket 43)", () => {
-  const ORDENAVEIS = ["BTU/h", "Consumo (kWh)", "IDRS", "Classe"];
+  const ORDENAVEIS = ["Capacidade", "Consumo", "IDRS", "Classe"];
 
-  it("mostra Tipo após Modelo, sem botão, setas nem aria-sort", async () => {
+  it("mostra Tipo por último, sem botão, setas nem aria-sort", async () => {
     await montar();
 
     expect(
@@ -635,11 +639,11 @@ describe("colunas e setas de ordenação (ticket 43)", () => {
       "selecao",
       "marca",
       "modelo",
-      "tipo",
       "btu",
       "consumo",
       "idrs",
       "classe",
+      "tipo",
     ]);
 
     const tipo = cabecalho(/^Tipo$/);
@@ -649,17 +653,29 @@ describe("colunas e setas de ordenação (ticket 43)", () => {
     expect(tipo.textContent).toBe("Tipo");
   });
 
-  it("mostra ↑ e ↓ em todo cabeçalho ordenável, apagadas sem ordem ativa", async () => {
+  it("mostra as duas setas desenhadas em todo cabeçalho ordenável, apagadas sem ordem ativa", async () => {
     await montar();
 
     for (const rotulo of ORDENAVEIS) {
       const th = screen.getByRole("columnheader", { name: rotulo });
-      expect(
-        [...th.querySelectorAll(".seta")].map((seta) => seta.textContent),
-      ).toEqual(["↑", "↓"]);
+      expect(th.querySelectorAll(".seta svg")).toHaveLength(2);
       expect(th.getAttribute("aria-sort")).toBe("none");
       expect(th.querySelector(".seta-ativa")).toBeNull();
     }
+  });
+
+  it("não usa glifo de seta: as setas são chevrons desenhados", async () => {
+    await montar();
+    const th = cabecalho(/Consumo/);
+    expect(th.querySelector("button")?.textContent).not.toMatch(/[↑↓]/);
+    expect(th.querySelectorAll(".seta svg")).toHaveLength(2);
+  });
+
+  it("dá 44 px de alvo ao botão de ordenação", async () => {
+    await montar();
+    expect(cssDaConsulta()).toMatch(
+      /\.consulta \.tabela-aparelhos thead button\s*\{[^}]*min-height:\s*44px/,
+    );
   });
 
   it("destaca só a direção ativa e alterna a cada clique", async () => {
@@ -700,9 +716,13 @@ describe("'Mostrar mais'", () => {
     await screen.findByText("60 aparelho(s) com Dados declarados.");
 
     expect(screen.getAllByRole("link")).toHaveLength(50);
-    fireEvent.click(screen.getByRole("button", { name: "Mostrar mais" }));
+    // O botão informa quantos Aparelhos ainda restam (ticket 72).
+    const mais = screen.getByRole("button", { name: /Mostrar mais/ });
+    expect(mais.textContent).toContain("10 restantes");
+
+    fireEvent.click(mais);
     expect(screen.getAllByRole("link")).toHaveLength(60);
-    expect(screen.queryByRole("button", { name: "Mostrar mais" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /Mostrar mais/ })).toBeNull();
   });
 });
 
@@ -1474,7 +1494,7 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     await screen.findByText(/aparelho\(s\) com Dados declarados/);
   }
 
-  it("mostra o selo 'Análise' dentro da célula da Marca, ao lado do valor", async () => {
+  it("mostra o selo 'Análise' na última coluna, ao lado do Tipo", async () => {
     await montarComAnalisados();
     const tabela = screen.getByRole("table");
     const links = within(tabela).getAllByRole("link", { name: "Análise" });
@@ -1482,12 +1502,15 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     // O texto "Análise" está dentro do <a> da etiqueta de contorno.
     expect(links[0]?.getAttribute("href")).toBe("/analises/lg-dual-inverter/");
     expect(links[0]?.classList.contains("analisado-etiqueta")).toBe(true);
-    // O selo vive dentro da célula da Marca (segunda célula da linha).
+    // O selo tem coluna própria, depois de Tipo (ticket 72).
     const linha = links[0]?.closest("tr") as HTMLElement;
     const celulas = [...linha.querySelectorAll("td")];
     expect(celulas[0]?.getAttribute("data-campo")).toBe("selecao");
-    expect(celulas[1]?.getAttribute("data-campo")).toBe("marca");
-    expect(celulas[1]?.querySelector(".analisado-selo")).not.toBeNull();
+    const ultima = celulas.at(-1);
+    expect(ultima?.getAttribute("data-campo")).toBe("analise");
+    expect(ultima?.querySelector(".analisado-selo")).not.toBeNull();
+    // E o cabeçalho nomeia a coluna, porque há Análise publicada.
+    expect(screen.getByRole("columnheader", { name: "Análise" })).toBeDefined();
   });
 
   it("a célula da Marca não tem selo para aparelhos sem Análise", async () => {
@@ -1498,6 +1521,11 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(celulas[1]?.getAttribute("data-campo")).toBe("marca");
     expect(celulas[1]?.querySelector(".analisado-selo")).toBeNull();
     expect(celulas[1]?.textContent?.trim()).toBe("DAIKIN");
+    const colunaAnalise = celulas.find(
+      (celula) => celula.getAttribute("data-campo") === "analise",
+    );
+    expect(colunaAnalise?.textContent).toBe("");
+    expect(colunaAnalise?.querySelector(".analisado-selo")).toBeNull();
   });
 
   it("o tooltip do selo traz apenas o título da Análise", async () => {
@@ -1741,7 +1769,7 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     expect(screen.getAllByRole("row").slice(1)).toHaveLength(50);
     expect(document.querySelector(".com-analise")).not.toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Mostrar mais" }));
+    fireEvent.click(screen.getByRole("button", { name: /Mostrar mais/ }));
     await waitFor(() =>
       expect(screen.getAllByRole("row").slice(1)).toHaveLength(55),
     );
@@ -1963,5 +1991,145 @@ describe("seleção para comparar (ticket 51)", () => {
         "2 ids repetidos ou desconhecidos foram descartados do link.",
       ),
     ).toBeDefined();
+  });
+});
+
+/**
+ * Ticket 72: a tabela como instrumento — hierarquia entre identificação, medida
+ * e qualificação; densidade; e, abaixo de 900 px, rolagem horizontal com
+ * seleção e Modelo fixos, sem virar cartões.
+ */
+describe("tabela de instrumento (ticket 72)", () => {
+  it("envolve a tabela num contêiner de rolagem focável, com nome e aviso", async () => {
+    await montar();
+
+    const regiao = screen.getByRole("region", {
+      name: /Tabela de Aparelhos/,
+    });
+    expect(regiao.classList.contains("tabela-rolagem")).toBe(true);
+    expect(regiao.getAttribute("tabindex")).toBe("0");
+    expect(regiao.querySelector("table")).not.toBeNull();
+    expect(regiao.textContent).toContain("Deslize para ver as colunas");
+  });
+
+  it("fixa seleção e Modelo e contém a rolagem, sem converter linhas em cartões", () => {
+    const css = cssDaConsulta();
+
+    expect(css).toMatch(
+      /\.consulta \.tabela-rolagem\s*\{[^}]*overflow-x:\s*auto/,
+    );
+    expect(css).toMatch(/overscroll-behavior-x:\s*contain/);
+    expect(css).toMatch(
+      /\[data-campo="selecao"\],[\s\S]*?\[data-campo="modelo"\]\s*\{[^}]*position:\s*sticky/,
+    );
+    expect(css).toMatch(
+      /\[data-campo="modelo"\]\s*\{[^}]*left:\s*var\(--col-selecao\)/,
+    );
+    // O contêiner é o único que rola: a tabela mantém a largura mínima.
+    expect(css).toMatch(
+      /@media \(width\s*<\s*56\.25rem\)\s*\{[^}]*\.consulta \.tabela-aparelhos\s*\{[^}]*min-width:\s*60rem/,
+    );
+    // Nada de cartão: nenhuma célula vira bloco/grade no celular.
+    expect(css).not.toMatch(
+      /\.consulta \.tabela-aparelhos td\{[^}]*display:\s*grid/,
+    );
+    expect(css).not.toMatch(
+      /\.consulta \.tabela-aparelhos thead\{[^}]*display:\s*none/,
+    );
+  });
+
+  it("mostra a unidade uma vez por célula, em mono, com números à direita", async () => {
+    await montar();
+
+    const linha = screen.getAllByRole("row")[1] as HTMLElement;
+    const capacidade = linha.querySelector('td[data-campo="btu"]');
+    const consumo = linha.querySelector('td[data-campo="consumo"]');
+
+    expect(capacidade?.textContent).toBe("30.000 BTU/h");
+    expect(consumo?.textContent).toBe("350 kWh/ano");
+    expect(capacidade?.querySelector(".celula-unidade")?.textContent).toBe(
+      "BTU/h",
+    );
+
+    const css = cssDaConsulta();
+    expect(css).toMatch(
+      /\.consulta \.tabela-aparelhos td\[data-campo="btu"\][\s\S]*?font-family:\s*var\(--fonte-mono\)/,
+    );
+    expect(css).toMatch(
+      /td\[data-campo="idrs"\][\s\S]{0,300}?text-align:\s*right/,
+    );
+  });
+
+  it("mostra a Classe como etiqueta com letra e cor, não só cor", async () => {
+    await montar();
+
+    const linha = screen.getAllByRole("row")[1] as HTMLElement;
+    const etiqueta = linha.querySelector(
+      'td[data-campo="classe"] .etiqueta-classe',
+    );
+    expect(etiqueta?.getAttribute("data-classe")).toBe("F");
+    expect(etiqueta?.textContent).toContain("F");
+    expect(etiqueta?.textContent).toContain("Classe energética F");
+  });
+
+  it("troca o texto solto do carregamento por um esqueleto de linhas", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise(() => undefined)),
+    );
+    window.history.replaceState(null, "", TODOS);
+    render(<Consulta opcoes={opcoesDe(itens)} />);
+
+    expect(await screen.findByText("Carregando a base…")).toBeDefined();
+    expect(document.querySelectorAll(".esqueleto-linha").length).toBe(8);
+    expect(
+      document
+        .querySelector(".consulta-esqueleto")
+        ?.getAttribute("aria-hidden"),
+    ).toBe("true");
+  });
+
+  it("oferece 'Tentar de novo' quando a rede falha e recarrega a base", async () => {
+    let falhar = true;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        if (falhar) {
+          throw new Error("rede fora");
+        }
+        return { ok: true, json: async () => itens };
+      }),
+    );
+    window.history.replaceState(null, "", TODOS);
+    render(<Consulta opcoes={opcoesDe(itens)} />);
+
+    const alerta = await screen.findByRole("alert");
+    expect(alerta.textContent).toContain("Não foi possível carregar a base");
+
+    falhar = false;
+    fireEvent.click(screen.getByRole("button", { name: "Tentar de novo" }));
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getAllByRole("row").length).toBeGreaterThan(1);
+  });
+
+  it("mostra um estado vazio com ação quando o recorte não tem Aparelho", async () => {
+    await montar(undefined, TODOS);
+
+    fireEvent.change(screen.getByRole("searchbox", { name: "Busca" }), {
+      target: { value: "modelo que não existe" },
+    });
+
+    await waitFor(() =>
+      expect(document.querySelector(".consulta-vazio")).not.toBeNull(),
+    );
+    expect(screen.getByText("Nenhum Aparelho neste recorte")).toBeDefined();
+    expect(screen.queryByRole("table")).toBeNull();
+
+    const acao = document.querySelector(
+      ".consulta-vazio-acao button",
+    ) as HTMLElement;
+    fireEvent.click(acao);
+    await waitFor(() => expect(screen.queryByRole("table")).not.toBeNull());
   });
 });

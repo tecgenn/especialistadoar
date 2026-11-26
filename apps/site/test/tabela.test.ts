@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   COLUNAS_TABELA,
   detalheDoAparelho,
+  unidadeDaColuna,
   valorDaColuna,
 } from "../src/lib/tabela.ts";
 
@@ -24,16 +25,30 @@ function item(over: Partial<ItemConsulta> = {}): ItemConsulta {
 }
 
 describe("colunas da tabela de Aparelhos", () => {
-  it("lista as colunas na ordem da tabela (ticket 43)", () => {
+  it("lista as colunas na ordem do instrumento (tickets 43 e 72)", () => {
     expect(COLUNAS_TABELA.map((coluna) => coluna.rotulo)).toEqual([
       "Marca",
       "Modelo",
-      "Tipo",
-      "BTU/h",
-      "Consumo (kWh)",
+      "Capacidade",
+      "Consumo",
       "IDRS",
       "Classe",
+      "Tipo",
     ]);
+  });
+
+  it("dá unidade só às colunas medidas e a escreve uma vez por célula", () => {
+    expect(unidadeDaColuna("btu")).toBe("BTU/h");
+    expect(unidadeDaColuna("consumo")).toBe("kWh/ano");
+    for (const campo of [
+      "marca",
+      "modelo",
+      "idrs",
+      "classe",
+      "tipo",
+    ] as const) {
+      expect(unidadeDaColuna(campo)).toBeNull();
+    }
   });
 
   it("mostra a Marca de catálogo", () => {

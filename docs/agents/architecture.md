@@ -215,22 +215,28 @@ nova exportação CSV
   ficha e `Comparar.tsx` em `/comparar/` — compartilham o cenário de custo
   (ticket 56) via `useCusto.ts`/`CamposCusto.tsx`, como detalhado no bullet da
   comparação.
-  Em `/aparelhos/` a ilha rende a **tabela** de Aparelhos (ticket 27): uma linha
-  por Aparelho, cabeçalhos `<button>` com `aria-sort`, ordenação por `ordenar` do
-  entry isomórfico, 50 linhas e "Mostrar mais" (+50); abaixo de 640 px cada linha
-  vira um cartão (`data-label`). No celular, onde o cabeçalho da tabela some, um
-  botão ao lado de "Ordenar por" inverte a direção. A página usa a variante
-  **ampla** do shell (ticket 67), sem barra
+  Em `/aparelhos/` a ilha rende a **tabela** de Aparelhos (tickets 27 e 72): uma
+  linha por Aparelho, cabeçalhos `<button>` com `aria-sort` e alvo de 44 px,
+  ordenação por `ordenar` do entry isomórfico, 50 linhas e "Mostrar mais" (+50)
+  com quantos restam. As colunas são seleção, Marca, Modelo (com
+  `Função · Tensão`), Capacidade, Consumo, IDRS, Classe, Tipo e Análise; a
+  medida lê em mono tabular à direita, com a unidade uma vez por célula, e a
+  Classe reusa o `EtiquetaClasse`. O selo "Análise" — etiqueta de contorno com
+  link para a Análise — tem **coluna própria**, criada só quando há Análise
+  publicada. A tabela nunca vira cartões: abaixo de 900 px ela mantém
+  `min-width: 60 rem` dentro de um contêiner rolável (focável, rotulado,
+  `overflow-y: clip` para o `<thead>` seguir a rolagem vertical), com seleção e
+  Modelo `sticky` à esquerda e o aviso "Deslize para ver as colunas" que some
+  depois da primeira rolagem via `animation-timeline`. O carregamento é um
+  esqueleto de linhas, o erro de rede tem "Tentar de novo" e o recorte vazio
+  tem ação; um botão ao lado de "Ordenar por" inverte a direção. A página usa a
+  variante **ampla** do shell (ticket 67), sem barra
   lateral: busca em largura total, a linha de **Pesquisa avançada** com os chips
   do recorte efetivo (inclusive o padrão implícito de Tensão 220 V, cujo "×"
   grava `tensao=`), o painel recolhível com Marca, Capacidade, Função, Tensão,
   Tipo e Classe (fechado por padrão e aberto sozinho quando a URL traz um filtro
   avançado), a vitrine de Análises e, acima da tabela, a linha compacta de
-  "Ordenar por". Na célula da Marca, ao lado do valor, a linha ganha o selo
-  "Análise" — etiqueta de contorno com link para a Análise — só para aparelhos
-  que têm Análise publicada; não é uma coluna de dados nem ocupa célula
-  própria, então a maioria das linhas fica sem ele. Abaixo de 640 px o cartão
-  do Aparelho exibe o selo junto à Marca, na mesma posição. Ao abrir
+  "Ordenar por". Ao abrir
   sem querystring, o **filtro padrão** — Tensão 220 V — vale como estado inicial
   sem sujar a URL; "Limpar filtros" volta a
   ele. A ordem padrão é A–Z por Marca de catálogo e

@@ -221,13 +221,14 @@ Primitivos já entregues em `components/primitivos/` (Astro, sem hidratação): 
 - Contagem `N aparelhos` e ordenação com direção explícita.
 - Dock de seleção quando `ids` tem 1–3 itens.
 
-**Tabela:**
+**Tabela (entregue no #72):**
 - Colunas: seleção, Marca, Modelo (com `Função · Tensão`), Capacidade, Consumo, IDRS, Classe, Tipo, Análise.
-- Cabeçalho ordenável com seta, `aria-sort` e alvo de 44 px.
-- Linha analisada com marcador ciano de 2 px (`--foco`) e selo “Análise” discreto.
-- Classe como etiqueta com letra e cor; nunca só cor.
+- Cabeçalho ordenável com seta desenhada, `aria-sort` e alvo de 44 px.
+- Valores numéricos em mono tabular à direita, com a unidade uma vez por célula; a Classe é a etiqueta do primitivo, com letra e cor — nunca só cor.
+- Linha analisada com marcador ciano de 2 px (`--foco`) e selo “Análise” na coluna própria.
 - “Mostrar mais” em blocos de 50, com contagem restante.
-- Mobile: a tabela continua tabela. Um contêiner de rolagem horizontal (focável, `tabindex="0"`, `role="region"` com rótulo) mantém todas as colunas; seleção e Modelo ficam fixas à esquerda com `position: sticky`; o cabeçalho acompanha a rolagem vertical. Aviso textual “Deslize para ver as colunas” aparece abaixo de 900 px e some após a primeira rolagem quando houver suporte a animação dirigida por rolagem; nenhum JS novo. Nenhuma linha vira cartão e nenhuma coluna é escondida.
+- Densidade: respiro horizontal de 0,4 rem e contêiner centralizado na shell.
+- Mobile: a tabela continua tabela. Um contêiner de rolagem horizontal (focável, `tabindex="0"`, `role="region"` com rótulo) mantém todas as colunas; seleção e Modelo ficam fixas à esquerda com `position: sticky` (a Marca passa por baixo do Modelo), o cabeçalho acompanha a rolagem vertical (`overflow-y: clip`) e o aviso textual “Deslize para ver as colunas” aparece abaixo de 900 px e some após a primeira rolagem quando houver suporte a animação dirigida por rolagem; nenhum JS novo. Nenhuma linha vira cartão e nenhuma coluna é escondida.
 
 **Painel avançado:**
 - Duas faixas: **Aparelho** (Marca, Tipo, Função) e **Desempenho** (Capacidade, Classe, Tensão).
@@ -237,7 +238,7 @@ Primitivos já entregues em `components/primitivos/` (Astro, sem hidratação): 
 
 **Vitrine “Aparelhos com análise”:** fora da tabela, acima dela; cartões horizontais com imagem/título/capacidade; legenda quando só há similares; nunca entra na contagem, ordenação ou paginação.
 
-**Estados:** carregando (esqueleto de linhas, não texto solto), erro de rede (alerta com ação “Tentar de novo”), recorte vazio (estado vazio com “Limpar filtros” e sugestão de faixa), seleção cheia (aviso e checkboxes desabilitados), ids descartados (aviso com contagem).
+**Estados (entregues no #72):** carregando (esqueleto de oito linhas, não texto solto), erro de rede (alerta com ação “Tentar de novo”), recorte vazio (estado vazio com “Limpar filtros” e sugestão de faixa), seleção cheia (aviso e checkboxes desabilitados), ids descartados (aviso com contagem).
 
 **Mobile:** barra em duas linhas; filtros em painel; tabela com rolagem horizontal contida no próprio contêiner; a página nunca rola na horizontal; alvos de 44 px preservados.
 

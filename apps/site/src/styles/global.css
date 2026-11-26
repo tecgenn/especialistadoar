@@ -579,43 +579,6 @@ main.principal-leitura {
   color: #fff;
 }
 
-/* Selo de Classe na tabela (ticket 36, revisão do 44): a cor fica numa pílula
-   dentro da célula, não no fundo da célula inteira — a linha permanece
-   uniforme e a classe continua legível à direita do IDRS. */
-.consulta .classe-selos {
-  display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.25rem;
-}
-
-.consulta .classe-selo {
-  display: inline-block;
-  min-width: 5.25rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  background: #16a34a;
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-
-.consulta .classe-selo[data-classe="B"] {
-  background: #2563eb;
-}
-.consulta .classe-selo[data-classe="C"] {
-  background: #ca8a04;
-}
-.consulta .classe-selo[data-classe="D"] {
-  background: #ea580c;
-}
-.consulta .classe-selo[data-classe="E"],
-.consulta .classe-selo[data-classe="F"] {
-  background: #dc2626;
-}
-
 .resultados {
   list-style: none;
   margin: 0;
@@ -795,58 +758,274 @@ main.principal-leitura {
   background: var(--fundo);
 }
 
-/* Tabela de Aparelhos (ticket 27, revisão do 50): uma linha por Aparelho,
-   cabeçalhos ordenáveis, cartões no celular e tipografia mais compacta para
-   caber mais Aparelhos na coluna central de 72 rem.
+/* Tabela de Aparelhos (ticket 27; instrumento do 72): uma linha por Aparelho,
+   hierarquia entre identificação (Marca, Modelo), medida (Capacidade, Consumo,
+   IDRS) e qualificação (Classe, Tipo), com o selo "Análise" na última coluna.
 
-   Seleção (ticket 51) e Análise têm largura fixa; as demais colunas dividem o
-   restante por igual. `table-layout: fixed` mantém a grade estável
-   independentemente do conteúdo. */
+   A tabela nunca vira cartão: abaixo de 900 px ela rola na horizontal dentro do
+   `.tabela-rolagem`, com a seleção e o Modelo fixos à esquerda. `table-layout:
+   fixed` mantém a grade estável e permite medir a folga do contêiner. */
+.consulta .tabela-rolagem {
+  --col-selecao: 3rem;
+
+  position: relative;
+  max-width: var(--largura-shell);
+  margin-inline: auto;
+  overflow-x: auto;
+  /* `clip` no eixo vertical evita que o `auto` horizontal transforme este
+     contêiner num scrollport vertical — assim o `<thead>` continua grudado no
+     topo da página ao rolar. Navegador sem `clip` cai no comportamento antigo,
+     sem quebrar a rolagem horizontal. */
+  overflow-y: clip;
+  overscroll-behavior-x: contain;
+  scrollbar-color: var(--linha) transparent;
+}
+
+.consulta .tabela-rolagem:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+/* O aviso de rolagem horizontal (ticket 72): texto, não ícone nem degradê.
+   Abaixo de 900 px ele é a pista para a tabela larga; acima disso, a tabela
+   cabe e ele não existe. */
+.consulta .consulta-rolagem-aviso {
+  display: none;
+  position: sticky;
+  left: 0;
+  width: max-content;
+  margin: 0;
+  padding: var(--esp-3) var(--esp-4) var(--esp-3) 0;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
+}
+
+/* Depois da primeira rolagem o aviso some — só onde houver animação dirigida
+   por rolagem. Sem suporte, o aviso permanece; nunca some por conta própria. */
+@supports (animation-timeline: scroll()) {
+  .consulta .consulta-rolagem-aviso {
+    animation-name: aviso-rolagem;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+  }
+
+  /* Em regra própria para o minificador não fundir a linha do tempo no atalho
+     `animation`, que os navegadores não aceitam. */
+  .consulta .consulta-rolagem-aviso {
+    animation-timeline: scroll(nearest inline);
+    animation-range: 0 24px;
+  }
+
+  @keyframes aviso-rolagem {
+    to {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+}
+
 .consulta .tabela-aparelhos {
   width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.84rem;
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  line-height: var(--entrelinha-pequena);
 }
 
 .consulta .tabela-aparelhos .col-selecao {
-  width: 3rem;
+  width: var(--col-selecao);
 }
 
+.consulta .tabela-aparelhos .col-marca {
+  width: 9%;
+}
+
+.consulta .tabela-aparelhos .col-modelo {
+  width: 27%;
+}
+
+.consulta .tabela-aparelhos .col-btu,
+.consulta .tabela-aparelhos .col-consumo {
+  width: 11%;
+}
+
+.consulta .tabela-aparelhos .col-idrs {
+  width: 8%;
+}
+
+.consulta .tabela-aparelhos .col-classe {
+  width: 9%;
+}
+
+.consulta .tabela-aparelhos .col-tipo {
+  width: 12%;
+}
+
+.consulta .tabela-aparelhos .col-analise {
+  width: 6rem;
+}
+
+/* Densidade: o respiro horizontal entre colunas é o mínimo que separa os dados
+   sem encostar. O vertical mantém a linha em ~52 px no desktop. */
 .consulta .tabela-aparelhos th,
 .consulta .tabela-aparelhos td {
-  padding: 0.45rem 0.55rem;
-  text-align: center;
+  padding: 0.45rem 0.4rem;
+  text-align: left;
   vertical-align: middle;
-  border-bottom: 1px solid var(--borda);
+  border-bottom: 1px solid var(--linha);
 }
 
+/* Todas as células têm fundo opaco: as fixas precisam cobrir o que passa por
+   baixo delas ao rolar, e a zebra/hover são pintados no mesmo lugar. */
+.consulta .tabela-aparelhos tbody td {
+  background: var(--giz);
+}
+
+.consulta .tabela-aparelhos tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--papel) 55%, var(--giz));
+}
+
+.consulta .tabela-aparelhos tbody tr:hover td {
+  background: color-mix(in srgb, var(--azul-frio) 4%, var(--giz));
+}
+
+/* Cabeçalho: mono maiúsculo sobre papel, hairline de 1 px embaixo. Grudado no
+   topo da página; as colunas fixas sobem uma camada para o canto não se
+   sobrepor. Alvo de ordenação de 44 px. */
 .consulta .tabela-aparelhos thead th {
   position: sticky;
   top: 0;
-  z-index: 1;
-  padding-block: 0.65rem;
-  background: var(--fundo);
-  color: var(--texto-suave);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  z-index: 2;
+  padding: 0;
+  background: var(--papel);
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  line-height: var(--entrelinha-rotulo);
   text-transform: uppercase;
   white-space: nowrap;
-  box-shadow: inset 0 -1px 0 var(--borda);
+  box-shadow: inset 0 -1px 0 var(--linha);
 }
 
-/* Números alinhados na vírgula, sem perder a centralização da coluna. */
+.consulta .tabela-aparelhos thead button {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.4rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.consulta .tabela-aparelhos thead button:hover {
+  color: var(--foco-texto);
+}
+
+.consulta .tabela-aparelhos thead button:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: -2px;
+}
+
+/* As duas setas ficam sempre visíveis (ticket 43): a ativa em azul-frio, a
+   outra na hairline. São chevrons desenhados de 8 px, não glifos. */
+.consulta .tabela-aparelhos .setas {
+  display: inline-flex;
+  gap: 0;
+}
+
+.consulta .tabela-aparelhos .seta {
+  display: inline-flex;
+  color: var(--linha);
+}
+
+.consulta .tabela-aparelhos .seta-ativa {
+  color: var(--azul-frio);
+}
+
+/* Medida: mono tabular, alinhada à direita, com a unidade uma vez por célula. */
+.consulta .tabela-aparelhos td[data-campo="btu"],
+.consulta .tabela-aparelhos td[data-campo="consumo"],
+.consulta .tabela-aparelhos td[data-campo="idrs"],
+.consulta .tabela-aparelhos th[data-campo="btu"],
+.consulta .tabela-aparelhos th[data-campo="consumo"],
+.consulta .tabela-aparelhos th[data-campo="idrs"] {
+  text-align: right;
+}
+
 .consulta .tabela-aparelhos td[data-campo="btu"],
 .consulta .tabela-aparelhos td[data-campo="consumo"],
 .consulta .tabela-aparelhos td[data-campo="idrs"] {
+  font-family: var(--fonte-mono);
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
-/* Modelos longos quebram linha dentro da coluna, sem estourar a grade. */
+.consulta .tabela-aparelhos th[data-campo="btu"] button,
+.consulta .tabela-aparelhos th[data-campo="consumo"] button,
+.consulta .tabela-aparelhos th[data-campo="idrs"] button {
+  justify-content: flex-end;
+}
+
+.consulta .tabela-aparelhos .celula-medida {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.2rem;
+  white-space: nowrap;
+}
+
+.consulta .tabela-aparelhos .celula-unidade {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: 0.6875rem;
+  font-weight: var(--peso-normal);
+  letter-spacing: var(--tracking-unidade);
+}
+
+/* Identificação: a Marca é o dado secundário (mono maiúsculo, mudo) e o Modelo
+   é o link, o único texto do sistema com peso 500 na célula. */
+.consulta .tabela-aparelhos td[data-campo="marca"] {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .consulta .tabela-aparelhos td[data-campo="modelo"] {
   overflow-wrap: anywhere;
+}
+
+.consulta .tabela-aparelhos td[data-campo="modelo"] a {
+  color: var(--tinta);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+  text-underline-offset: 0.15em;
+}
+
+.consulta .tabela-aparelhos td[data-campo="modelo"] a:hover {
+  color: var(--azul-frio);
+  text-decoration: underline;
+}
+
+.consulta .tabela-aparelhos td[data-campo="modelo"] a:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
 }
 
 /* Segunda linha da célula do Modelo (ticket 63): Função · Tensão, discreta sob
@@ -855,70 +1034,60 @@ main.principal-leitura {
 .consulta .tabela-aparelhos .celula-modelo {
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 0.05rem;
 }
 
 .consulta .tabela-aparelhos .modelo-detalhe {
-  color: var(--texto-suave);
-  font-size: 0.72rem;
-  font-weight: 400;
+  color: var(--mudo);
+  font-size: 0.75rem;
+  font-weight: var(--peso-normal);
   line-height: 1.2;
 }
 
-.consulta .tabela-aparelhos tbody tr:nth-child(even) td {
-  background: color-mix(in srgb, var(--fundo) 55%, var(--superficie));
+/* Classe e Tipo qualificam: a Classe é a etiqueta do primitivo (letra em mono,
+   cor da classe, fundo tonal) e o Tipo lê em mudo. Nenhuma das duas usa cor
+   sozinha como sinal. */
+.consulta .tabela-aparelhos td[data-campo="classe"],
+.consulta .tabela-aparelhos th[data-campo="classe"],
+.consulta .tabela-aparelhos td[data-campo="analise"],
+.consulta .tabela-aparelhos th[data-campo="analise"] {
+  text-align: center;
 }
 
-.consulta .tabela-aparelhos tbody tr:hover td {
-  background: color-mix(in srgb, var(--primaria) 5%, var(--superficie));
+.consulta .tabela-aparelhos th[data-campo="classe"] button,
+.consulta .tabela-aparelhos th[data-campo="analise"] button {
+  justify-content: center;
 }
 
-.consulta .tabela-aparelhos thead button {
-  display: inline-flex;
+.consulta .tabela-aparelhos td[data-campo="tipo"] {
+  color: var(--grafite);
+}
+
+/* O checkbox da seleção (ticket 51) ocupa o centro da coluna; o alvo de 44 px
+   vem da célula, que tem 3 rem de largura. */
+.consulta .tabela-aparelhos td[data-campo="selecao"] {
+  text-align: center;
+}
+
+/* O checkbox de 20 px fica dentro de um alvo de 44 px: a célula inteira da
+   seleção responde ao clique, não só o quadrado. */
+.consulta .tabela-aparelhos .celula-selecao {
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  font: inherit;
-  color: inherit;
+  width: 100%;
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
 }
 
-.consulta .tabela-aparelhos thead button:hover {
-  color: var(--primaria);
-}
-
-/* As duas setas de ordenação ficam sempre visíveis (ticket 43): a ativa em cor
-   primária e negrito, a outra em cinza claro. */
-.consulta .tabela-aparelhos .setas {
-  display: inline-flex;
-  gap: 0.1rem;
-}
-
-.consulta .tabela-aparelhos .seta {
-  color: #cbd5e1;
-}
-
-.consulta .tabela-aparelhos .seta-ativa {
-  color: var(--primaria);
-  font-weight: 700;
-}
-
-.consulta .tabela-aparelhos td[data-label="Modelo"] a {
-  font-weight: 600;
-}
-
-/* O checkbox da seleção (ticket 51) ocupa o centro da coluna estreita. */
 .consulta .tabela-aparelhos td[data-campo="selecao"] input {
   width: 1.1rem;
   height: 1.1rem;
   margin: 0;
   padding: 0;
   border: 0;
-  accent-color: var(--primaria);
+  accent-color: var(--azul-frio);
   cursor: pointer;
 }
 
@@ -927,37 +1096,76 @@ main.principal-leitura {
   opacity: 0.4;
 }
 
-/* Linha do analisado (ticket 44): fundo levemente destacado e borda de acento
-   à esquerda, para a linha se distinguir sem virar um grupo à parte. */
+/* Colunas fixas (ticket 72): a seleção e o Modelo ficam à esquerda enquanto o
+   resto rola. A Marca viaja entre as duas e passa por baixo do Modelo, o que
+   mantém o bloco fixo estreito o bastante para o celular. O `z-index` é
+   crescente: célula fixa < corpo < cabeçalho < canto do cabeçalho. */
+.consulta .tabela-aparelhos [data-campo="selecao"],
+.consulta .tabela-aparelhos [data-campo="modelo"] {
+  position: sticky;
+  z-index: 1;
+}
+
+.consulta .tabela-aparelhos [data-campo="selecao"] {
+  left: 0;
+}
+
+.consulta .tabela-aparelhos [data-campo="modelo"] {
+  left: var(--col-selecao);
+}
+
+.consulta .tabela-aparelhos thead [data-campo="selecao"],
+.consulta .tabela-aparelhos thead [data-campo="modelo"] {
+  z-index: 3;
+  background: var(--papel);
+}
+
+/* O canto fixo do cabeçalho precisa cobrir tanto a zebra quanto o conteúdo que
+   passa por baixo. */
+.consulta .tabela-aparelhos tbody [data-campo="selecao"],
+.consulta .tabela-aparelhos tbody [data-campo="modelo"] {
+  box-shadow: inset -1px 0 0 var(--linha);
+}
+
+/* O fio transparente na primeira coluna mantém as colunas alinhadas quando uma
+   linha analisada ganha o marcador. */
+.consulta .tabela-aparelhos tbody td:first-child {
+  border-inline-start: 2px solid transparent;
+}
+
+/* Linha do analisado (ticket 44; instrumento do 72): marcador ciano de 2 px no
+   fio esquerdo da linha e um fundo levemente lavado — sem puxar a linha para o
+   topo e sem virar um grupo à parte. O marcador fica na célula fixa, então
+   acompanha a rolagem horizontal. */
 .consulta .tabela-aparelhos tbody tr.linha-analisado td {
-  background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
+  background: color-mix(in srgb, var(--foco) 6%, var(--giz));
 }
 
 .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
-  border-left: 2px solid var(--foco);
+  border-inline-start: 2px solid var(--foco);
 }
 
-/* Selo "Análise" (ticket 44): etiqueta de contorno, distinta da pílula azul
-   dos chips de filtro. O tooltip traz só o título da Análise. Vive dentro da
-   célula da Marca, ao lado do valor, só para aparelhos que têm Análise
-   publicada — não participa do layout de colunas da tabela. */
+/* Selo "Análise" (ticket 44, na coluna própria desde o 72): etiqueta de
+   contorno em ciano de texto, discreta na última coluna. O tooltip traz só o
+   título da Análise. */
 .consulta .analisado-selo {
   position: relative;
   display: inline-flex;
   align-items: center;
-  margin-left: 0.4rem;
 }
 
 .consulta .analisado-etiqueta {
   display: inline-flex;
   align-items: center;
+  min-height: 1.5rem;
   padding: 0.05rem 0.4rem;
-  border: 1px solid var(--primaria);
-  border-radius: 0.25rem;
+  border: 1px solid color-mix(in srgb, var(--foco) 45%, var(--linha));
+  border-radius: var(--raio-xs);
   background: transparent;
-  color: var(--primaria);
-  font-size: 0.7rem;
-  font-weight: 700;
+  color: var(--foco-texto);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
   letter-spacing: 0.04em;
   text-decoration: none;
   text-transform: uppercase;
@@ -965,8 +1173,9 @@ main.principal-leitura {
 }
 
 .consulta a.analisado-etiqueta:hover {
-  background: color-mix(in srgb, var(--primaria) 12%, transparent);
-  color: var(--primaria);
+  border-color: var(--foco);
+  background: var(--foco-lavado);
+  color: var(--foco-texto);
 }
 
 .consulta a.analisado-etiqueta:focus-visible {
@@ -1114,27 +1323,36 @@ main.principal-leitura {
   color: var(--primaria);
 }
 
-@media (max-width: 40rem) {
-  .consulta .tabela-aparelhos tbody tr.linha-analisado {
-    border-left: 2px solid var(--foco);
-    background: color-mix(in srgb, var(--primaria) 6%, var(--superficie));
+/* Abaixo de 900 px a tabela não cabe na largura da página: o contêiner rola na
+   horizontal, as colunas mantêm uma largura mínima e o aviso aparece. As
+   colunas de seleção e Modelo continuam fixas à esquerda. */
+@media (width < 56.25rem) {
+  .consulta .tabela-aparelhos {
+    min-width: 60rem;
   }
 
-  .consulta .tabela-aparelhos tbody tr.linha-analisado td {
-    background: transparent;
+  /* O bloco fixo precisa sobrar espaço para o resto rolar: o Modelo fica mais
+     estreito no celular do que na proporção do desktop. */
+  .consulta .tabela-aparelhos .col-modelo {
+    width: 13rem;
   }
 
-  .consulta .tabela-aparelhos tbody tr.linha-analisado td:first-child {
-    border-left: 0;
+  .consulta .consulta-rolagem-aviso {
+    display: block;
+  }
+
+  .consulta .tabela-aparelhos th,
+  .consulta .tabela-aparelhos td {
+    padding-block: 0.4rem;
   }
 }
 
+/* O tooltip do selo abre para a esquerda, porque o selo vive na última coluna. */
 /* Tooltip do selo: aparece no hover, foco e toque. */
 .consulta .analisado-tooltip {
   position: absolute;
   bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 0;
   max-width: 20rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
@@ -1153,8 +1371,7 @@ main.principal-leitura {
   content: "";
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 1rem;
   border: 0.4rem solid transparent;
   border-top-color: var(--texto);
 }
@@ -1165,16 +1382,10 @@ main.principal-leitura {
   opacity: 1;
 }
 
-/* No celular, o tooltip precisa de espaço. */
+/* No celular, o tooltip precisa de espaço — e nunca estica a página. */
 @media (max-width: 40rem) {
   .consulta .analisado-tooltip {
-    max-width: 90vw;
-    left: 0;
-    transform: none;
-  }
-  .consulta .analisado-tooltip::after {
-    left: 1rem;
-    transform: none;
+    max-width: min(16rem, 70vw);
   }
 }
 
@@ -1829,84 +2040,162 @@ main.principal-leitura {
     overflow-wrap: anywhere;
   }
 
-  /* Abaixo de 640 px cada linha da tabela vira um cartão: o cabeçalho some (a
-     ordenação continua no seletor "Ordenar por") e cada célula ganha o rótulo
-     da coluna. Nada de rolagem horizontal escondida. */
-  .consulta .tabela-aparelhos,
-  .consulta .tabela-aparelhos tbody,
-  .consulta .tabela-aparelhos tr,
-  .consulta .tabela-aparelhos td {
-    display: block;
-    width: 100%;
+  /* A tabela continua tabela no celular (ticket 72): nenhuma linha vira cartão
+     e nenhuma coluna é escondida. A rolagem horizontal e as colunas fixas são
+     definidas junto do bloco da tabela; aqui só se ajusta a calha do documento. */
+  .consulta .tabela-rolagem {
+    margin-inline: calc(-1 * var(--calha));
   }
 
-  .consulta .tabela-aparelhos thead {
-    display: none;
-  }
-
-  .consulta .tabela-aparelhos tbody tr {
-    margin-bottom: 0.75rem;
-    padding: 0.75rem;
-    border: 1px solid var(--borda);
-    border-radius: 0.5rem;
-    background: var(--superficie);
-    overflow-wrap: anywhere;
-  }
-
-  .consulta .tabela-aparelhos td {
-    display: grid;
-    grid-template-columns: 9rem 1fr;
-    gap: 0.5rem;
-    padding: 0.15rem 0;
-    border: 0;
-    text-align: left;
-  }
-
-  .consulta .tabela-aparelhos td::before {
-    content: attr(data-label);
-    color: var(--texto-suave);
-    font-size: 0.8rem;
-  }
-
-  /* O checkbox abre o cartão (ticket 51): primeira linha, com o rótulo
-     "Comparar" e uma borda separando da ficha do Aparelho. */
-  .consulta .tabela-aparelhos td[data-campo="selecao"] {
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    margin-bottom: 0.35rem;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid var(--borda);
-  }
-
-  .consulta .tabela-aparelhos td[data-campo="selecao"]::before {
-    font-weight: 600;
-  }
-
-  .consulta .tabela-aparelhos td[data-campo="marca"] {
-    /* No celular, a tag "Análise" viaja inline com a Marca, sem célula própria. */
-    text-align: left;
-  }
-
-  /* No cartão do celular a segunda linha acompanha o alinhamento à esquerda. */
-  .consulta .tabela-aparelhos td[data-campo="modelo"] .celula-modelo {
-    align-items: flex-start;
-    text-align: left;
+  /* Em 320 px o bloco fixo ainda precisa deixar o resto rolar. */
+  .consulta .tabela-aparelhos .col-modelo {
+    width: 11rem;
   }
 }
 
-/* Botão "Mostrar mais" (ticket 35): centralizado, largura máxima no desktop, full-width no mobile. */
+/* Botão "Mostrar mais" (ticket 35; restante quantificado no 72): centralizado,
+   alvo de 44 px e a contagem do que falta em mono ao lado do rótulo. */
 .consulta .mostrar-mais {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--esp-3);
   width: 100%;
-  max-width: 300px;
+  max-width: 20rem;
+  min-height: 44px;
   margin: 1.5rem auto 0;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.375rem;
-  background: var(--superficie);
-  font: inherit;
-  color: var(--texto);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--giz);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  color: var(--tinta);
   cursor: pointer;
+}
+
+.consulta .mostrar-mais:hover {
+  border-color: var(--grafite);
+  background: var(--papel);
+}
+
+.consulta .mostrar-mais:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.consulta .mostrar-mais-restante {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+}
+
+/* Estados da tabela (ticket 72): carregando com esqueleto de linhas, erro de
+   rede com a ação de repetir e recorte vazio com a ação de limpar. Nenhum dos
+   três usa ilustração. */
+.consulta .consulta-alerta {
+  display: grid;
+  gap: var(--esp-4);
+  justify-items: start;
+  padding: var(--esp-5) 0 var(--esp-5) var(--esp-5);
+  border-inline-start: 2px solid var(--classe-f);
+}
+
+.consulta .consulta-alerta-texto {
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+}
+
+.consulta .consulta-esqueleto {
+  border-top: 1px solid var(--linha);
+}
+
+.consulta .esqueleto-linha {
+  display: flex;
+  align-items: center;
+  gap: var(--esp-4);
+  min-height: 52px;
+  padding: 0 0.4rem;
+  border-bottom: 1px solid var(--linha);
+}
+
+.consulta .esqueleto-celula {
+  height: 0.75rem;
+  background: var(--mineral);
+  border-radius: 1px;
+}
+
+.consulta .esqueleto-selecao {
+  width: 1.1rem;
+  flex: none;
+}
+
+.consulta .esqueleto-marca {
+  width: 7%;
+}
+
+.consulta .esqueleto-modelo {
+  width: 30%;
+}
+
+.consulta .esqueleto-numero {
+  width: 8%;
+  margin-inline-start: auto;
+}
+
+.consulta .esqueleto-classe {
+  width: 2rem;
+  flex: none;
+}
+
+.consulta .consulta-vazio {
+  display: grid;
+  gap: var(--esp-1);
+  justify-items: start;
+  padding-block: var(--esp-7);
+  border-top: 1px solid var(--linha);
+}
+
+.consulta .consulta-vazio-titulo {
+  margin: 0;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-bloco);
+  font-weight: var(--peso-semi);
+  letter-spacing: var(--tracking-apertado);
+  line-height: var(--entrelinha-apertada);
+}
+
+.consulta .consulta-vazio-frase {
+  max-width: 56ch;
+  margin: 0;
+  color: var(--grafite);
+  font-family: var(--fonte-leitura);
+  font-size: var(--texto-corpo);
+  line-height: var(--entrelinha-corpo);
+}
+
+.consulta .consulta-vazio-acao {
+  margin-top: var(--esp-4);
+}
+
+.consulta .consulta-vazio-acao .botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--raio-xs);
+  background: var(--azul-frio);
+  color: var(--giz);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
 }
 
 .consulta .mostrar-mais:hover {
