@@ -772,13 +772,18 @@ main.principal-leitura {
   max-width: var(--largura-shell);
   margin-inline: auto;
   overflow-x: auto;
-  /* `clip` no eixo vertical evita que o `auto` horizontal transforme este
-     contêiner num scrollport vertical — assim o `<thead>` continua grudado no
-     topo da página ao rolar. Navegador sem `clip` cai no comportamento antigo,
-     sem quebrar a rolagem horizontal. */
-  overflow-y: clip;
   overscroll-behavior-x: contain;
   scrollbar-color: var(--linha) transparent;
+}
+
+/* `overflow-y: clip` só onde suportado: evita que o `overflow-x: auto`
+   transforme o contêiner num scrollport vertical, mantendo o <thead>
+   grudado ao topo da página. Sem suporte, o navegador ignora a declaração
+   e fica no comportamento padrão (sem scrollport vertical forçado). */
+@supports (overflow-y: clip) {
+  .consulta .tabela-rolagem {
+    overflow-y: clip;
+  }
 }
 
 .consulta .tabela-rolagem:focus-visible {

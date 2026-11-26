@@ -1726,9 +1726,9 @@ describe("build sem nenhuma Análise (estado zero)", () => {
       /@media \(width<56\.25rem\)\{[^@]*\.consulta \.tabela-aparelhos\{min-width:60rem/,
     );
     expect(cssDaTabela).toContain("overscroll-behavior-x:contain");
-    // O minificador funde os eixos em `overflow: auto clip`.
+    // `overflow-y: clip` só se aplica onde o navegador suporta.
     expect(cssDaTabela).toMatch(
-      /\.consulta \.tabela-rolagem\{[^}]*overflow:auto clip/,
+      /@supports\s*\(\s*overflow-y:\s*clip\s*\)[^}]*\.consulta\s*\.tabela-rolagem\s*\{[^}]*overflow-y:\s*clip/,
     );
 
     // Ficha nova (ticket 26): resumo no topo, grade 2×2 das condições de ensaio
