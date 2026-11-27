@@ -1740,6 +1740,42 @@ describe("Aparelhos analisados na tabela (ticket 44)", () => {
     ).toBeDefined();
   });
 
+  it("usa a imagem real de abertura no cartão da vitrine", async () => {
+    const comImagem = new Map(analisadosMap);
+    comImagem.set("lg-split", {
+      ...(analisadosMap.get("lg-split") ?? {
+        titulo: "Análise do LG Dual Inverter",
+        url: "/analises/lg-dual-inverter/",
+      }),
+      imagem: {
+        src: "/_astro/abertura-lg.webp",
+        alt: "Unidade interna branca do split LG",
+      },
+    });
+    window.history.replaceState(null, "", TODOS);
+    render(<Consulta opcoes={opcoesDe(itens)} analisados={comImagem} />);
+    await screen.findByText(/aparelho\(s\) com Dados declarados/);
+
+    const bloco = document.querySelector(".com-analise") as HTMLElement;
+    const cartoes = [...bloco.querySelectorAll(".com-analise-item")];
+    const lg = cartoes.find((cartao) =>
+      cartao.textContent?.includes("Análise do LG Dual Inverter"),
+    );
+    const imagem = lg?.querySelector(".com-analise-imagem img");
+    expect(imagem?.getAttribute("src")).toBe("/_astro/abertura-lg.webp");
+    expect(imagem?.getAttribute("alt")).toBe(
+      "Unidade interna branca do split LG",
+    );
+    expect(imagem?.getAttribute("loading")).toBe("lazy");
+    expect(imagem?.getAttribute("width")).toBe("160");
+
+    // A Análise sem imagem continua abrindo pelo texto, sem quadrado vazio.
+    const midea = cartoes.find((cartao) =>
+      cartao.textContent?.includes("Análise do Midea Xtreme Save"),
+    );
+    expect(midea?.querySelector(".com-analise-imagem")).toBeNull();
+  });
+
   it("o bloco não altera a contagem nem o 'Mostrar mais'", async () => {
     const muitos: ItemConsulta[] = Array.from({ length: 55 }, (_, indice) => ({
       id: `lg-${indice}`,
@@ -1860,14 +1896,12 @@ describe("seleção para comparar (ticket 51)", () => {
     expect(caixa("Classe F").checked).toBe(false);
   });
 
-  it("mostra a contagem e só habilita Comparar com 2 ou 3", async () => {
+  it("só mostra o dock com seleção e só habilita Comparar com 2 ou 3", async () => {
     await montar();
 
-    expect(screen.getByText("0 de 3 modelos selecionados")).toBeDefined();
-    expect(
-      (screen.getByRole("button", { name: "Comparar" }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+    // Sem seleção não há dock: nada ocupa espaço nem cobre a linha em leitura.
+    expect(document.querySelector(".barra-selecao")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Comparar" })).toBeNull();
 
     fireEvent.click(caixa("Classe F"));
     expect(screen.getByText("1 de 3 modelos selecionados")).toBeDefined();
@@ -1882,6 +1916,58 @@ describe("seleção para comparar (ticket 51)", () => {
     expect(comparar.getAttribute("href")).toBe(
       "/comparar/?ids=daikin-f%2Chitachi-e",
     );
+  });
+
+  it("mostra os modelos escolhidos em mono, na ordem da seleção", async () => {
+    await montar(undefined, "/?ids=hitachi-e,daikin-f");
+
+    await waitFor(() =>
+      expect(screen.getByText("2 de 3 modelos selecionados")).toBeDefined(),
+    );
+    const dock = document.querySelector(".barra-selecao") as HTMLElement;
+    const nomes = [...dock.querySelectorAll(".selecao-modelo")].map(
+      (nome) => nome.textContent,
+    );
+    expect(nomes).toEqual(["Classe E", "Classe F"]);
+    expect(nomes[0]?.length).toBeGreaterThan(0);
+
+    // Desmarcar remove o nome do dock; sem nenhum, o dock desaparece.
+    fireEvent.click(caixa("Classe E"));
+    expect(
+      [...dock.querySelectorAll(".selecao-modelo")].map(
+        (nome) => nome.textContent,
+      ),
+    ).toEqual(["Classe F"]);
+    fireEvent.click(caixa("Classe F"));
+    expect(document.querySelector(".barra-selecao")).toBeNull();
+  });
+
+  it("põe o dock acima da barra de ferramentas, no topo do catálogo", async () => {
+    await montar(undefined, "/?ids=daikin-f");
+
+    await waitFor(() =>
+      expect(document.querySelector(".barra-selecao")).not.toBeNull(),
+    );
+    const dock = document.querySelector(".barra-selecao") as HTMLElement;
+    const barra = document.querySelector(".barra-ferramentas") as HTMLElement;
+    expect(
+      dock.compareDocumentPosition(barra) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(dock.closest("form")).toBeNull();
+
+    const css = cssDaConsulta();
+    const regra =
+      css.match(/\n\.consulta \.barra-selecao \{([^}]*)\}/)?.[1] ?? "";
+    expect(regra).toMatch(/position:\s*sticky/);
+    expect(regra).toMatch(/top:\s*0/);
+    expect(regra).toMatch(/background:\s*var\(--tinta\)/);
+    expect(regra).toMatch(/border-radius:\s*var\(--raio-md\)/);
+    expect(regra).toMatch(/z-index:\s*var\(--z-dock\)/);
+    expect(regra).toMatch(/box-shadow:\s*var\(--sombra-sobreposicao\)/);
+
+    const barraRegra =
+      css.match(/\n\.consulta \.barra-ferramentas \{([^}]*)\}/)?.[1] ?? "";
+    expect(barraRegra).toMatch(/top:\s*var\(--altura-dock/);
   });
 
   it("com 3 selecionados desabilita os demais e explica o limite", async () => {
@@ -2009,6 +2095,44 @@ describe("seleção para comparar (ticket 51)", () => {
         "2 ids repetidos ou desconhecidos foram descartados do link.",
       ),
     ).toBeDefined();
+  });
+
+  it("mantém o aviso de descarte visível quando nenhum id sobra", async () => {
+    await montar(undefined, "/?ids=ap-desconhecido");
+
+    // Sem id válido não há dock — mas o aviso não pode sumir junto com ele.
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "Um id repetido ou desconhecido foi descartado do link.",
+        ),
+      ).toBeDefined(),
+    );
+    expect(document.querySelector(".barra-selecao")).toBeNull();
+  });
+
+  it("dá 20 px ao checkbox dentro de um alvo de 44 px", () => {
+    const css = cssDaConsulta();
+    const celula =
+      css.match(
+        /\n\.consulta \.tabela-aparelhos \.celula-selecao \{([^}]*)\}/,
+      )?.[1] ?? "";
+    expect(celula).toMatch(/min-height:\s*44px/);
+    expect(celula).toMatch(/min-width:\s*44px/);
+
+    const caixaCss =
+      css.match(/td\[data-campo="selecao"\] input \{([^}]*)\}/)?.[1] ?? "";
+    expect(caixaCss).toMatch(/width:\s*20px/);
+    expect(caixaCss).toMatch(/height:\s*20px/);
+  });
+
+  it("empilha a vitrine numa coluna no celular", () => {
+    const css = cssDaConsulta();
+    const lista = css.match(/\n\.com-analise ul \{([^}]*)\}/)?.[1] ?? "";
+    expect(lista).toMatch(/grid-template-columns:\s*minmax\(0, 1fr\)/);
+    expect(css).toMatch(
+      /@media \(min-width: 40rem\) \{[^}]*\.com-analise ul \{[^}]*repeat\(2/,
+    );
   });
 });
 
@@ -2205,7 +2329,7 @@ describe("barra de ferramentas e painel mobile (ticket 73)", () => {
     const regra =
       css.match(/\n\.consulta \.barra-ferramentas \{([^}]*)\}/)?.[1] ?? "";
     expect(regra).toMatch(/position:\s*sticky/);
-    expect(regra).toMatch(/top:\s*0/);
+    expect(regra).toMatch(/top:\s*var\(--altura-dock/);
     expect(regra).toMatch(/background:\s*var\(--giz\)/);
     expect(regra).toMatch(/border-bottom:\s*1px solid var\(--linha\)/);
     expect(regra).toMatch(/z-index:\s*var\(--z-barra\)/);
@@ -2214,9 +2338,10 @@ describe("barra de ferramentas e painel mobile (ticket 73)", () => {
   it("deixa o cabeçalho da tabela abaixo da barra e usa o chip do sistema", () => {
     const css = cssDaConsulta();
 
-    // A altura medida da barra empurra o <thead> sticky para baixo dela.
+    // As alturas medidas do dock e da barra empurram o <thead> sticky para
+    // baixo das duas.
     expect(css).toMatch(
-      /thead th\s*\{[^}]*top:\s*var\(--altura-barra-catalogo/,
+      /thead th\s*\{[^}]*top:\s*calc\(var\(--altura-dock, 0px\) \+ var\(--altura-barra-catalogo/,
     );
     // Chips de 32 px e raio de 2 px — nenhum pill, nenhum hex de Classe.
     const chip = css.match(/\n\.consulta \.chip-filtro \{([^}]*)\}/)?.[1] ?? "";

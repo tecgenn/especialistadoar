@@ -248,6 +248,8 @@ Primitivos já entregues em `components/primitivos/` (Astro, sem hidratação): 
 
 > **Nota de execução (2026-11-26, tickets 72 e 73):** a exportação de 25/11 elevou a base para 2.423 Aparelhos, então o recorte padrão de 220 V fecha em **2.294** linhas — o 2.116 deste contrato é anterior à troca da fonte. Com o **#73**, a barra de ferramentas virou um `<form>` sticky com busca, botão, chips do recorte, contagem e ordenação; a altura medida publica `--altura-barra-catalogo`, usada no `top` do `<thead>` sticky. O painel avançado segue embutido no desktop e vira sobreposição modal abaixo de 900 px, com foco preso, `Esc`, retorno de foco e "Ver N resultados". No celular a barra tem três faixas compactas (busca + botão; chips; contagem + ordenação) em vez de duas: com os cinco controles, duas faixas não caberiam em 320 px sem overflow.
 
+> **Nota de execução (2026-11-26, ticket 74):** o dock decidiu a dúvida do risco "dock no celular muito estreito" sem a barra fixa no rodapé: ele fica no mesmo empilhamento sticky, acima da barra, e no celular ocupa a largura toda em duas faixas (contagem + ações; nomes em mono rolando na horizontal). A altura do dock também é medida e publicada (`--altura-dock`), então a barra e o `<thead>` descem por baixo dele e nenhuma linha fica coberta. Abaixo de 360 px os nomes rolam dentro do próprio dock; nenhum alvo cai de 44 px e não há overflow horizontal em 320 px. A vitrine ganhou a imagem real de abertura da Análise: `aparelhos/index.astro` resolve a imagem com `getImage` no build e a ilha recebe só a URL otimizada.
+
 ### 4. Ficha (`/aparelhos/[id]/`)
 
 **Objetivo:** um datasheet navegável, confiável e imprimível.

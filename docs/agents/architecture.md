@@ -236,7 +236,13 @@ nova exportação CSV
   avançada**, os chips do recorte efetivo (inclusive o padrão implícito de Tensão
   220 V, cujo "×" grava `tensao=`), a contagem e a ordenação. A ilha mede a
   altura da barra e publica em `--altura-barra-catalogo`, usada no `top` do
-  `<thead>` sticky da tabela. O painel recolhível (Marca, Tipo, Função,
+  `<thead>` sticky da tabela. Com ao menos um Aparelho marcado, um **dock**
+  escuro (ticket 74) entra acima da barra — contagem `N de 3`, nomes dos modelos
+  em mono, "Limpar seleção" e "Comparar" — também sticky e também medido
+  (`--altura-dock`): a barra gruda em `top: var(--altura-dock)` e o `<thead>` em
+  `calc(var(--altura-dock) + var(--altura-barra-catalogo))`. O dock só existe
+  com seleção; ids descartados da URL continuam avisados mesmo sem dock, e o
+  checkbox da seleção tem 20 px dentro de um alvo de 44 px. O painel recolhível (Marca, Tipo, Função,
   Capacidade, Classe e Tensão) está fechado por padrão e abre sozinho quando a
   URL traz um filtro avançado; no desktop é embutido e no celular vira
   sobreposição `role="dialog"` de tela cheia, com foco preso, `Esc`, retorno de
@@ -327,8 +333,10 @@ nova exportação CSV
   mais compradas — 9.000, 12.000 e 18.000 BTU/h — primeiro, depois a recência) e,
   completando as vagas, Aparelhos similares de fora do recorte por capacidade,
   marca conhecida, atributos em comum e recência; cada cartão mostra a Marca, o
-  título da Análise, a capacidade e o Tipo, e uma legenda explica quando só há
-  similares. O bloco não entra na contagem, na ordenação nem no "Mostrar mais".
+  título da Análise, a capacidade e o Tipo, além da **imagem real de abertura**
+  da Análise (otimizada com `getImage` no build da página do catálogo, ticket
+  74), e uma legenda explica quando só há similares. O bloco não entra na
+  contagem, na ordenação nem no "Mostrar mais".
   Os cartões repetem os analisados que também aparecem, destacados, na tabela. O
   `/assistente/`
   recebe no build o mapa capacidade → analisados e só consulta o valor

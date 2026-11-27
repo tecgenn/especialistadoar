@@ -249,7 +249,8 @@ main.principal-leitura {
    logo abaixo dela (ticket 73). */
 .consulta .barra-ferramentas {
   position: sticky;
-  top: 0;
+  /* Abaixo do dock de seleção quando ele existe; sem dock, cola no topo. */
+  top: var(--altura-dock, 0px);
   z-index: var(--z-barra);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -736,6 +737,25 @@ main.principal-leitura {
     min-height: 44px;
   }
 
+  /* O dock ocupa a largura toda e mantém 44 px: contagem + ações na primeira
+     linha e os nomes numa segunda, que rola na horizontal em vez de crescer
+     para três linhas em 320 px. */
+  .consulta .barra-selecao {
+    padding-inline: var(--esp-3);
+  }
+
+  .consulta .selecao-contagem {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .consulta .selecao-modelos {
+    order: 3;
+    flex: 1 0 100%;
+  }
+
   .consulta .filtros-avancados {
     position: fixed;
     inset: 0;
@@ -1089,9 +1109,10 @@ main.principal-leitura {
    sobrepor. Alvo de ordenação de 44 px. */
 .consulta .tabela-aparelhos thead th {
   position: sticky;
-  /* Logo abaixo da barra de ferramentas sticky (ticket 73): a altura é medida
-     pela ilha e publicada no contêiner; sem medida, cola no topo. */
-  top: var(--altura-barra-catalogo, 0px);
+  /* Logo abaixo da barra de ferramentas sticky — e do dock, quando há seleção
+     (tickets 73 e 74): as alturas são medidas pela ilha e publicadas no
+     contêiner; sem medida, cola no topo. */
+  top: calc(var(--altura-dock, 0px) + var(--altura-barra-catalogo, 0px));
   z-index: 2;
   padding: 0;
   background: var(--papel);
@@ -1275,8 +1296,9 @@ main.principal-leitura {
 }
 
 .consulta .tabela-aparelhos td[data-campo="selecao"] input {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
   margin: 0;
   padding: 0;
   border: 0;
@@ -1376,50 +1398,130 @@ main.principal-leitura {
   outline-offset: 2px;
 }
 
-/* Barra de seleção para comparar (ticket 51): entre os filtros e a vitrine,
-   com a contagem à esquerda, os avisos no meio e as ações à direita. */
+/* Dock de seleção para comparar (tickets 51 e 74): a barra escura de tinta
+   acima da barra de ferramentas, com a contagem em mono, os modelos escolhidos
+   na ordem da seleção e as ações à direita. Só existe com ao menos um modelo
+   marcado. Dock e barra formam o mesmo bloco colado no topo: a altura do dock é
+   medida pela ilha (`--altura-dock`) e a barra desce na medida dele. A sombra é
+   a única do sistema (nível 3) e o raio é o de sobreposição. */
 .consulta .barra-selecao {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-dock);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.4rem 0.75rem;
-  margin-block: 0 1.25rem;
-  padding: 0.6rem 0.85rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  gap: var(--esp-2) var(--esp-5);
+  margin: 0;
+  padding: var(--esp-3) var(--esp-4);
+  border-radius: var(--raio-md);
+  background: var(--tinta);
+  box-shadow: var(--sombra-sobreposicao);
+  color: var(--giz);
 }
 
 .consulta .selecao-contagem {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.consulta .selecao-limite,
-.consulta .selecao-aviso {
+/* Os nomes dos modelos em mono, na ordem em que foram marcados. Em telas
+   estreitas a lista rola na horizontal em vez de empurrar as ações. */
+.consulta .selecao-modelos {
+  display: flex;
+  flex: 1 1 12rem;
+  align-items: center;
+  min-width: 0;
   margin: 0;
-  font-size: 0.8rem;
-  color: var(--texto-suave);
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.consulta .selecao-modelos li {
+  max-width: 18ch;
+  padding-inline: var(--esp-3);
+  border-inline-start: 1px solid var(--linha-escura);
+}
+
+.consulta .selecao-modelos li:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+.consulta .selecao-modelo {
+  display: block;
+  overflow: hidden;
+  color: var(--giz);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consulta .selecao-limite {
+  margin: 0;
+  color: var(--mudo-escuro);
+  font-size: var(--texto-rotulo);
 }
 
 .consulta .selecao-aviso {
-  color: #b45309;
+  margin: 0 0 var(--esp-4);
+  color: var(--frio-texto);
+  font-size: var(--texto-pequeno);
+}
+
+.consulta .selecao-aviso-dock {
+  margin: 0;
+  color: var(--mudo-escuro);
+  font-size: var(--texto-rotulo);
 }
 
 .consulta .barra-selecao-acoes {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--esp-2);
   margin-left: auto;
 }
 
+/* "Limpar seleção" é ação de texto sobre a tinta: giz, sublinhado no hover e
+   contorno giz no foco. */
+.consulta .selecao-limpar {
+  min-height: 44px;
+  padding-inline: var(--esp-3);
+  border: 0;
+  border-radius: var(--raio-xs);
+  background: transparent;
+  color: var(--giz);
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+
+.consulta .selecao-limpar:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.consulta .selecao-limpar:focus-visible,
+.consulta .barra-selecao .botao:focus-visible {
+  outline: 2px solid var(--giz);
+  outline-offset: 2px;
+}
+
 /* "Comparar" desabilitado continua com a forma de botão, mas apagado: só 2 ou 3
-   selecionados habilitam a ida para `/comparar/`. */
+   selecionados habilitam a ida para `/comparar/`. Sobre a tinta, o contorno é
+   a hairline escura em vez do azul-frio cheio. */
 .consulta .barra-selecao-acoes .botao:disabled {
-  border-color: var(--borda);
-  background: var(--fundo);
-  color: var(--texto-suave);
+  border-color: var(--linha-escura);
+  background: transparent;
+  color: var(--mudo-escuro);
   cursor: not-allowed;
 }
 
@@ -1428,48 +1530,59 @@ main.principal-leitura {
    Sempre visível quando há Análise: mostra primeiro os analisados que passam no
    recorte e completa com similares; a legenda explica quando só há similares.
    Nunca mexe em contagem, paginação nem ordenação. */
+/* Vitrine (tickets 44, 52 e 74): um painel de giz com hairline, raio de 4 px e
+   sem sombra, **fora** da tabela. Cada cartão é horizontal — a imagem real de
+   abertura da Análise à esquerda, o texto à direita — e empilha em uma coluna
+   no celular. Nunca mexe em contagem, paginação nem ordenação. */
 .consulta .com-analise {
-  margin-block: 0 1.25rem;
-  padding: 1rem 1.25rem 1.25rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.75rem;
-  background: var(--superficie);
-  box-shadow: 0 1px 2px rgb(15 23 42 / 4%);
+  margin: 0 0 var(--esp-5);
+  padding: var(--esp-6);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  background: var(--giz);
 }
 
 .com-analise h2 {
-  margin: 0 0 0.75rem;
-  color: var(--texto-suave);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  margin: 0 0 var(--esp-4);
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
   text-transform: uppercase;
 }
 
 .com-analise ul {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--esp-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .consulta .com-analise-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 0.65rem;
+  gap: var(--esp-4);
   height: 100%;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--fundo);
+  padding: var(--esp-3);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-sm);
+  background: var(--papel);
   color: inherit;
   text-decoration: none;
+  transition: border-color var(--mov-hover) var(--curva);
+}
+
+/* Sem imagem, o cartão não reserva o lugar dela: o texto começa na borda. */
+.consulta .com-analise-item > .com-analise-texto:first-child {
+  grid-column: 1 / -1;
 }
 
 .consulta .com-analise-item:hover {
-  border-color: var(--primaria);
+  border-color: var(--tinta);
 }
 
 .consulta .com-analise-item:focus-visible {
@@ -1477,43 +1590,80 @@ main.principal-leitura {
   outline-offset: 2px;
 }
 
+.consulta .com-analise-imagem {
+  display: block;
+  width: 6rem;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  background: var(--mineral);
+}
+
+.consulta .com-analise-imagem img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .consulta .com-analise-texto {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: var(--esp-1);
   min-width: 0;
-  line-height: 1.35;
+  line-height: var(--entrelinha-apertada);
+}
+
+.consulta .com-analise-texto .analisado-etiqueta {
+  margin-bottom: var(--esp-2);
 }
 
 .consulta .com-analise-marca {
-  color: var(--texto-suave);
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
   text-transform: uppercase;
 }
 
 .consulta .com-analise-titulo {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
 }
 
 /* Capacidade e Tipo no cartão (ticket 52): o suficiente para avaliar a
    alternativa sem abrir a ficha. */
 .consulta .com-analise-detalhe {
-  color: var(--texto-suave);
-  font-size: 0.78rem;
+  color: var(--mudo);
+  font-size: var(--texto-pequeno);
 }
 
 /* Legenda da vitrine quando só há similares: o recorte não foi ignorado, e a
    marca filtrada é citada para não parecer um erro. */
 .consulta .com-analise-legenda {
-  margin: 0 0 0.75rem;
-  color: var(--texto-suave);
-  font-size: 0.82rem;
+  margin: 0 0 var(--esp-4);
+  color: var(--mudo);
+  font-size: var(--texto-pequeno);
 }
 
 .consulta .com-analise-item:hover .com-analise-titulo {
-  color: var(--primaria);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+@media (min-width: 40rem) {
+  .com-analise ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .com-analise ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* Abaixo de 900 px a tabela não cabe na largura da página: o contêiner rola na

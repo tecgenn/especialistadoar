@@ -67,14 +67,28 @@ import {
  * **continua tabela**: rola na horizontal dentro do próprio contêiner (focável,
  * `role="region"`), com a seleção e o Modelo fixos à esquerda e o cabeçalho
  * acompanhando a rolagem vertical. Nenhum JS foi acrescentado para isso.
+ *
+ * A seleção para comparar (tickets 51 e 74) vira um **dock** escuro acima da
+ * barra: só existe com ao menos um Aparelho marcado, mostra a contagem `N de 3`,
+ * os modelos escolhidos em mono e as ações "Limpar seleção" e "Comparar".
+ * Dock e barra formam o mesmo bloco colado no topo — a altura do dock também é
+ * medida e publicada (`--altura-dock`), para a barra e o `<thead>` descerem por
+ * baixo dele. A vitrine "Aparelhos com análise" (ticket 44, revisto no 52 e no
+ * 74) fica fora da tabela e usa a imagem real de abertura da Análise.
  */
 export interface PropsConsulta {
   /** Opções dos filtros, derivadas do dataset no build do site. */
   opcoes: OpcoesConsulta;
   /** URL do dataset enxuto de consulta (servido ao lado das páginas). */
   consultaUrl?: string;
-  /** Mapa de Aparelhos analisados: aparelhoId → { titulo, url }. */
-  analisados?: Map<string, { titulo: string; url: string }>;
+  /**
+   * Mapa de Aparelhos analisados: aparelhoId → { titulo, url } e, quando a
+   * Análise tem imagem de abertura, a versão otimizada da imagem (ticket 74).
+   */
+  analisados?: Map<
+    string,
+    { titulo: string; url: string; imagem?: { src: string; alt: string } }
+  >;
 }
 
 /** Quantas linhas aparecem por vez na tabela. */
@@ -426,6 +440,7 @@ export default function Consulta({
   const [ehCelular, setEhCelular] = useState(false);
   const raizRef = useRef<HTMLElement>(null);
   const barraRef = useRef<HTMLFormElement>(null);
+  const dockRef = useRef<HTMLElement>(null);
   const botaoAvancadaRef = useRef<HTMLButtonElement>(null);
   const painelRef = useRef<HTMLDivElement>(null);
 
@@ -472,7 +487,11 @@ export default function Consulta({
   // A barra gruda no topo; o cabeçalho da tabela gruda logo abaixo dela. A
   // altura de uma barra que quebra linha não é fixa, então medimos e publicamos
   // em `--altura-barra-catalogo` (ticket 73). Sem `ResizeObserver`, o evento de
-  // `resize` cobre a troca de faixa.
+  // `resize` cobre a troca de faixa. O dock (ticket 74), quando existe, fica
+  // acima da barra e entra na mesma conta: `--altura-dock` desce a barra e o
+  // `<thead>` na medida dele.
+  const temSelecao = selecao.length > 0;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `temSelecao` não é lida no corpo; ela refaz a medida quando o dock entra ou sai.
   useEffect(() => {
     const barra = barraRef.current;
     const raiz = raizRef.current;
@@ -484,17 +503,24 @@ export default function Consulta({
         "--altura-barra-catalogo",
         `${Math.round(barra.getBoundingClientRect().height)}px`,
       );
+      raiz.style.setProperty(
+        "--altura-dock",
+        `${Math.round(dockRef.current?.getBoundingClientRect().height ?? 0)}px`,
+      );
     };
     medir();
     window.addEventListener("resize", medir);
     const observador =
       typeof ResizeObserver === "undefined" ? null : new ResizeObserver(medir);
     observador?.observe(barra);
+    if (dockRef.current !== null) {
+      observador?.observe(dockRef.current);
+    }
     return () => {
       window.removeEventListener("resize", medir);
       observador?.disconnect();
     };
-  }, []);
+  }, [temSelecao]);
 
   // Abrir o painel no celular leva o foco para dentro dele; o foco nunca sai
   // enquanto ele estiver aberto (ticket 73).
@@ -823,6 +849,14 @@ export default function Consulta({
     ? `/comparar/?${escreverIds(selecao).toString()}`
     : undefined;
 
+  /** Os nomes que o dock lista, na ordem em que foram escolhidos. */
+  const modelosSelecionados = selecao.flatMap((id) => {
+    const item = itensPorId.get(id);
+    return item === undefined
+      ? []
+      : [{ id, marca: item.marcaCatalogo, modelo: item.modelo }];
+  });
+
   /** Só o painel do celular é um diálogo modal; no desktop ele é embutido. */
   const atributosDoDialogo = ehCelular
     ? {
@@ -834,6 +868,66 @@ export default function Consulta({
 
   return (
     <section className="consulta" ref={raizRef}>
+      {/* O dock (ticket 74) fica **acima** da barra e só existe com ao menos um
+          modelo marcado: assim ele nunca ocupa espaço nem cobre a linha em
+          leitura quando a seleção está vazia. No celular também desaparece. */}
+      {temSelecao ? (
+        <section
+          ref={dockRef}
+          className="barra-selecao"
+          aria-label="Seleção para comparar"
+        >
+          <p className="selecao-contagem" role="status">
+            {`${selecao.length} de ${MAXIMO_COMPARACAO} modelos selecionados`}
+          </p>
+          <ul className="selecao-modelos" aria-label="Modelos selecionados">
+            {modelosSelecionados.map(({ id, marca, modelo }) => (
+              <li key={id}>
+                <span className="selecao-modelo" title={`${marca} ${modelo}`}>
+                  {modelo}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {selecaoCheia ? (
+            <p className="selecao-limite">
+              Limite de {MAXIMO_COMPARACAO} modelos por comparação.
+            </p>
+          ) : null}
+          {descartadosSelecao > 0 ? (
+            <p className="selecao-aviso selecao-aviso-dock" role="status">
+              {textoDescartes(descartadosSelecao)}
+            </p>
+          ) : null}
+          <div className="barra-selecao-acoes">
+            <button
+              type="button"
+              className="selecao-limpar"
+              onClick={limparSelecao}
+            >
+              Limpar seleção
+            </button>
+            {hrefComparar === undefined ? (
+              <button type="button" className="botao" disabled>
+                Comparar
+              </button>
+            ) : (
+              <a className="botao" href={hrefComparar}>
+                Comparar
+              </a>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      {/* Sem nenhum id válido sobrando, o dock não aparece; o aviso do link
+          continua visível por conta própria (ticket 74). */}
+      {!temSelecao && descartadosSelecao > 0 ? (
+        <p className="selecao-aviso" role="status">
+          {textoDescartes(descartadosSelecao)}
+        </p>
+      ) : null}
+
       <form
         ref={barraRef}
         className="filtros barra-ferramentas"
@@ -1129,41 +1223,6 @@ export default function Consulta({
             <EsqueletoTabela />
           ) : (
             <>
-              <section
-                className="barra-selecao"
-                aria-label="Seleção para comparar"
-              >
-                <p className="selecao-contagem" role="status">
-                  {selecao.length} de {MAXIMO_COMPARACAO} modelos selecionados
-                </p>
-                {selecaoCheia ? (
-                  <p className="selecao-limite">
-                    Limite de {MAXIMO_COMPARACAO} modelos por comparação.
-                  </p>
-                ) : null}
-                {descartadosSelecao > 0 ? (
-                  <p className="selecao-aviso" role="status">
-                    {textoDescartes(descartadosSelecao)}
-                  </p>
-                ) : null}
-                <div className="barra-selecao-acoes">
-                  {selecao.length > 0 ? (
-                    <button type="button" onClick={limparSelecao}>
-                      Limpar seleção
-                    </button>
-                  ) : null}
-                  {hrefComparar === undefined ? (
-                    <button type="button" className="botao" disabled>
-                      Comparar
-                    </button>
-                  ) : (
-                    <a className="botao" href={hrefComparar}>
-                      Comparar
-                    </a>
-                  )}
-                </div>
-              </section>
-
               {comAnalise.length === 0 ? null : (
                 <section
                   className="com-analise"
@@ -1178,31 +1237,48 @@ export default function Consulta({
                     </p>
                   ) : null}
                   <ul>
-                    {comAnalise.map((cartao) => (
-                      <li key={cartao.item.id}>
-                        <a className="com-analise-item" href={cartao.url}>
-                          <span className="analisado-etiqueta">Análise</span>
-                          <span className="com-analise-texto">
-                            <span className="com-analise-marca">
-                              {cartao.item.marcaCatalogo}
+                    {comAnalise.map((cartao) => {
+                      const imagem = analisados.get(cartao.item.id)?.imagem;
+                      return (
+                        <li key={cartao.item.id}>
+                          <a className="com-analise-item" href={cartao.url}>
+                            {imagem === undefined ? null : (
+                              <span className="com-analise-imagem">
+                                <img
+                                  src={imagem.src}
+                                  alt={imagem.alt}
+                                  width={160}
+                                  height={100}
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              </span>
+                            )}
+                            <span className="com-analise-texto">
+                              <span className="analisado-etiqueta">
+                                Análise
+                              </span>
+                              <span className="com-analise-marca">
+                                {cartao.item.marcaCatalogo}
+                              </span>
+                              <span className="com-analise-titulo">
+                                {cartao.titulo}
+                              </span>
+                              <span className="com-analise-detalhe">
+                                {formatarFaixa(
+                                  cartao.item.capacidadesBtu,
+                                  " BTU/h",
+                                )}
+                                {cartao.item.tipo === null ||
+                                cartao.item.tipo.trim() === ""
+                                  ? ""
+                                  : ` · ${cartao.item.tipo}`}
+                              </span>
                             </span>
-                            <span className="com-analise-titulo">
-                              {cartao.titulo}
-                            </span>
-                            <span className="com-analise-detalhe">
-                              {formatarFaixa(
-                                cartao.item.capacidadesBtu,
-                                " BTU/h",
-                              )}
-                              {cartao.item.tipo === null ||
-                              cartao.item.tipo.trim() === ""
-                                ? ""
-                                : ` · ${cartao.item.tipo}`}
-                            </span>
-                          </span>
-                        </a>
-                      </li>
-                    ))}
+                          </a>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </section>
               )}

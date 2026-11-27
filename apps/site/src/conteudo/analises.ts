@@ -44,17 +44,27 @@ export function carregarAnalises(): Promise<AnalisesCarregadas> {
   return carregadas;
 }
 
+/** Um item do mapa de analisados: título, URL e, quando houver, a imagem. */
+export interface AnalisadoDaTabela {
+  titulo: string;
+  url: string;
+  /** A imagem de abertura otimizada no build (ticket 74). */
+  imagem?: { src: string; alt: string };
+}
+
 /**
  * Constrói o mapa de Aparelhos analisados para a tabela.
  * Só entram Análises válidas cujo Aparelho está na Versão atual (idsDaBase).
  * O valor traz o título e a URL da Análise; o aviso de afiliado saiu da tabela
  * (ticket 44) e o selo leva para a Análise, que tem o banner de transparência.
+ * A imagem de abertura é anexada pela página do catálogo, depois da otimização
+ * do build (ticket 74).
  */
 export function mapaAnalisados(
   analises: readonly Analise[],
   idsDaBase: ReadonlySet<string>,
-): Map<string, { titulo: string; url: string }> {
-  const mapa = new Map<string, { titulo: string; url: string }>();
+): Map<string, AnalisadoDaTabela> {
+  const mapa = new Map<string, AnalisadoDaTabela>();
   for (const analise of analises) {
     if (!idsDaBase.has(analise.aparelhoId)) {
       continue; // Aparelho Ausente: não entra no mapa
