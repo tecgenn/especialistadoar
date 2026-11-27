@@ -30,6 +30,7 @@ import {
   rotuloDaFaixa,
 } from "../lib/faixas-capacidade";
 import { formatarFaixa } from "../lib/ficha";
+import type { AnalisadoDaTabela } from "../conteudo/analises.ts";
 import type { OpcoesConsulta } from "../lib/opcoes";
 import { etiquetaDaClasse } from "../lib/primitivos";
 import {
@@ -82,13 +83,11 @@ export interface PropsConsulta {
   /** URL do dataset enxuto de consulta (servido ao lado das páginas). */
   consultaUrl?: string;
   /**
-   * Mapa de Aparelhos analisados: aparelhoId → { titulo, url } e, quando a
-   * Análise tem imagem de abertura, a versão otimizada da imagem (ticket 74).
+   * Mapa de Aparelhos analisados: aparelhoId → `AnalisadoDaTabela` (título, URL
+   * e, quando a Análise tem imagem de abertura, a versão otimizada da imagem —
+   * ticket 74).
    */
-  analisados?: Map<
-    string,
-    { titulo: string; url: string; imagem?: { src: string; alt: string } }
-  >;
+  analisados?: Map<string, AnalisadoDaTabela>;
 }
 
 /** Quantas linhas aparecem por vez na tabela. */
