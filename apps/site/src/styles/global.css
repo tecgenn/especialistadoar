@@ -270,6 +270,14 @@ main.principal-leitura {
   width: 100%;
 }
 
+/* Ícone de lupa ao lado do campo de busca (spec da Fase 12). */
+.consulta .icone-busca {
+  width: 16px;
+  height: 16px;
+  color: var(--mudo);
+  flex-shrink: 0;
+}
+
 .consulta .barra-ferramentas-acoes {
   grid-area: acoes;
   display: flex;

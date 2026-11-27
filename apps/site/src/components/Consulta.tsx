@@ -440,6 +440,7 @@ export default function Consulta({
   const [ehCelular, setEhCelular] = useState(false);
   const raizRef = useRef<HTMLElement>(null);
   const barraRef = useRef<HTMLFormElement>(null);
+  const buscaRef = useRef<HTMLInputElement>(null);
   const dockRef = useRef<HTMLElement>(null);
   const botaoAvancadaRef = useRef<HTMLButtonElement>(null);
   const painelRef = useRef<HTMLDivElement>(null);
@@ -482,6 +483,27 @@ export default function Consulta({
     atualizar();
     consulta.addEventListener("change", atualizar);
     return () => consulta.removeEventListener("change", atualizar);
+  }, []);
+
+  // Atalho "/" para focar o campo de busca (spec da Fase 12: busca com ícone
+  // e atalho de teclado). Só foca quando ninguém está digitando num input.
+  useEffect(() => {
+    const aoTeclar = (evento: KeyboardEvent) => {
+      if (evento.key !== "/") {
+        return;
+      }
+      const ativo = document.activeElement;
+      if (
+        ativo instanceof HTMLInputElement ||
+        ativo instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+      evento.preventDefault();
+      buscaRef.current?.focus();
+    };
+    document.addEventListener("keydown", aoTeclar);
+    return () => document.removeEventListener("keydown", aoTeclar);
   }, []);
 
   // A barra gruda no topo; o cabeçalho da tabela gruda logo abaixo dela. A
@@ -674,6 +696,13 @@ export default function Consulta({
     },
     [estado, selecao, escreverUrl],
   );
+
+  type CampoChip = "marca" | "tipo" | "funcao" | "classe";
+
+  /** Liga ou desliga um chip de texto: ativo limpa, inativo define o valor. */
+  const toggleCampo = (campo: CampoChip, valor: string) => {
+    atualizar({ [campo]: estado[campo] === valor ? undefined : valor });
+  };
 
   const limpar = useCallback(() => {
     // "Limpar filtros" volta ao recorte padrão (ticket 38) e mantém a ordenação
@@ -935,7 +964,25 @@ export default function Consulta({
       >
         <label className="busca">
           <span className="sr-only">Busca</span>
+          <span className="icone-busca" aria-hidden="true">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="8" cy="8" r="5.5" />
+              <path d="m12 12 3 3" />
+            </svg>
+          </span>
           <input
+            ref={buscaRef}
             type="search"
             value={estado.q ?? ""}
             placeholder="Marca, modelo ou tipo"
@@ -1045,11 +1092,7 @@ export default function Consulta({
             <Chips
               opcoes={opcoes.marcasChip}
               estaAtivo={(valor) => estado.marca === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  marca: estado.marca === valor ? undefined : valor,
-                })
-              }
+              selecionar={(valor) => toggleCampo("marca", valor)}
             />
             <BuscaMarca
               valor={marcaDaBusca}
@@ -1064,11 +1107,7 @@ export default function Consulta({
             <Chips
               opcoes={tipos}
               estaAtivo={(valor) => estado.tipo === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  tipo: estado.tipo === valor ? undefined : valor,
-                })
-              }
+              selecionar={(valor) => toggleCampo("tipo", valor)}
             />
           </fieldset>
 
@@ -1077,11 +1116,7 @@ export default function Consulta({
             <Chips
               opcoes={funcoes}
               estaAtivo={(valor) => estado.funcao === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  funcao: estado.funcao === valor ? undefined : valor,
-                })
-              }
+              selecionar={(valor) => toggleCampo("funcao", valor)}
             />
           </fieldset>
         </fieldset>
@@ -1138,11 +1173,7 @@ export default function Consulta({
             <ChipsClass
               opcoes={opcoes.classesChip}
               estaAtivo={(valor) => estado.classe === valor}
-              selecionar={(valor) =>
-                atualizar({
-                  classe: estado.classe === valor ? undefined : valor,
-                })
-              }
+              selecionar={(valor) => toggleCampo("classe", valor)}
             />
             {classesExtras.length > 0 ? (
               <SelectOutras
