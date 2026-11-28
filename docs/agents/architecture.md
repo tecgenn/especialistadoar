@@ -296,7 +296,12 @@ nova exportação CSV
   `data/build/` nem na semântica da consulta. A **ficha** do Aparelho
   (`src/lib/ficha.ts`) funde as Variantes de `dados` idênticos num bloco só com as
   tensões unidas, omite as vazias e troca as 13 linhas repetidas por um resumo e
-  uma grade 2×2 das condições de ensaio (35 °C e 29 °C × carga total e parcial). As **Ofertas** (links comerciais de
+  uma grade 2×2 das condições de ensaio (35 °C e 29 °C × carga total e parcial).
+  O topo monta trilha, etiquetas e três leituras (`leiturasDaFicha`, nos
+  primitivos `Trilha`, `EtiquetaClasse` e `Leitura`) e o índice de seções
+  (`indiceDaFicha`) só com as âncoras que existem; um script inline da própria
+  página (`is:inline`) marca a seção em leitura com `aria-current="location"` e
+  liga "Imprimir ficha" a `window.print()`, sem ilha nem dependência nova. As **Ofertas** (links comerciais de
   afiliado) vivem só aqui, em
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por

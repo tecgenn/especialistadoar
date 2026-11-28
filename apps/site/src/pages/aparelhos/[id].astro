@@ -3,6 +3,10 @@ import aparelhosJson from "@dados/aparelhos.json";
 import type { Aparelho } from "@especialista-do-ar/pipeline";
 import CalculadoraCusto from "../../components/CalculadoraCusto.tsx";
 import OfertaFaixa from "../../components/OfertaFaixa.astro";
+import EtiquetaClasse from "../../components/primitivos/EtiquetaClasse.astro";
+import Icone from "../../components/primitivos/Icone.astro";
+import Leitura from "../../components/primitivos/Leitura.astro";
+import Trilha from "../../components/primitivos/Trilha.astro";
 import { carregarAnalises } from "../../conteudo/analises.ts";
 import { marcaCatalogoDo } from "../../conteudo/marcas-catalogo.ts";
 import { ofertasDoAparelho } from "../../conteudo/ofertas.ts";
@@ -12,7 +16,6 @@ import { type Analise, mapaPorAparelho } from "../../lib/analises.ts";
 import { HORAS_ANO } from "../../lib/custo.ts";
 import {
   agruparVariantes,
-  cartoesDeDestaque,
   descreverCapacidade,
   EXPLICADORES_DA_FICHA,
   etiquetasDaFicha,
@@ -20,6 +23,7 @@ import {
   formatarFaixa,
   gradeDeCondicoes,
   indiceDaFicha,
+  leiturasDaFicha,
   resumoDaFicha,
   titulosDosBlocos,
 } from "../../lib/ficha.ts";
@@ -62,11 +66,19 @@ const blocos = agruparVariantes(aparelho.variantes);
 const resumo = resumoDaFicha(blocos);
 const titulos = titulosDosBlocos(blocos);
 
-// O topo da ficha (ticket 62): as etiquetas de identificação e os três cartões
-// de destaque saem do mesmo resumo que as seções, com faixa quando as Variantes
+// O topo da ficha (tickets 62 e 75): as etiquetas de identificação e as três
+// leituras saem do mesmo resumo que as seções, com faixa quando as Variantes
 // divergem. O índice só lista seções que existem nesta página.
 const etiquetas = etiquetasDaFicha(resumo, aparelho.registros);
-const cartoes = cartoesDeDestaque(resumo);
+const leituras = leiturasDaFicha(resumo);
+const trilha = [
+  { rotulo: "Aparelhos", href: "/aparelhos/" },
+  {
+    rotulo: marcaCatalogo,
+    href: `/aparelhos/?marca=${encodeURIComponent(marcaCatalogo)}`,
+  },
+  { rotulo: aparelho.modelo },
+];
 
 // As tarifas de referência são curadoria do site (ADR-0022), validadas no build
 // e cacheadas por caminho: a mesma leitura serve as 2.460 fichas.
@@ -98,73 +110,91 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
 
 <Base titulo={`${aparelho.marca} ${aparelho.modelo} — Especialista do Ar`} descricao={descricao}>
   <article class="aparelho">
-    <p><a href="/aparelhos/">← Voltar aos aparelhos</a></p>
-    <h1>{aparelho.marca} — {aparelho.modelo}</h1>
+    <Trilha itens={trilha} />
 
-    <div class="ficha-topo">
-      <ul class="ficha-etiquetas">
-        <li
-          class="ficha-etiqueta ficha-etiqueta-classe"
-          data-classe={etiquetas.classes.length === 1
-            ? etiquetas.classes[0]
-            : undefined}
-        >
-          Classe {etiquetas.classe}
-        </li>
-        {
-          etiquetas.registros.length > 0 ? (
-            <li class="ficha-etiqueta">Situação: {etiquetas.situacao}</li>
-          ) : null
-        }
-        {
-          etiquetas.registros.length > 0 ? (
-            <li class="ficha-etiqueta ficha-etiqueta-registro">
-              {etiquetas.registros.length === 1 ? "Registro" : "Registros"}{" "}
-              {etiquetas.registros.join(", ")}
-            </li>
-          ) : null
-        }
-      </ul>
-      <p class="ficha-acoes">
+    <div class="ficha-cabecalho">
+      <div class="ficha-identidade">
+        <h1>{aparelho.marca} — {aparelho.modelo}</h1>
+        <ul class="ficha-etiquetas">
+          <li class="ficha-etiqueta">
+            <span class="ficha-etiqueta-rotulo">Classe</span>{" "}
+            <EtiquetaClasse classes={etiquetas.classes} />
+            {
+              etiquetas.classes.length === 0 ? (
+                <span class="ficha-etiqueta-valor">—</span>
+              ) : null
+            }
+          </li>
+          {
+            etiquetas.registros.length > 0 ? (
+              <li class="ficha-etiqueta">
+                <span class="ficha-etiqueta-rotulo">Situação</span>{" "}
+                <span class="ficha-etiqueta-valor">{etiquetas.situacao}</span>
+              </li>
+            ) : null
+          }
+          {
+            etiquetas.registros.length > 0 ? (
+              <li class="ficha-etiqueta ficha-etiqueta-registro">
+                <span class="ficha-etiqueta-rotulo">
+                  {etiquetas.registros.length === 1 ? "Registro" : "Registros"}
+                </span>{" "}
+                <span class="ficha-etiqueta-valor">
+                  {etiquetas.registros.join(", ")}
+                </span>
+              </li>
+            ) : null
+          }
+        </ul>
+      </div>
+
+      <div class="ficha-acoes">
         <a
-          class="ficha-comparar"
+          class="botao botao-secundario"
           href={`/comparar/?ids=${encodeURIComponent(aparelho.id)}`}
         >
           Comparar este modelo
         </a>
-      </p>
+        <button class="botao botao-texto" type="button" data-imprimir-ficha>
+          Imprimir ficha
+          <Icone nome="impressora" tamanho={16} />
+        </button>
+      </div>
     </div>
 
-    <ul class="ficha-destaques">
+    <ul class="ficha-leituras">
       {
-        cartoes.map((cartao) => (
-          <li class="ficha-destaque" data-destaque={cartao.chave}>
-            {cartao.ancora === null ? (
-              <>
-                <p class="ficha-destaque-rotulo">{cartao.rotulo}</p>
-                <p class="ficha-destaque-valor">{cartao.valor}</p>
-                <p class="ficha-destaque-legenda">{cartao.legenda}</p>
-              </>
-            ) : (
-              <a class="ficha-destaque-link" href={cartao.ancora}>
-                <p class="ficha-destaque-rotulo">{cartao.rotulo}</p>
-                <p class="ficha-destaque-valor">{cartao.valor}</p>
-                <p class="ficha-destaque-legenda">{cartao.legenda}</p>
-                <span class="ficha-destaque-acao">Ver consumo e custo</span>
-              </a>
-            )}
+        leituras.map((leitura) => (
+          <li data-leitura={leitura.chave}>
+            <Leitura
+              rotulo={leitura.rotulo}
+              valor={leitura.valor}
+              unidade={leitura.unidade}
+              legenda={leitura.legenda}
+              href={leitura.href}
+            />
           </li>
         ))
       }
     </ul>
 
-    <nav class="ficha-indice" aria-label="Seções desta ficha">
+    <nav
+      class="ficha-indice"
+      aria-label="Seções desta ficha"
+      data-indice-ficha
+    >
       <p class="ficha-indice-rotulo">Nesta ficha</p>
       <ul>
         {
-          indice.map((secao) => (
+          indice.map((secao, posicao) => (
             <li>
-              <a href={`#${secao.id}`}>{secao.rotulo}</a>
+              <a
+                href={`#${secao.id}`}
+                data-secao={secao.id}
+                aria-current={posicao === 0 ? "location" : undefined}
+              >
+                {secao.rotulo}
+              </a>
             </li>
           ))
         }
@@ -351,4 +381,73 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       </a>
     </p>
   </article>
+
+  {/* Duas ações de página sem ilha: imprimir a ficha e marcar no índice a
+      seção em leitura. O HTML já traz a primeira seção marcada; o script só
+      corrige a marcação conforme a rolagem e não é pré-requisito para nenhum
+      link. */}
+  <script is:inline>
+  (() => {
+    const botao = document.querySelector("[data-imprimir-ficha]");
+    if (botao) {
+      botao.addEventListener("click", () => window.print());
+    }
+
+    const indice = document.querySelector("[data-indice-ficha]");
+    if (!indice) {
+      return;
+    }
+    const links = Array.from(indice.querySelectorAll("a[data-secao]"));
+    const secoes = links
+      .map((link) => document.getElementById(link.dataset.secao))
+      .filter((secao) => secao !== null);
+    if (secoes.length === 0) {
+      return;
+    }
+
+    let atual = "";
+    const marcar = (id) => {
+      if (id === atual) {
+        return;
+      }
+      atual = id;
+      for (const link of links) {
+        if (link.dataset.secao === id) {
+          link.setAttribute("aria-current", "location");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      }
+    };
+
+    const medir = () => {
+      // Abaixo do desktop o índice não é sticky: o limite vira o topo da tela.
+      const limite = Math.max(indice.getBoundingClientRect().bottom, 0) + 8;
+      let id = secoes[0].id;
+      for (const secao of secoes) {
+        if (secao.getBoundingClientRect().top <= limite) {
+          id = secao.id;
+        }
+      }
+      marcar(id);
+    };
+
+    let agendado = false;
+    const agendar = () => {
+      if (agendado) {
+        return;
+      }
+      agendado = true;
+      requestAnimationFrame(() => {
+        agendado = false;
+        medir();
+      });
+    };
+
+    window.addEventListener("scroll", agendar, { passive: true });
+    window.addEventListener("resize", agendar);
+    window.addEventListener("hashchange", agendar);
+    medir();
+  })();
+  </script>
 </Base>

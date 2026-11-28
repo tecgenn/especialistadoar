@@ -298,8 +298,12 @@ O layout é uma grade de 12 colunas com uma régua visível no topo de cada seç
 - O contêiner nunca faz a página inteira rolar na horizontal; só ele rola. A barra de rolagem é visível e o `overscroll-behavior-x` é contido.
 
 ### Ficha
-- Topo: marca/modelo, etiquetas, três leituras (IDRS, consumo, capacidade) e o link "Comparar este modelo".
-- Índice de seções em uma faixa horizontal sticky abaixo do topo (desktop) ou lista quebrada (celular), com a seção atual marcada por uma barra ciano.
+- Trilha `Aparelhos / Marca / Modelo` no primitivo `Trilha`: `nav` com `aria-label`, o Modelo como página atual e nenhuma URL antiga alterada. A Marca da trilha é a Marca de catálogo, a mesma do link de recorte.
+- Topo de datasheet: H1 `Marca — Modelo`, **etiquetas** de Classe (pelo primitivo, faixa quando as Variantes divergem), Situação e Registro(s) — rótulo mono mudo + valor em mono tabular, caixa hairline de raio 2 px, **nunca pill** —, **três leituras** (IDRS, Consumo anual, Capacidade) no primitivo `Leitura` — número mono grande, unidade em corpo menor, legenda curta e faixa quando as Variantes divergem — e **duas ações** de 44 px: "Comparar este modelo" (secundária, `?ids=<id>`) e "Imprimir ficha" (texto, com o ícone de impressora, chama `window.print()`).
+- A leitura de Consumo anual é o link para "Consumo e custo"; nenhum valor é recalculado ou arredondado diferente do dataset.
+- Índice de seções em uma **faixa horizontal sticky** abaixo do topo no desktop (fundo papel, hairlines superior e inferior, `z-index: --z-conteudo`) ou **lista quebrada, não sticky**, no celular — a lista nunca cobre o conteúdo em leitura. Só entram as seções que existem na página.
+- A seção atual é marcada por uma **barra ciano de 2 px** (`--foco`): embaixo do link na faixa, à esquerda do link na lista do celular. O estado é `aria-current="location"` na âncora, o HTML já sai com a primeira seção marcada e um script inline só corrige pela posição da rolagem; sem JavaScript todos os links funcionam.
+- Âncoras com `scroll-margin-top` — `1.5rem` na lista e o valor que desconta a faixa sticky no desktop — e contorno ciano no alvo/foco.
 - Corpo em blocos de 8 colunas, com notas de método em 4 colunas à direita no desktop.
 - A seção de consumo e custo é um painel de instrumento: campos à esquerda, leitura grande à direita e a conta aberta abaixo, em mono.
 

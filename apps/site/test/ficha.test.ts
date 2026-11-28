@@ -7,7 +7,6 @@ import type {
 import { describe, expect, it } from "vitest";
 import {
   agruparVariantes,
-  cartoesDeDestaque,
   descreverCapacidade,
   EXPLICADORES_DA_FICHA,
   etiquetasDaFicha,
@@ -17,6 +16,7 @@ import {
   gradeDeCondicoes,
   indiceDaFicha,
   type LinhaCondicoes,
+  leiturasDaFicha,
   resumoDaFicha,
   situacaoDosRegistros,
   titulosDosBlocos,
@@ -294,24 +294,27 @@ describe("etiquetasDaFicha", () => {
   });
 });
 
-describe("cartoesDeDestaque", () => {
+describe("leiturasDaFicha", () => {
   it("traz IDRS, Consumo anual e Capacidade com unidade e legenda", () => {
     const resumo = resumoDaFicha([
       { tensao: null, dados: dadosCheios, linhas: [] },
     ]);
-    const cartoes = cartoesDeDestaque(resumo);
+    const leituras = leiturasDaFicha(resumo);
 
-    expect(cartoes.map((cartao) => cartao.chave)).toEqual([
+    expect(leituras.map((leitura) => leitura.chave)).toEqual([
       "idrs",
       "consumo",
       "capacidade",
     ]);
-    expect(cartoes[0]?.valor).toBe("2,97");
-    expect(cartoes[0]?.legenda).toContain("eficiência");
-    expect(cartoes[1]?.valor).toBe("15,5 kWh/ano");
-    expect(cartoes[1]?.legenda).toContain("2.080 h/ano");
-    expect(cartoes[1]?.ancora).toBe("#consumo-e-custo");
-    expect(cartoes[2]?.valor).toBe("7.500 BTU/h");
+    expect(leituras[0]?.valor).toBe("2,97");
+    expect(leituras[0]?.unidade).toBeUndefined();
+    expect(leituras[0]?.legenda).toContain("eficiência");
+    expect(leituras[1]?.valor).toBe("15,5");
+    expect(leituras[1]?.unidade).toBe("kWh/ano");
+    expect(leituras[1]?.legenda).toContain("2.080 h/ano");
+    expect(leituras[1]?.href).toBe("#consumo-e-custo");
+    expect(leituras[2]?.valor).toBe("7.500");
+    expect(leituras[2]?.unidade).toBe("BTU/h");
   });
 
   it("vira faixa quando o Aparelho tem mais de uma Variante", () => {
@@ -328,11 +331,13 @@ describe("cartoesDeDestaque", () => {
         linhas: [],
       },
     ]);
-    const cartoes = cartoesDeDestaque(resumo);
+    const leituras = leiturasDaFicha(resumo);
 
-    expect(cartoes[0]?.valor).toBe("2,97 – 3,5");
-    expect(cartoes[1]?.valor).toBe("15,5 – 18 kWh/ano");
-    expect(cartoes[2]?.valor).toBe("7.500 – 9.000 BTU/h");
+    expect(leituras[0]?.valor).toBe("2,97 – 3,5");
+    expect(leituras[1]?.valor).toBe("15,5 – 18");
+    expect(leituras[1]?.unidade).toBe("kWh/ano");
+    expect(leituras[2]?.valor).toBe("7.500 – 9.000");
+    expect(leituras[2]?.unidade).toBe("BTU/h");
   });
 });
 

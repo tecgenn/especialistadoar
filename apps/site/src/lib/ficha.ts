@@ -286,43 +286,47 @@ export function etiquetasDaFicha(
   };
 }
 
-/** Um cartão de destaque do topo da ficha (ticket 62). */
-export interface CartaoDeDestaque {
+/** Uma leitura do topo da ficha, no formato do primitivo `Leitura` (ticket 75). */
+export interface LeituraDaFicha {
   chave: "idrs" | "consumo" | "capacidade";
   rotulo: string;
+  /** O número sem a unidade, que o primitivo desenha em corpo menor. */
   valor: string;
+  /** Unidade explícita: kWh/ano, BTU/h. IDRS é adimensional. */
+  unidade?: string;
   legenda: string;
-  /** Seção para onde o cartão leva; null quando não há seção associada. */
-  ancora: `#${string}` | null;
+  /** Seção para onde a leitura leva; ausente quando não há seção associada. */
+  href?: `#${string}`;
 }
 
 /**
- * Os três cartões de destaque: IDRS, Consumo anual e Capacidade. Cada um traz a
- * unidade no valor e uma legenda curta; com mais de uma Variante, o valor vira
- * faixa (mínimo–máximo). O de Consumo anual leva a "Consumo e custo".
+ * As três leituras do topo: IDRS, Consumo anual e Capacidade. Cada uma traz a
+ * unidade separada do número e uma legenda curta; com mais de uma Variante, o
+ * valor vira faixa (mínimo–máximo). A de Consumo anual leva a "Consumo e custo".
+ * Nenhum valor é recalculado: tudo sai do resumo dos Dados declarados.
  */
-export function cartoesDeDestaque(resumo: ResumoFicha): CartaoDeDestaque[] {
+export function leiturasDaFicha(resumo: ResumoFicha): LeituraDaFicha[] {
   return [
     {
       chave: "idrs",
       rotulo: "IDRS",
       valor: formatarFaixa(resumo.idrs),
       legenda: "Índice de eficiência energética (W/W)",
-      ancora: null,
     },
     {
       chave: "consumo",
       rotulo: "Consumo anual",
-      valor: formatarFaixa(resumo.consumosKwh, " kWh/ano"),
+      valor: formatarFaixa(resumo.consumosKwh),
+      unidade: "kWh/ano",
       legenda: `Medido pelo INMETRO em ${numero(HORAS_ANO)} h/ano`,
-      ancora: "#consumo-e-custo",
+      href: "#consumo-e-custo",
     },
     {
       chave: "capacidade",
       rotulo: "Capacidade",
-      valor: formatarFaixa(resumo.capacidadesBtu, " BTU/h"),
+      valor: formatarFaixa(resumo.capacidadesBtu),
+      unidade: "BTU/h",
       legenda: "Capacidade nominal",
-      ancora: null,
     },
   ];
 }

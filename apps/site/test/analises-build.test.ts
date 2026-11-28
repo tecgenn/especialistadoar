@@ -102,6 +102,11 @@ function textoDaPagina(html: string): string {
   return html.replace(/\s+/g, " ");
 }
 
+/** O texto visível, sem tags — uma etiqueta monta rótulo e valor em spans. */
+function textoVisivel(html: string): string {
+  return textoDaPagina(html.replace(/<[^>]+>/g, " ")).trim();
+}
+
 /**
  * O CSS que o build serve: as folhas em `_astro/` (o Astro deixa de embutir a
  * folha quando ela cresce) mais qualquer `<style>` embutido na página.
@@ -1749,7 +1754,7 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(htmlGree).toContain("<h2>Resumo</h2>");
     expect(htmlGree).toContain("7.500 BTU/h (2.197 W)");
     expect(htmlGree).toContain("2,97");
-    expect(htmlGree).toContain("15,5 kWh/ano");
+    expect(textoDaPagina(htmlGree)).toContain("15,5 kWh/ano");
     expect(htmlGree.match(/class="variante"/g) ?? []).toHaveLength(1);
     // O ticket 31 passou a descartar as Linhas da tabela com Model Status =
     // "Excluído": a Variante de 127 V saiu e só a de 220 V permanece.
@@ -1771,41 +1776,65 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // A ficha precisa caber em 360 px sem rolagem horizontal: o resumo vira uma
     // coluna e as células da grade podem quebrar.
     const cssDaFicha = cssDaPagina(htmlGree);
-    expect(cssDaFicha).toMatch(/@media[^{]*\{[^}]*\.aparelho dl\{[^}]*1fr/);
+    expect(cssDaFicha).toMatch(
+      /@media[^{]*\{[^}]*\.aparelho section dl\{[^}]*1fr/,
+    );
     expect(cssDaFicha).toContain("overflow-wrap:anywhere");
 
-    // O topo da ficha (ticket 62): etiquetas de Classe, situação e Registros
-    // logo abaixo do `<h1>`, antes de qualquer seção.
+    // O topo da ficha (tickets 62 e 75): trilha, etiquetas de Classe, situação
+    // e Registros logo abaixo do `<h1>`, antes de qualquer seção.
     const textoGree = textoDaPagina(htmlGree);
+    const inicioTrilha = htmlGree.indexOf('<nav class="trilha"');
+    expect(inicioTrilha).toBeGreaterThan(-1);
+    const trilha = htmlGree.slice(
+      inicioTrilha,
+      htmlGree.indexOf("</nav>", inicioTrilha),
+    );
+    expect(trilha).toContain('aria-label="Trilha de navegação"');
+    expect(trilha).toContain('<a href="/aparelhos/">Aparelhos</a>');
+    expect(trilha).toContain('href="/aparelhos/?marca=');
+    expect(trilha).toContain(
+      `<span aria-current="page">${gree?.modelo as string}</span>`,
+    );
+
     const posicaoH1 = htmlGree.indexOf("</h1>");
     const posicaoEtiquetas = htmlGree.indexOf("ficha-etiquetas");
     const posicaoResumo = htmlGree.indexOf("<h2>Resumo</h2>");
     expect(posicaoEtiquetas).toBeGreaterThan(posicaoH1);
     expect(posicaoEtiquetas).toBeLessThan(posicaoResumo);
-    expect(textoGree).toContain("Classe A");
+    const visivelGree = textoVisivel(htmlGree);
+    expect(visivelGree).toContain("Classe A");
     expect(htmlGree).toContain('data-classe="A"');
-    expect(textoGree).toContain("Situação: Ativo");
-    expect(textoGree).toContain(
+    expect(visivelGree).toContain("Situação Ativo");
+    expect(visivelGree).toContain(
       `Registros ${gree?.registros.map((registro) => registro.numero).join(", ")}`,
     );
 
-    // Três cartões de destaque com unidade e legenda; o de Consumo anual leva
-    // à seção "Consumo e custo".
-    expect(htmlGree).toContain('data-destaque="idrs"');
-    expect(htmlGree).toContain('data-destaque="consumo"');
-    expect(htmlGree).toContain('data-destaque="capacidade"');
-    expect(htmlGree).toContain('<p class="ficha-destaque-valor">2,97</p>');
+    // Três leituras (ticket 75) com o primitivo: número, unidade e legenda; a de
+    // Consumo anual é um link para "Consumo e custo".
+    expect(htmlGree).toContain('data-leitura="idrs"');
+    expect(htmlGree).toContain('data-leitura="consumo"');
+    expect(htmlGree).toContain('data-leitura="capacidade"');
+    expect(htmlGree.match(/class="leitura"/g) ?? []).toHaveLength(3);
+    expect(textoGree).toContain("2,97");
+    expect(textoGree).toContain("15,5 kWh/ano");
+    expect(textoGree).toContain("7.500 BTU/h");
     expect(htmlGree).toContain(
-      '<p class="ficha-destaque-valor">15,5 kWh/ano</p>',
+      '<a class="leitura-link" href="#consumo-e-custo">',
     );
-    expect(htmlGree).toContain(
-      '<p class="ficha-destaque-valor">7.500 BTU/h</p>',
-    );
-    expect(htmlGree).toContain("Ver consumo e custo");
+
+    // As duas ações do topo, ambas com alvo de 44 px pelo primitivo: a
+    // secundária abre a comparação e a de texto imprime a ficha.
+    expect(htmlGree).toContain('class="botao botao-secundario"');
+    expect(htmlGree).toContain(`href="/comparar/?ids=${gree?.id as string}"`);
+    expect(textoGree).toContain("Comparar este modelo");
+    expect(htmlGree).toContain("data-imprimir-ficha");
+    expect(textoGree).toContain("Imprimir ficha");
 
     // O índice só lista seções que existem e leva às âncoras certas; o Gree não
     // tem Oferta, então não há entrada para "Ofertas".
     expect(htmlGree).toContain('<nav class="ficha-indice"');
+    expect(htmlGree).toContain('aria-current="location"');
     for (const ancora of [
       "#resumo",
       "#entenda-os-numeros",
@@ -1819,11 +1848,6 @@ describe("build sem nenhuma Análise (estado zero)", () => {
       expect(htmlGree).toContain(`id="${ancora.slice(1)}"`);
     }
     expect(htmlGree).not.toContain('href="#ofertas"');
-
-    // "Comparar este modelo" é a ação secundária do topo e abre a comparação
-    // com o Aparelho já no primeiro campo (`?ids=`).
-    expect(htmlGree).toContain(`href="/comparar/?ids=${gree?.id as string}"`);
-    expect(textoGree).toContain("Comparar este modelo");
 
     // "Entenda os números" (ticket 64): quatro explicadores recolhidos por
     // padrão, logo depois do Resumo, sem promessa de economia.
@@ -1851,19 +1875,41 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(secaoEntenda).toContain("Cancelado");
     expect(secaoEntenda).toContain("Inativo");
 
-    // Etiqueta de Classe em faixa quando as Variantes divergem (ticket 62).
+    // A ficha de duas Variantes repete o topo com os mesmos dados: a Classe vira
+    // faixa e as três leituras continuam lá, com âncoras e seção atual.
     const vix = aparelhosDaBase().find((item) =>
       item.modelo.includes("AS-24TW2RBBDK03_IDU"),
     );
     expect(vix).toBeDefined();
     const htmlVix = lerHtml("aparelhos", vix?.id as string);
-    expect(textoDaPagina(htmlVix)).toContain("Classe A – C");
+    expect(textoVisivel(htmlVix)).toContain("Classe A – C");
+    expect(htmlVix).toContain('<nav class="trilha"');
+    expect(htmlVix).toContain(
+      `<span aria-current="page">${vix?.modelo as string}</span>`,
+    );
+    expect(htmlVix.match(/data-leitura=/g) ?? []).toHaveLength(3);
+    expect(htmlVix).toContain('aria-current="location"');
+    for (const ancora of ["#resumo", "#proveniencia"]) {
+      expect(htmlVix).toContain(`href="${ancora}"`);
+      expect(htmlVix).toContain(`id="${ancora.slice(1)}"`);
+    }
 
-    // As âncoras não escondem o título atrás do topo da tela e os cartões
-    // empilham no celular.
+    // As âncoras não escondem o título atrás do topo da tela e as leituras
+    // empilham no celular. No desktop o índice gruda no topo e a seção atual
+    // ganha a barra ciano de 2 px.
     expect(cssDaFicha).toContain("scroll-margin-top:1.5rem");
+    expect(cssDaFicha).toMatch(/scroll-margin-top:calc\(var\(--esp-8\)/);
     expect(cssDaFicha).toMatch(
-      /@media[^{]*\{[^@]*\.ficha-destaques\{[^}]*grid-template-columns:1fr/,
+      /@media[^{]*\{[^@]*\.ficha-leituras\{[^}]*grid-template-columns:1fr/,
+    );
+    expect(cssDaFicha).toMatch(
+      /@media \(width>=56\.25rem\)\{[^@]*\.ficha-indice\{[^}]*position:sticky/,
+    );
+    expect(cssDaFicha).toMatch(
+      /:where\(\.ficha-indice\) a\[aria-current\]\{[^}]*border-inline-start-color:var\(--foco\)/,
+    );
+    expect(cssDaFicha).toMatch(
+      /:where\(\.ficha-indice\) a\[aria-current\]\{[^}]*border-block-end-color:var\(--foco\)/,
     );
 
     const consultaPublicada = JSON.parse(
