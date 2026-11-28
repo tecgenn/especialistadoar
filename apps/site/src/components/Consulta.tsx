@@ -8,6 +8,7 @@ import {
   ordenar,
 } from "@especialista-do-ar/api/consulta";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { AnalisadoDaTabela } from "../conteudo/analises.ts";
 import { type AnalisadoVitrine, montarVitrine } from "../lib/analises";
 import {
   escreverIds,
@@ -30,7 +31,6 @@ import {
   rotuloDaFaixa,
 } from "../lib/faixas-capacidade";
 import { formatarFaixa } from "../lib/ficha";
-import type { AnalisadoDaTabela } from "../conteudo/analises.ts";
 import type { OpcoesConsulta } from "../lib/opcoes";
 import { etiquetaDaClasse } from "../lib/primitivos";
 import {
@@ -439,6 +439,7 @@ export default function Consulta({
   const [ehCelular, setEhCelular] = useState(false);
   const raizRef = useRef<HTMLElement>(null);
   const barraRef = useRef<HTMLFormElement>(null);
+  const tabelaRef = useRef<HTMLElement>(null);
   const buscaRef = useRef<HTMLInputElement>(null);
   const dockRef = useRef<HTMLElement>(null);
   const botaoAvancadaRef = useRef<HTMLButtonElement>(null);
@@ -542,6 +543,45 @@ export default function Consulta({
       observador?.disconnect();
     };
   }, [temSelecao]);
+
+  // `overflow-x: auto` ao lado de `overflow-y: clip` vira um scrollport
+  // vertical em navegadores que resolvem `clip` como `hidden` (Firefox e
+  // Safari). Neles o `<thead>` sticky mede o `top` a partir do topo da tabela,
+  // não da viewport, e aparece entre a 2ª e a 3ª linha. Quando esse é o caso,
+  // publicamos em `--deslocamento-cabecalho` a distância que falta até a
+  // posição correta (logo abaixo da barra), recalculada na rolagem da página.
+  const temTabela = motor !== null;
+  // biome-ignore lint/correctness/useExhaustiveDependencies: as refs só existem depois que o motor carrega e o dock entra; as mudanças de `temTabela`/`temSelecao` refazem a medida.
+  useEffect(() => {
+    const raiz = raizRef.current;
+    const tabela = tabelaRef.current;
+    if (raiz === null || tabela === null) {
+      return;
+    }
+    const emScrollport = getComputedStyle(tabela).overflowY !== "clip";
+    raiz.classList.toggle("consulta-cabecalho-em-scrollport", emScrollport);
+    if (!emScrollport) {
+      return;
+    }
+    const atualizar = () => {
+      const estilos = getComputedStyle(raiz);
+      const altura =
+        (Number.parseFloat(estilos.getPropertyValue("--altura-dock")) || 0) +
+        (Number.parseFloat(
+          estilos.getPropertyValue("--altura-barra-catalogo"),
+        ) || 0);
+      const deslocamento = altura - tabela.getBoundingClientRect().top;
+      raiz.style.setProperty("--deslocamento-cabecalho", `${deslocamento}px`);
+    };
+    atualizar();
+    window.addEventListener("scroll", atualizar, { passive: true });
+    window.addEventListener("resize", atualizar);
+    return () => {
+      window.removeEventListener("scroll", atualizar);
+      window.removeEventListener("resize", atualizar);
+      raiz.classList.remove("consulta-cabecalho-em-scrollport");
+    };
+  }, [temSelecao, temTabela]);
 
   // Abrir o painel no celular leva o foco para dentro dele; o foco nunca sai
   // enquanto ele estiver aberto (ticket 73).
@@ -1339,6 +1379,7 @@ export default function Consulta({
                   scroll region e o marcaria como erro. */}
               <section
                 {...{ tabIndex: 0 }}
+                ref={tabelaRef}
                 className="tabela-rolagem"
                 aria-label="Tabela de Aparelhos; role horizontalmente para ver todas as colunas"
               >

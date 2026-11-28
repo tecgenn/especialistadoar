@@ -1135,6 +1135,13 @@ main.principal-leitura {
   box-shadow: inset 0 -1px 0 var(--linha);
 }
 
+/* Firefox e Safari resolvem `overflow-y: clip` como `hidden`, criando um
+   scrollport vertical. Neles o `top` acima é medido a partir da tabela, não da
+   viewport; a ilha detecta o caso e publica a distância até a barra. */
+.consulta.consulta-cabecalho-em-scrollport .tabela-aparelhos thead th {
+  top: var(--deslocamento-cabecalho, 0px);
+}
+
 .consulta .tabela-aparelhos thead button {
   display: flex;
   align-items: center;

@@ -242,6 +242,47 @@ function simularCelular() {
   }));
 }
 
+/** Força o `overflow-y` computado da tabela, que o jsdom não resolve via CSS. */
+function simularOverflowDaTabela(overflowY: string) {
+  const original = window.getComputedStyle.bind(window);
+  vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudo) => {
+    const estilos = original(element, pseudo);
+    if (
+      element instanceof HTMLElement &&
+      element.classList.contains("tabela-rolagem")
+    ) {
+      Object.defineProperty(estilos, "overflowY", {
+        value: overflowY,
+        configurable: true,
+      });
+    }
+    return estilos;
+  });
+}
+
+/** Permite alterar o topo viewport da tabela para simular a rolagem da página. */
+function simularTopoDaTabela(topInicial: number) {
+  let top = topInicial;
+  const original = HTMLElement.prototype.getBoundingClientRect;
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: HTMLElement) {
+      if (!this.classList.contains("tabela-rolagem")) {
+        return original.call(this);
+      }
+      const retangulo = original.call(this);
+      return {
+        ...retangulo,
+        top,
+        bottom: top + retangulo.height,
+        y: top,
+      } as DOMRect;
+    },
+  );
+  return (novoTop: number) => {
+    top = novoTop;
+  };
+}
+
 beforeEach(() => {
   servirConsulta();
   window.history.replaceState(null, "", "/");
@@ -249,6 +290,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
@@ -2351,6 +2393,44 @@ describe("barra de ferramentas e painel mobile (ticket 73)", () => {
     expect(css).not.toMatch(/\.consulta \.chips button \{[^}]*999px/);
     expect(css).not.toMatch(/classes-chips[^}]*#16a34a/);
     expect(css).not.toMatch(/classes-chips[^}]*#2563eb/);
+  });
+
+  it("reposiciona o cabeçalho quando clip vira scrollport aninhado", async () => {
+    const css = cssDaConsulta();
+    expect(css).toMatch(
+      /\.consulta\.consulta-cabecalho-em-scrollport \.tabela-aparelhos thead th\s*\{[^}]*top:\s*var\(--deslocamento-cabecalho, 0px\)/,
+    );
+
+    simularOverflowDaTabela("hidden");
+    const mudarTopo = simularTopoDaTabela(-13);
+    await montar(curadoria, TODOS, { abrir: false });
+
+    const raiz = document.querySelector(".consulta") as HTMLElement;
+    expect(raiz.classList.contains("consulta-cabecalho-em-scrollport")).toBe(
+      true,
+    );
+    // O top do sticky é medido da tabela: 13 px compensam os -13 px da viewport.
+    expect(raiz.style.getPropertyValue("--deslocamento-cabecalho")).toBe(
+      "13px",
+    );
+
+    mudarTopo(-33);
+    window.dispatchEvent(new Event("scroll"));
+    expect(raiz.style.getPropertyValue("--deslocamento-cabecalho")).toBe(
+      "33px",
+    );
+  });
+
+  it("mantém a regra original quando o navegador preserva overflow clip", async () => {
+    simularOverflowDaTabela("clip");
+    await montar(curadoria, TODOS, { abrir: false });
+
+    const raiz = document.querySelector(".consulta") as HTMLElement;
+    const tabela = document.querySelector(".tabela-rolagem") as HTMLElement;
+    expect(raiz.classList.contains("consulta-cabecalho-em-scrollport")).toBe(
+      false,
+    );
+    expect(tabela.style.getPropertyValue("--deslocamento-cabecalho")).toBe("");
   });
 
   it("a contagem da barra reage a cada mudança de recorte", async () => {
