@@ -26,5 +26,12 @@ const nomeDaLoja = nomeDaLojaParaLeitura(oferta.loja);
     <span class="oferta-cta-rotulo">
       {oferta.rotulo} <span aria-hidden="true">→</span>
     </span>
+    {/* O papel não leva o badge colorido (tinta e marca em fundo escuro), então
+        a loja aparece em texto só na impressão (ticket 78). */}
+    <span
+      class="oferta-cta-loja-impressao"
+      data-loja={nomeDaLoja}
+      aria-hidden="true"
+    />
   </span>
 </a>

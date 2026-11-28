@@ -4622,3 +4622,366 @@ main.principal-leitura {
   margin: 0.25rem 0 0;
   font-size: 0.9rem;
 }
+
+/* ==========================================================================
+   Impressão da ficha (ticket 78). A ficha é o único documento do site feito
+   para sair da tela: no papel ela leva marca, modelo, Versão da tabela e
+   origem, as leituras, o resumo, a calculadora com os valores do visitante, as
+   condições de ensaio, as especificações e os registros. Navegação, botões,
+   índice sticky, sombras e fundos saem; o texto fica preto sobre branco em A4
+   retrato. DESIGN.md, seção Impressão, é o contrato.
+   ========================================================================== */
+
+@page {
+  size: A4 portrait;
+  margin: 16mm 14mm;
+}
+
+/* Só existem no papel: o cabeçalho de impressão, a divulgação de afiliado da
+   faixa de Ofertas e o nome da loja no lugar do badge. */
+.ficha-impressao,
+.ofertas-aviso-impressao,
+.oferta-cta-loja-impressao {
+  display: none;
+}
+
+@media print {
+  /* Os tokens de cor viram preto e branco: nenhuma superfície escura gasta
+     tinta e o contraste no papel não depende de cor de marca. */
+  :root {
+    --tinta: #000;
+    --grafite: #000;
+    --mudo: #333;
+    --linha: #8a8a8a;
+    --linha-escura: #000;
+    --giz: #fff;
+    --papel: #fff;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .shell {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  /* Cabeçalho, rodapé, navegação, ações, índice e o link de saída não são
+     conteúdo do datasheet. */
+  .skip-link,
+  .site-header,
+  .site-footer,
+  .trilha,
+  .ficha-acoes,
+  .ficha-indice,
+  .ficha-outros {
+    display: none !important;
+  }
+
+  .aparelho,
+  .aparelho * {
+    background: transparent !important;
+  }
+
+  .aparelho {
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+
+  .aparelho a {
+    color: #000;
+    text-decoration-color: #000;
+  }
+
+  .ficha-impressao {
+    display: block;
+    margin-block-end: 10pt;
+    padding-block-end: 6pt;
+    border-bottom: 1.5pt solid #000;
+  }
+
+  .ficha-impressao p {
+    margin: 0;
+  }
+
+  .ficha-impressao-site {
+    font-family: var(--fonte-mono);
+    font-size: 7.5pt;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .ficha-impressao-titulo {
+    padding-block: 2pt 3pt;
+    font-family: var(--fonte-interface);
+    font-size: 16pt;
+    font-weight: 600;
+    line-height: 1.15;
+  }
+
+  .ficha-impressao-meta {
+    font-family: var(--fonte-mono);
+    font-size: 7.5pt;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .aparelho h1 {
+    font-size: 18pt;
+    line-height: 1.15;
+  }
+
+  .aparelho h2 {
+    font-size: 12pt;
+  }
+
+  .aparelho h3 {
+    font-size: 10pt;
+  }
+
+  /* Títulos nunca ficam órfãos no fim da página. */
+  h1,
+  h2,
+  h3,
+  caption,
+  summary,
+  .leitura-rotulo,
+  .calculadora-rotulo,
+  .calculadora-conta-titulo {
+    break-after: avoid;
+  }
+
+  p,
+  li,
+  dd,
+  dt {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .aparelho > section {
+    margin-block-start: 14pt;
+    padding-block-start: 8pt;
+    border-top: 0.5pt solid #8a8a8a;
+  }
+
+  .aparelho > section > h2 {
+    margin-block-end: 8pt;
+  }
+
+  /* O datasheet tem duas viradas de página fixas: condições de ensaio e
+     especificações começam em folha própria. */
+  #condicoes-de-ensaio,
+  #especificacoes {
+    break-before: page;
+  }
+
+  .ficha-leituras {
+    gap: 12pt;
+    margin-block: 12pt;
+  }
+
+  .leitura {
+    padding-block-start: 6pt;
+  }
+
+  .leitura-numero {
+    font-size: 16pt;
+  }
+
+  .leitura-unidade,
+  .leitura-rotulo {
+    font-size: 7.5pt;
+  }
+
+  .ficha-resumo > div,
+  .ficha-especificacoes > div {
+    padding-block: 4pt;
+  }
+
+  .ficha-resumo dt,
+  .ficha-especificacoes dt {
+    font-size: 7.5pt;
+  }
+
+  .ficha-resumo dd,
+  .ficha-especificacoes dd {
+    font-size: 9pt;
+  }
+
+  .explicador summary {
+    min-height: 0;
+    padding-block: 4pt;
+    font-size: 10pt;
+  }
+
+  .explicador summary::after {
+    color: #000;
+  }
+
+  /* Condições de ensaio: a tabela cabe inteira na largura do papel, sem
+     rolagem e sem coluna fixa; o cabeçalho repete em cada folha. */
+  .variante {
+    margin-block-end: 10pt;
+    break-inside: avoid;
+  }
+
+  .ficha-tabela {
+    overflow: visible !important;
+    border-top: 0.5pt solid #8a8a8a;
+  }
+
+  .ficha-tabela table {
+    min-width: 0;
+    width: 100%;
+    font-size: 9pt;
+  }
+
+  .ficha-tabela thead {
+    display: table-header-group;
+  }
+
+  .ficha-tabela thead th:first-child,
+  .ficha-tabela tbody th {
+    position: static;
+  }
+
+  .ficha-tabela th,
+  .ficha-tabela td {
+    padding: 3pt 5pt;
+    white-space: normal;
+  }
+
+  .ficha-tabela caption {
+    padding-block-end: 3pt;
+    font-size: 7.5pt;
+  }
+
+  .ficha-registros li {
+    min-height: 0;
+    padding-block: 4pt;
+  }
+
+  .ficha-nota {
+    font-size: 7.5pt;
+  }
+
+  /* A calculadora sai com os valores do visitante: os campos perdem a caixa e
+     leem como texto, com a leitura principal e o aviso de estimativa. */
+  .calculadora {
+    gap: 10pt;
+    margin-block: 10pt;
+    padding: 8pt;
+    border: 0.5pt solid #8a8a8a;
+    border-radius: 0;
+    break-inside: avoid;
+  }
+
+  .calculadora-campos {
+    gap: 6pt;
+  }
+
+  .calculadora-referencia,
+  .calculadora-aviso,
+  .calculadora-fatores dt {
+    font-size: 7.5pt;
+  }
+
+  /* O valor e a unidade leem juntos no papel: "8 h", "30 dias". */
+  .calculadora .campo-controle {
+    display: flex;
+    align-items: baseline;
+    gap: 4pt;
+  }
+
+  .calculadora .campo-entrada {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #000;
+    font-size: 9pt;
+  }
+
+  .calculadora input[type="number"] {
+    flex: 0 0 4.5ch;
+    width: 4.5ch;
+  }
+
+  .calculadora .campo-seta {
+    display: none;
+  }
+
+  .calculadora .campo-sufixo {
+    position: static;
+    font-size: 8pt;
+  }
+
+  .calculadora-principal {
+    font-size: 18pt;
+  }
+
+  .calculadora-fatores dd,
+  .calculadora-conta {
+    font-size: 8.5pt;
+  }
+
+  .calculadora-conta li {
+    padding-block: 3pt;
+    break-inside: avoid;
+  }
+
+  .como-calculamos {
+    break-inside: avoid;
+  }
+
+  /* Ofertas no papel: sem o badge colorido (a marca escura gastaria tinta), com
+     o nome da loja em texto e a divulgação de afiliado visível. */
+  .ofertas {
+    margin-block-start: 14pt;
+    padding-block-start: 8pt;
+    border-top: 0.5pt solid #8a8a8a;
+    break-inside: avoid;
+  }
+
+  .loja-marca {
+    display: none !important;
+  }
+
+  /* O nome da loja só existe no papel, como conteúdo visual — na tela ele
+     continua apenas no nome acessível do link. */
+  .oferta-cta-loja-impressao {
+    display: inline;
+    margin-inline-start: 4pt;
+    font-size: 8.5pt;
+    font-weight: 400;
+  }
+
+  .oferta-cta-loja-impressao::before {
+    content: "· " attr(data-loja);
+  }
+
+  .ofertas-aviso-impressao {
+    display: block;
+    max-width: 68ch;
+    margin: 6pt 0 0;
+    font-size: 8pt;
+    line-height: 1.4;
+  }
+}

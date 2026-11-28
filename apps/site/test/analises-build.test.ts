@@ -373,7 +373,11 @@ function versaoDaTabela(): { hash: string; obtidoEm: string } | undefined {
     : undefined;
 }
 
-/** A linha de versão aparece uma vez por página, no rodapé, em todas as rotas. */
+/**
+ * A linha de versão aparece uma vez por página na tela, no rodapé, em todas as
+ * rotas. A ficha imprime a mesma versão no cabeçalho de papel (ticket 78), então
+ * o bloco `.ficha-impressao` sai da contagem: ele só é exibido na impressão.
+ */
 function conferirVersaoNoRodape(html: string): {
   rodape: string;
   inicioRodape: number;
@@ -387,8 +391,12 @@ function conferirVersaoNoRodape(html: string): {
   expect(rodape).toContain(
     `Versão da tabela: ${versao?.hash} · obtida em ${versao?.obtidoEm}`,
   );
-  expect(html.split("Versão da tabela:")).toHaveLength(2);
-  expect(html.split(versao?.hash as string)).toHaveLength(2);
+  const htmlDaTela = html.replace(
+    /<div class="ficha-impressao">[\s\S]*?<\/div>/,
+    "",
+  );
+  expect(htmlDaTela.split("Versão da tabela:")).toHaveLength(2);
+  expect(htmlDaTela.split(versao?.hash as string)).toHaveLength(2);
   return {
     rodape,
     inicioRodape,
@@ -1917,6 +1925,39 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     expect(textoGree).toContain("Comparar este modelo");
     expect(htmlGree).toContain("data-imprimir-ficha");
     expect(textoGree).toContain("Imprimir ficha");
+
+    // Impressão do datasheet (ticket 78): o cabeçalho de papel identifica o
+    // Aparelho, a Versão da tabela e a origem INMETRO; o CSS de impressão tira
+    // a moldura do site, esconde botões e índice sticky, deixa as tabelas sem
+    // rolagem e imprime a calculadora com os valores do visitante.
+    expect(htmlGree).toContain('class="ficha-impressao"');
+    const inicioImpressao = htmlGree.indexOf('class="ficha-impressao"');
+    const impressaoHtml = htmlGree.slice(
+      inicioImpressao,
+      htmlGree.indexOf("</div>", inicioImpressao),
+    );
+    expect(impressaoHtml).toContain(
+      `${gree?.marca} — ${gree?.modelo as string}`,
+    );
+    expect(impressaoHtml).toContain("Origem: INMETRO");
+    expect(impressaoHtml).toContain("Versão da tabela:");
+
+    expect(cssDaFicha).toContain("@page{size:A4 portrait;margin:16mm 14mm}");
+    expect(cssDaFicha).toContain("@media print{");
+    expect(cssDaFicha).toMatch(
+      /\.skip-link,\.site-header,\.site-footer,[^{]*\.ficha-indice,[^{]*\{display:none!important\}/,
+    );
+    expect(cssDaFicha).toContain(
+      "#condicoes-de-ensaio,#especificacoes{break-before:page}",
+    );
+    expect(cssDaFicha).toMatch(
+      /\.ficha-tabela\{[^}]*overflow:visible!important/,
+    );
+    expect(cssDaFicha).toMatch(
+      /\.ficha-tabela thead th:first-child,\.ficha-tabela tbody th\{position:static\}/,
+    );
+    expect(cssDaFicha).toMatch(/\.calculadora \.campo-entrada\{[^}]*border:0/);
+    expect(cssDaFicha).toMatch(/\.ficha-impressao\{[^}]*display:block/);
 
     // O índice só lista seções que existem e leva às âncoras certas; o Gree não
     // tem Oferta, então não há entrada para "Ofertas".

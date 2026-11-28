@@ -41,6 +41,13 @@ const Titulo = `h${nivelTitulo}`;
           </li>
         ))}
       </ul>
+      {/* No papel o tooltip do logo não existe: a divulgação de afiliado vira
+          texto impresso (ticket 78). Na tela continua só no nome acessível. */}
+      <p class="ofertas-aviso-impressao">
+        Links de afiliado: podemos receber comissão por compras feitas por estes
+        links, sem custo adicional para você. O preço e a disponibilidade são da
+        loja.
+      </p>
     </section>
   ) : null
 }

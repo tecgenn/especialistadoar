@@ -1,6 +1,11 @@
 ---
 import aparelhosJson from "@dados/aparelhos.json";
-import type { Aparelho } from "@especialista-do-ar/pipeline";
+import manifestJson from "@dados/manifest.json";
+import {
+  type Aparelho,
+  type Manifest,
+  versaoAtualDo,
+} from "@especialista-do-ar/pipeline";
 import CalculadoraCusto from "../../components/CalculadoraCusto.tsx";
 import OfertaFaixa from "../../components/OfertaFaixa.astro";
 import EtiquetaClasse from "../../components/primitivos/EtiquetaClasse.astro";
@@ -115,11 +120,28 @@ const secoesPresentes = new Set([
 ]);
 const indice = indiceDaFicha(secoesPresentes);
 
+// O cabeçalho de impressão (ticket 78) repete a Versão da tabela do rodapé: a
+// folha impressa circula sozinha e precisa da mesma procedência do site.
+const versao = versaoAtualDo(manifestJson as Manifest);
+
 const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, IDRS e tensão conforme os Dados declarados do INMETRO.`;
 ---
 
 <Base titulo={`${aparelho.marca} ${aparelho.modelo} — Especialista do Ar`} descricao={descricao}>
   <article class="aparelho">
+    {/* Cabeçalho de impressão (ticket 78): só existe no papel, para a folha
+        levar marca, modelo, Versão da tabela e origem INMETRO. */}
+    <div class="ficha-impressao">
+      <p class="ficha-impressao-site">Especialista do Ar · Ficha técnica</p>
+      <p class="ficha-impressao-titulo">{aparelho.marca} — {aparelho.modelo}</p>
+      <p class="ficha-impressao-meta">
+        Origem: INMETRO
+        {versao
+          ? ` · Versão da tabela: ${versao.hash.slice(0, 12)} · obtida em ${versao.obtidoEm}`
+          : null}
+      </p>
+    </div>
+
     <Trilha itens={trilha} />
 
     <div class="ficha-cabecalho">
@@ -401,7 +423,7 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
 
     <OfertaFaixa ofertas={ofertas} id="ofertas" />
 
-    <p>
+    <p class="ficha-outros">
       <a href={`/aparelhos/?marca=${encodeURIComponent(marcaCatalogo)}`}>
         Ver outros aparelhos da marca {marcaCatalogo}
       </a>
