@@ -78,6 +78,7 @@ describe("padrões da calculadora", () => {
     abrir();
 
     expect(resultado().getAttribute("aria-live")).toBe("polite");
+    expect(resultado().getAttribute("aria-atomic")).toBe("true");
     for (const rotulo of [
       "Estado (UF)",
       "Tarifa (R$/kWh)",
@@ -108,6 +109,67 @@ describe("padrões da calculadora", () => {
     abrir();
     expect(resultado().textContent).toContain("Estimativa");
     expect(resultado().textContent).toContain("Não é um Valor oficial");
+  });
+});
+
+describe("painel de instrumento", () => {
+  it("mostra o custo mensal como leitura principal e anual/consumo como fatores", () => {
+    abrir();
+
+    const principal = document.querySelector(".calculadora-principal");
+    expect(principal?.textContent).toBe("R$ 40,80");
+
+    const fatores = [
+      ...document.querySelectorAll(".calculadora-fatores > div"),
+    ].map((linha) => linha.textContent ?? "");
+    expect(fatores).toHaveLength(2);
+    expect(fatores[0]).toContain("Custo estimado por ano");
+    expect(fatores[0]).toContain("R$ 489,60");
+    expect(fatores[1]).toContain("Consumo estimado por mês");
+    expect(fatores[1]).toContain("48,00 kWh");
+  });
+
+  it("numera os seis passos da conta aberta em mono", () => {
+    abrir();
+
+    const css = readFileSync(
+      join(process.cwd(), "apps/site/src/styles/global.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /\.calculadora-conta li::before \{[^}]*counter-increment: conta;/,
+    );
+    expect(document.querySelector(".calculadora-conta")?.tagName).toBe("OL");
+    expect(document.querySelectorAll(".calculadora-conta li")).toHaveLength(6);
+  });
+
+  it("rotula e sufixa os campos pelo primitivo, com alvo de 44 px", () => {
+    abrir();
+
+    expect(campo("Horas por dia").className).toContain("campo-entrada");
+    expect(
+      document.querySelector(".calculadora-campos .campo-rotulo")?.tagName,
+    ).toBe("LABEL");
+    const sufixos = [
+      ...document.querySelectorAll(".calculadora-campos .campo-sufixo"),
+    ].map((sufixo) => sufixo.textContent);
+    expect(sufixos).toEqual(["h", "dias"]);
+
+    const primitivos = readFileSync(
+      join(process.cwd(), "apps/site/src/styles/primitivos.css"),
+      "utf8",
+    );
+    expect(primitivos).toMatch(/\.campo-entrada \{[^}]*min-height: 44px;/);
+  });
+
+  it("sem consumo declarado mantém o painel com travessão e explicação", () => {
+    abrir([]);
+
+    expect(document.querySelector(".calculadora-travessao")?.textContent).toBe(
+      "—",
+    );
+    expect(screen.getByText(/não declara consumo anual/)).toBeDefined();
+    expect(document.querySelector(".calculadora-campos")).toBeNull();
   });
 });
 
@@ -213,6 +275,9 @@ describe("faixa de Variantes", () => {
   it("com duas Variantes mostra o custo como mínimo–máximo", () => {
     abrir([350, 818]);
 
+    expect(document.querySelector(".calculadora-principal")?.textContent).toBe(
+      "R$ 34,33 – R$ 80,23",
+    );
     expect(resultado().textContent).toContain("R$ 34,33 – R$ 80,23");
     expect(resultado().textContent).toContain(
       "350,00 kWh – 818,00 kWh por ano",

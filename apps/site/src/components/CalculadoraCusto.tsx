@@ -11,10 +11,13 @@ import CamposCusto from "./CamposCusto.tsx";
 import { useCusto } from "./useCusto.ts";
 
 /**
- * A ilha da calculadora de custo de energia na ficha (ticket 55). Ela **não**
- * calcula: a aritmética, a faixa de Variantes e o contrato de URL vivem no módulo
- * puro `src/lib/custo.ts` (ADR-0022). Aqui só há o resultado e a conta aberta;
- * os quatro campos vêm do `CamposCusto`, compartilhado com a comparação (56).
+ * A ilha da calculadora de custo de energia na ficha (ticket 55) e o painel de
+ * instrumento do ticket 77. Ela **não** calcula: a aritmética, a faixa de
+ * Variantes e o contrato de URL vivem no módulo puro `src/lib/custo.ts`
+ * (ADR-0022). Aqui só há o painel — campos à esquerda, a leitura do custo
+ * mensal à direita com os dois fatores, a conta aberta em mono numerado e o
+ * aviso de estimativa; os quatro campos vêm do `CamposCusto`, compartilhado com
+ * a comparação (56).
  *
  * O estado inteiro vive na URL (`uf`, `tarifa`, `horas`, `dias`), com a regra de
  * padrões do ADR-0019: São Paulo, 8 h/dia e 30 dias não aparecem no link e um
@@ -47,6 +50,11 @@ function faixaDoConsumo(consumos: readonly number[]): Faixa {
   };
 }
 
+interface PassoDaConta {
+  rotulo: string;
+  valor: string;
+}
+
 interface CalculadoraCustoProps {
   /** O consumo anual (kWh/ano) de cada Variante com dado declarado. */
   consumosAnuaisKwh: number[];
@@ -70,17 +78,52 @@ export default function CalculadoraCusto({
           dias: estado.dias,
         });
 
+  // Sem consumo declarado não há conta: o painel mantém a leitura com um
+  // travessão e explica a ausência no lugar dos campos (o mesmo estado vazio de
+  // antes, agora com a forma do painel). Nenhum valor é inventado.
   if (resultado === null) {
     return (
-      <p className="calculadora-sem-dados">
-        Este Aparelho não declara consumo anual no INMETRO, então não há como
-        estimar o custo de energia.
-      </p>
+      <div className="calculadora calculadora-sem-dados">
+        <div className="calculadora-resultado">
+          <p className="calculadora-rotulo">Custo estimado por mês</p>
+          <p className="calculadora-principal calculadora-travessao">
+            <span aria-hidden="true">—</span>
+          </p>
+          <p className="calculadora-explicacao">
+            Este Aparelho não declara consumo anual no INMETRO, então não há
+            como estimar o custo de energia.
+          </p>
+        </div>
+      </div>
     );
   }
 
   const entradas = resultado.entradas;
   const consumoAnual = faixaDoConsumo(entradas.consumosAnuaisKwh);
+
+  const passos: PassoDaConta[] = [
+    {
+      rotulo: "Consumo INMETRO",
+      valor: `${formatarFaixa(consumoAnual, formatarKwh)} por ano`,
+    },
+    {
+      rotulo: "Consumo por hora",
+      valor: `${formatarFaixa(resultado.consumoPorHoraKwh, formatarKwh)} (÷ ${formatarHoras(HORAS_ANO)} h/ano)`,
+    },
+    {
+      rotulo: "Uso informado",
+      valor: `${formatarHoras(entradas.horas)} h/dia × ${formatarHoras(entradas.dias)} dias`,
+    },
+    {
+      rotulo: "Consumo mensal",
+      valor: formatarFaixa(resultado.consumoMensalKwh, formatarKwh),
+    },
+    { rotulo: "Tarifa", valor: formatarTarifa(entradas.tarifa) },
+    {
+      rotulo: "Custo mensal",
+      valor: formatarFaixa(resultado.custoMensal, formatarReais),
+    },
+  ];
 
   return (
     <div className="calculadora">
@@ -96,37 +139,26 @@ export default function CalculadoraCusto({
         <p className="calculadora-principal">
           {formatarFaixa(resultado.custoMensal, formatarReais)}
         </p>
-        <p className="calculadora-secundario">
-          Custo estimado por ano:{" "}
-          {formatarFaixa(resultado.custoAnual, formatarReais)}
-        </p>
-        <p className="calculadora-secundario">
-          Consumo estimado:{" "}
-          {formatarFaixa(resultado.consumoMensalKwh, formatarKwh)} por mês
-        </p>
+
+        <dl className="calculadora-fatores">
+          <div>
+            <dt>Custo estimado por ano</dt>
+            <dd>{formatarFaixa(resultado.custoAnual, formatarReais)}</dd>
+          </div>
+          <div>
+            <dt>Consumo estimado por mês</dt>
+            <dd>{formatarFaixa(resultado.consumoMensalKwh, formatarKwh)}</dd>
+          </div>
+        </dl>
 
         <h3 className="calculadora-conta-titulo">A conta aberta</h3>
         <ol className="calculadora-conta">
-          <li>
-            Consumo INMETRO: {formatarFaixa(consumoAnual, formatarKwh)} por ano
-          </li>
-          <li>
-            Consumo por hora:{" "}
-            {formatarFaixa(resultado.consumoPorHoraKwh, formatarKwh)} (÷{" "}
-            {formatarHoras(HORAS_ANO)} h/ano)
-          </li>
-          <li>
-            Uso informado: {formatarHoras(entradas.horas)} h/dia ×{" "}
-            {formatarHoras(entradas.dias)} dias
-          </li>
-          <li>
-            Consumo mensal:{" "}
-            {formatarFaixa(resultado.consumoMensalKwh, formatarKwh)}
-          </li>
-          <li>Tarifa: {formatarTarifa(entradas.tarifa)}</li>
-          <li>
-            Custo mensal: {formatarFaixa(resultado.custoMensal, formatarReais)}
-          </li>
+          {passos.map((passo) => (
+            <li key={passo.rotulo}>
+              <span className="calculadora-passo-rotulo">{passo.rotulo}</span>
+              <span className="calculadora-passo-valor">{passo.valor}</span>
+            </li>
+          ))}
         </ol>
 
         <p className="calculadora-aviso">
