@@ -809,28 +809,83 @@ main.principal-leitura {
   color: var(--texto-suave);
 }
 
+/* Condições de ensaio (ticket 76): uma tabela por Variante, sem cartão. A
+   tabela rola na horizontal dentro do contêiner, com a coluna de condição
+   fixa; as células mantêm o par "capacidade / potência" em mono tabular. */
 .variante {
-  margin-block: 1rem;
-  padding: 1rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  margin-block: 0 var(--esp-7);
 }
 
 .variante h3 {
-  margin-top: 0;
+  margin: 0 0 var(--esp-3);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-pequeno);
+  font-weight: var(--peso-medio);
+  letter-spacing: 0;
 }
 
-.variante table {
+.ficha-tabela {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border-top: 1px solid var(--linha);
+}
+
+.ficha-tabela:focus-visible {
+  outline: 2px solid var(--foco);
+  outline-offset: 2px;
+}
+
+.ficha-tabela table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-pequeno);
+  font-variant-numeric: tabular-nums;
 }
 
-.variante th,
-.variante td {
-  padding: 0.3rem 0.5rem;
+.ficha-tabela caption {
+  padding-block: 0 var(--esp-3);
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-unidade);
   text-align: left;
-  border-bottom: 1px solid var(--borda);
+}
+
+.ficha-tabela th,
+.ficha-tabela td {
+  padding: var(--esp-3) var(--esp-4);
+  border-bottom: 1px solid var(--linha);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ficha-tabela thead th {
+  color: var(--mudo);
+  font-size: var(--texto-rotulo);
+  font-weight: var(--peso-medio);
+  letter-spacing: var(--tracking-rotulo);
+  text-transform: uppercase;
+}
+
+.ficha-tabela tbody th {
+  font-weight: var(--peso-medio);
+}
+
+.ficha-tabela tbody td {
+  text-align: right;
+}
+
+/* Abaixo de 900 px a condição fica fixa enquanto o resto rola. */
+@media (width < 56.25rem) {
+  .ficha-tabela thead th:first-child,
+  .ficha-tabela tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--papel);
+  }
 }
 
 /* Calculadora de custo de energia (ticket 55): campos à esquerda e resultado à
@@ -1759,21 +1814,137 @@ main.principal-leitura {
   border: 0;
 }
 
-/* Só as seções usam a grade rótulo/valor: as leituras do topo são o primitivo
-   `.leitura`, que tem a própria estrutura (ticket 75). */
-.aparelho section dl {
+/* ==========================================================================
+   Ficha: o corpo do datasheet (ticket 76). Cada seção abre com uma hairline e
+   um título; os dados vivem em pares rótulo/valor ou em tabelas, nunca em
+   cartões decorativos. As leituras do topo continuam o primitivo `.leitura`.
+   ========================================================================== */
+
+.aparelho > section {
+  margin-block-start: var(--esp-8);
+  padding-block-start: var(--esp-5);
+  border-top: 1px solid var(--linha);
+}
+
+.aparelho > section > h2 {
+  margin-block-end: var(--esp-5);
+}
+
+/* Resumo e Especificações: uma linha por par, com hairline entre elas. O
+   rótulo fica em mono e em coluna fixa no desktop; o valor em mono tabular. */
+.ficha-resumo,
+.ficha-especificacoes {
   display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.25rem 1rem;
-  margin: 0 0 1rem;
-}
-
-.aparelho section dt {
-  color: var(--texto-suave);
-}
-
-.aparelho section dd {
+  gap: 0;
   margin: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.ficha-resumo > div,
+.ficha-especificacoes > div {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--esp-2) var(--esp-4);
+  padding-block: var(--esp-3);
+  border-bottom: 1px solid var(--linha);
+}
+
+.ficha-resumo dt,
+.ficha-especificacoes dt {
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  text-transform: uppercase;
+}
+
+.ficha-resumo dd,
+.ficha-especificacoes dd {
+  margin: 0;
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-ui);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* Registros: o número em mono e a situação como etiqueta hairline. */
+.ficha-registros {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--linha);
+}
+
+.ficha-registros li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--esp-3);
+  min-height: 44px;
+  margin: 0;
+  padding-block: var(--esp-2);
+  border-bottom: 1px solid var(--linha);
+}
+
+.ficha-registro-numero {
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.ficha-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio-xs);
+  color: var(--grafite);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  letter-spacing: var(--tracking-rotulo);
+  text-transform: uppercase;
+}
+
+.ficha-status[data-situacao="Ativo"] {
+  border-color: var(--classe-a);
+  background: var(--classe-a-lavado);
+  color: var(--classe-a);
+}
+
+/* Nota de método do datasheet: linhas da tabela, sempre em mono. */
+.ficha-nota {
+  max-width: 68ch;
+  margin: 0 0 var(--esp-4);
+  color: var(--mudo);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-rotulo);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-unidade);
+  line-height: var(--entrelinha-ui);
+}
+
+/* A Análise é editorial, não dado oficial: o mesmo respiro de seção, texto de
+   leitura e o título como link — nenhuma caixa nem tom do dataset. */
+.aparelho .analise-destaque p {
+  max-width: 68ch;
+  margin-block-end: var(--esp-4);
+}
+
+.aparelho .analise-destaque p:last-child {
+  margin-block-end: 0;
+}
+
+.ficha-analise-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
 }
 
 /* Topo da ficha (ticket 62): as âncoras do índice não podem esconder o título
@@ -1979,28 +2150,58 @@ main.principal-leitura {
   }
 }
 
-/* "Entenda os números" (ticket 64): explicadores recolhidos por padrão, com o
-   título sempre visível e o texto curto aparecendo só quando aberto. */
+/* "Entenda os números" (tickets 64 e 76): explicadores recolhidos por padrão,
+   como linhas de datasheet — hairline, título em interface e o marcador +/−
+   em mono no ciano. O texto só existe quando o item abre. */
 .explicadores {
   display: grid;
-  gap: 0.5rem;
+  gap: 0;
+  border-top: 1px solid var(--linha);
 }
 
 .explicador {
-  padding: 0.6rem 0.9rem;
-  border: 1px solid var(--borda);
-  border-radius: 0.5rem;
-  background: var(--superficie);
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--linha);
+  border-radius: 0;
+  background: transparent;
 }
 
 .explicador summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--esp-4);
+  min-height: 44px;
+  padding-block: var(--esp-4);
   cursor: pointer;
-  font-weight: 600;
+  list-style: none;
+  font-family: var(--fonte-interface);
+  font-size: var(--texto-ui);
+  font-weight: var(--peso-medio);
+  line-height: var(--entrelinha-ui);
+}
+
+.explicador summary::-webkit-details-marker {
+  display: none;
+}
+
+.explicador summary::after {
+  content: "+";
+  color: var(--foco-texto);
+  font-family: var(--fonte-mono);
+  font-size: var(--texto-ui);
+  line-height: 1;
+}
+
+.explicador[open] summary::after {
+  content: "−";
 }
 
 .explicador p {
-  margin: 0.6rem 0 0;
-  color: var(--texto-suave);
+  max-width: 68ch;
+  margin: 0 0 var(--esp-4);
+  color: var(--grafite);
 }
 
 /* ==========================================================================
@@ -2220,8 +2421,7 @@ main.principal-leitura {
   background: var(--papel);
 }
 
-.analise-aviso,
-.analise-destaque {
+.analise-aviso {
   margin-block: 1.5rem 1rem;
   padding: 1rem;
   border: 1px dashed var(--borda);
@@ -2229,8 +2429,7 @@ main.principal-leitura {
   background: var(--superficie);
 }
 
-.analise-aviso h2,
-.analise-destaque h2 {
+.analise-aviso h2 {
   margin-top: 0;
 }
 
@@ -2407,9 +2606,9 @@ main.principal-leitura {
 /* Ficha no celular: o resumo vira uma coluna e as células da grade de condições
    podem quebrar, sem rolagem horizontal. */
 @media (max-width: 40rem) {
-  .aparelho section dl {
-    grid-template-columns: 1fr;
-    gap: 0.15rem;
+  .ficha-resumo > div,
+  .ficha-especificacoes > div {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   /* As três leituras empilham e as ações ficam em uma coluna. */
@@ -2422,14 +2621,11 @@ main.principal-leitura {
     flex-direction: column;
   }
 
-  .aparelho section dt {
-    margin-top: 0.5rem;
-  }
-
-  .variante th,
-  .variante td {
-    padding: 0.3rem 0.35rem;
-    overflow-wrap: anywhere;
+  /* A tabela continua tabela: em 390 px as três colunas cabem com a calha
+     menor e, abaixo disso, o contêiner rola sem quebrar a página. */
+  .ficha-tabela th,
+  .ficha-tabela td {
+    padding: var(--esp-2);
   }
 
   /* A tabela continua tabela no celular (ticket 72): nenhuma linha vira cartão

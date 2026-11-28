@@ -93,6 +93,16 @@ const identificacao: Array<[string, string | null]> = [
   ["Fluido especificado", aparelho.fluidoEspecificado],
 ].filter(([, valor]) => valor !== null && valor !== "");
 
+// O Resumo do datasheet (ticket 76): pares rótulo/valor com hairline, sem
+// cartões decorativos. A Classe e a situação continuam vindo do resumo oficial.
+const resumoLinhas: Array<[string, string]> = [
+  ["Capacidade nominal", descreverCapacidade(resumo)],
+  ["IDRS", formatarFaixa(resumo.idrs)],
+  ["Classe", resumo.classes.join(", ") || "—"],
+  ["Consumo anual", formatarFaixa(resumo.consumosKwh, " kWh/ano")],
+  ["Potência em espera", formatarFaixa(resumo.potenciasEsperaW, " W")],
+];
+
 const secoesPresentes = new Set([
   "resumo",
   "entenda-os-numeros",
@@ -203,17 +213,15 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
 
     <section id="resumo" tabindex="-1">
       <h2>Resumo</h2>
-      <dl>
-        <dt>Capacidade nominal</dt>
-        <dd>{descreverCapacidade(resumo)}</dd>
-        <dt>IDRS</dt>
-        <dd>{formatarFaixa(resumo.idrs)}</dd>
-        <dt>Classe</dt>
-        <dd>{resumo.classes.join(", ") || "—"}</dd>
-        <dt>Consumo anual</dt>
-        <dd>{formatarFaixa(resumo.consumosKwh, " kWh/ano")}</dd>
-        <dt>Potência em espera</dt>
-        <dd>{formatarFaixa(resumo.potenciasEsperaW, " W")}</dd>
+      <dl class="ficha-resumo">
+        {
+          resumoLinhas.map(([rotulo, valor]) => (
+            <div>
+              <dt>{rotulo}</dt>
+              <dd>{valor}</dd>
+            </div>
+          ))
+        }
       </dl>
     </section>
 
@@ -288,32 +296,44 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
               {grade.linhas.length === 0 ? (
                 <p class="intro">Sem dados nas condições de ensaio.</p>
               ) : (
-                <table>
-                  <thead>
-                    <tr>
-                      <th scope="col">Condição</th>
-                      {grade.mostrarTotal ? <th scope="col">Carga total</th> : null}
-                      {grade.mostrarParcial ? (
-                        <th scope="col">Carga parcial</th>
-                      ) : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {grade.linhas.map((linha) => (
+                <div
+                  class="ficha-tabela"
+                  role="group"
+                  tabindex="0"
+                  aria-label={`Condições de ensaio — ${titulos[indiceBloco]}`}
+                >
+                  <table>
+                    <caption>
+                      Capacidade / potência elétrica, em W
+                    </caption>
+                    <thead>
                       <tr>
-                        <th scope="row">{linha.temperatura} °C</th>
+                        <th scope="col">Condição</th>
                         {grade.mostrarTotal ? (
-                          <td>{formatarCelula(linha.total)}</td>
+                          <th scope="col">Carga total</th>
                         ) : null}
                         {grade.mostrarParcial ? (
-                          <td>{formatarCelula(linha.parcial)}</td>
+                          <th scope="col">Carga parcial</th>
                         ) : null}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {grade.linhas.map((linha) => (
+                        <tr>
+                          <th scope="row">{linha.temperatura} °C</th>
+                          {grade.mostrarTotal ? (
+                            <td>{formatarCelula(linha.total)}</td>
+                          ) : null}
+                          {grade.mostrarParcial ? (
+                            <td>{formatarCelula(linha.parcial)}</td>
+                          ) : null}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
-              <p class="intro">
+              <p class="ficha-nota">
                 Linhas da tabela: {bloco.linhas.join(", ")}.
               </p>
             </section>
@@ -326,12 +346,12 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       identificacao.length > 0 ? (
         <section id="especificacoes" tabindex="-1">
           <h2>Especificações</h2>
-          <dl>
+          <dl class="ficha-especificacoes">
             {identificacao.map(([rotulo, valor]) => (
-              <>
+              <div>
                 <dt>{rotulo}</dt>
                 <dd>{valor}</dd>
-              </>
+              </div>
             ))}
           </dl>
         </section>
@@ -342,10 +362,13 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
       aparelho.registros.length > 0 ? (
         <section id="registros" tabindex="-1">
           <h2>Registros INMETRO</h2>
-          <ul>
+          <ul class="ficha-registros">
             {aparelho.registros.map((registro) => (
               <li>
-                {registro.numero} · {registro.status}
+                <span class="ficha-registro-numero">{registro.numero}</span>
+                <span class="ficha-status" data-situacao={registro.status}>
+                  {registro.status}
+                </span>
               </li>
             ))}
           </ul>
@@ -355,19 +378,22 @@ const descricao = `${aparelho.marca} ${aparelho.modelo}: capacidade, consumo, ID
 
     <section id="proveniencia" tabindex="-1">
       <h2>Proveniência</h2>
-      <p class="intro">
-        Linhas da tabela: {aparelho.linhas.join(", ")}. Os valores acima são
-        Valores oficiais, padronizados apenas quanto ao formato.
+      <p class="ficha-nota">Linhas da tabela: {aparelho.linhas.join(", ")}.</p>
+      <p>
+        Os valores acima são Valores oficiais, padronizados apenas quanto ao
+        formato.
       </p>
     </section>
 
     {
       analise ? (
-        <section class="analise-destaque">
+        <section id="analise" tabindex="-1" class="analise-destaque">
           <h2>Leia a análise</h2>
-          <p class="intro">{analise.descricao}</p>
+          <p>{analise.descricao}</p>
           <p>
-            <a href={analise.url}>{analise.titulo}</a>
+            <a class="ficha-analise-link" href={analise.url}>
+              {analise.titulo}
+            </a>
           </p>
         </section>
       ) : null

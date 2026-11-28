@@ -301,7 +301,12 @@ nova exportação CSV
   primitivos `Trilha`, `EtiquetaClasse` e `Leitura`) e o índice de seções
   (`indiceDaFicha`) só com as âncoras que existem; um script inline da própria
   página (`is:inline`) marca a seção em leitura com `aria-current="location"` e
-  liga "Imprimir ficha" a `window.print()`, sem ilha nem dependência nova. As **Ofertas** (links comerciais de
+  liga "Imprimir ficha" a `window.print()`, sem ilha nem dependência nova. O corpo
+  segue a linguagem de datasheet (ticket 76): Resumo e Especificações em `<dl>`
+  com hairline por par, explicadores como linhas de `<details>` nativo,
+  condições de ensaio numa tabela por Variante dentro de um contêiner focável
+  com rolagem horizontal contida, Registros com o status em etiqueta e
+  Proveniência com a nota de linhas em mono. As **Ofertas** (links comerciais de
   afiliado) vivem só aqui, em
   `apps/site/ofertas.json` (insumo curado do site, nunca na base servida), são
   validadas no build do site (glue `src/conteudo/ofertas.ts`) e renderizadas por

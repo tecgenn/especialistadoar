@@ -1211,9 +1211,26 @@ describe("build com uma Análise de fixture", () => {
       expect(htmlFicha).toContain(`href="${ofertaPublicada.url}"`);
     }
     expect(htmlFicha).toContain('rel="sponsored nofollow noopener"');
-    // A seção "Ofertas" entra no índice de seções (ticket 62).
+    // A seção "Ofertas" entra no índice de seções (ticket 62) e é uma seção do
+    // datasheet com âncora (ticket 76).
     expect(htmlFicha).toContain('href="#ofertas"');
-    expect(htmlFicha).toContain('<section class="ofertas" id="ofertas">');
+    expect(htmlFicha).toContain(
+      '<section class="ofertas" id="ofertas" tabindex="-1">',
+    );
+    // A Análise é editorial e vem depois da Proveniência, separada do dado
+    // oficial por hairline; a faixa de Ofertas fecha a leitura depois dela.
+    expect(htmlFicha).toContain(
+      '<section id="analise" tabindex="-1" class="analise-destaque">',
+    );
+    expect(htmlFicha).toContain('class="ficha-analise-link"');
+    const posicaoProveniencia = htmlFicha.indexOf('<section id="proveniencia"');
+    const posicaoAnalise = htmlFicha.indexOf('<section id="analise"');
+    const posicaoOfertasFicha = htmlFicha.indexOf('<section class="ofertas"');
+    expect(posicaoAnalise).toBeGreaterThan(posicaoProveniencia);
+    expect(posicaoOfertasFicha).toBeGreaterThan(posicaoAnalise);
+    expect(cssDaPagina(htmlFicha)).toMatch(
+      /\.aparelho>section\{[^}]*border-top:1px solid var\(--linha\)/,
+    );
     // A faixa não tem mais parágrafo de apresentação: título e lista de Ofertas.
     // O aviso de afiliado não está no texto visível (ticket 108); ele fica no
     // `title` do logo, no nome acessível e no rodapé.
@@ -1773,13 +1790,83 @@ describe("build sem nenhuma Análise (estado zero)", () => {
     // renderizar uma linha de Rotação vazia.
     expect(htmlGree).not.toContain("Rotação");
 
-    // A ficha precisa caber em 360 px sem rolagem horizontal: o resumo vira uma
-    // coluna e as células da grade podem quebrar.
+    // A ficha precisa caber em 360 px sem rolagem horizontal: os pares do
+    // resumo empilham e a tabela de ensaio rola dentro do próprio contêiner.
     const cssDaFicha = cssDaPagina(htmlGree);
-    expect(cssDaFicha).toMatch(
-      /@media[^{]*\{[^}]*\.aparelho section dl\{[^}]*1fr/,
+    expect(cssDaFicha).toContain(
+      ".ficha-resumo>div,.ficha-especificacoes>div{grid-template-columns:minmax(0,1fr)}",
     );
     expect(cssDaFicha).toContain("overflow-wrap:anywhere");
+
+    // Corpo do datasheet (ticket 76): Resumo em `<dl>` com hairlines, sem cartão
+    // decorativo; as cinco leituras oficiais continuam as mesmas.
+    expect(htmlGree).toContain('<dl class="ficha-resumo">');
+    const resumoHtml = htmlGree.slice(
+      htmlGree.indexOf('<dl class="ficha-resumo">'),
+      htmlGree.indexOf("</dl>", htmlGree.indexOf('<dl class="ficha-resumo">')),
+    );
+    expect(resumoHtml.match(/<dt>/g) ?? []).toHaveLength(5);
+    for (const rotulo of [
+      "Capacidade nominal",
+      "IDRS",
+      "Classe",
+      "Consumo anual",
+      "Potência em espera",
+    ]) {
+      expect(resumoHtml).toContain(`<dt>${rotulo}</dt>`);
+    }
+    expect(cssDaFicha).toContain(".ficha-resumo dt");
+    expect(cssDaFicha).toMatch(/\.ficha-resumo>div[^{]*\{[^}]*border-bottom/);
+
+    // Condições de ensaio: uma tabela por Variante, num contêiner focável que
+    // rola na horizontal, com a unidade na legenda e as linhas da tabela em
+    // mono no fim do bloco.
+    expect(htmlGree).toContain('class="ficha-tabela"');
+    expect(htmlGree).toContain(
+      'aria-label="Condições de ensaio — Tensão: 220 V · monofásico, bifásico"',
+    );
+    expect(htmlGree).toContain(
+      "<caption>Capacidade / potência elétrica, em W</caption>",
+    );
+    expect(htmlGree).toContain('<p class="ficha-nota">Linhas da tabela:');
+    expect(cssDaFicha).toMatch(/\.ficha-tabela\{[^}]*overflow-x:auto/);
+    expect(cssDaFicha).toMatch(
+      /@media \(width<56\.25rem\)\{[^@]*\.ficha-tabela thead th:first-child,\.ficha-tabela tbody th\{[^}]*position:sticky/,
+    );
+
+    // Registros como datasheet: número em mono e situação como etiqueta.
+    expect(htmlGree).toContain('<ul class="ficha-registros">');
+    expect(htmlGree).toContain('class="ficha-status" data-situacao="Ativo"');
+    expect(htmlGree).toContain('class="ficha-especificacoes"');
+    expect(htmlGree).toContain('class="ficha-nota">Linhas da tabela:');
+
+    // Cada seção tem id e tabindex="-1", e o índice lista exatamente essas
+    // seções, na ordem em que elas aparecem no documento.
+    const ordemDasSecoes = [
+      "resumo",
+      "entenda-os-numeros",
+      "consumo-e-custo",
+      "condicoes-de-ensaio",
+      "especificacoes",
+      "registros",
+      "proveniencia",
+    ];
+    const posicoesDasSecoes = ordemDasSecoes.map((id) => {
+      const posicao = htmlGree.indexOf(`<section id="${id}" tabindex="-1"`);
+      expect(posicao).toBeGreaterThan(-1);
+      return posicao;
+    });
+    expect([...posicoesDasSecoes].sort((a, b) => a - b)).toEqual(
+      posicoesDasSecoes,
+    );
+    const inicioIndice = htmlGree.indexOf('<nav class="ficha-indice"');
+    const indiceHtml = htmlGree.slice(
+      inicioIndice,
+      htmlGree.indexOf("</nav>", inicioIndice),
+    );
+    expect(
+      [...indiceHtml.matchAll(/href="#([^"]+)"/g)].map((m) => m[1]),
+    ).toEqual(ordemDasSecoes);
 
     // O topo da ficha (tickets 62 e 75): trilha, etiquetas de Classe, situação
     // e Registros logo abaixo do `<h1>`, antes de qualquer seção.

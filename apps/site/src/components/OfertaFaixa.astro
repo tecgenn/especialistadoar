@@ -32,7 +32,7 @@ const Titulo = `h${nivelTitulo}`;
 
 {
   ofertas.length > 0 ? (
-    <section class="ofertas" id={id}>
+    <section class="ofertas" id={id} tabindex={id ? -1 : undefined}>
       <Titulo>{titulo}</Titulo>
       <ul>
         {ofertas.map((oferta) => (
